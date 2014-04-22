@@ -2,7 +2,6 @@ load 'support/rake.rb'
 
 TOOLCHAIN = 'arm-none-eabi'
 TOOLCHAIN_LIBS_PATH = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4'
-PLATFORM = 'lpc1768'
 RUSTC = 'rustc'
 
 architectures = {
