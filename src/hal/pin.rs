@@ -17,6 +17,8 @@
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::pin::map;
 
 // TODO(farcaller): must feel bad about the name
+/// Pin configuration, can specify pins, that are not connected (i.e. not used
+/// in some peripheral configuration).
 pub enum PinConf_ {
   Connected(PinConf),
   NotConnected,

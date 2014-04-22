@@ -15,6 +15,7 @@
 
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::uart::UARTConf;
 
+/// UART parity mode.
 pub enum Parity {
   None,
   Odd,

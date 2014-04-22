@@ -13,17 +13,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! GPIO implementation for LPC17xx.
+
 use hal::gpio::{Direction, In, Out};
 use super::pin::{PinConf, Port0, Port1, Port2, Port3, Port4};
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
+/// GPIO configuration.
 pub struct GPIOConf {
+  /// Pin configuration for this GPIO.
   pub pin: PinConf,
+
+  /// Direction for GPIO, either `In` or `Out`.
   pub direction: Direction,
 }
 
 impl GPIOConf {
+  /// Returns a GPIO object (actually -- self), that can be used to toggle or
+  /// read GPIO value.
   pub fn setup<'a>(&'a self) -> &'a GPIOConf {
     let bit: u32 = 1 << self.pin.pin;
     let mask: u32 = !bit;
@@ -39,10 +47,12 @@ impl GPIOConf {
     self
   }
 
+  /// Sets output GPIO value to high.
   pub fn set_high(&self) {
     self.reg().set_FIOSET(1 << self.pin.pin);
   }
 
+  /// Sets output GPIO value to low.
   pub fn set_low(&self) {
     self.reg().set_FIOCLR(1 << self.pin.pin);
   }

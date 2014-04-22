@@ -22,6 +22,7 @@ extern {
 }
 
 #[inline(always)]
+/// Helper function to copy over .data from rom to ram and zero out .bss
 pub fn init_data() {
   unsafe {
     let mut load_addr: *u32 = &_data_load;

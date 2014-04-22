@@ -15,6 +15,7 @@
 
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::gpio::GPIOConf;
 
+/// GPIO direction.
 pub enum Direction {
   In,
   Out,

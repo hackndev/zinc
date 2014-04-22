@@ -13,6 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+UART configuration for NXP LPC17xx.
+
+This code doesn't support UART1, while it really should (UART1 has more features
+than other UARTs in MCU).
+*/
+
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, UART0Clock, UART2Clock, UART3Clock};
 use interfaces::chario;
 use core::fail::abort;
@@ -48,12 +55,14 @@ mod reg {
   }
 }
 
+/// Available UART peripherals.
 pub enum UARTPeripheral {
   UART0,
   UART2,
   UART3,
 }
 
+/// UART word length.
 pub enum WordLen {
   WordLen5bits = 0b00,
   WordLen6bits = 0b01,
@@ -73,6 +82,7 @@ impl WordLen {
   }
 }
 
+/// Stop bits configuration.
 pub enum StopBit {
   StopBit1bit  = 0b0_00,
   StopBit2bits = 0b1_00,
@@ -130,14 +140,22 @@ static LCRModeMask: u8 = 0b1_11_1_1_11;
 
 static LSRTHREmpty: u8 = 0x20;
 
+/// UART configuration.
 pub struct UARTConf {
+  /// Peripheral to use.
   pub peripheral: UARTPeripheral,
+  /// Baud rate.
   pub baudrate: u32,
+  /// Word length, must be 5, 6, 7 or 8. Commonly 8.
   pub word_len: u8,
+  /// Parity mode. Commonly None.
   pub parity: uart::Parity,
+  /// Stop bits, must be 1 or 2. Commonly 1.
   pub stop_bits: u8,
 
+  /// RX pin to use.
   pub rx: PinConf,
+  /// TX pin to use.
   pub tx: PinConf,
 }
 
@@ -165,6 +183,7 @@ impl UARTPeripheral {
 }
 
 impl UARTConf {
+  /// Returns platform-specific UART object that implements CharIO trait.
   pub fn setup(&self) -> UART {
     let uart = UART {
       reg: self.peripheral.reg(),

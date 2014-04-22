@@ -13,6 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+SSP configuration for NXP LPC17xx.
+
+Currently supports only SPI mode. Note that SPI is not the same peripheral, and
+it's currently not supported at all.
+*/
+
 use core::*;
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, SSP0Clock, SSP1Clock};
 use hal::lpc17xx::init::system_clock;
@@ -43,18 +50,32 @@ mod reg {
   }
 }
 
+/// SPI configuration.
+///
+/// This configuration doesn't manage the chip-select pin, it must be configured
+/// and used externally via GPIOConf.
 pub struct SPIConf {
+  /// Peripheral to use, mcu-specific.
   pub peripheral: SSPPeripheral,
+  /// Number of bits per transfer, commonly 8.
   pub bits: u8,
+  /// SPI mode, see http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus#Mode_numbers for explanation.
   pub mode: u8,
+  /// SPI bus frequency, obiviously must be lover than core clock.
+  ///
+  /// The divisor is currently hardcoded and is equal to 1.
   pub frequency: u32,
 
+  /// MOSI pin to use, supports NotConnected pin.
   pub mosi: PinConf_,
+  /// MISO pin to use, supports NotConnected pin.
   pub miso: PinConf_,
+  /// SCLK pin to use, supports NotConnected pin.
   pub sclk: PinConf_,
 }
 
 impl SPIConf {
+  /// Returns a platform-specific object, that implements SPI trait.
   pub fn setup(&self) -> SSP {
     let ssp = SSP {
       peripheral: self.peripheral,

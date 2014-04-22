@@ -15,10 +15,22 @@
 
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::ssp::SPIConf;
 
+/// SPI trait.
 pub trait SPI {
+  /// Writes a byte over SPI.
+  ///
+  /// It's implementation defined what happens if SPI is not configured to 8
+  /// bits.
   fn write(&self, value: u8);
+
+  /// Reads a byte from SPI.
+  ///
+  /// This function returns the last byte received (SPI sends and receives data
+  /// at the same time).
   fn read(&self) -> u8;
 
+  /// Performs an SPI transfer operation (writes one byte, returns the one byte
+  /// read).
   fn transfer(&self, value: u8) -> u8 {
     self.write(value);
     self.read()

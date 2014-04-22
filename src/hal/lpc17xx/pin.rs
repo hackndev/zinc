@@ -42,9 +42,16 @@ mod reg {
   }
 }
 
+/// Pin configuration.
+///
+/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
+/// has all possible pin configurations.
 pub struct PinConf {
+  /// Pin port, mcu-specific.
   pub port: Port,
+  /// Pin number.
   pub pin: u8,
+  /// Pin function, mcu-specific.
   pub function: Function,
 }
 
@@ -111,6 +118,7 @@ impl PinConf {
 
 #[no_split_stack]
 #[inline(always)]
+/// Sets the state of trace port interface.
 pub fn set_trace_port_interface_enabled(enabled: bool) {
   let value: u32 = if enabled { 0b1000 } else { 0 };
   reg::PINSEL10.set_value(value);

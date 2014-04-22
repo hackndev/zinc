@@ -13,9 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Automatically generated file, do not edit
-// Update the definition in pinmap.rs.rb and re-generate pinmap.rs with
-// support/pingen.rb <src> <dst>
+//! Automatically generated file, do not edit
+//! Update the definition in pinmap.rs.rb and re-generate pinmap.rs with
+//! support/pingen.rb <src> <dst>
+//!
+//! This module provides all possible pin configurations for LPC17xx.
 
 pub mod port0 {
     pub mod pin0 {

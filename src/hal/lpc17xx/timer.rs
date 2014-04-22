@@ -13,6 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Timer configuration for NXP LPC17xx.
+//!
+//! This code supports all four primary timers of the MCU.
+
 use super::peripheral_clock;
 use hal::timer;
 
@@ -70,6 +74,7 @@ pub struct Timer {
 }
 
 impl TimerConf {
+  /// Returns a platform-specific timer object that implements Timer trait.
   pub fn setup(&self) -> Timer {
     let (clock, reg) = match self.timer {
       Timer0 => (peripheral_clock::TIM0Clock, &reg::TIMER0),

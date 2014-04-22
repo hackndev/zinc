@@ -13,6 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+Default configuration for mbed board: http://mbed.org/platforms/mbed-LPC1768/
+
+This configuraiton is clocked at 100MHz with Timer1 calibrated for 1us ticks.
+It also provides GPIOConfs for all four leds found on the board.
+*/
+
 use hal::lpc17xx::init::{SysConf, Clock, Main, PLL0};
 use hal::gpio::{GPIOConf, Out};
 use hal::lpc17xx::pin::map;

@@ -15,15 +15,19 @@
 
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::timer::TimerConf;
 
+/// Timer implementation.
 pub trait Timer {
+  /// Implementation-specific method to wait a given number of microseconds.
   fn wait_us(&self, us: u32);
 
   #[inline(always)]
+  /// Waits for specified number of seconds.
   fn wait(&self, s: u32) {
     self.wait_us(s * 1000000);
   }
 
   #[inline(always)]
+  /// Waits for specified number of milliseconds.
   fn wait_ms(&self, ms: u32) {
     self.wait_us(ms * 1000);
   }
