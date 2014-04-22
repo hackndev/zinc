@@ -1,0 +1,3 @@
+[submodule "rust-core"]
+	path = rust-core
+	url = https://github.com/farcaller/rust-core.git
