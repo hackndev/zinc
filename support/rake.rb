@@ -165,23 +165,25 @@ module Rust
       raise RuntimeError.new("Cannot find #{src} included from #{root}")
     end
     lines = open(src).read.split("\n")
-    mod_rx = /^\s*(?:pub)?\s*mod\s+(\w+)\s*;/
+    mod_rx = /^\s*(?:#\[.+\]\s*)*(?:pub)?\s*mod\s+(\w+)\s*;/
     path_rx = /^\s*#\[path="([^"]+)"\]/
     mod_path_rx = /^\s*#\[path="([^"]+)"\]\s+(?:pub)?\s*mod\s+\w+\s*;/
     prev = ''
     lines.each do |l|
-      m = mod_rx.match(l)
-      p = path_rx.match(prev)
-
-      if m
-        if p
-          subs << File.join(File.dirname(src), p[1])
-        else
-          subs << mod_to_src(src, m[1])
-        end
-      else
-        mp = mod_path_rx.match(l)
+      mp = mod_path_rx.match(l)
+      if mp
         subs << File.join(File.dirname(src), mp[1]) if mp
+      else
+        m = mod_rx.match(l)
+        p = path_rx.match(prev)
+
+        if m
+          if p
+            subs << File.join(File.dirname(src), p[1])
+          else
+            subs << mod_to_src(src, m[1])
+          end
+        end
       end
       prev = l
     end
