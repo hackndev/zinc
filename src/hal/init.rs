@@ -14,3 +14,4 @@
 // limitations under the License.
 
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::init::SysConf;
+#[cfg(mcu_stm32f4)] pub use hal::stm32f4::init::SysConf;

@@ -4,6 +4,8 @@ TOOLCHAIN = 'arm-none-eabi'
 TOOLCHAIN_LIBS_PATH = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4'
 RUSTC = 'rustc'
 
+features = [:tft_lcd]
+
 architectures = {
   cortex_m3: {
     arch: 'armv7-m',
@@ -21,6 +23,7 @@ platforms = {
   lpc17xx: {
     arch: :cortex_m3,
     config: :mcu_lpc17xx,
+    features: [:mcu_has_spi],
   },
   stm32f4: {
     arch: :cortex_m4,
@@ -31,7 +34,7 @@ platforms = {
 rsflags = %w[-Z no-landing-pads -C relocation_model=static]
 ldflags = %w[]
 
-Context.prepare!(rsflags, ldflags, platforms, architectures)
+Context.prepare!(rsflags, ldflags, platforms, architectures, features)
 
 # rust-core crate
 compile_rust Context.build_dir(Rlib.name(Context.root_dir('rust-core/core/lib.rs'))) => Context.root_dir('rust-core/core/lib.rs'),

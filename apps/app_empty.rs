@@ -4,9 +4,9 @@
 
 extern crate zinc;
 
-// use zinc::hal;
-
 #[cfg(mcu_lpc17xx)] use zinc::hal::lpc17xx::init::{SysConf, Clock, Main, PLL0};
+#[cfg(mcu_stm32f4)] use zinc::hal::stm32f4::init::{SysConf, ClockConf};
+#[cfg(mcu_stm32f4)] use zinc::hal::stm32f4::init::{SystemClockPLL,PLLConf, PLLClockHSE};
 
 struct Platform {
   configuration: SysConf,
@@ -25,6 +25,21 @@ static platform: Platform = Platform {
       }
     },
     enable_timer: true,
+  }
+};
+
+#[cfg(mcu_stm32f4)]
+static platform: Platform = Platform {
+  configuration: SysConf {
+    clock: ClockConf {
+      source: SystemClockPLL(PLLConf {
+        source: PLLClockHSE(8_000_000),
+        m: 8,
+        n: 316,
+        p: 2,
+        q: 7,
+      })
+    }
   }
 };
 

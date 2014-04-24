@@ -3,12 +3,14 @@
 
 extern crate zinc;
 
-use zinc::boards::mbed_lpc1768;
+#[cfg(mcu_lpc17xx)] use zinc::boards::mbed_lpc1768;
+#[cfg(mcu_stm32f4)] use zinc::boards::stm32f4discovery;
 use zinc::hal::gpio::GPIOConf;
 use zinc::hal::init::SysConf;
 use zinc::hal::timer::{TimerConf, Timer};
 
 #[cfg(mcu_lpc17xx)] use zinc::hal::lpc17xx;
+#[cfg(mcu_stm32f4)] use zinc::hal::stm32f4;
 
 struct Platform {
   configuration: SysConf,
@@ -26,6 +28,17 @@ static platform: Platform = Platform {
     timer: lpc17xx::timer::Timer1,
     counter: 25,
     divisor: 4,
+  },
+};
+
+#[cfg(mcu_stm32f4)]
+static platform: Platform = Platform {
+  configuration: stm32f4discovery::configuration,
+  led1: stm32f4discovery::led1,
+  led2: stm32f4discovery::led2,
+  timer: TimerConf {
+    timer: stm32f4::timer::Timer2,
+    counter: 84,  // FIXME(farcaller): note on DCKCFGR
   },
 };
 

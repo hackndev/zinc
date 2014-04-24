@@ -21,7 +21,6 @@ use super::peripheral_clock;
 use hal::timer;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
-#[path="../../lib/wait_for.rs"] mod wait_for;
 
 mod reg {
   use lib::volatile_cell::VolatileCell;
@@ -99,8 +98,7 @@ impl TimerConf {
 
 impl timer::Timer for Timer {
   #[inline(always)]
-  fn wait_us(&self, us: u32) {
-    let start = self.reg.TC();
-    wait_for!((self.reg.TC() - start) >= us);
+  fn get_counter(&self) -> u32 {
+    self.reg.TC()
   }
 }

@@ -13,4 +13,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod lcd;
+#[cfg(cfg_tft_lcd)] pub mod lcd;

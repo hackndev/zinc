@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod init_clock;
-pub mod clocking;
+pub mod pin;
+pub mod init;
 pub mod gpio;
+pub mod peripheral_clock;
+pub mod timer;

@@ -29,7 +29,7 @@ module Context
     src_dir('hal', @current_platform.to_s, *args)
   end
 
-  def self.prepare!(rsflags, ldflags, platforms, architectures)
+  def self.prepare!(rsflags, ldflags, platforms, architectures, features)
     platform_file = File.join(build_dir, ".platform")
 
     current_platform_str = ENV['PLATFORM'] or raise ArgumentError.new("Undefined platform, available platforms: #{platforms.keys.join(', ')}")
@@ -48,10 +48,14 @@ module Context
     platform = platforms[@current_platform] or raise ArgumentError.new("Undefined platform #{@current_platform}, available platforms: #{platforms.keys.join(', ')}")
     arch = architectures[platform[:arch]] or raise ArgumentError.new("Undefined arch #{platform[:arch]} for platform #{@current_platform}")
 
+    feature_flags = (features + (platform[:features] or [])).map do |c|
+      "--cfg cfg_#{c}"
+    end
+
     rsflags.push("--target #{arch[:target]}",
         "-Ctarget-cpu=#{arch[:cpu]}",
-        "--cfg #{platform[:config]}")
-        # "-g")
+        "--cfg #{platform[:config]}",
+        *feature_flags)
     ldflags.push("-L#{File.join(TOOLCHAIN_LIBS_PATH, arch[:arch])}")
 
     if ENV['DEBUG']

@@ -14,21 +14,31 @@
 // limitations under the License.
 
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::timer::TimerConf;
+#[cfg(mcu_stm32f4)] pub use hal::stm32f4::timer::TimerConf;
+
+#[path="../lib/wait_for.rs"] mod wait_for;
 
 /// Timer implementation.
 pub trait Timer {
   /// Implementation-specific method to wait a given number of microseconds.
-  fn wait_us(&self, us: u32);
+  fn get_counter(&self) -> u32;
 
   #[inline(always)]
-  /// Waits for specified number of seconds.
-  fn wait(&self, s: u32) {
-    self.wait_us(s * 1000000);
+  /// Waits for specified number of microseconds.
+  fn wait_us(&self, us: u32) {
+    let start = self.get_counter();
+    wait_for!((self.get_counter() - start) >= us);
   }
 
   #[inline(always)]
   /// Waits for specified number of milliseconds.
   fn wait_ms(&self, ms: u32) {
     self.wait_us(ms * 1000);
+  }
+
+  #[inline(always)]
+  /// Waits for specified number of seconds.
+  fn wait(&self, s: u32) {
+    self.wait_us(s * 1000000);
   }
 }

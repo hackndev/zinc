@@ -25,8 +25,8 @@ returning the object to interact with it where applicable.
 
 mod mem_init;
 
-#[cfg(mcu_lpc17xx)]
-#[path="lpc17xx/mod.rs"] pub mod lpc17xx;
+#[cfg(mcu_lpc17xx)] pub mod lpc17xx;
+#[cfg(mcu_stm32f4)] pub mod stm32f4;
 
 pub mod pin;
 pub mod gpio;

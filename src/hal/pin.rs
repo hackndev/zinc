@@ -16,6 +16,8 @@
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::pin::PinConf;
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::pin::map;
 
+#[cfg(mcu_stm32f4)] pub use hal::stm32f4::pin::PinConf;
+
 // TODO(farcaller): must feel bad about the name
 /// Pin configuration, can specify pins, that are not connected (i.e. not used
 /// in some peripheral configuration).

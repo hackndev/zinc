@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::gpio::GPIOConf;
+#[cfg(mcu_stm32f4)] pub use hal::stm32f4::gpio::GPIOConf;
 
 /// GPIO direction.
 pub enum Direction {

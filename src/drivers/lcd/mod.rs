@@ -13,6 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod c12332;
-// pub mod ili9341;
+#[cfg(cfg_mcu_has_spi)] pub mod c12332;
+#[cfg(cfg_mcu_has_spi, FIXME_BROKEN)] pub mod ili9341;
 pub mod font_small_7;
