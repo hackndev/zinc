@@ -13,4 +13,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod mbed_lpc1768;
+#[cfg(mcu_lpc17xx)] pub mod mbed_lpc1768;
