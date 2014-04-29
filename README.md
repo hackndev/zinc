@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/hackndev/zinc.png?label=ready&title=Ready)](https://waffle.io/hackndev/zinc)
 Zinc, the bare metal stack for rust
 ===================================
 
