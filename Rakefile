@@ -37,58 +37,77 @@ ldflags = %w[]
 Context.prepare!(rsflags, ldflags, platforms, architectures, features)
 
 # rust-core crate
-compile_rust Context.build_dir(Rlib.name(Context.root_dir('rust-core/core/lib.rs'))) => Context.root_dir('rust-core/core/lib.rs'),
-  out_dir: true
+compile_rust :rust_core, {
+  source:  'rust-core/core/lib.rs'.in_root,
+  produce: 'rust-core/core/lib.rs'.in_root.as_rlib.in_build,
+  out_dir: true,
+}
 
 # zinc crate
-compile_rust Context.build_dir(Rlib.name(Context.src_dir('main.rs'))) => [
-  Context.src_dir('main.rs'),
-  Context.build_dir(Rlib.name(Context.root_dir('rust-core/core/lib.rs'))),
-], out_dir: true
+compile_rust :zinc_crate, {
+  source:  'main.rs'.in_source,
+  deps:    :rust_core,
+  produce: 'main.rs'.in_source.as_rlib.in_build,
+  out_dir: true,
+}
 
-compile_rust Context.build_dir('zinc-crate.ll') => [
-  Context.src_dir('main.rs'),
-  Context.build_dir(Rlib.name(Context.root_dir('rust-core/core/lib.rs'))),
-], out_dir: true
+# zinc macros
+compile_rust :zinc_macros, {
+  source:  'lib/macros.rs'.in_source,
+  produce: 'lib/macros.rs'.in_source.as_rlib.in_build,
+  out_dir: true,
+}
 
 # zinc runtime support lib
-compile_rust Context.intermediate_dir('support.o') => Context.src_dir('lib/support.rs'),
-  llvm_pass: :inline, lto: false
+compile_rust :zinc_support, {
+  source:  'lib/support.rs'.in_source,
+  produce: 'support.o'.in_intermediate,
+  llvm_pass: :inline,
+  lto: false,
+}
 
 # zinc isr crate
-compile_rust Context.intermediate_dir('isr.o') => [
-  Context.src_dir('hal/isr.rs'),
-  Context.build_dir(Rlib.name(Context.root_dir('rust-core/core/lib.rs'))),
-]
+compile_rust :zinc_isr, {
+  source:  'hal/isr.rs'.in_source,
+  deps:    :rust_core,
+  produce: 'isr.o'.in_intermediate,
+}
+
+# zinc isr weak symbols
+# TODO(farcaller): in_platform?
+compile_c :zinc_isr_weak, {
+  source:  'hal/cortex_m3/default_handlers.s'.in_source,
+  produce: 'isr_weak.o'.in_intermediate,
+}
 
 # demo app
-compile_rust Context.intermediate_dir('app.o') => [
-  Context.app,
-  Context.app_dep,
-  Context.build_dir(Rlib.name(Context.src_dir('main.rs'))),
-]
+compile_rust :app, {
+  source:  Context.app,
+  deps: [
+    :zinc_crate,
+    :zinc_macros,
+    Context.track_application_name,
+  ],
+  produce: 'app.o'.in_intermediate,
+}
 
-compile_rust Context.build_dir('zinc.ll') => [
-  Context.app,
-  Context.app_dep,
-  Context.build_dir(Rlib.name(Context.src_dir('main.rs'))),
-]
+link_binary :app_elf, {
+  script: 'layout.ld'.in_platform,
+  deps: [:app, :zinc_isr, :zinc_support, :zinc_isr_weak],
+  produce: 'zinc.elf'.in_build,
+}
 
-link_binary script: Context.platform_dir('layout.ld'), Context.build_dir('zinc.elf') => [
-  Context.intermediate_dir('app.o'),
-  Context.intermediate_dir('support.o'),
-  Context.intermediate_dir('isr.o'),
-]
+make_binary :app_bin, {
+  source:  'zinc.elf'.in_build,
+  produce: 'zinc.bin'.in_build,
+}
 
-make_binary Context.build_dir('zinc.bin') => [
-  Context.build_dir('zinc.elf'),
-  # Context.build_dir('zinc.ll'),
-  # Context.build_dir('zinc-crate.ll'),
-]
+listing :app_lst, {
+  source:  'zinc.elf'.in_build,
+  produce: 'zinc.lst'.in_build,
+}
 
-listing Context.build_dir('zinc.lst') => Context.build_dir('zinc.elf')
-report_size Context.build_dir('zinc.elf')
+report_size 'zinc.elf'.in_build
 
-task :build => [Context.build_dir('zinc.bin'), Context.build_dir('zinc.lst'), :report_size]
-
+task :build => ['zinc.bin'.in_build, 'zinc.lst'.in_build, :report_size]
 task :default => :build

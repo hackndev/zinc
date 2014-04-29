@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::uart::UARTConf;
+#[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::uart::{UART, UARTConf};
 
 /// UART parity mode.
 pub enum Parity {

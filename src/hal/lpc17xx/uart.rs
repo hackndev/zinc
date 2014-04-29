@@ -32,21 +32,21 @@ use hal::pin::PinConf;
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg_cell!(UART: RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
-  reg_cell_r!( UART, RBR,          RBR_THR_DLL)
-  reg_cell_w!( UART,      set_THR, RBR_THR_DLL)
-  reg_cell_rw!(UART, DLL, set_DLL, RBR_THR_DLL)
-  reg_cell_rw!(UART, DLM, set_DLM, DLM_IER)
-  reg_cell_rw!(UART, IER, set_IER, DLM_IER)
-  reg_cell_r!( UART, IIR,          IIR_FCR)
-  reg_cell_w!( UART,      set_FCR, IIR_FCR)
-  reg_cell_rw!(UART, LCR, set_LCR, LCR)
-  reg_cell_r!( UART, LSR,          LSR)
-  reg_cell_rw!(UART, SCR, set_SCR, SCR)
-  reg_cell_rw!(UART, ACR, set_ACR, ACR)
-  reg_cell_rw!(UART, ICR, set_ICR, ICR)
-  reg_cell_rw!(UART, FDR, set_FDR, FDR)
-  reg_cell_rw!(UART, TER, set_TER, TER)
+  ioreg!(UART: RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
+  reg_r!( UART, RBR,          RBR_THR_DLL)
+  reg_w!( UART,      set_THR, RBR_THR_DLL)
+  reg_rw!(UART, DLL, set_DLL, RBR_THR_DLL)
+  reg_rw!(UART, DLM, set_DLM, DLM_IER)
+  reg_rw!(UART, IER, set_IER, DLM_IER)
+  reg_r!( UART, IIR,          IIR_FCR)
+  reg_w!( UART,      set_FCR, IIR_FCR)
+  reg_rw!(UART, LCR, set_LCR, LCR)
+  reg_r!( UART, LSR,          LSR)
+  reg_rw!(UART, SCR, set_SCR, SCR)
+  reg_rw!(UART, ACR, set_ACR, ACR)
+  reg_rw!(UART, ICR, set_ICR, ICR)
+  reg_rw!(UART, FDR, set_FDR, FDR)
+  reg_rw!(UART, TER, set_TER, TER)
 
   extern {
     #[link_name="iomem_UART0"] pub static UART0: UART;

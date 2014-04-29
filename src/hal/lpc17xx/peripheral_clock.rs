@@ -98,11 +98,11 @@ pub enum PeripheralDivisor {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg_cell!(PCONP: value)
-  reg_cell_rw!(PCONP, value, set_value, value)
+  ioreg!(PCONP: value)
+  reg_rw!(PCONP, value, set_value, value)
 
-  ioreg_cell!(PCLKSEL: value)
-  reg_cell_rw!(PCLKSEL, value, set_value, value)
+  ioreg!(PCLKSEL: value)
+  reg_rw!(PCLKSEL, value, set_value, value)
 
   extern {
     #[link_name="iomem_PCONP"] pub static PCONP: PCONP;

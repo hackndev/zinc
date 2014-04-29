@@ -13,26 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-HAL provides abstactions over different peripherals found in MCUs (vs drivers,
-that provide support for hardware outside of MCU).
+#![feature(macro_rules)]
+#![crate_id="zinc_macros"]
+#![crate_type="rlib"]
+#![no_std]
 
-HAL is mostly implemented as `pub use` for the relevant modules in MCU-specific
-directories. Each peripheral has a Conf struct, that can be defined statucally,
-and each such struct has a `setup()` method that configures the hardware,
-returning the object to interact with it where applicable.
-*/
-
-mod mem_init;
-
-#[cfg(mcu_lpc17xx)] pub mod lpc17xx;
-#[cfg(mcu_stm32f4)] pub mod stm32f4;
-
-#[cfg(arch_cortex_m3)] pub mod cortex_m3;
-
-pub mod pin;
-pub mod gpio;
-pub mod init;
-pub mod timer;
-pub mod uart;
-pub mod spi;
+#[macro_export]
+macro_rules! route_isr(
+  ($name:ident -> $dest:expr) => (
+    #[no_mangle]
+    #[no_split_stack]
+    #[inline(never)]
+    pub unsafe fn $name() {
+      $dest();
+    }
+  )
+)

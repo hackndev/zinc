@@ -27,8 +27,8 @@ use core::fail;
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg_cell!(PINSEL: value)
-  reg_cell_rw!(PINSEL, value, set_value, value)
+  ioreg!(PINSEL: value)
+  reg_rw!(PINSEL, value, set_value, value)
 
   extern {
     #[link_name="iomem_PINSEL0"]  pub static PINSEL0:  PINSEL;

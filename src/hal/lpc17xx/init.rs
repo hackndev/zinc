@@ -88,22 +88,22 @@ impl SysConf {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg_cell!(SCS: value)
-  reg_cell_rw!(SCS, value, set_value, value)
-  ioreg_cell!(FLASHCFG: value)
-  reg_cell_w!(FLASHCFG, set_value, value)
-  ioreg_cell!(PLL0CFG: value)
-  reg_cell_w!(PLL0CFG, set_value, value)
-  ioreg_cell!(PLL0CON: value)
-  reg_cell_w!(PLL0CON, set_value, value)
-  ioreg_cell!(PLL0FEED: value)
-  reg_cell_w!(PLL0FEED, set_value, value)
-  ioreg_cell!(PLL0STAT: value)
-  reg_cell_r!(PLL0STAT, value, value)
-  ioreg_cell!(CCLKCFG: value)
-  reg_cell_w!(CCLKCFG, set_value, value)
-  ioreg_cell!(CLKSRCSEL: value)
-  reg_cell_w!(CLKSRCSEL, set_value, value)
+  ioreg!(SCS: value)
+  reg_rw!(SCS, value, set_value, value)
+  ioreg!(FLASHCFG: value)
+  reg_w!(FLASHCFG, set_value, value)
+  ioreg!(PLL0CFG: value)
+  reg_w!(PLL0CFG, set_value, value)
+  ioreg!(PLL0CON: value)
+  reg_w!(PLL0CON, set_value, value)
+  ioreg!(PLL0FEED: value)
+  reg_w!(PLL0FEED, set_value, value)
+  ioreg!(PLL0STAT: value)
+  reg_r!(PLL0STAT, value, value)
+  ioreg!(CCLKCFG: value)
+  reg_w!(CCLKCFG, set_value, value)
+  ioreg!(CLKSRCSEL: value)
+  reg_w!(CLKSRCSEL, set_value, value)
 
   extern {
     #[link_name="iomem_SCS"] pub static SCS: SCS;

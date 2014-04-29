@@ -32,17 +32,17 @@ use core::fail::abort;
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg_cell!(SSP: CR0, CR1, DR, SR, CPSR, IMSC, RIS, MIS, ICR, DMACR)
-  reg_cell_rw!(SSP, CR0,   set_CR0,   CR0)
-  reg_cell_rw!(SSP, CR1,   set_CR1,   CR1)
-  reg_cell_rw!(SSP, DR,    set_DR,    DR)
-  reg_cell_r!( SSP, SR,               SR)
-  reg_cell_rw!(SSP, CPSR,  set_CPSR,  CPSR)
-  reg_cell_rw!(SSP, IMSC,  set_IMSC,  IMSC)
-  reg_cell_rw!(SSP, RIS,   set_RIS,   RIS)
-  reg_cell_rw!(SSP, MIS,   set_MIS,   MIS)
-  reg_cell_rw!(SSP, ICR,   set_ICR,   ICR)
-  reg_cell_rw!(SSP, DMACR, set_DMACR, DMACR)
+  ioreg!(SSP: CR0, CR1, DR, SR, CPSR, IMSC, RIS, MIS, ICR, DMACR)
+  reg_rw!(SSP, CR0,   set_CR0,   CR0)
+  reg_rw!(SSP, CR1,   set_CR1,   CR1)
+  reg_rw!(SSP, DR,    set_DR,    DR)
+  reg_r!( SSP, SR,               SR)
+  reg_rw!(SSP, CPSR,  set_CPSR,  CPSR)
+  reg_rw!(SSP, IMSC,  set_IMSC,  IMSC)
+  reg_rw!(SSP, RIS,   set_RIS,   RIS)
+  reg_rw!(SSP, MIS,   set_MIS,   MIS)
+  reg_rw!(SSP, ICR,   set_ICR,   ICR)
+  reg_rw!(SSP, DMACR, set_DMACR, DMACR)
 
   extern {
     #[link_name="iomem_SSP0"] pub static SSP0: SSP;

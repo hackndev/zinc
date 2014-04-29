@@ -1,17 +1,36 @@
 require 'digest'
 require 'set'
+require 'pry'
+
+class String
+  def in_build; Context.build_dir(self); end
+  def in_intermediate; Context.intermediate_dir(self); end
+  def in_root; Context.root_dir(self); end
+  def in_source; Context.src_dir(self); end
+  def in_platform; Context.platform_dir(self); end
+  def as_rlib; Rlib.name(self); end
+end
+
+class Hash
+  def resolve_deps!
+    return unless self[:deps]
+    self[:deps] = [self[:deps]].flatten
+
+    self[:deps] = self[:deps].map do |d|
+      if d.kind_of?(Symbol)
+        Context.rules[d][:produce]
+      else
+        d
+      end
+    end
+    self
+  end
+end
 
 module Context
   class << self
     attr_reader :app_name, :app
   end
-  # def self.app_name
-  #   @app_name
-  # end
-
-  # def self.app
-  #   @app
-  # end
 
   def self.src_dir(*args)
     File.join(root_dir, 'src', *args)
@@ -55,6 +74,7 @@ module Context
     rsflags.push("--target #{arch[:target]}",
         "-Ctarget-cpu=#{arch[:cpu]}",
         "--cfg #{platform[:config]}",
+        "--cfg arch_#{platform[:arch]}",
         *feature_flags)
     ldflags.push("-L#{File.join(TOOLCHAIN_LIBS_PATH, arch[:arch])}")
 
@@ -77,10 +97,14 @@ module Context
     File.join(File.dirname(File.dirname(__FILE__)), *args)
   end
 
-  def self.app_dep
+  def self.track_application_name
     AppDepTask.define_task(build_dir('.app')) do |t|
       t.store_name
     end
+  end
+
+  def self.rules
+    @rules ||= {}
   end
 end
 
@@ -170,8 +194,8 @@ module Rust
     end
     lines = open(src).read.split("\n")
     mod_rx = /^\s*(?:#\[.+\]\s*)*(?:pub)?\s*mod\s+(\w+)\s*;/
-    path_rx = /^\s*#\[path="([^"]+)"\]/
-    mod_path_rx = /^\s*#\[path="([^"]+)"\]\s+(?:pub)?\s*mod\s+\w+\s*;/
+    path_rx = /^\s*#\[path\s*=\s*"([^"]+)"\]/
+    mod_path_rx = /^\s*#\[path\s*=\s*"([^"]+)"\]\s+(?:pub)?\s*mod\s+\w+\s*;/
     prev = ''
     lines.each do |l|
       mp = mod_path_rx.match(l)
@@ -218,20 +242,22 @@ def report_size(fn)
   end
 end
 
-def compile_rust(h)
-  outflags = h.delete(:out_dir) ? "--out-dir #{Context.build_dir}" :
-             "-o #{h.to_a.first.first}"
-  llvm_pass = h.delete(:llvm_pass)
-  lto = h.delete(:lto)
+def compile_rust(n, h)
+  h.resolve_deps!
+  Context.rules[n] = h
+
+  outflags = h[:out_dir] ? "--out-dir #{Context.build_dir}" : "-o #{h[:produce]}"
+  llvm_pass = h[:llvm_pass]
+  lto = h[:lto]
   lto = true if lto == nil
-  optimize = h.delete(:optimize)
+  optimize = h[:optimize]
 
-  declared_deps = h[h.keys.first].kind_of?(Array) ? h[h.keys.first] : [h[h.keys.first]]
-  rust_src = declared_deps.shift
-  deps = Rust.collect_dep_srcs(rust_src, '__ROOT__')
-  h[h.keys.first] = [rust_src] + declared_deps + deps.to_a
+  declared_deps = h[:deps]
+  rust_src = h[:source]
+  deps = Rust.collect_dep_srcs(rust_src, '__ROOT__').to_a
+  all_deps = [rust_src, declared_deps, deps].flatten.compact
 
-  Rake::FileTask.define_task(h) do |t|
+  Rake::FileTask.define_task(h[:produce] => all_deps) do |t|
     do_lto = lto && t.name.end_with?('.o')
     emit = case File.extname(t.name)
       when '.o'
@@ -257,11 +283,11 @@ def compile_rust(h)
   end
 end
 
-def link_binary(h)
-  script = h.delete(:script)
-  h[h.keys.first] << script
+def link_binary(n, h)
+  h.resolve_deps!
+  script = h[:script]
 
-  Rake::FileTask.define_task(h) do |t|
+  Rake::FileTask.define_task(h[:produce] => [h[:deps], script].flatten) do |t|
     t.prerequisites.delete(script)
     mapfn = Context.build_dir(File.basename(t.name, File.extname(t.name)) + '.map')
 
@@ -272,14 +298,23 @@ def link_binary(h)
   end
 end
 
-def listing(h)
-  Rake::FileTask.define_task(h) do |t|
+def compile_c(n, h)
+  h.resolve_deps!
+  Context.rules[n] = h
+
+  Rake::FileTask.define_task(h[:produce] => [h[:source], h[:deps]].flatten.compact) do |t|
+    sh "#{TOOLCHAIN}-gcc -o #{h[:produce]} -c #{h[:source]}"
+  end
+end
+
+def listing(n, h)
+  Rake::FileTask.define_task(h[:produce] => h[:source]) do |t|
     sh "#{TOOLCHAIN}-objdump -D #{t.prerequisites.first} > #{t.name}"
   end
 end
 
-def make_binary(h)
-  Rake::FileTask.define_task(h) do |t|
+def make_binary(n, h)
+  Rake::FileTask.define_task(h[:produce] => h[:source]) do |t|
     sh "#{TOOLCHAIN}-objcopy #{t.prerequisites.first} #{t.name} -O binary"
   end
 end

@@ -19,6 +19,15 @@ extern {
   fn __STACK_BASE();
   fn main();
   fn _boot_checksum();
+
+  fn isr_nmi();
+  fn isr_hardfault();
+  fn isr_mmfault();
+  fn isr_busfault();
+  fn isr_usagefault();
+  fn isr_svcall();
+  fn isr_pendsv();
+  fn isr_systick();
 }
 
 static ISRCount: uint = 16;
@@ -30,40 +39,16 @@ pub static ISRVectors: [Option<extern unsafe fn()>, ..ISRCount] = [
   Some(main),             // Reset
   Some(isr_nmi),          // NMI
   Some(isr_hardfault),    // Hard Fault
-  None,                   // CM3 Memory Management Fault
-  None,                   // CM3 Bus Fault
-  None,                   // CM3 Usage Fault
+  Some(isr_mmfault),      // CM3 Memory Management Fault
+  Some(isr_busfault),     // CM3 Bus Fault
+  Some(isr_usagefault),   // CM3 Usage Fault
   Some(_boot_checksum),   // NXP Checksum code
   None,                   // Reserved
   None,                   // Reserved
   None,                   // Reserved
-  Some(isr_hang),         // SVCall
+  Some(isr_svcall),       // SVCall
   None,                   // Reserved for debug
   None,                   // Reserved
-  Some(isr_hang),         // PendSV
-  Some(isr_hang),         // SysTick
+  Some(isr_pendsv),       // PendSV
+  Some(isr_systick),      // SysTick
 ];
-
-#[no_mangle]
-#[no_split_stack]
-pub extern "C" fn isr_nmi() {
-  loop {
-    unsafe { asm!("bkpt") }
-  }
-}
-
-#[no_mangle]
-#[no_split_stack]
-pub extern "C" fn isr_hardfault() {
-  loop {
-    unsafe { asm!("bkpt") }
-  }
-}
-
-#[no_mangle]
-#[no_split_stack]
-pub extern "C" fn isr_hang() {
-  loop {
-    unsafe { asm!("bkpt") }
-  }
-}
