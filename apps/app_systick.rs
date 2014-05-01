@@ -1,8 +1,7 @@
-#![feature(phase)]
-#![crate_type="staticlib"]
+#![crate_id="app"]
+#![crate_type="rlib"]
 #![no_std]
 
-#[phase(syntax)] extern crate zinc_macros;
 extern crate zinc;
 extern crate core;
 
@@ -39,12 +38,8 @@ unsafe fn systick_handler() {
   }
 }
 
-route_isr!(isr_systick -> systick_handler)
-
 #[no_split_stack]
-#[no_mangle]
-#[start]
-pub extern fn main() {
+pub fn main() {
   platform.configuration.setup();
   systick::setup(systick::CALIBRATED, true);
 

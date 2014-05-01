@@ -1,4 +1,5 @@
-#![crate_type="staticlib"]
+#![crate_id="app"]
+#![crate_type="rlib"]
 #![no_std]
 
 extern crate zinc;
@@ -43,9 +44,7 @@ static platform: Platform = Platform {
 };
 
 #[no_split_stack]
-#[no_mangle]
-#[start]
-pub extern fn main() {
+pub fn main() {
   platform.configuration.setup();
 
   let uart = &platform.uart.setup() as &CharIO;

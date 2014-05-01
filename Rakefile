@@ -51,13 +51,6 @@ compile_rust :zinc_crate, {
   out_dir: true,
 }
 
-# zinc macros
-compile_rust :zinc_macros, {
-  source:  'lib/macros.rs'.in_source,
-  produce: 'lib/macros.rs'.in_source.as_rlib.in_build,
-  out_dir: true,
-}
-
 # zinc runtime support lib
 compile_rust :zinc_support, {
   source:  'lib/support.rs'.in_source,
@@ -91,7 +84,6 @@ compile_rust :app_crate, {
   source: Context.app,
   deps: [
     :zinc_crate,
-    :zinc_macros,
     Context.track_application_name,
   ],
   produce: Context.app.as_rlib.in_build,
