@@ -15,55 +15,63 @@
  limitations under the License.
 */
 
+
 .syntax unified
 .cpu cortex-m3
 .arch armv7-m
 .text
 
 #define THUMB_FUNC(NAME) \
-.section .text.isr.##NAME; \
+.section .text.sched.##NAME; \
 .align 2; \
 .global NAME; \
 .thumb; \
 .thumb_func; \
-.weak NAME; \
 .type NAME, %function; \
 NAME:
 
-THUMB_FUNC(isr_nmi)
-  bkpt
-
-
-THUMB_FUNC(isr_hardfault)
-  mrs r0, psp
-  mrs r1, msp
-  ldr r2, [r0, 0x18]
-  ldr r3, [r1, 0x18]
-  bkpt
-
-
-THUMB_FUNC(isr_mmfault)
-  bkpt
-
-
-THUMB_FUNC(isr_busfault)
-  bkpt
-
-
-THUMB_FUNC(isr_usagefault)
-  bkpt
-
-
-THUMB_FUNC(isr_svcall)
-  bkpt
-
-
-THUMB_FUNC(isr_pendsv)
-  bkpt
-
-
+/* SysTick handler, for cortex-m3 we save r4-r11 and ask to switch context. */
 THUMB_FUNC(isr_systick)
-  bkpt
+  mrs r0, psp
+  stmdb r0!, {r4-r11}
+  msr psp, r0
 
-THUMB_FUNC(isr_hang)
-  b isr_hang
+  bl task_scheduler
+
+  mrs r0, psp
+  ldmfd r0!, {r4-r11}
+  msr psp, r0
+
+  ldr lr, =0xfffffffd  /* return to thread mode using stack at PSP */
+  bx lr
+
+/* PendSV handler, same as above. */
+THUMB_FUNC(isr_pendsv)
+  mrs r0, psp
+  stmdb r0!, {r4-r11}
+  msr psp, r0
+
+  bl task_scheduler
+
+  mrs r0, psp
+  ldmfd r0!, {r4-r11}
+  msr psp, r0
+
+  ldr lr, =0xfffffffd
+  bx lr
+
+/* SVCall handler, calls function at arg0 with arg1. */
+THUMB_FUNC(isr_svcall)
+  mrs r2, psp /* r2 points to user stack */
+
+  ldr r1, [r2] /* load func addr from stack */
+  ldr r0, [r2, 4] /* load func arg from stack */
+  push {lr} /* push lr onto msp */
+
+  blx r1
+
+  pop {pc}
+
+THUMB_FUNC(syscall)
+  svc 0
+  bx lr

@@ -36,6 +36,14 @@ pub fn enable() {
   reg::SysTick.set_control(reg::SysTick.control() | 1);
 }
 
+pub fn enable_irq() {
+  reg::SysTick.set_control(reg::SysTick.control() | 0b010);
+}
+
+pub fn disable_irq() {
+  reg::SysTick.set_control(reg::SysTick.control() & !0b010);
+}
+
 mod reg {
   use lib::volatile_cell::VolatileCell;
 

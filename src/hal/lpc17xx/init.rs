@@ -19,9 +19,14 @@
 //! performing initial peripheral configuration.
 
 use hal::mem_init::init_data;
+use hal::stack;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 #[path="../../lib/wait_for.rs"] mod wait_for;
+
+extern {
+  static _eglobals: u32;
+}
 
 /// PLL clock source.
 pub enum ClockSource {
@@ -80,6 +85,7 @@ pub fn system_clock() -> u32 {
 /// Performs the MCU initialization.
 impl SysConf {
   pub fn setup(&self) {
+    init_stack();
     init_data();
     init_clock(&self.clock);
   }
@@ -115,6 +121,11 @@ mod reg {
     #[link_name="iomem_CLKSRCSEL"] pub static CLKSRCSEL: CLKSRCSEL;
     #[link_name="iomem_PLL0STAT"] pub static PLL0STAT: PLL0STAT;
   }
+}
+
+#[inline(always)]
+fn init_stack() {
+  stack::set_stack_limit((&_eglobals as *u32) as u32);
 }
 
 #[inline(always)]

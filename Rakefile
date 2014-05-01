@@ -4,7 +4,7 @@ TOOLCHAIN = 'arm-none-eabi'
 TOOLCHAIN_LIBS_PATH = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4'
 RUSTC = 'rustc'
 
-features = [:tft_lcd]
+features = [:tft_lcd, :multitasking]
 
 architectures = {
   cortex_m3: {
@@ -76,24 +76,41 @@ compile_rust :zinc_isr, {
 # zinc isr weak symbols
 # TODO(farcaller): in_platform?
 compile_c :zinc_isr_weak, {
-  source:  'hal/cortex_m3/default_handlers.s'.in_source,
+  source:  'hal/cortex_m3/default_handlers.S'.in_source,
   produce: 'isr_weak.o'.in_intermediate,
 }
 
-# demo app
-compile_rust :app, {
-  source:  Context.app,
+# zinc scheduler assembly
+# TODO(farcaller): make platform-specific
+compile_c :zinc_isr_sched, {
+  source:  'hal/cortex_m3/sched.S'.in_source,
+  produce: 'isr_sched.o'.in_intermediate,
+}
+
+compile_rust :app_crate, {
+  source: Context.app,
   deps: [
     :zinc_crate,
     :zinc_macros,
     Context.track_application_name,
+  ],
+  produce: Context.app.as_rlib.in_build,
+  out_dir: true,
+}
+
+compile_rust :app, {
+  source: 'lib/app.rs'.in_source,
+  deps: [
+    :rust_core,
+    :zinc_crate,
+    :app_crate,
   ],
   produce: 'app.o'.in_intermediate,
 }
 
 link_binary :app_elf, {
   script: 'layout.ld'.in_platform,
-  deps: [:app, :zinc_isr, :zinc_support, :zinc_isr_weak],
+  deps: [:app, :zinc_isr, :zinc_support, :zinc_isr_weak, :zinc_isr_sched],
   produce: 'zinc.elf'.in_build,
 }
 

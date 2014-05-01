@@ -13,3 +13,8 @@ end
 define rst
 monitor jtag_reset
 end
+
+define reload
+ld
+cont
+end

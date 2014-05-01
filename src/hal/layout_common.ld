@@ -35,6 +35,14 @@ SECTIONS
         . = ALIGN(4);
 
         _ebss = .;
+
+        . += 4;
+
+        __STACK_LIMIT = .;
+
+        . += 4;
+
+        _eglobals = .;
     } > ram
 
     /DISCARD/ :
@@ -44,6 +52,6 @@ SECTIONS
         *(.vfp11_veneer)  /* VFP11 bugfixes s.a. http://sourceware.org/ml/binutils/2006-12/msg00196.html */
         *(.iplt .igot.plt)  /* STT_GNU_IFUNC symbols */
         *(.rel.*)  /* dynamic relocations */
-        *(.ARM.exidx) /* exception handling */
+        *(.ARM.exidx*) /* exception handling */
     }
 }

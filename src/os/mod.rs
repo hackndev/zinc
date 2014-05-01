@@ -14,3 +14,5 @@
 // limitations under the License.
 
 pub mod debug;
+pub mod syscall;
+#[cfg(cfg_multitasking)] pub mod task;

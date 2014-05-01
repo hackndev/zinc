@@ -13,27 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-HAL provides abstactions over different peripherals found in MCUs (vs drivers,
-that provide support for hardware outside of MCU).
+//! Syscall interface.
+//!
+//! This module provides syscall interface that is implemented in assembly due
+//! to current rust restrictions (see hal/cortex_m3/sched.S for actual
+//! implementation).
 
-HAL is mostly implemented as `pub use` for the relevant modules in MCU-specific
-directories. Each peripheral has a Conf struct, that can be defined statucally,
-and each such struct has a `setup()` method that configures the hardware,
-returning the object to interact with it where applicable.
-*/
-
-mod mem_init;
-
-#[cfg(mcu_lpc17xx)] pub mod lpc17xx;
-#[cfg(mcu_stm32f4)] pub mod stm32f4;
-
-#[cfg(arch_cortex_m3)] pub mod cortex_m3;
-
-pub mod pin;
-pub mod gpio;
-pub mod init;
-pub mod timer;
-pub mod uart;
-pub mod spi;
-pub mod stack;
+extern {
+  pub fn syscall(f: fn(u32), arg: u32);
+}

@@ -62,16 +62,6 @@ pub extern "C" fn __aeabi_memset(s: *mut u8, n: int, c: c_int) {
     memset(s, c, n);
 }
 
-#[no_mangle]
-pub static __STACK_LIMIT: *mut u32 = 0x10001000 as *mut u32;
-
-#[no_split_stack]
-#[no_mangle]
-pub fn __morestack() {
-  unsafe { asm!("bkpt") }
-  loop {}
-}
-
 #[no_split_stack]
 #[no_mangle]
 pub fn breakpoint() {

@@ -51,3 +51,6 @@ pub mod lib;
 
 /// Default configurations for various boards.
 pub mod boards;
+
+/// OS stack.
+pub mod os;

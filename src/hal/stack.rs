@@ -13,27 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-HAL provides abstactions over different peripherals found in MCUs (vs drivers,
-that provide support for hardware outside of MCU).
+//! Provides access to stack layout information.
 
-HAL is mostly implemented as `pub use` for the relevant modules in MCU-specific
-directories. Each peripheral has a Conf struct, that can be defined statucally,
-and each such struct has a `setup()` method that configures the hardware,
-returning the object to interact with it where applicable.
-*/
+extern {
+  static     __STACK_BASE: u32;
+  static mut __STACK_LIMIT: u32;
+}
 
-mod mem_init;
+/// Returns the address of main stack base (end of ram).
+pub fn stack_base() -> u32 {
+  (&__STACK_BASE as *u32) as u32
+}
 
-#[cfg(mcu_lpc17xx)] pub mod lpc17xx;
-#[cfg(mcu_stm32f4)] pub mod stm32f4;
+/// Returns the current stack limit.
+pub fn stack_limit() -> u32 {
+  unsafe { __STACK_LIMIT }
+}
 
-#[cfg(arch_cortex_m3)] pub mod cortex_m3;
-
-pub mod pin;
-pub mod gpio;
-pub mod init;
-pub mod timer;
-pub mod uart;
-pub mod spi;
-pub mod stack;
+/// Sets the current stack limit.
+pub fn set_stack_limit(val: u32) {
+  unsafe { __STACK_LIMIT = val }
+}

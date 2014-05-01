@@ -18,6 +18,7 @@ class Hash
 
     self[:deps] = self[:deps].map do |d|
       if d.kind_of?(Symbol)
+        raise RuntimeError.new("Missing rule #{d}") unless Context.rules[d]
         Context.rules[d][:produce]
       else
         d
@@ -86,6 +87,7 @@ module Context
 
     ENV['RSFLAGS'] = rsflags.join(' ')
     ENV['LDFLAGS'] = ldflags.join(' ')
+    ENV['CFLAGS'] = ["-mthumb -mcpu=#{arch[:cpu]}"].join(' ')
 
     @app_name = ENV['APP'] or ArgumentError.new("Undefined application")
     app_path = root_dir('apps', @app_name + '.rs') or ArgumentError.new("Application #{@app_name} not found in apps")
@@ -251,6 +253,7 @@ def compile_rust(n, h)
   lto = h[:lto]
   lto = true if lto == nil
   optimize = h[:optimize]
+  crate_type = h[:crate_type] ? "--crate-type #{h[:crate_type]}" : ""
 
   declared_deps = h[:deps]
   rust_src = h[:source]
@@ -278,7 +281,7 @@ def compile_rust(n, h)
     end
 
     sh "#{RUSTC} #{flags} " +
-       "#{do_lto ? '-Z lto' : ''} #{emit} -L #{Context.build_dir} #{codegen} " +
+       "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} -L #{Context.build_dir} #{codegen} " +
        "#{outflags} #{rust_src}"
   end
 end
@@ -294,7 +297,7 @@ def link_binary(n, h)
     sh "#{TOOLCHAIN}-ld -Map #{mapfn} -o #{t.name} -T #{script} " +
        "#{t.prerequisites.join(' ')} #{ENV['LDFLAGS']} --gc-sections -lgcc"
 
-    sh "#{TOOLCHAIN}-strip -N ISRVectors -N NVICVectors -N support.rs -N app.rs -N isr.rs #{t.name}"
+    # sh "#{TOOLCHAIN}-strip -N ISRVectors -N NVICVectors -N support.rs -N app.rs -N isr.rs #{t.name}"
   end
 end
 
@@ -303,7 +306,7 @@ def compile_c(n, h)
   Context.rules[n] = h
 
   Rake::FileTask.define_task(h[:produce] => [h[:source], h[:deps]].flatten.compact) do |t|
-    sh "#{TOOLCHAIN}-gcc -o #{h[:produce]} -c #{h[:source]}"
+    sh "#{TOOLCHAIN}-gcc #{ENV['CFLAGS']} -o #{h[:produce]} -c #{h[:source]}"
   end
 end
 
