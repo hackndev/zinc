@@ -14,4 +14,4 @@
 // limitations under the License.
 
 pub mod systick;
-pub mod sched;
+#[cfg(cfg_multitasking)] pub mod sched;

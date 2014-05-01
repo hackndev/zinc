@@ -75,10 +75,12 @@ compile_c :zinc_isr_weak, {
 
 # zinc scheduler assembly
 # TODO(farcaller): make platform-specific
-compile_c :zinc_isr_sched, {
-  source:  'hal/cortex_m3/sched.S'.in_source,
-  produce: 'isr_sched.o'.in_intermediate,
-}
+if features.include?(:multitasking)
+  compile_c :zinc_isr_sched, {
+    source:  'hal/cortex_m3/sched.S'.in_source,
+    produce: 'isr_sched.o'.in_intermediate,
+  }
+end
 
 compile_rust :app_crate, {
   source: Context.app,
@@ -102,7 +104,8 @@ compile_rust :app, {
 
 link_binary :app_elf, {
   script: 'layout.ld'.in_platform,
-  deps: [:app, :zinc_isr, :zinc_support, :zinc_isr_weak, :zinc_isr_sched],
+  deps: [:app, :zinc_isr, :zinc_support, :zinc_isr_weak] +
+        (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
   produce: 'zinc.elf'.in_build,
 }
 
