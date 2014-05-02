@@ -5,13 +5,12 @@
 extern crate zinc;
 
 use zinc::boards::mbed_lpc1768;
-use zinc::interfaces::chario::CharIO;
+use zinc::drivers::chario::CharIO;
 use zinc::hal::timer::{TimerConf, Timer};
 use zinc::hal::spi::SPIConf;
 use zinc::hal::pin::{map, NotConnected, Connected};
 use zinc::hal::gpio::{GPIOConf, Out};
 use zinc::drivers::lcd;
-use zinc::interfaces;
 
 #[cfg(mcu_lpc17xx)] use zinc::hal::lpc17xx::init::SysConf;
 #[cfg(mcu_lpc17xx)] use zinc::hal::lpc17xx;
@@ -64,7 +63,7 @@ pub fn main() {
   let timer = platform.timer.setup();
   let spi = platform.spi.setup();
   let screen = &lcd::c12332::C12332::new(&spi, &timer, platform.lcd_dc,
-      platform.lcd_cs, platform.lcd_reset) as &interfaces::lcd::LCD;
+      platform.lcd_cs, platform.lcd_reset) as &lcd::LCD;
 
   screen.clear();
   screen.puts("hello lcd");

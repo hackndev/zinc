@@ -16,9 +16,9 @@
 use core::*;
 use core::cell;
 
-use drivers::lcd::font_small_7;
-use interfaces::lcd;
-use interfaces::chario;
+use super::font_small_7;
+use super::LCD;
+use drivers::chario::CharIO;
 use hal::timer::Timer;
 use hal::gpio::GPIOConf;
 use hal::spi::SPI;
@@ -85,7 +85,7 @@ impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
 
     self.wr_cmd(0xA6);     // display normal
 
-    (self as &lcd::LCD).flush();
+    (self as &LCD).flush();
   }
 
   fn wr_cmd(&self, cmd: u8) {
@@ -181,7 +181,7 @@ impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
   }
 }
 
-impl<'a, S: SPI, T: Timer> lcd::LCD for C12332<'a, S, T> {
+impl<'a, S: SPI, T: Timer> LCD for C12332<'a, S, T> {
   fn flush(&self) {
     let mut i: uint = 0;
 
@@ -239,7 +239,7 @@ impl<'a, S: SPI, T: Timer> lcd::LCD for C12332<'a, S, T> {
   }
 }
 
-impl<'a, S: SPI, T: Timer> chario::CharIO for C12332<'a, S, T> {
+impl<'a, S: SPI, T: Timer> CharIO for C12332<'a, S, T> {
   fn putc(&self, value: char) {
     let height: u32 = 32;
     if value == '\n' {

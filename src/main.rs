@@ -30,18 +30,12 @@ Zinc supports only ARM MCUs at the moment, specifically:
 
  * NXP LPC1768
  * ST STM32F407
-
-The library includes all available drivers, but rust has a damn good LTO, so you
-don't need to worry about resulting binary size.
 */
 
 extern crate core;
 
 /// hardware abstractions. Includes implementations for things found inside MCUs.
 pub mod hal;
-
-/// (deprecated) public interfaces.
-pub mod interfaces;
 
 /// drivers for various external peripherals, like TFT LCDs and radios.
 pub mod drivers;

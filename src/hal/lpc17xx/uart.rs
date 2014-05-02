@@ -21,7 +21,7 @@ than other UARTs in MCU).
 */
 
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, UART0Clock, UART2Clock, UART3Clock};
-use interfaces::chario;
+use drivers::chario::CharIO;
 use core::fail::abort;
 use hal::uart;
 use hal::pin::PinConf;
@@ -313,7 +313,7 @@ impl UART {
   }
 }
 
-impl chario::CharIO for UART {
+impl CharIO for UART {
   fn putc(&self, value: char) {
     wait_for!(self.reg.LSR() as u8 & LSRTHREmpty == LSRTHREmpty);
     self.reg.set_THR(value as u32);

@@ -12,7 +12,7 @@ use zinc::hal::init::SysConf;
 use zinc::hal::timer::{TimerConf, Timer};
 use zinc::hal::uart::{UARTConf, None};
 use zinc::hal::pin::map;
-use zinc::interfaces::chario::CharIO;
+use zinc::drivers::chario::CharIO;
 use zinc::os::task;
 use zinc::os::debug;
 

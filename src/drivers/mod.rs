@@ -14,3 +14,4 @@
 // limitations under the License.
 
 #[cfg(cfg_tft_lcd)] pub mod lcd;
+pub mod chario;

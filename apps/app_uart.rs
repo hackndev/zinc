@@ -5,7 +5,7 @@
 extern crate zinc;
 
 use zinc::boards::mbed_lpc1768;
-use zinc::interfaces::chario::CharIO;
+use zinc::drivers::chario::CharIO;
 use zinc::hal::timer::{TimerConf, Timer};
 use zinc::hal::uart::{UARTConf, None};
 use zinc::hal::pin::map;

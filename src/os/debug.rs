@@ -15,7 +15,7 @@
 
 //! debug::port provides interface to output structured data over serial port.
 
-use interfaces::chario::CharIO;
+use drivers::chario::CharIO;
 use hal::uart::{UART, UARTConf};
 use core::{size_of, transmute};
 use core::fail::abort;
