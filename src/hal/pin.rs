@@ -13,6 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+Pin interface.
+
+PinConf is a MCU-specific struct, that describes a pin. As pin configuration is
+different in each MCU, a `map` is provided that contains all possible pin
+configurations pre-defined.
+*/
+
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::pin::PinConf;
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::pin::map;
 

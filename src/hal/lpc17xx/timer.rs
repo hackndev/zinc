@@ -13,42 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Timer configuration for NXP LPC17xx.
-//!
-//! This code supports all four primary timers of the MCU.
+/*!
+Timer configuration.
+
+This code supports all four primary timers of the MCU.
+*/
 
 use super::peripheral_clock;
 use hal::timer;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
-
-mod reg {
-  use lib::volatile_cell::VolatileCell;
-
-  ioreg!(TIMER: IR, TCR, TC, PR, PC, MCR, MR0, MR1, MR2, MR3, CCR, CR0, CR1, EMR, CTCR)
-  reg_rw!(TIMER, IR,  set_IR,  IR)
-  reg_rw!(TIMER, TCR, set_TCR, TCR)
-  reg_rw!(TIMER, TC, set_TC, TC)
-  reg_rw!(TIMER, PR, set_PR, PR)
-  reg_rw!(TIMER, PC, set_PC, PC)
-  reg_rw!(TIMER, MCR, set_MCR, MCR)
-  reg_rw!(TIMER, MR0, set_MR0, MR0)
-  reg_rw!(TIMER, MR1, set_MR1, MR1)
-  reg_rw!(TIMER, MR2, set_MR2, MR2)
-  reg_rw!(TIMER, MR3, set_MR3, MR3)
-  reg_rw!(TIMER, CCR, set_CCR, CCR)
-  reg_rw!(TIMER, CR0, set_CR0, CR0)
-  reg_rw!(TIMER, CR1, set_CR1, CR1)
-  reg_rw!(TIMER, EMR, set_EMR, EMR)
-  reg_rw!(TIMER, CTCR, set_CTCR, CTCR)
-
-  extern {
-    #[link_name="iomem_TIMER0"] pub static TIMER0: TIMER;
-    #[link_name="iomem_TIMER1"] pub static TIMER1: TIMER;
-    #[link_name="iomem_TIMER2"] pub static TIMER2: TIMER;
-    #[link_name="iomem_TIMER3"] pub static TIMER3: TIMER;
-  }
-}
 
 /// Available timer peripherals.
 pub enum TimerPeripheral {
@@ -100,5 +74,33 @@ impl timer::Timer for Timer {
   #[inline(always)]
   fn get_counter(&self) -> u32 {
     self.reg.TC()
+  }
+}
+
+mod reg {
+  use lib::volatile_cell::VolatileCell;
+
+  ioreg!(TIMER: IR, TCR, TC, PR, PC, MCR, MR0, MR1, MR2, MR3, CCR, CR0, CR1, EMR, CTCR)
+  reg_rw!(TIMER, IR,  set_IR,  IR)
+  reg_rw!(TIMER, TCR, set_TCR, TCR)
+  reg_rw!(TIMER, TC, set_TC, TC)
+  reg_rw!(TIMER, PR, set_PR, PR)
+  reg_rw!(TIMER, PC, set_PC, PC)
+  reg_rw!(TIMER, MCR, set_MCR, MCR)
+  reg_rw!(TIMER, MR0, set_MR0, MR0)
+  reg_rw!(TIMER, MR1, set_MR1, MR1)
+  reg_rw!(TIMER, MR2, set_MR2, MR2)
+  reg_rw!(TIMER, MR3, set_MR3, MR3)
+  reg_rw!(TIMER, CCR, set_CCR, CCR)
+  reg_rw!(TIMER, CR0, set_CR0, CR0)
+  reg_rw!(TIMER, CR1, set_CR1, CR1)
+  reg_rw!(TIMER, EMR, set_EMR, EMR)
+  reg_rw!(TIMER, CTCR, set_CTCR, CTCR)
+
+  extern {
+    #[link_name="iomem_TIMER0"] pub static TIMER0: TIMER;
+    #[link_name="iomem_TIMER1"] pub static TIMER1: TIMER;
+    #[link_name="iomem_TIMER2"] pub static TIMER2: TIMER;
+    #[link_name="iomem_TIMER3"] pub static TIMER3: TIMER;
   }
 }

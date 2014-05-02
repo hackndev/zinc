@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! HAL support modules for NXP LPC17xx.
+//! HAL for NXP LPC17xx.
 
-pub mod init;
-pub mod pin;
 pub mod gpio;
+pub mod init;
 pub mod peripheral_clock;
+pub mod pin;
+pub mod ssp;
 pub mod timer;
 pub mod uart;
-pub mod ssp;

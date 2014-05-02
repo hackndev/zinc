@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! GPIO implementation for LPC17xx.
+//! GPIO configuration.
 
 use hal::gpio::{Direction, In, Out};
 use super::pin::{PinConf, Port0, Port1, Port2, Port3, Port4};

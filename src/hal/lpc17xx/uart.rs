@@ -14,7 +14,7 @@
 // limitations under the License.
 
 /*!
-UART configuration for NXP LPC17xx.
+UART configuration.
 
 This code doesn't support UART1, while it really should (UART1 has more features
 than other UARTs in MCU).

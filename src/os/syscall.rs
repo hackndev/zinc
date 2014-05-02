@@ -13,11 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Syscall interface.
-//!
-//! This module provides syscall interface that is implemented in assembly due
-//! to current rust restrictions (see hal/cortex_m3/sched.S for actual
-//! implementation).
+/*!
+Syscall interface.
+
+This module provides syscall interface that is implemented in assembly due to
+current rust restrictions (see hal/cortex_m3/sched.S for actual implementation).
+*/
 
 extern {
   pub fn syscall(f: fn(u32), arg: u32);

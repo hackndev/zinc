@@ -13,17 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Rust support code for scheduler. This lives here instead of sched.s to allow
-//  inlining.
+//! Cortex-M3 specific support code for scheduler.
 
 use os::task::Task;
 
 mod scb;
 
-/// Force context switch. This triggers PendSV.
+/// Force context switch. Triggers PendSV interrupt.
 #[inline(always)]
 pub fn switch_context() {
-   scb::set_pendsv(true); 
+   scb::set_pendsv(true);
 }
 
 /// Sets task stack pointer (PSP).
@@ -48,7 +47,7 @@ pub fn get_current_stack_pointer() -> u32 {
   val
 }
 
-/// State, that's saved by hardware.
+/// State, that's saved by hardware upon entering an ISR.
 pub struct SavedState {
   pub r0: u32,
   pub r1: u32,
@@ -76,6 +75,8 @@ impl SavedState {
   }
 }
 
+// TODO(farcaller): this should actually kill the task.
+/// Default handler for task that tries to return.
 unsafe fn task_finished() {
   asm!("bkpt" :::: "volatile");
 }

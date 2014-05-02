@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Provides access to stack layout information.
+//! Stack layout information.
 
 extern {
   static     __STACK_BASE: u32;

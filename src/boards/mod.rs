@@ -13,5 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Pre-configured board templates for known supported hardware.
+
 #[cfg(mcu_lpc17xx)] pub mod mbed_lpc1768;
 #[cfg(mcu_stm32f4)] pub mod stm32f4discovery;

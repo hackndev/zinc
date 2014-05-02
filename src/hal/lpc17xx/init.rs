@@ -13,10 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Rotines for initialization of NXP LPC17xx.
-//!
-//! This module includes code for setting up the clock, flash, access time and
-//! performing initial peripheral configuration.
+/*!
+MCU initialication and clock configuration.
+
+This module includes code for setting up the clock, flash, access time and
+performing initial peripheral configuration.
+*/
 
 use hal::mem_init::init_data;
 use hal::stack;
@@ -69,8 +71,6 @@ pub struct Clock {
 pub struct SysConf {
   /// Clock configuration.
   pub clock: Clock,
-  /// Specifies if Timer1 should be initialized and used for `wait*` functions.
-  pub enable_timer: bool,
 }
 
 // TODO(farcaller): move to peripheral_clock?
@@ -88,38 +88,6 @@ impl SysConf {
     init_stack();
     init_data();
     init_clock(&self.clock);
-  }
-}
-
-mod reg {
-  use lib::volatile_cell::VolatileCell;
-
-  ioreg!(SCS: value)
-  reg_rw!(SCS, value, set_value, value)
-  ioreg!(FLASHCFG: value)
-  reg_w!(FLASHCFG, set_value, value)
-  ioreg!(PLL0CFG: value)
-  reg_w!(PLL0CFG, set_value, value)
-  ioreg!(PLL0CON: value)
-  reg_w!(PLL0CON, set_value, value)
-  ioreg!(PLL0FEED: value)
-  reg_w!(PLL0FEED, set_value, value)
-  ioreg!(PLL0STAT: value)
-  reg_r!(PLL0STAT, value, value)
-  ioreg!(CCLKCFG: value)
-  reg_w!(CCLKCFG, set_value, value)
-  ioreg!(CLKSRCSEL: value)
-  reg_w!(CLKSRCSEL, set_value, value)
-
-  extern {
-    #[link_name="iomem_SCS"] pub static SCS: SCS;
-    #[link_name="iomem_FLASHCFG"] pub static FLASHCFG: FLASHCFG;
-    #[link_name="iomem_PLL0CFG"] pub static PLL0CFG: PLL0CFG;
-    #[link_name="iomem_PLL0CON"] pub static PLL0CON: PLL0CON;
-    #[link_name="iomem_CCLKCFG"] pub static CCLKCFG: CCLKCFG;
-    #[link_name="iomem_PLL0FEED"] pub static PLL0FEED: PLL0FEED;
-    #[link_name="iomem_CLKSRCSEL"] pub static CLKSRCSEL: CLKSRCSEL;
-    #[link_name="iomem_PLL0STAT"] pub static PLL0STAT: PLL0STAT;
   }
 }
 
@@ -204,4 +172,36 @@ fn init_pll(pll: &PLL0, source: ClockSource) {
   reg::PLL0CON.set_value(3);
   write_pll0_changes();
   wait_for_pll0stat_bit(25);
+}
+
+mod reg {
+  use lib::volatile_cell::VolatileCell;
+
+  ioreg!(SCS: value)
+  reg_rw!(SCS, value, set_value, value)
+  ioreg!(FLASHCFG: value)
+  reg_w!(FLASHCFG, set_value, value)
+  ioreg!(PLL0CFG: value)
+  reg_w!(PLL0CFG, set_value, value)
+  ioreg!(PLL0CON: value)
+  reg_w!(PLL0CON, set_value, value)
+  ioreg!(PLL0FEED: value)
+  reg_w!(PLL0FEED, set_value, value)
+  ioreg!(PLL0STAT: value)
+  reg_r!(PLL0STAT, value, value)
+  ioreg!(CCLKCFG: value)
+  reg_w!(CCLKCFG, set_value, value)
+  ioreg!(CLKSRCSEL: value)
+  reg_w!(CLKSRCSEL, set_value, value)
+
+  extern {
+    #[link_name="iomem_SCS"] pub static SCS: SCS;
+    #[link_name="iomem_FLASHCFG"] pub static FLASHCFG: FLASHCFG;
+    #[link_name="iomem_PLL0CFG"] pub static PLL0CFG: PLL0CFG;
+    #[link_name="iomem_PLL0CON"] pub static PLL0CON: PLL0CON;
+    #[link_name="iomem_CCLKCFG"] pub static CCLKCFG: CCLKCFG;
+    #[link_name="iomem_PLL0FEED"] pub static PLL0FEED: PLL0FEED;
+    #[link_name="iomem_CLKSRCSEL"] pub static CLKSRCSEL: CLKSRCSEL;
+    #[link_name="iomem_PLL0STAT"] pub static PLL0STAT: PLL0STAT;
+  }
 }

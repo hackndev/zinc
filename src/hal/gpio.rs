@@ -13,6 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+GPIO interface.
+
+GPIOConf is a MCU-specific struct, that requires a `PinConf` for a pin
+and a direction.
+
+It is currently not possible to change GPIO direction after `setup()`.
+*/
+
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::gpio::GPIOConf;
 #[cfg(mcu_stm32f4)] pub use hal::stm32f4::gpio::GPIOConf;
 

@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! A simple integer-to-string conversion code with statically sized buffers.
+
 use core::*;
 
 pub fn itoa(val: u32, buf : &mut [u8], base: u32) {

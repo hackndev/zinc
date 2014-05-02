@@ -13,9 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Peripheral clock management routines.
-//!
-//! This module should be considered private until further notice.
+/*!
+Peripheral clock management.
+
+This module should be considered private until further notice.
+*/
 
 use core::fail::abort;
 use super::init::system_clock;
@@ -93,22 +95,6 @@ pub enum PeripheralDivisor {
   RITDivisor     = 58,
   SYSCONDivisor  = 60,
   MCDivisor      = 62,
-}
-
-mod reg {
-  use lib::volatile_cell::VolatileCell;
-
-  ioreg!(PCONP: value)
-  reg_rw!(PCONP, value, set_value, value)
-
-  ioreg!(PCLKSEL: value)
-  reg_rw!(PCLKSEL, value, set_value, value)
-
-  extern {
-    #[link_name="iomem_PCONP"] pub static PCONP: PCONP;
-    #[link_name="iomem_PCLKSEL0"] pub static PCLKSEL0: PCLKSEL;
-    #[link_name="iomem_PCLKSEL1"] pub static PCLKSEL1: PCLKSEL;
-  }
 }
 
 impl PeripheralClock {
@@ -219,5 +205,21 @@ impl PeripheralClock {
       I2SDivisor|RITDivisor|SYSCONDivisor|
       MCDivisor => (&reg::PCLKSEL1, self as u32 - 32),
     }
+  }
+}
+
+mod reg {
+  use lib::volatile_cell::VolatileCell;
+
+  ioreg!(PCONP: value)
+  reg_rw!(PCONP, value, set_value, value)
+
+  ioreg!(PCLKSEL: value)
+  reg_rw!(PCLKSEL, value, set_value, value)
+
+  extern {
+    #[link_name="iomem_PCONP"] pub static PCONP: PCONP;
+    #[link_name="iomem_PCLKSEL0"] pub static PCLKSEL0: PCLKSEL;
+    #[link_name="iomem_PCLKSEL1"] pub static PCLKSEL1: PCLKSEL;
   }
 }

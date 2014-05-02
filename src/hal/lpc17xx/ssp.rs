@@ -14,9 +14,9 @@
 // limitations under the License.
 
 /*!
-SSP configuration for NXP LPC17xx.
+SSP configuration.
 
-Currently supports only SPI mode. Note that SPI is not the same peripheral, and
+Currently supports only SPI mode. Note that `SPI` is not the same peripheral and
 it's currently not supported at all.
 */
 
@@ -28,27 +28,6 @@ use hal::spi;
 use core::fail::abort;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
-
-mod reg {
-  use lib::volatile_cell::VolatileCell;
-
-  ioreg!(SSP: CR0, CR1, DR, SR, CPSR, IMSC, RIS, MIS, ICR, DMACR)
-  reg_rw!(SSP, CR0,   set_CR0,   CR0)
-  reg_rw!(SSP, CR1,   set_CR1,   CR1)
-  reg_rw!(SSP, DR,    set_DR,    DR)
-  reg_r!( SSP, SR,               SR)
-  reg_rw!(SSP, CPSR,  set_CPSR,  CPSR)
-  reg_rw!(SSP, IMSC,  set_IMSC,  IMSC)
-  reg_rw!(SSP, RIS,   set_RIS,   RIS)
-  reg_rw!(SSP, MIS,   set_MIS,   MIS)
-  reg_rw!(SSP, ICR,   set_ICR,   ICR)
-  reg_rw!(SSP, DMACR, set_DMACR, DMACR)
-
-  extern {
-    #[link_name="iomem_SSP0"] pub static SSP0: SSP;
-    #[link_name="iomem_SSP1"] pub static SSP1: SSP;
-  }
-}
 
 /// SPI configuration.
 ///
@@ -96,6 +75,7 @@ impl SPIConf {
   }
 }
 
+/// Opaque object that manages the configured peripheral.
 pub struct SSP {
   peripheral: SSPPeripheral,
   reg: &'static reg::SSP,
@@ -121,7 +101,7 @@ impl SSPPeripheral {
 
 impl SSP {
   #[allow(uppercase_variables)]
-  pub fn set_format(&self, bits: u8, mode: u8) {
+  fn set_format(&self, bits: u8, mode: u8) {
     let slave = false;
 
     self.disable();
@@ -159,7 +139,7 @@ impl SSP {
     self.enable();
   }
 
-  pub fn set_frequency(&self, freq: u32) {
+  fn set_frequency(&self, freq: u32) {
     self.disable();
 
     let mut prescaler: u32 = 2;
@@ -188,31 +168,31 @@ impl SSP {
     abort();
   }
 
-  pub fn disable(&self) {
+  fn disable(&self) {
     let old_reg: u32 = self.reg.CR1();
     let new_reg: u32 = old_reg & 0b1101;
     self.reg.set_CR1(new_reg);
   }
 
-  pub fn enable(&self) {
+  fn enable(&self) {
     let old_reg: u32 = self.reg.CR1();
     let new_reg: u32 = old_reg | 0b0010;
     self.reg.set_CR1(new_reg);
   }
 
-  pub fn readable(&self) -> bool {
+  fn readable(&self) -> bool {
     let val: u32 = self.reg.SR();
 
     (val & 0b00100) == 0b00100
   }
 
-  pub fn writeable(&self) -> bool {
+  fn writeable(&self) -> bool {
     let val: u32 = self.reg.SR();
 
     (val & 0b00010) == 0b00010
   }
 
-  pub fn written(&self) -> bool {
+  fn written(&self) -> bool {
     let val: u32 = self.reg.SR();
 
     (val & 0b10000) == 0
@@ -239,5 +219,26 @@ impl spi::SPI for SSP {
       }
     }
     (self.reg.DR() & 0xff) as u8
+  }
+}
+
+mod reg {
+  use lib::volatile_cell::VolatileCell;
+
+  ioreg!(SSP: CR0, CR1, DR, SR, CPSR, IMSC, RIS, MIS, ICR, DMACR)
+  reg_rw!(SSP, CR0,   set_CR0,   CR0)
+  reg_rw!(SSP, CR1,   set_CR1,   CR1)
+  reg_rw!(SSP, DR,    set_DR,    DR)
+  reg_r!( SSP, SR,               SR)
+  reg_rw!(SSP, CPSR,  set_CPSR,  CPSR)
+  reg_rw!(SSP, IMSC,  set_IMSC,  IMSC)
+  reg_rw!(SSP, RIS,   set_RIS,   RIS)
+  reg_rw!(SSP, MIS,   set_MIS,   MIS)
+  reg_rw!(SSP, ICR,   set_ICR,   ICR)
+  reg_rw!(SSP, DMACR, set_DMACR, DMACR)
+
+  extern {
+    #[link_name="iomem_SSP0"] pub static SSP0: SSP;
+    #[link_name="iomem_SSP1"] pub static SSP1: SSP;
   }
 }

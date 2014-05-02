@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! A cell that with volatile setter and getter.
+
 use core::{volatile_load, volatile_store};
 use core::kinds::marker;
 use core::mem::transmute_mut;

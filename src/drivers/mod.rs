@@ -13,5 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Drivers for peripherals commonly found outside MCUs.
+
 #[cfg(cfg_tft_lcd)] pub mod lcd;
 pub mod chario;

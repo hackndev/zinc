@@ -29,6 +29,9 @@ static SizeOfUART: uint = 64;
 
 static mut uart_buf: [u8, ..SizeOfUART] = [0, ..SizeOfUART];
 
+/// Initializes debug port with uart configuration.
+///
+/// This function must be called before any debug port use.
 pub fn setup(conf: &UARTConf) {
   if SizeOfUART < unsafe { size_of::<UART>() } {
     abort();
@@ -43,6 +46,7 @@ pub fn setup(conf: &UARTConf) {
   }
 }
 
+/// Returns a CharIO corresponding to current debug port.
 pub fn io() -> &CharIO {
   let uart: &UART = unsafe { transmute(&uart_buf) };
 

@@ -14,13 +14,11 @@
 // limitations under the License.
 
 /*!
-HAL provides abstactions over different peripherals found in MCUs (vs drivers,
-that provide support for hardware outside of MCU).
+HAL provides abstactions for specific MCU hardware.
 
-HAL is mostly implemented as `pub use` for the relevant modules in MCU-specific
-directories. Each peripheral has a Conf struct, that can be defined statucally,
-and each such struct has a `setup()` method that configures the hardware,
-returning the object to interact with it where applicable.
+Each peripheral in `hal` has a `xxxConf` struct that can be defined statically,
+and each such struct has a `setup()` method that configures the hardware
+(returning the object to interact with it where applicable).
 */
 
 mod mem_init;
@@ -30,10 +28,10 @@ mod mem_init;
 
 #[cfg(arch_cortex_m3)] pub mod cortex_m3;
 
-pub mod pin;
 pub mod gpio;
 pub mod init;
-pub mod timer;
-pub mod uart;
+pub mod pin;
 pub mod spi;
 pub mod stack;
+pub mod timer;
+pub mod uart;

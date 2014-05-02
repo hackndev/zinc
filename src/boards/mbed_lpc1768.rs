@@ -14,7 +14,7 @@
 // limitations under the License.
 
 /*!
-Default configuration for mbed board: http://mbed.org/platforms/mbed-LPC1768/
+Default configuration for mbed board: http://mbed.org/platforms/mbed-LPC1768
 
 This configuraiton is clocked at 100MHz with Timer1 calibrated for 1us ticks.
 It also provides GPIOConfs for all four leds found on the board.
@@ -34,7 +34,6 @@ pub static configuration: SysConf = SysConf {
       divisor: 4,
     }
   },
-  enable_timer: true,
 };
 
 pub static led1: GPIOConf = GPIOConf {

@@ -13,6 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+Driver for C12332 LCD.
+
+C12332 is black&white LCD, the only supported color value is `1`. The LCD is
+buffered in driver memory.
+
+The driver uses SPI bus for output only, it never reads back from SPI, which
+might be an issue for any other peripheral sharing the same SPI bus.
+*/
+
 use core::*;
 use core::cell;
 

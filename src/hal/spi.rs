@@ -13,6 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+SPI interface.
+
+SPIConf is a MCU-specific struct.
+
+As SPI performs read and write as one operation, special care should be taken if
+`write()` and `read()` methods are used with several devices on one SPI
+peripheral. The best way is to always use `transfer()`.
+*/
+
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::ssp::SPIConf;
 
 /// SPI trait.

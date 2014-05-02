@@ -13,27 +13,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Drivers for TFT LCDs.
+
 use drivers::chario::CharIO;
 
 #[cfg(cfg_mcu_has_spi)] pub mod c12332;
 #[cfg(cfg_mcu_has_spi, FIXME_BROKEN)] pub mod ili9341;
 pub mod font_small_7;
 
+/// LCD provides a generic interface to a TFT LCD peripheral.
+///
+/// It provides generic methods for drawing primitives and bitmaps based on
+/// `pixel` to set a pixel.
+///
+/// LCD does not flush buffers automatically, user must call `flush` after the
+/// drwaing sequence to actually display the data on screen.
 pub trait LCD : CharIO {
+  /// Clears the screen.
   fn clear(&self);
+
+  /// Flushes the internal buffer to screen, where applicable.
   fn flush(&self);
+
+  /// Sets one pixel color. The actual color bits are driver-specific.
   fn pixel(&self, x: i32, y: i32, color: u16);
-  #[allow(dead_assignment)]
+
+  /// Draws a line from xy0 to xy1.
   fn line(&self, x0_b: i32, y0_b: i32, x1: i32, y1: i32, color: u16) {
     let mut x0: i32 = x0_b;
     let mut y0: i32 = y0_b;
-    let mut dx: i32 = 0;
-    let mut dy: i32 = 0;
-    let mut dx_sym: i32 = 0;
-    let mut dy_sym: i32 = 0;
-    let mut dx_x2: i32 = 0;
-    let mut dy_x2: i32 = 0;
-    let mut di = 0;
+    let mut dx: i32;
+    let mut dy: i32;
+    let mut dx_sym: i32;
+    let mut dy_sym: i32;
+    let mut dx_x2: i32;
+    let mut dy_x2: i32;
+    let mut di: i32;
 
     dx = x1-x0;
     dy = y1-y0;
@@ -85,6 +100,7 @@ pub trait LCD : CharIO {
     }
   }
 
+  /// Draws a rectangle.
   fn rect(&self, x0: i32, y0: i32, x1: i32, y1: i32, color: u16) {
     if x1 > x0 {
       self.line(x0,y0,x1,y0,color);
@@ -111,6 +127,7 @@ pub trait LCD : CharIO {
     }
   }
 
+  /// Draws a filled rectangle.
   fn fillrect(&self, x0_b: i32, y0_b: i32, x1_b: i32, y1_b: i32, color: u16) {
     let mut l: i32;
     let mut c: i32;
@@ -142,7 +159,8 @@ pub trait LCD : CharIO {
     }
   }
 
-  fn draw_image(&self, width: u32, height: u32, data: &[u16]) {
+  /// Draws an image from a buffer.
+  fn image(&self, width: u32, height: u32, data: &[u16]) {
     let mut x: u32 = 0;
     let mut y: u32;
 
@@ -155,11 +173,4 @@ pub trait LCD : CharIO {
       x += 1;
     }
   }
-}
-
-#[allow(dead_code)]
-enum Colors {
-  ColorRed = 0xf800u16,
-  ColorGreen = 0x07e0u16,
-  ColorBlue = 0x001fu16,
 }

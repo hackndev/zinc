@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Generic char output trait.
+
 use lib::strconv;
 use core::str;
 use core::init;
@@ -21,9 +23,15 @@ use core::iter::Iterator;
 use core::slice::iter;
 use core::container::Container;
 
+/// CharIO provides interface for outputting characters.
+///
+/// This trait implements the common functions to output strings and numbers,
+/// requiring only one method: `putc`.
 pub trait CharIO {
+  /// Outputs a character.
   fn putc(&self, value: char);
 
+  /// Outputs a string.
   fn puts(&self, s: &str) {
     let chars : &[u8] = str::as_bytes(s);
     let mut i = 0;
@@ -34,6 +42,7 @@ pub trait CharIO {
     }
   }
 
+  /// Outputs an integer with given base.
   fn putint(&self, i: u32, base: u32) {
     let mut buf : [u8, ..32] = unsafe { init() };
     let bsl : &mut [u8] = buf;
@@ -47,10 +56,12 @@ pub trait CharIO {
     }
   }
 
+  /// Outputs an integer.
   fn puti(&self, i: u32) {
     self.putint(i, 10);
   }
 
+  /// Outputs an integer as a hex string.
   fn puth(&self, i: u32) {
     self.putint(i, 16);
   }

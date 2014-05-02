@@ -25,7 +25,6 @@ static platform: Platform = Platform {
         divisor: 4,
       }
     },
-    enable_timer: true,
   }
 };
 

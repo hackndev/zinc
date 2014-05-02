@@ -17,8 +17,16 @@
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
+/// A constant that requests to use hardware calibration value.
 pub static CALIBRATED: u32 = 0xffffffff;
 
+/// Initializes systick timer.
+///
+/// Arguments:
+///
+///  * calibration: Timer reload value, or `CALIBRATED` to use the device 10ms
+///                 calibrated value.
+///  * enable_irq: true, if IRQ should be initially enabled.
 pub fn setup(calibration: u32, enable_irq: bool) {
   reg::SYSTICK.set_CONTROL(0b100);  // disabled, no interrupt
   let reload_val: u32 = match calibration {
@@ -32,14 +40,17 @@ pub fn setup(calibration: u32, enable_irq: bool) {
   }
 }
 
+/// Enables the timer.
 pub fn enable() {
   reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() | 1);
 }
 
+/// Enables interrupts generation for timer.
 pub fn enable_irq() {
   reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() | 0b010);
 }
 
+/// Disables interrupts generation for timer, which is still ticking.
 pub fn disable_irq() {
   reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() & !0b010);
 }

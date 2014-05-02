@@ -13,34 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Pin configuration for NXP LPC17xx.
-//!
-//! Some pins that could be configured here may be missing from actual MCU
-//! depending on the package.
+/*!
+Pin configuration.
+
+Some pins that could be configured here may be missing from actual MCU depending
+on the package.
+*/
 
 use core::fail;
 
 #[path="pinmap.rs"] pub mod map;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
-
-mod reg {
-  use lib::volatile_cell::VolatileCell;
-
-  ioreg!(PINSEL: value)
-  reg_rw!(PINSEL, value, set_value, value)
-
-  extern {
-    #[link_name="iomem_PINSEL0"]  pub static PINSEL0:  PINSEL;
-    #[link_name="iomem_PINSEL1"]  pub static PINSEL1:  PINSEL;
-    #[link_name="iomem_PINSEL2"]  pub static PINSEL2:  PINSEL;
-    #[link_name="iomem_PINSEL3"]  pub static PINSEL3:  PINSEL;
-    #[link_name="iomem_PINSEL4"]  pub static PINSEL4:  PINSEL;
-    #[link_name="iomem_PINSEL7"]  pub static PINSEL7:  PINSEL;
-    #[link_name="iomem_PINSEL9"]  pub static PINSEL9:  PINSEL;
-    #[link_name="iomem_PINSEL10"] pub static PINSEL10: PINSEL;
-  }
-}
 
 /// Pin configuration.
 ///
@@ -122,4 +106,22 @@ impl PinConf {
 pub fn set_trace_port_interface_enabled(enabled: bool) {
   let value: u32 = if enabled { 0b1000 } else { 0 };
   reg::PINSEL10.set_value(value);
+}
+
+mod reg {
+  use lib::volatile_cell::VolatileCell;
+
+  ioreg!(PINSEL: value)
+  reg_rw!(PINSEL, value, set_value, value)
+
+  extern {
+    #[link_name="iomem_PINSEL0"]  pub static PINSEL0:  PINSEL;
+    #[link_name="iomem_PINSEL1"]  pub static PINSEL1:  PINSEL;
+    #[link_name="iomem_PINSEL2"]  pub static PINSEL2:  PINSEL;
+    #[link_name="iomem_PINSEL3"]  pub static PINSEL3:  PINSEL;
+    #[link_name="iomem_PINSEL4"]  pub static PINSEL4:  PINSEL;
+    #[link_name="iomem_PINSEL7"]  pub static PINSEL7:  PINSEL;
+    #[link_name="iomem_PINSEL9"]  pub static PINSEL9:  PINSEL;
+    #[link_name="iomem_PINSEL10"] pub static PINSEL10: PINSEL;
+  }
 }

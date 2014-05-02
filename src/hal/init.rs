@@ -13,5 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+System initialization interface.
+
+SysConf is a MCU-specific struct, that performs initial MCU configuration,
+including but not limited to `.bss`, `.data` and stack memory initialization,
+system clock configuration and any other boot sequences.
+*/
+
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::init::SysConf;
 #[cfg(mcu_stm32f4)] pub use hal::stm32f4::init::SysConf;

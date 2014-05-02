@@ -14,7 +14,8 @@
 // limitations under the License.
 
 /*!
-Default configuration for STM32F4Discovery board
+Default configuration for STM32F4Discovery board:
+http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/PF252419
 
 This configuraiton is clocked at 168MHz with Timer1 calibrated for 1us ticks.
 It also provides GPIOConfs for all four leds found on the board.
