@@ -16,6 +16,7 @@
 //! Cortex-M3 specific support code for scheduler.
 
 use os::task::Task;
+use std::ops::Drop;
 use super::scb;
 
 /// Force context switch. Triggers PendSV interrupt.
@@ -81,23 +82,35 @@ unsafe fn task_finished() {
 }
 
 /// Phantom type to indicate that interrupts are disabled
-pub struct IrqDisabled;
+pub struct CritSection;
+
+impl CritSection {
+  pub fn new() -> CritSection {
+    disable_irqs();
+    CritSection
+  }
+}
+
+impl Drop for CritSection {
+  fn drop(&mut self) {
+    enable_irqs();
+  }
+}
 
 static mut irq_level : uint = 0;
 
 #[inline(always)]
-pub fn disable_irqs() -> IrqDisabled {
+pub fn disable_irqs() {
   unsafe {
     if irq_level == 0 {
       asm!("cpsid i" :::: "volatile");
     }
     irq_level += 1;
   }
-  IrqDisabled
 }
 
 #[inline(always)]
-pub fn enable_irqs(_: IrqDisabled) {
+pub fn enable_irqs() {
   unsafe {
     irq_level -= 1;
     if irq_level == 0 {

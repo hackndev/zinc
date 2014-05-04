@@ -1,7 +1,7 @@
 // Rough structure taken from libsync's mpcs_intrusive
 // all links are uint to allow for static initialization
 
-use hal::cortex_m3::sched::IrqDisabled;
+use hal::cortex_m3::sched::CritSection;
 use std::cell::Cell;
 use std::option::{Option,Some,None};
 
@@ -26,7 +26,7 @@ impl<T> Queue<T> {
     }
 
     /// Push to head
-    pub unsafe fn push(&self, node: *mut Node<T>, _: IrqDisabled) {
+    pub unsafe fn push(&self, node: *mut Node<T>, _: &CritSection) {
         if self.head.get() == (0 as *mut Node<T>) {
             self.tail.set(node);
         }
@@ -45,7 +45,7 @@ impl<T> Queue<T> {
     }
 
     /// Pop off of tail
-    pub unsafe fn pop(&self, _: IrqDisabled) -> Option<*mut Node<T>> {
+    pub unsafe fn pop(&self, _: &CritSection) -> Option<*mut Node<T>> {
         let a = self.tail.get();
         if a == null_mut() {
             None
