@@ -79,3 +79,21 @@ impl SavedState {
 unsafe fn task_finished() {
   asm!("bkpt" :::: "volatile");
 }
+
+/// Phantom type to indicate that interrupts are disabled
+pub struct IrqDisabled;
+
+#[inline(always)]
+pub fn disable_irqs() -> IrqDisabled {
+  unsafe {
+    asm!("cpsid i" :::: "volatile");
+  }
+  IrqDisabled
+}
+
+#[inline(always)]
+pub fn enable_irqs(_: IrqDisabled) {
+  unsafe {
+    asm!("cpsie i" :::: "volatile");
+  }
+}
