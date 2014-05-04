@@ -34,6 +34,7 @@ impl<T> Queue<T> {
         self.head.set(node);
     }
 
+    /// Peek at tail
     pub unsafe fn peek(&self) -> Option<*mut Node<T>> {
         let a = self.tail.get();
         if a == null_mut() {
