@@ -1,5 +1,4 @@
-iomem_SYSTICK   = 0xE000E010;
-
+INCLUDE ./src/hal/cortex_m3/armmem.ld
 
 iomem_GPIO0     = 0x2009C000;
 iomem_GPIO1     = 0x2009C020;

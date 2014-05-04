@@ -13,47 +13,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Interface to SysTick timer.
+//! Interface to SYSTICK timer.
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 pub static CALIBRATED: u32 = 0xffffffff;
 
 pub fn setup(calibration: u32, enable_irq: bool) {
-  reg::SysTick.set_control(0b100);  // disabled, no interrupt
+  reg::SYSTICK.set_CONTROL(0b100);  // disabled, no interrupt
   let reload_val: u32 = match calibration {
-    CALIBRATED => reg::SysTick.calibration() & 0xffffff,
+    CALIBRATED => reg::SYSTICK.CALIBRATION() & 0xffffff,
     val => val,
   };
-  reg::SysTick.set_reload(reload_val);
-  reg::SysTick.set_current(0);
+  reg::SYSTICK.set_RELOAD(reload_val);
+  reg::SYSTICK.set_CURRENT(0);
   if enable_irq {
-    reg::SysTick.set_control(0b110);
+    reg::SYSTICK.set_CONTROL(0b110);
   }
 }
 
 pub fn enable() {
-  reg::SysTick.set_control(reg::SysTick.control() | 1);
+  reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() | 1);
 }
 
 pub fn enable_irq() {
-  reg::SysTick.set_control(reg::SysTick.control() | 0b010);
+  reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() | 0b010);
 }
 
 pub fn disable_irq() {
-  reg::SysTick.set_control(reg::SysTick.control() & !0b010);
+  reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() & !0b010);
 }
 
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(SysTickReg: control, reload, current, calibration)
-  reg_rw!(SysTickReg, control,     set_control, control)
-  reg_rw!(SysTickReg, reload,      set_reload,  reload)
-  reg_rw!(SysTickReg, current,     set_current, current)
-  reg_r!( SysTickReg, calibration,              calibration)
+  ioreg!(SYSTICKReg: CONTROL, RELOAD, CURRENT, CALIBRATION)
+  reg_rw!(SYSTICKReg, CONTROL,     set_CONTROL, CONTROL)
+  reg_rw!(SYSTICKReg, RELOAD,      set_RELOAD,  RELOAD)
+  reg_rw!(SYSTICKReg, CURRENT,     set_CURRENT, CURRENT)
+  reg_r!( SYSTICKReg, CALIBRATION,              CALIBRATION)
 
   extern {
-    #[link_name="iomem_SYSTICK"] pub static SysTick: SysTickReg;
+    #[link_name="armmem_SYSTICK"] pub static SYSTICK: SYSTICKReg;
   }
 }
