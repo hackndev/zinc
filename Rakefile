@@ -37,17 +37,23 @@ ldflags = %w[]
 
 Context.prepare!(rsflags, ldflags, platforms, architectures, features)
 
-# rust-core crate
-compile_rust :rust_core, {
-  source:  'rust-core/core/lib.rs'.in_root,
-  produce: 'rust-core/core/lib.rs'.in_root.as_rlib.in_build,
+compile_rust :libc_crate, {
+  source:  'liblibc/lib.rs'.in_root,
+  produce: 'liblibc/lib.rs'.in_root.as_rlib.in_build,
+  out_dir: true,
+}
+
+compile_rust :std_crate, {
+  source:  'libstd/lib.rs'.in_root,
+  deps:    :libc_crate,
+  produce: 'libstd/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
 }
 
 # zinc crate
 compile_rust :zinc_crate, {
   source:  'main.rs'.in_source,
-  deps:    :rust_core,
+  deps:    :std_crate,
   produce: 'main.rs'.in_source.as_rlib.in_build,
   out_dir: true,
 }
@@ -63,7 +69,7 @@ compile_rust :zinc_support, {
 # zinc isr crate
 compile_rust :zinc_isr, {
   source:  'hal/isr.rs'.in_source,
-  deps:    :rust_core,
+  deps:    :std_crate,
   produce: 'isr.o'.in_intermediate,
 }
 
@@ -96,7 +102,7 @@ compile_rust :app_crate, {
 compile_rust :app, {
   source: 'lib/app.rs'.in_source,
   deps: [
-    :rust_core,
+    :std_crate,
     :zinc_crate,
     :app_crate,
   ],
