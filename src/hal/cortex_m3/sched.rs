@@ -83,10 +83,15 @@ unsafe fn task_finished() {
 /// Phantom type to indicate that interrupts are disabled
 pub struct IrqDisabled;
 
+static mut irq_level : uint = 0;
+
 #[inline(always)]
 pub fn disable_irqs() -> IrqDisabled {
   unsafe {
-    asm!("cpsid i" :::: "volatile");
+    if irq_level == 0 {
+      asm!("cpsid i" :::: "volatile");
+    }
+    irq_level += 1;
   }
   IrqDisabled
 }
@@ -94,6 +99,9 @@ pub fn disable_irqs() -> IrqDisabled {
 #[inline(always)]
 pub fn enable_irqs(_: IrqDisabled) {
   unsafe {
-    asm!("cpsie i" :::: "volatile");
+    irq_level -= 1;
+    if irq_level == 0 {
+      asm!("cpsie i" :::: "volatile");
+    }
   }
 }
