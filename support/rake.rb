@@ -72,11 +72,16 @@ module Context
       "--cfg cfg_#{c}"
     end
 
-    rsflags.push("--target #{arch[:target]}",
-        "-Ctarget-cpu=#{arch[:cpu]}",
-        "--cfg #{platform[:config]}",
-        "--cfg arch_#{platform[:arch]}",
-        *feature_flags)
+    unless FORCE_NATIVE_BUILD
+      rsflags.push(
+        "--target #{arch[:target]}",
+        "-Ctarget-cpu=#{arch[:cpu]}"
+      )
+    end
+    rsflags.push(
+      "--cfg #{platform[:config]}",
+      "--cfg arch_#{platform[:arch]}",
+      *feature_flags)
     ldflags.push("-L#{File.join(TOOLCHAIN_LIBS_PATH, arch[:arch])}")
 
     if ENV['DEBUG']
@@ -87,7 +92,10 @@ module Context
 
     ENV['RSFLAGS'] = rsflags.join(' ')
     ENV['LDFLAGS'] = ldflags.join(' ')
-    ENV['CFLAGS'] = ["-mthumb -mcpu=#{arch[:cpu]}"].join(' ')
+
+    unless FORCE_NATIVE_BUILD
+      ENV['CFLAGS'] = ["-mthumb -mcpu=#{arch[:cpu]}"].join(' ')
+    end
 
     @app_name = ENV['APP'] or ArgumentError.new("Undefined application")
     app_path = root_dir('apps', @app_name + '.rs') or ArgumentError.new("Application #{@app_name} not found in apps")
