@@ -20,9 +20,10 @@ This code doesn't support UART1, while it really should (UART1 has more features
 than other UARTs in MCU).
 */
 
+use std::intrinsics::abort;
+
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, UART0Clock, UART2Clock, UART3Clock};
 use drivers::chario::CharIO;
-use core::fail::abort;
 use hal::uart;
 use hal::pin::PinConf;
 
@@ -77,7 +78,7 @@ impl WordLen {
       6 => WordLen6bits,
       7 => WordLen7bits,
       8 => WordLen8bits,
-      _ => abort(),
+      _ => unsafe { abort() },
     }
   }
 }
@@ -93,7 +94,7 @@ impl StopBit {
     match val {
       1 => StopBit1bit,
       2 => StopBit2bits,
-      _ => abort(),
+      _ => unsafe { abort() },
     }
   }
 }

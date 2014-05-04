@@ -43,7 +43,7 @@ The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
 */
 
-extern crate core;
+extern crate std;
 
 pub mod hal;
 pub mod drivers;

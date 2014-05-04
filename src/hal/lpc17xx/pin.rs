@@ -20,7 +20,7 @@ Some pins that could be configured here may be missing from actual MCU depending
 on the package.
 */
 
-use core::fail;
+use std::intrinsics::abort;
 
 #[path="pinmap.rs"] pub mod map;
 
@@ -77,24 +77,24 @@ impl PinConf {
       Port0 => match self.pin {
         0..15  => (self.pin,    &reg::PINSEL0),
         16..30 => (self.pin-16, &reg::PINSEL1),
-        _      => fail::abort(),
+        _      => unsafe { abort() },
       },
       Port1 => match self.pin {
         0..15  => (self.pin,    &reg::PINSEL2),
         16..31 => (self.pin-16, &reg::PINSEL3),
-        _      => fail::abort(),
+        _      => unsafe { abort() },
       },
       Port2 => match self.pin {
         0..13  => (self.pin,    &reg::PINSEL4),
-        _      => fail::abort(),
+        _      => unsafe { abort() },
       },
       Port3 => match self.pin {
         25|26 => (self.pin-16,  &reg::PINSEL7),
-        _     => fail::abort(),
+        _     => unsafe { abort() },
       },
       Port4 => match self.pin {
         28|29 => (self.pin-16,  &reg::PINSEL9),
-        _     => fail::abort(),
+        _     => unsafe { abort() },
       },
     }
   }

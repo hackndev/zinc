@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use core::option::*;
+use std::option::{Option, Some, None};
 
 extern {
   fn __STACK_BASE();

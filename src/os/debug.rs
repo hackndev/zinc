@@ -15,10 +15,12 @@
 
 //! debug::port provides interface to output structured data over serial port.
 
+use std::mem::size_of;
+use std::cast::transmute;
+use std::intrinsics::abort;
+
 use drivers::chario::CharIO;
 use hal::uart::{UART, UARTConf};
-use core::{size_of, transmute};
-use core::fail::abort;
 
 extern {
   fn memcpy(dest: *mut u8, src: *u8, n: int);
@@ -33,8 +35,8 @@ static mut uart_buf: [u8, ..SizeOfUART] = [0, ..SizeOfUART];
 ///
 /// This function must be called before any debug port use.
 pub fn setup(conf: &UARTConf) {
-  if SizeOfUART < unsafe { size_of::<UART>() } {
-    abort();
+  if SizeOfUART < size_of::<UART>() {
+    unsafe { abort() };
   }
 
   let uart: UART = conf.setup();

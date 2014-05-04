@@ -23,8 +23,8 @@ The driver uses SPI bus for output only, it never reads back from SPI, which
 might be an issue for any other peripheral sharing the same SPI bus.
 */
 
-use core::*;
-use core::cell;
+use std::cell;
+use std::slice::ImmutableVector;
 
 use super::font_small_7;
 use super::LCD;
@@ -164,7 +164,7 @@ impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
 
     let start: uint = ((c - 32) as uint * offset as uint) + 4;
     let end: uint = start + offset as uint;
-    zeichen = slice::slice(self.font, start, end);
+    zeichen = self.font.slice(start, end);
     // zeichen = &self.font[]; // start of char bitmap
     w = zeichen[0];                          // width of actual char
     // construct the char into the buffer

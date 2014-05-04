@@ -70,7 +70,7 @@ pub fn breakpoint() {
 
 #[no_split_stack]
 #[no_mangle]
-pub fn abort() {
+pub fn abort() -> ! {
   unsafe { asm!("bkpt") }
   loop {}
 }
@@ -85,6 +85,27 @@ pub fn __aeabi_unwind_cpp_pr0() {
 #[no_split_stack]
 #[no_mangle]
 pub fn __aeabi_unwind_cpp_pr1() {
+  unsafe { asm!("bkpt") }
+  loop {}
+}
+
+#[no_split_stack]
+#[no_mangle]
+pub fn get_eit_entry() {
+  unsafe { asm!("bkpt") }
+  loop {}
+}
+
+#[no_split_stack]
+#[no_mangle]
+pub fn unwind_phase2_forced() {
+  unsafe { asm!("bkpt") }
+  loop {}
+}
+
+#[no_split_stack]
+#[no_mangle]
+pub fn unwind_phase2() {
   unsafe { asm!("bkpt") }
   loop {}
 }

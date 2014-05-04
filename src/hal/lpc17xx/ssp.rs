@@ -20,12 +20,12 @@ Currently supports only SPI mode. Note that `SPI` is not the same peripheral and
 it's currently not supported at all.
 */
 
-use core::*;
+use std::intrinsics::abort;
+
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, SSP0Clock, SSP1Clock};
 use hal::lpc17xx::init::system_clock;
 use hal::pin::PinConf_;
 use hal::spi;
-use core::fail::abort;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
@@ -106,7 +106,7 @@ impl SSP {
 
     self.disable();
     if !(bits >= 4 && bits <= 16) || mode > 3 {
-      fail::abort();
+      unsafe { abort() };
     }
 
     let polarity = mode & 0x2 != 0;
@@ -165,7 +165,7 @@ impl SSP {
       }
       prescaler += 2;
     }
-    abort();
+    unsafe { abort() };
   }
 
   fn disable(&self) {

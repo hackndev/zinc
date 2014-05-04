@@ -15,13 +15,15 @@
 
 //! Generic char output trait.
 
+use std::option::{Some, None};
+use std::str::{Str, StrSlice};
+use std::slice::{Vector, ImmutableVector};
+use std::container::Container;
+use std::iter::Iterator;
+
+use std::mem::init;
+
 use lib::strconv;
-use core::str;
-use core::init;
-use core::option::{Some, None};
-use core::iter::Iterator;
-use core::slice::iter;
-use core::container::Container;
 
 /// CharIO provides interface for outputting characters.
 ///
@@ -33,7 +35,7 @@ pub trait CharIO {
 
   /// Outputs a string.
   fn puts(&self, s: &str) {
-    let chars : &[u8] = str::as_bytes(s);
+    let chars : &[u8] = s.as_slice().as_bytes();
     let mut i = 0;
     while i < s.len() {
       let c : char = chars[i] as char;
@@ -48,7 +50,7 @@ pub trait CharIO {
     let bsl : &mut [u8] = buf;
     strconv::itoa(i, bsl, base);
 
-    for &i in iter(bsl) {
+    for &i in bsl.iter() {
       if i == 0 {
         break;
       }

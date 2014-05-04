@@ -19,7 +19,8 @@ Peripheral clock management.
 This module should be considered private until further notice.
 */
 
-use core::fail::abort;
+use std::intrinsics::abort;
+
 use super::init::system_clock;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
@@ -129,7 +130,7 @@ impl PeripheralClock {
         CAN1Clock|CAN2Clock => 6,  // TODO(farcaller): wtf is CAN filter?
         _ => 8,
       },
-      _ => abort(),
+      _ => unsafe { abort() },
     }
   }
 
@@ -142,7 +143,7 @@ impl PeripheralClock {
       2   => 2,
       4   => 0,
       8|6 => 3,
-      _   => abort(),
+      _   => unsafe { abort() },
     };
 
     let bits: u32 = divisor_value as u32 << offset as u32;
@@ -156,9 +157,9 @@ impl PeripheralClock {
       1|2|4|8 => (),
       6 => match self {
         CAN1Clock|CAN2Clock => (),  // TODO(farcaller): wtf is CAN filter?
-        _ => abort(),
+        _ => unsafe { abort() },
       },
-      _ => abort(),
+      _ => unsafe { abort() },
     }
   }
 
@@ -171,12 +172,12 @@ impl PeripheralClock {
       PWM1Clock  => PWM1Divisor,
       I2C0Clock  => I2C0Divisor,
       SPIClock   => SPIDivisor,
-      RTCClock   => abort(),
+      RTCClock   => unsafe { abort() },
       SSP1Clock  => SSP1Divisor,
       ADCClock   => ADCDivisor,
       CAN1Clock  => CAN1Divisor,
       CAN2Clock  => CAN2Divisor,
-      GPIOClock  => abort(),
+      GPIOClock  => unsafe { abort() },
       RITClock   => RITDivisor,
       MCPWMClock => MCDivisor,
       QEIClock   => QEIDivisor,
@@ -188,9 +189,9 @@ impl PeripheralClock {
       UART3Clock => UART3Divisor,
       I2C2Clock  => I2C2Divisor,
       I2SClock   => I2SDivisor,
-      GPDMAClock => abort(),
-      ENETClock  => abort(),
-      USBClock   => abort(),
+      GPDMAClock => unsafe { abort() },
+      ENETClock  => unsafe { abort() },
+      USBClock   => unsafe { abort() },
     }
   }
 

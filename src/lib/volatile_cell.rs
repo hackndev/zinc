@@ -15,14 +15,13 @@
 
 //! A cell that with volatile setter and getter.
 
-use core::{volatile_load, volatile_store};
-use core::kinds::marker;
-use core::mem::transmute_mut;
+use std::kinds::marker;
+use std::intrinsics::{volatile_load, volatile_store};
+use std::cast::transmute_mut;
 
 pub struct VolatileCell<T> {
   value: T,
   invariant: marker::InvariantType<T>,
-  no_freeze: marker::NoFreeze,
 }
 
 impl<T> VolatileCell<T> {
@@ -30,7 +29,6 @@ impl<T> VolatileCell<T> {
     VolatileCell {
       value: value,
       invariant: marker::InvariantType::<T>,
-      no_freeze: marker::NoFreeze,
     }
   }
 

@@ -15,9 +15,10 @@
 
 //! Basic multitasking interface.
 
+use std::mem::size_of;
+use std::intrinsics::abort;
+
 use hal::cortex_m3::{sched, systick};
-use core::size_of;
-use core::fail::abort;
 use os::syscall::syscall;
 use hal::stack;
 
@@ -44,7 +45,7 @@ static ReservedPivilegedStackSize: u32 = 256;
 static MaxTasksCount: uint = 4;
 
 mod defined_tasks_count {
-  use core::fail::abort;
+  use std::intrinsics::abort;
 
   /// Total defined tasks count.
   static mut DefinedTasksCount: uint = 0;
@@ -125,7 +126,7 @@ pub fn setup(t: Task, stack_size: u32) {
   systick::enable();
   sched::switch_context();
 
-  abort();
+  unsafe { abort() };
 }
 
 #[inline(never)]
@@ -155,7 +156,7 @@ impl TaskDescriptor {
   pub fn new(t: Task, arg: u32, stack_base: u32, stack_size: u32, initial: bool) -> TaskDescriptor {
     let state = sched::SavedState::new(t, arg);
 
-    let mut stack_top: u32 = stack_base - unsafe { size_of::<sched::SavedState>() } as u32;
+    let mut stack_top: u32 = stack_base - size_of::<sched::SavedState>() as u32;
     unsafe { *(stack_top as *mut sched::SavedState) = state };
     if !initial {
       stack_top -= 8*4;
@@ -203,7 +204,7 @@ pub fn morestack() {
   if psp == sp {
     unsafe { syscall(kill_current_task, 0) };
   } else {
-    abort();
+    unsafe { abort() };
   }
 }
 
