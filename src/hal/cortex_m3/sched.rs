@@ -18,13 +18,12 @@
 
 use os::task::Task;
 
+mod scb;
+
 /// Force context switch. This triggers PendSV.
 #[inline(always)]
 pub fn switch_context() {
-  let icsr_addr: u32 = 0xE000ED04;
-  let icsr_reg: *mut u32 = icsr_addr as *mut u32;
-
-  unsafe { *icsr_reg = 1 << 28 };
+   scb::set_pendsv(true); 
 }
 
 /// Sets task stack pointer (PSP).
