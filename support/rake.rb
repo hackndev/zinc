@@ -161,7 +161,7 @@ module Rlib
     crate = File.basename(src, File.extname(src))
     version = '0.0'
 
-    id_regex = /#!\[crate_id.*=.*"([a-zA-Z0-9_]+)(#([a-zA-Z0-9_.]+))?"\]/
+    id_regex = /#!\[crate_id.*=.*"([a-zA-Z0-9_]+)(?:#([a-zA-Z0-9_.\-]+))?"\]/
     lines = open(src).read.split("\n")
     lines.each do |l|
       m = id_regex.match(l)
