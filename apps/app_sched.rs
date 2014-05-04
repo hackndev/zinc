@@ -4,7 +4,6 @@
 #![feature(globs, macro_rules, asm)]
 
 extern crate zinc;
-extern crate core;
 
 #[cfg(mcu_lpc17xx)] use zinc::boards::mbed_lpc1768;
 use zinc::hal::gpio::GPIOConf;
