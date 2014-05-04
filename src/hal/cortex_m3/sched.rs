@@ -16,8 +16,7 @@
 //! Cortex-M3 specific support code for scheduler.
 
 use os::task::Task;
-
-mod scb;
+use super::scb;
 
 /// Force context switch. Triggers PendSV interrupt.
 #[inline(always)]
