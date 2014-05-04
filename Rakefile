@@ -37,17 +37,20 @@ ldflags = %w[]
 
 Context.prepare!(rsflags, ldflags, platforms, architectures, features)
 
+provide_stdlibs
+
 compile_rust :libc_crate, {
-  source:  'liblibc/lib.rs'.in_root,
-  produce: 'liblibc/lib.rs'.in_root.as_rlib.in_build,
+  source:  'thirdparty/liblibc/lib.rs'.in_root,
+  produce: 'thirdparty/liblibc/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
 }
 
 compile_rust :std_crate, {
-  source:  'libstd/lib.rs'.in_root,
+  source:  'thirdparty/libstd/lib.rs'.in_root,
   deps:    :libc_crate,
-  produce: 'libstd/lib.rs'.in_root.as_rlib.in_build,
+  produce: 'thirdparty/libstd/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
+  ignore_warnings: ['unused_variable'],
 }
 
 # zinc crate

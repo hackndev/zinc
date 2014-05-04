@@ -262,6 +262,8 @@ def compile_rust(n, h)
   lto = true if lto == nil
   optimize = h[:optimize]
   crate_type = h[:crate_type] ? "--crate-type #{h[:crate_type]}" : ""
+  ignore_warnings = h[:ignore_warnings] ? h[:ignore_warnings] : []
+  ignore_warnings = ignore_warnings.map { |w| "-A #{w}" }.join(' ')
 
   declared_deps = h[:deps]
   rust_src = h[:source]
@@ -290,7 +292,7 @@ def compile_rust(n, h)
 
     sh "#{RUSTC} #{flags} " +
        "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} -L #{Context.build_dir} #{codegen} " +
-       "#{outflags} #{rust_src}"
+       "#{outflags} #{ignore_warnings} #{rust_src}"
   end
 end
 
@@ -328,4 +330,32 @@ def make_binary(n, h)
   Rake::FileTask.define_task(h[:produce] => h[:source]) do |t|
     sh "#{TOOLCHAIN}-objcopy #{t.prerequisites.first} #{t.name} -O binary"
   end
+end
+
+def provide_stdlibs
+  liblibc_src = 'thirdparty/liblibc/lib.rs'.in_root
+  libstd_src = 'thirdparty/libstd/lib.rs'.in_root
+
+  directory 'thirdparty'.in_root
+
+  Rake::FileTask.define_task 'thirdparty/rust' do |t|
+    sh "git clone --single-branch --depth 1 https://github.com/mozilla/rust #{t.name} && " +
+    "cd thirdparty/rust/src && patch -p1 -i ../../../support/rust.patch"
+  end
+
+  Rake::FileTask.define_task libstd_src => 'thirdparty/rust' do |t|
+    sh "ln -s rust/src/libstd thirdparty/libstd"
+  end.invoke
+
+  Rake::FileTask.define_task liblibc_src => 'thirdparty/rust' do |t|
+    sh "ln -s rust/src/liblibc thirdparty/liblibc"
+  end.invoke
+
+  Rake::FileTask.define_task 'librustrt.a'.in_build do |t|
+    sh "#{TOOLCHAIN}-ar cr #{t.name}"
+  end.invoke
+
+  Rake::FileTask.define_task 'libbacktrace.a'.in_build do |t|
+    sh "#{TOOLCHAIN}-ar cr #{t.name}"
+  end.invoke
 end
