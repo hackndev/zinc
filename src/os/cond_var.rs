@@ -10,14 +10,16 @@ pub struct CondVar {
 impl CondVar {
   /// Wait on a condition variable
   pub fn wait<'a>(&'a self) {
+    /*
+     * The signalling thread is responsible for removing the waiting
+     * thread which ensures that a signal wakes up exactly one thread
+     * whenever there is one waiting.
+     */
     unsafe {
       let crit = CritSection::new();
       let mut waiting = Node::new(Tasks.current_task() as *mut TaskDescriptor);
       self.waiting.push(&mut waiting, &crit);
       Tasks.current_task().block(crit);
-
-      let crit = CritSection::new();
-      self.waiting.pop(&crit);
     }
   }
 
