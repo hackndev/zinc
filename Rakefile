@@ -76,13 +76,6 @@ compile_rust :zinc_isr, {
   produce: 'isr.o'.in_intermediate,
 }
 
-# zinc isr weak symbols
-# TODO(farcaller): in_platform?
-compile_c :zinc_isr_weak, {
-  source:  'hal/cortex_m3/default_handlers.S'.in_source,
-  produce: 'isr_weak.o'.in_intermediate,
-}
-
 # zinc scheduler assembly
 # TODO(farcaller): make platform-specific
 if features.include?(:multitasking)
@@ -114,7 +107,7 @@ compile_rust :app, {
 
 link_binary :app_elf, {
   script: 'layout.ld'.in_platform,
-  deps: [:app, :zinc_isr, :zinc_support, :zinc_isr_weak] +
+  deps: [:app, :zinc_isr, :zinc_support] +
         (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
   produce: 'zinc.elf'.in_build,
 }

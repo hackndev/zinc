@@ -15,8 +15,10 @@
 
 use std::option::{Option, Some};
 
-extern {
-  fn isr_hang();
+#[no_mangle]
+#[no_split_stack]
+pub extern fn isr_hang() {
+    loop {}
 }
 
 static ISRCount: uint = 35;

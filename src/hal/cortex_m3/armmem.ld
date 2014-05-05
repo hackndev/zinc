@@ -14,6 +14,15 @@
 // limitations under the License.
 */
 
+PROVIDE(isr_nmi         = _default_system);
+PROVIDE(isr_hardfault   = _default_fault);
+PROVIDE(isr_mmfault     = _default_fault);
+PROVIDE(isr_busfault    = _default_fault);
+PROVIDE(isr_usagefault  = _default_fault);
+PROVIDE(isr_svcall      = _default_system);
+PROVIDE(isr_pendsv      = _default_system);
+PROVIDE(isr_systick     = _default_system);
+
 armmem_SYSTICK    = 0xE000E010;
 
 armmem_NVIC_ISER  = 0xE000E100;

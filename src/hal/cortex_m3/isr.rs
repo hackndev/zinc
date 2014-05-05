@@ -30,6 +30,24 @@ extern {
   fn isr_systick();
 }
 
+#[no_mangle]
+#[no_split_stack]
+pub extern fn _default_fault() {
+    unsafe {
+        asm!("mrs r0, psp
+             mrs r1, msp
+             ldr r2, [r0, 0x18]
+             ldr r3, [r1, 0x18]
+             bkpt")
+    }
+}
+
+#[no_mangle]
+#[no_split_stack]
+pub extern fn _default_system() {
+    unsafe { asm!("bkpt") }
+}
+
 static ISRCount: uint = 16;
 
 #[link_section=".isr_vector"]
