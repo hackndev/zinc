@@ -1,5 +1,3 @@
-#![feature(macro_rules)]
- 
 use hal::cortex_m3::sched::CritSection;
 use os::task::{TaskDescriptor, Tasks};
 use lib::queue::{Queue, Node};
