@@ -24,6 +24,39 @@ use hal::lpc17xx::init::{SysConf, Clock, Main, PLL0};
 use hal::gpio::{GPIOConf, Out};
 use hal::lpc17xx::pin::map;
 
+/*
+// TODO(farcaller): why can't I re-export those?
+pub use pin5  = hal::lpc17xx::pin::map::port0::pin9;
+pub use pin6  = hal::lpc17xx::pin::map::port0::pin8;
+pub use pin7  = hal::lpc17xx::pin::map::port0::pin7;
+pub use pin8  = hal::lpc17xx::pin::map::port0::pin6;
+pub use pin9  = hal::lpc17xx::pin::map::port0::pin0;
+pub use pin10 = hal::lpc17xx::pin::map::port0::pin1;
+pub use pin11 = hal::lpc17xx::pin::map::port0::pin18;
+pub use pin12 = hal::lpc17xx::pin::map::port0::pin17;
+pub use pin13 = hal::lpc17xx::pin::map::port0::pin15;
+pub use pin14 = hal::lpc17xx::pin::map::port0::pin16;
+pub use pin15 = hal::lpc17xx::pin::map::port0::pin23;
+pub use pin16 = hal::lpc17xx::pin::map::port0::pin24;
+pub use pin17 = hal::lpc17xx::pin::map::port0::pin25;
+pub use pin18 = hal::lpc17xx::pin::map::port0::pin26;
+
+pub use pin19 = hal::lpc17xx::pin::map::port1::pin30;
+pub use pin20 = hal::lpc17xx::pin::map::port1::pin31;
+
+pub use pin21 = hal::lpc17xx::pin::map::port2::pin5;
+pub use pin22 = hal::lpc17xx::pin::map::port2::pin4;
+pub use pin23 = hal::lpc17xx::pin::map::port2::pin3;
+pub use pin24 = hal::lpc17xx::pin::map::port2::pin2;
+pub use pin25 = hal::lpc17xx::pin::map::port2::pin1;
+pub use pin26 = hal::lpc17xx::pin::map::port2::pin0;
+
+pub use pin27 = hal::lpc17xx::pin::map::port0::pin11;
+pub use pin28 = hal::lpc17xx::pin::map::port0::pin10;
+pub use pin29 = hal::lpc17xx::pin::map::port0::pin5;
+pub use pin30 = hal::lpc17xx::pin::map::port0::pin4;
+*/
+
 pub static configuration: SysConf = SysConf {
   clock: Clock {
     source: Main(12_000_000),
