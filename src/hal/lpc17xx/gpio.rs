@@ -33,7 +33,7 @@ impl GPIOConf {
   /// Returns a GPIO object (actually -- self), that can be used to toggle or
   /// read GPIO value.
   pub fn setup<'a>(&'a self) -> &'a GPIOConf {
-    self.set_mode(self.direction);
+    self.set_direction(self.direction);
 
     self
   }
