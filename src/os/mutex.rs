@@ -43,6 +43,19 @@ impl Mutex {
     Guard(self)
   }
 
+  pub fn try_lock<'a>(&'a self) -> Option<Guard<'a>> {
+    unsafe {
+      match self.owner.get() {
+        None    => {
+          let crit = CritSection::new();
+          self.owner.set(Some(Tasks.current_task() as *mut TaskDescriptor));
+          Some(Guard(self))
+        }
+        _       => None
+      }
+    }
+  }
+
   fn unlock(&self) {
     unsafe {
       let crit = CritSection::new();
