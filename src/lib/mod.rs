@@ -17,3 +17,4 @@
 
 pub mod strconv;
 pub mod volatile_cell;
+pub mod shared;
