@@ -24,3 +24,4 @@ pub mod debug;
 pub mod syscall;
 #[cfg(cfg_multitasking)] pub mod task;
 #[cfg(cfg_multitasking)] pub mod mutex;
+#[cfg(cfg_multitasking)] pub mod cond_var;
