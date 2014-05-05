@@ -31,6 +31,7 @@ impl Mutex {
           let mut waiting = Node::new(Tasks.current_task() as *mut TaskDescriptor);
           self.waiting.push(&mut waiting, &crit);
           Tasks.current_task().block(crit);
+
           let crit = CritSection::new();
           self.waiting.pop(&crit);
           crit
@@ -38,9 +39,8 @@ impl Mutex {
       };
 
       self.owner.set(Some(Tasks.current_task() as *mut TaskDescriptor));
+      Guard(self)
     }
-
-    Guard(self)
   }
 
   pub fn try_lock<'a>(&'a self) -> Option<Guard<'a>> {
