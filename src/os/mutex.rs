@@ -12,6 +12,7 @@ pub struct Mutex {
   waiting: Queue<*mut TaskDescriptor>
 }
 
+#[must_use]
 pub struct Guard<'a>(&'a Mutex);
 
 impl Mutex {
