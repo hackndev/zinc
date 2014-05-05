@@ -20,7 +20,7 @@ some time in the future.
 Currently supported ARM MCUs:
 
  * NXP LPC1768 based on mbed board — good support;
- * ST STM32F407 base on STM32F4Discovery board — draft support.
+ * ST STM32F407 based on STM32F4Discovery board — draft support.
 
 ## Usage
 
