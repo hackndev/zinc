@@ -19,3 +19,4 @@ pub mod sim;
 pub mod pin;
 pub mod uart;
 pub mod watchdog;
+pub mod i2c;
