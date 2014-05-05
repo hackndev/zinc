@@ -15,6 +15,7 @@ impl CondVar {
       let mut waiting = Node::new(Tasks.current_task() as *mut TaskDescriptor);
       self.waiting.push(&mut waiting, &crit);
       Tasks.current_task().block(crit);
+
       let crit = CritSection::new();
       self.waiting.pop(&crit);
     }
