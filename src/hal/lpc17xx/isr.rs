@@ -16,7 +16,41 @@
 use std::option::{Option, Some};
 
 extern {
-  fn isr_hang();
+  fn isr_wdt();
+  fn isr_timer_0();
+  fn isr_timer_1();
+  fn isr_timer_2();
+  fn isr_timer_3();
+  fn isr_uart_0();
+  fn isr_uart_1();
+  fn isr_uart_2();
+  fn isr_uart_3();
+  fn isr_pwm_1();
+  fn isr_i2c_0();
+  fn isr_i2c_1();
+  fn isr_i2c_2();
+  fn isr_spi();
+  fn isr_ssp_0();
+  fn isr_ssp_1();
+  fn isr_pll_0();
+  fn isr_rtc();
+  fn isr_eint_0();
+  fn isr_eint_1();
+  fn isr_eint_2();
+  fn isr_eint_3();
+  fn isr_adc();
+  fn isr_bod();
+  fn isr_usb();
+  fn isr_can();
+  fn isr_dma();
+  fn isr_i2s();
+  fn isr_enet();
+  fn isr_rit();
+  fn isr_mcpwm();
+  fn isr_qei();
+  fn isr_pll_1();
+  fn isr_usb_activity();
+  fn isr_can_activity();
 }
 
 static ISRCount: uint = 35;
@@ -25,39 +59,39 @@ static ISRCount: uint = 35;
 #[no_mangle]
 pub static NVICVectors: [Option<extern unsafe fn()>, ..ISRCount] = [
   // s.a. lpc17xx user manual, table 50 (chapter 6.3)
-  Some(isr_hang),         // isr_wdt
-  Some(isr_hang),         // isr_timer_0
-  Some(isr_hang),         // isr_timer_1
-  Some(isr_hang),         // isr_timer_2
-  Some(isr_hang),         // isr_timer_3
-  Some(isr_hang),         // isr_uart_0
-  Some(isr_hang),         // isr_uart_1
-  Some(isr_hang),         // isr_uart_2
-  Some(isr_hang),         // isr_uart_3
-  Some(isr_hang),         // isr_pwm_1
-  Some(isr_hang),         // isr_i2c_0
-  Some(isr_hang),         // isr_i2c_1
-  Some(isr_hang),         // isr_i2c_2
-  Some(isr_hang),         // isr_spi
-  Some(isr_hang),         // isr_ssp_0
-  Some(isr_hang),         // isr_ssp_1
-  Some(isr_hang),         // isr_pll_0
-  Some(isr_hang),         // isr_rtc
-  Some(isr_hang),         // isr_eint_0
-  Some(isr_hang),         // isr_eint_1
-  Some(isr_hang),         // isr_eint_2
-  Some(isr_hang),         // isr_eint_3
-  Some(isr_hang),         // isr_adc
-  Some(isr_hang),         // isr_bod
-  Some(isr_hang),         // isr_usb
-  Some(isr_hang),         // isr_can
-  Some(isr_hang),         // isr_dma
-  Some(isr_hang),         // isr_i2s
-  Some(isr_hang),         // isr_enet
-  Some(isr_hang),         // isr_rit
-  Some(isr_hang),         // isr_mcpwm
-  Some(isr_hang),         // isr_qei
-  Some(isr_hang),         // isr_pll_1
-  Some(isr_hang),         // isr_usb_activity
-  Some(isr_hang),         // isr_can_activity
+  Some(isr_wdt),
+  Some(isr_timer_0),
+  Some(isr_timer_1),
+  Some(isr_timer_2),
+  Some(isr_timer_3),
+  Some(isr_uart_0),
+  Some(isr_uart_1),
+  Some(isr_uart_2),
+  Some(isr_uart_3),
+  Some(isr_pwm_1),
+  Some(isr_i2c_0),
+  Some(isr_i2c_1),
+  Some(isr_i2c_2),
+  Some(isr_spi),
+  Some(isr_ssp_0),
+  Some(isr_ssp_1),
+  Some(isr_pll_0),
+  Some(isr_rtc),
+  Some(isr_eint_0),
+  Some(isr_eint_1),
+  Some(isr_eint_2),
+  Some(isr_eint_3),
+  Some(isr_adc),
+  Some(isr_bod),
+  Some(isr_usb),
+  Some(isr_can),
+  Some(isr_dma),
+  Some(isr_i2s),
+  Some(isr_enet),
+  Some(isr_rit),
+  Some(isr_mcpwm),
+  Some(isr_qei),
+  Some(isr_pll_1),
+  Some(isr_usb_activity),
+  Some(isr_can_activity),
 ];

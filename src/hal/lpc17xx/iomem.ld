@@ -1,5 +1,42 @@
 INCLUDE ./src/hal/cortex_m3/armmem.ld
 
+PROVIDE(isr_nmi           = isr_default_fault);
+PROVIDE(isr_wdt           = isr_default_fault);
+PROVIDE(isr_timer_0       = isr_default_fault);
+PROVIDE(isr_timer_1       = isr_default_fault);
+PROVIDE(isr_timer_2       = isr_default_fault);
+PROVIDE(isr_timer_3       = isr_default_fault);
+PROVIDE(isr_uart_0        = isr_default_fault);
+PROVIDE(isr_uart_1        = isr_default_fault);
+PROVIDE(isr_uart_2        = isr_default_fault);
+PROVIDE(isr_uart_3        = isr_default_fault);
+PROVIDE(isr_pwm_1         = isr_default_fault);
+PROVIDE(isr_i2c_0         = isr_default_fault);
+PROVIDE(isr_i2c_1         = isr_default_fault);
+PROVIDE(isr_i2c_2         = isr_default_fault);
+PROVIDE(isr_spi           = isr_default_fault);
+PROVIDE(isr_ssp_0         = isr_default_fault);
+PROVIDE(isr_ssp_1         = isr_default_fault);
+PROVIDE(isr_pll_0         = isr_default_fault);
+PROVIDE(isr_rtc           = isr_default_fault);
+PROVIDE(isr_eint_0        = isr_default_fault);
+PROVIDE(isr_eint_1        = isr_default_fault);
+PROVIDE(isr_eint_2        = isr_default_fault);
+PROVIDE(isr_eint_3        = isr_default_fault);
+PROVIDE(isr_adc           = isr_default_fault);
+PROVIDE(isr_bod           = isr_default_fault);
+PROVIDE(isr_usb           = isr_default_fault);
+PROVIDE(isr_can           = isr_default_fault);
+PROVIDE(isr_dma           = isr_default_fault);
+PROVIDE(isr_i2s           = isr_default_fault);
+PROVIDE(isr_enet          = isr_default_fault);
+PROVIDE(isr_rit           = isr_default_fault);
+PROVIDE(isr_mcpwm         = isr_default_fault);
+PROVIDE(isr_qei           = isr_default_fault);
+PROVIDE(isr_pll_1         = isr_default_fault);
+PROVIDE(isr_usb_activity  = isr_default_fault);
+PROVIDE(isr_can_activity  = isr_default_fault);
+
 iomem_GPIO0     = 0x2009C000;
 iomem_GPIO1     = 0x2009C020;
 iomem_GPIO2     = 0x2009C040;
