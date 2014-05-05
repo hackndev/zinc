@@ -1,11 +1,11 @@
-#![feature(globs, macro_rules)]
+#![feature(macro_rules)]
  
-use hal::cortex_m3::sched::{CritSection, enable_irqs, disable_irqs};
+use hal::cortex_m3::sched::CritSection;
 use os::task::{TaskDescriptor, Tasks, task_scheduler};
-use lib::queue::*;
+use lib::queue::{Queue, Node};
 use std::option::{Option, None, Some};
-use std::cell::{Cell};
-use std::ops::{Drop};
+use std::cell::Cell;
+use std::ops::Drop;
 
 pub struct Mutex {
   owner: Cell<Option<*mut TaskDescriptor>>,
