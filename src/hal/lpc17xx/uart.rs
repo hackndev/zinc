@@ -227,11 +227,11 @@ impl UART {
   fn set_mode(&self, word_len: WordLen, parity: uart::Parity, stop_bits: StopBit) {
     let lcr: u8 = (*(self.reg)).LCR() as u8;
     let computed_val: u8 = word_len as u8 | stop_bits as u8 | match parity {
-      uart::None    => PEDisabled as u8  | PSOdd as u8,
-      uart::Odd     => PEEnabled as u8   | PSOdd as u8,
-      uart::Even    => PEEnabled as u8   | PSEven as u8,
-      uart::Forced1 => PEEnabled as u8   | PSForced1 as u8,
-      uart::Forced0 => PEEnabled as u8   | PSForced0 as u8,
+      uart::Disabled => PEDisabled as u8  | PSOdd as u8,
+      uart::Odd      => PEEnabled as u8   | PSOdd as u8,
+      uart::Even     => PEEnabled as u8   | PSEven as u8,
+      uart::Forced1  => PEEnabled as u8   | PSForced1 as u8,
+      uart::Forced0  => PEEnabled as u8   | PSForced0 as u8,
     };
     let new_lcr = (lcr & !LCRModeMask) | computed_val;
 

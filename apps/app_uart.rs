@@ -7,7 +7,7 @@ extern crate zinc;
 use zinc::boards::mbed_lpc1768;
 use zinc::drivers::chario::CharIO;
 use zinc::hal::timer::{TimerConf, Timer};
-use zinc::hal::uart::{UARTConf, None};
+use zinc::hal::uart::{UARTConf, Disabled};
 use zinc::hal::pin::map;
 use zinc::hal::gpio::GPIOConf;
 
@@ -34,7 +34,7 @@ static platform: Platform = Platform {
     peripheral: lpc17xx::uart::UART0,
     baudrate: 115200,
     word_len: 8,
-    parity: None,
+    parity: Disabled,
     stop_bits: 1,
 
     tx: map::port0::pin2::TXD0,
