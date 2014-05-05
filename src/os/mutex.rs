@@ -7,14 +7,14 @@ use std::option::{Option, None, Some};
 use std::cell::{Cell};
 use std::ops::{Drop};
 
-pub struct StaticMutex {
+pub struct Mutex {
   owner: Cell<Option<*mut TaskDescriptor>>,
   waiting: Queue<*mut TaskDescriptor>
 }
 
-pub struct Guard<'a>(&'a StaticMutex);
+pub struct Guard<'a>(&'a Mutex);
 
-impl StaticMutex {
+impl Mutex {
   // This is a bit subtle:
   // We need to add ourselves to the mutex's waiting list. To do this
   // we allocate a list item on the local stack, append it to the
