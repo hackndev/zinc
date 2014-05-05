@@ -15,7 +15,7 @@
 
 //! GPIO configuration.
 
-use hal::gpio::{Direction, In, Out};
+use hal::gpio::{Direction, In, Out, Level, Low, High};
 use super::pin::{PinConf, Port0, Port1, Port2, Port3, Port4};
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
@@ -33,16 +33,7 @@ impl GPIOConf {
   /// Returns a GPIO object (actually -- self), that can be used to toggle or
   /// read GPIO value.
   pub fn setup<'a>(&'a self) -> &'a GPIOConf {
-    let bit: u32 = 1 << self.pin.pin;
-    let mask: u32 = !bit;
-    let reg = self.reg();
-    let val: u32 = reg.FIODIR();
-    let new_val: u32 = match self.direction {
-      In  => val & mask,
-      Out => (val & mask) | bit,
-    };
-
-    reg.set_FIODIR(new_val);
+    self.set_mode(self.direction);
 
     self
   }
@@ -55,6 +46,31 @@ impl GPIOConf {
   /// Sets output GPIO value to low.
   pub fn set_low(&self) {
     self.reg().set_FIOCLR(1 << self.pin.pin);
+  }
+
+  /// Sets output GPIO direction.
+  pub fn set_direction(&self, new_mode: Direction) {
+    let bit: u32 = 1 << self.pin.pin;
+    let mask: u32 = !bit;
+    let reg = self.reg();
+    let val: u32 = reg.FIODIR();
+    let new_val: u32 = match new_mode {
+      In  => val & mask,
+      Out => (val & mask) | bit,
+    };
+
+    reg.set_FIODIR(new_val);
+  }
+
+  /// Returns input GPIO level.
+  pub fn level(&self) -> Level {
+    let bit: u32 = 1 << self.pin.pin;
+    let reg = self.reg();
+
+    match reg.FIOPIN() & bit {
+      0 => Low,
+      _ => High,
+    }
   }
 
   fn reg(&self) -> &reg::GPIO {

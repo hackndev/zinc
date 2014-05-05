@@ -18,8 +18,6 @@ GPIO interface.
 
 GPIOConf is a MCU-specific struct, that requires a `PinConf` for a pin
 and a direction.
-
-It is currently not possible to change GPIO direction after `setup()`.
 */
 
 #[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::gpio::GPIOConf;
@@ -29,4 +27,10 @@ It is currently not possible to change GPIO direction after `setup()`.
 pub enum Direction {
   In,
   Out,
+}
+
+#[deriving(Eq)]
+pub enum Level {
+  Low,
+  High,
 }
