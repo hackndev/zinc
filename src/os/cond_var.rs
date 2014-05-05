@@ -28,10 +28,8 @@ impl CondVar {
     unsafe {
       let crit = CritSection::new();
       match self.waiting.pop(&crit) {
-        None => { }
-        Some(task) => {
-          (*(*task).data).unblock(&crit);
-        }
+        None => { },
+        Some(task) => (*(*task).data).unblock(&crit)
       }
     }
   }
