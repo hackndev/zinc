@@ -16,23 +16,23 @@
 #![macro_escape]
 
 macro_rules! ioreg(
-  ($io:ident: $($reg:ident),+) => (
+  ($io:ident: $ty:ty, $($reg:ident),+) => (
     #[allow(uppercase_variables)]
     pub struct $io {
       $(
-        $reg: VolatileCell<u32>,
+        $reg: VolatileCell<$ty>,
       )+
     }
   )
 )
 
 macro_rules! reg_r(
-  ($t:ident, $getter_name:ident, $reg:ident) => (
+  ($t:ident, $ty:ty, $getter_name:ident, $reg:ident) => (
     impl $t {
       #[no_split_stack]
       #[allow(dead_code,non_snake_case_functions)]
       #[inline(always)]
-      pub fn $getter_name(&self) -> u32 {
+      pub fn $getter_name(&self) -> $ty {
         self.$reg.get()
       }
     }
@@ -40,12 +40,12 @@ macro_rules! reg_r(
 )
 
 macro_rules! reg_w(
-  ($t:ident, $setter_name:ident, $reg:ident) => (
+  ($t:ident, $ty:ty, $setter_name:ident, $reg:ident) => (
     impl $t {
       #[no_split_stack]
       #[allow(dead_code,non_snake_case_functions)]
       #[inline(always)]
-      pub fn $setter_name(&self, val: u32) {
+      pub fn $setter_name(&self, val: $ty) {
         self.$reg.set(val);
       }
     }
@@ -53,8 +53,8 @@ macro_rules! reg_w(
 )
 
 macro_rules! reg_rw(
-  ($t:ident, $getter_name:ident, $setter_name:ident, $reg:ident) => (
-    reg_r!($t, $getter_name, $reg)
-    reg_w!($t, $setter_name, $reg)
+  ($t:ident, $ty:ty, $getter_name:ident, $setter_name:ident, $reg:ident) => (
+    reg_r!($t, $ty, $getter_name, $reg)
+    reg_w!($t, $ty, $setter_name, $reg)
   )
 )

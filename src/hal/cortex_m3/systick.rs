@@ -58,11 +58,11 @@ pub fn disable_irq() {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(SYSTICKReg: CONTROL, RELOAD, CURRENT, CALIBRATION)
-  reg_rw!(SYSTICKReg, CONTROL,     set_CONTROL, CONTROL)
-  reg_rw!(SYSTICKReg, RELOAD,      set_RELOAD,  RELOAD)
-  reg_rw!(SYSTICKReg, CURRENT,     set_CURRENT, CURRENT)
-  reg_r!( SYSTICKReg, CALIBRATION,              CALIBRATION)
+  ioreg!(SYSTICKReg: u32, CONTROL, RELOAD, CURRENT, CALIBRATION)
+  reg_rw!(SYSTICKReg, u32, CONTROL,     set_CONTROL, CONTROL)
+  reg_rw!(SYSTICKReg, u32, RELOAD,      set_RELOAD,  RELOAD)
+  reg_rw!(SYSTICKReg, u32, CURRENT,     set_CURRENT, CURRENT)
+  reg_r!( SYSTICKReg, u32, CALIBRATION,              CALIBRATION)
 
   extern {
     #[link_name="armmem_SYSTICK"] pub static SYSTICK: SYSTICKReg;
