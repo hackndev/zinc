@@ -23,22 +23,20 @@ impl StaticMutex {
   // remove our entry from the list.
   pub fn lock<'a>(&'a self) -> Guard<'a> {
     unsafe {
-      let crit = CritSection::new();
-      match self.owner.get() {
-        None    => { },
+      let crit = match self.owner.get() {
+        None    => CritSection::new(),
         Some(_) => {
+          let crit = CritSection::new();
           let mut waiting = Node::new(Tasks.current_task() as *mut TaskDescriptor);
-          Tasks.current_task().block();
           self.waiting.push(&mut waiting, &crit);
-          enable_irqs();
-          task_scheduler();
-          let irq_disabled = disable_irqs();
+          Tasks.current_task().block(crit);
+          let crit = CritSection::new();
           self.waiting.pop(&crit);
+          crit
         }
-      }
+      };
 
       self.owner.set(Some(Tasks.current_task() as *mut TaskDescriptor));
-      enable_irqs();
     }
 
     Guard(self)
@@ -52,7 +50,7 @@ impl StaticMutex {
         None => { },
         Some(nextTask) => {
           let mut task = *(*nextTask).data;
-          task.unblock();
+          task.unblock(&crit);
         }
       }
     }

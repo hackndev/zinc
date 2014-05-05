@@ -19,6 +19,7 @@ use std::mem::size_of;
 use std::intrinsics::abort;
 
 use hal::cortex_m3::{sched, systick};
+use hal::cortex_m3::sched::CritSection;
 use os::syscall::syscall;
 use hal::stack;
 
@@ -77,8 +78,11 @@ pub struct TaskDescriptor {
 }
 
 impl TaskDescriptor {
-  pub fn block(&mut self) { self.status = Blocked; }
-  pub fn unblock(&mut self) { self.status = Runnable; }
+  pub fn block(&mut self, _: CritSection) {
+    self.status = Blocked;
+    sched::switch_context();
+  }
+  pub fn unblock(&mut self, _: &CritSection) { self.status = Runnable; }
 }
 
 struct TasksCollection {
