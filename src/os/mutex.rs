@@ -2,13 +2,22 @@ use hal::cortex_m3::sched::CritSection;
 use os::task::{TaskDescriptor, Tasks};
 use lib::queue::{Queue, Node};
 use std::option::{Option, None, Some};
-use std::cell::Cell;
+use std::ty::Unsafe;
 use std::ops::Drop;
+use std::kinds::marker;
 
 pub struct Mutex {
-  owner: Cell<Option<*mut TaskDescriptor>>,
+  owner: Unsafe<Option<*mut TaskDescriptor>>,
   waiting: Queue<*mut TaskDescriptor>
 }
+
+pub static MUTEX_INIT : Mutex = Mutex {
+  owner: Unsafe { value: None, marker1: marker::InvariantType },
+  waiting: Queue {
+      head: Unsafe { value: 0 as *mut Node<*mut TaskDescriptor>, marker1: marker::InvariantType },
+      tail: Unsafe { value: 0 as *mut Node<*mut TaskDescriptor>, marker1: marker::InvariantType },
+  }
+};
 
 #[must_use]
 pub struct Guard<'a>(&'a Mutex);
@@ -23,7 +32,7 @@ impl Mutex {
    */
   pub fn lock<'a>(&'a self) -> Guard<'a> {
     unsafe {
-      let crit = match self.owner.get() {
+      let crit = match *self.owner.get() {
         None    => CritSection::new(),
         Some(_) => {
           let crit = CritSection::new();
@@ -44,17 +53,17 @@ impl Mutex {
         }
       };
 
-      self.owner.set(Some(Tasks.current_task() as *mut TaskDescriptor));
+      *self.owner.get() = Some(Tasks.current_task() as *mut TaskDescriptor);
       Guard(self)
     }
   }
 
   pub fn try_lock<'a>(&'a self) -> Option<Guard<'a>> {
     unsafe {
-      match self.owner.get() {
+      match *self.owner.get() {
         None    => {
           let crit = CritSection::new();
-          self.owner.set(Some(Tasks.current_task() as *mut TaskDescriptor));
+          *self.owner.get() = Some(Tasks.current_task() as *mut TaskDescriptor);
           Some(Guard(self))
         }
         _       => None
@@ -71,7 +80,7 @@ impl Mutex {
     unsafe {
       let crit = CritSection::new();
       match self.waiting.peek() {
-        None => self.owner.set(None),
+        None => *self.owner.get() = None,
         Some(nextTask) => {
           let mut task = *(*nextTask).data;
           task.unblock(&crit);
