@@ -59,6 +59,7 @@ impl StaticMutex {
 
 #[unsafe_destructor]
 impl<'a> Drop for Guard<'a> {
+  #[inline]
   fn drop(&mut self) {
     let &Guard(ref mutex) = self;
     mutex.unlock();
