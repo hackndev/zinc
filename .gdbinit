@@ -18,3 +18,5 @@ define reload
 ld
 cont
 end
+
+set mem inaccessible-by-default off
