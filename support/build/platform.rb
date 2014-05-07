@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require 'YAML'
+require 'yaml'
 
 class Platform
   attr_reader :name, :arch_name, :features
