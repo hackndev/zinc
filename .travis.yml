@@ -1,0 +1,19 @@
+before_install:
+    - yes | sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded
+    - sudo apt-get update
+install:
+    - sudo apt-get install gcc-arm-none-eabi
+    - curl http://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-gnu.tar.gz | tar xz
+    - gem install pry
+    - mkdir thirdparty
+    - cd thirdparty
+    - curl http://static.rust-lang.org/dist/rust-nightly.tar.gz | tar xz
+    - mv rust-nightly rust
+    - cd rust/src
+    - patch -p1 -i ../../../support/rust.patch
+    - cd ../../..
+before_script:
+    - export TOOLCHAIN_LIBS_PATH=/usr/lib/gcc/arm-none-eabi/4.8.3/
+    - export RUSTC="`pwd`/rust-nightly-x86_64-unknown-linux-gnu/bin/rustc"
+script:
+    - rake PLATFORM=lpc17xx APP=app_blink
