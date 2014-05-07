@@ -21,34 +21,34 @@ use super::reg;
 
 /// Enables the USB voltage regulator (on by default).
 pub fn enable_vreg() {
-  reg::SIMLP.set_SOPT1CFG(1 << 24)
-  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() | (1 << 31))
+  reg::SIMLP.set_SOPT1CFG(1 << 24);
+  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() | (1 << 31));
 }
 
 pub fn disable_vreg() {
-  reg::SIMLP.set_SOPT1CFG(1 << 24)
-  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() & !(1 << 31))
+  reg::SIMLP.set_SOPT1CFG(1 << 24);
+  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() & !(1 << 31));
 }
 
 /// Causes the USB voltage regulator to enter standby when the core sleeps.
 pub fn enable_vreg_stby() {
-  reg::SIMLP.set_SOPT1CFG(1 << 26)
-  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() | (1 << 30))
+  reg::SIMLP.set_SOPT1CFG(1 << 26);
+  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() | (1 << 30));
 }
 
 pub fn disable_vreg_stby() {
-  reg::SIMLP.set_SOPT1CFG(1 << 26)
-  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() & !(1 << 30))
+  reg::SIMLP.set_SOPT1CFG(1 << 26);
+  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() & !(1 << 30));
 }
 
 /// Causes the USB voltage regulator to enter standby during low power mode.
 pub fn enable_vreg_lp() {
-  reg::SIMLP.set_SOPT1CFG(1 << 25)
-  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() | (1 << 30))
+  reg::SIMLP.set_SOPT1CFG(1 << 25);
+  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() | (1 << 30));
 }
 
 pub fn disable_vreg_lp() {
-  reg::SIMLP.set_SOPT1CFG(1 << 25)
-  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() & !(1 << 30))
+  reg::SIMLP.set_SOPT1CFG(1 << 25);
+  reg::SIMLP.set_SOPT1(reg::SIMLP.SOPT1() & !(1 << 30));
 }
 
