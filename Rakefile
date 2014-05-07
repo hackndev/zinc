@@ -1,41 +1,12 @@
 load 'support/rake.rb'
 
-TOOLCHAIN = ENV['TOOLCHAIN'] || 'arm-none-eabi'
-TOOLCHAIN_LIBS_PATH = ENV['TOOLCHAIN_LIBS_PATH'] || '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4'
-RUSTC = ENV['RUSTC'] || 'rustc'
-FORCE_NATIVE_BUILD = ENV['FORCE_NATIVE_BUILD'] || false
+TOOLCHAIN = 'arm-none-eabi'
+TOOLCHAIN_LIBS_PATH = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4'
+RUSTC = 'rustc'
 
 features = [:tft_lcd, :multitasking]
 
-architectures = {
-  cortex_m3: {
-    arch: 'armv7-m',
-    cpu: 'cortex-m3',
-    target: 'thumbv7m-linux-eabi',
-  },
-  cortex_m4: {
-    arch: 'armv7e-m',
-    cpu: 'cortex-m4',
-    target: 'thumbv7em-linux-eabi',
-  },
-}
-
-platforms = {
-  lpc17xx: {
-    arch: :cortex_m3,
-    config: :mcu_lpc17xx,
-    features: [:mcu_has_spi],
-  },
-  stm32f4: {
-    arch: :cortex_m4,
-    config: :mcu_stm32f4,
-  },
-}
-
-rsflags = %w[-Z no-landing-pads -C relocation_model=static]
-ldflags = %w[]
-
-Context.prepare!(rsflags, ldflags, platforms, architectures, features)
+Context.create(__FILE__, ENV['PLATFORM'], features)
 
 provide_stdlibs
 
@@ -43,6 +14,7 @@ compile_rust :libc_crate, {
   source:  'thirdparty/liblibc/lib.rs'.in_root,
   produce: 'thirdparty/liblibc/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
+  recompile_on: :triple,
 }
 
 compile_rust :std_crate, {
@@ -51,6 +23,7 @@ compile_rust :std_crate, {
   produce: 'thirdparty/libstd/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
   ignore_warnings: ['unused_variable'],
+  recompile_on: :triple,
 }
 
 # zinc crate
@@ -59,6 +32,7 @@ compile_rust :zinc_crate, {
   deps:    :std_crate,
   produce: 'main.rs'.in_source.as_rlib.in_build,
   out_dir: true,
+  recompile_on: [:triple, :platform],
 }
 
 # zinc runtime support lib
@@ -67,6 +41,7 @@ compile_rust :zinc_support, {
   produce: 'support.o'.in_intermediate,
   llvm_pass: :inline,
   lto: false,
+  recompile_on: :triple,
 }
 
 # zinc isr crate
@@ -74,6 +49,7 @@ compile_rust :zinc_isr, {
   source:  'hal/isr.rs'.in_source,
   deps:    :std_crate,
   produce: 'isr.o'.in_intermediate,
+  recompile_on: :triple,
 }
 
 # zinc scheduler assembly
@@ -82,17 +58,18 @@ if features.include?(:multitasking)
   compile_c :zinc_isr_sched, {
     source:  'hal/cortex_m3/sched.S'.in_source,
     produce: 'isr_sched.o'.in_intermediate,
+    recompile_on: :triple,
   }
 end
 
 compile_rust :app_crate, {
-  source: Context.app,
+  source: Context.instance.application,
   deps: [
     :zinc_crate,
-    Context.track_application_name,
   ],
-  produce: Context.app.as_rlib.in_build,
+  produce: Context.instance.application.as_rlib.in_build,
   out_dir: true,
+  recompile_on: [:triple, :platform, :application_name],
 }
 
 compile_rust :app, {
