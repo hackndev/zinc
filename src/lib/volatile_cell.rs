@@ -17,7 +17,7 @@
 
 use std::kinds::marker;
 use std::intrinsics::{volatile_load, volatile_store};
-use std::cast::transmute_mut;
+use std::cast::transmute_mut_unsafe;
 
 pub struct VolatileCell<T> {
   value: T,
@@ -42,7 +42,7 @@ impl<T> VolatileCell<T> {
   #[inline]
   pub fn set(&self, value: T) {
     unsafe {
-      volatile_store(&mut (*transmute_mut(&self.value)), value)
+      volatile_store(&mut (*transmute_mut_unsafe(&self.value)), value)
     }
   }
 }
