@@ -18,4 +18,4 @@ System Integration Module.
 */
 
 mod reg;
-mod usb;
+pub mod usb;
