@@ -14,6 +14,10 @@
 // limitations under the License.
 
 use std::intrinsics::abort;
+use std::option::{Some, None};
+use std::slice::{ImmutableVector};
+use std::container::Container;
+use std::iter::Iterator;
 
 use hal::gpio::GPIOConf;
 use hal::spi::SPI;
@@ -41,9 +45,90 @@ impl<'a, S: SPI, T: Timer> Mrf24j40<'a, S, T> {
       channel: initial_channel,
     };
 
+    radio.hard_reset();
     radio.reinitialize();
 
     radio
+  }
+
+  fn hard_reset(&self) {
+    self.reset.set_low();
+    self.timer.wait_ms(20);
+    self.reset.set_high();
+    self.timer.wait_ms(20);
+  }
+
+  pub fn set_pan(&self, pan: u16) {
+    self.set_PANIDL(pan as u8);
+    self.set_PANIDH((pan >> 8) as u8)
+  }
+
+  pub fn get_pan(&self) -> u16 {
+    self.PANIDL() as u16 | (self.PANIDH() as u16 << 8)
+  }
+
+  pub fn set_short_address(&self, adr: u16) {
+    self.set_SADRL(adr as u8);
+    self.set_SADRH((adr >> 8) as u8)
+  }
+
+  pub fn get_short_address(&self) -> u16 {
+    self.SADRL() as u16 | (self.SADRH() as u16 << 8)
+  }
+
+  pub fn send_to_short_address(&self, dst: u16, data: &[u8]) {
+    let mut header: [u8, ..9] = [0, ..9];
+
+    // Header
+    // Frame Control
+    header[0] = 0b01100001;
+    //                 ^^^ - frame type: data
+    //                ^    - security disabled (no encryption)
+    //               ^     - no frame pending
+    //              ^      - acknowledgment required
+    //             ^       - pan id is compressed (only destination
+    //                       pan present, src_pan == dst_pan)
+    //            ^        - reserved
+
+    header[1] = 0b10001000;
+    //                  ^^ - reserved
+    //                ^^   - destination address field contains short address
+    //              ^^     - frame version 0 (802.15.4-2003 compatible)
+    //            ^^       - source address field contains short address
+
+    header[2] = 1;                 // sequence number 1
+    header[3] = self.PANIDL();     // dest pan low
+    header[4] = self.PANIDH();     // dest pan high
+    header[5] = dst as u8;         // dest address low
+    header[6] = (dst >> 8) as u8;  // dest address high
+    header[7] = self.SADRL();      // src address low
+    header[8] = self.SADRH();      // src address high
+
+    self.write_packet(header, data);
+  }
+
+  fn write_packet(&self, header: &[u8], payload: &[u8]) {
+    let mut ofs: u16 = 0;
+
+    // Header Length
+    self.reg_write_long(ofs, header.len() as u8);
+    ofs += 1;
+
+    // Frame Length (header + payload)
+    self.reg_write_long(ofs, (header.len() + payload.len()) as u8);
+    ofs += 1;
+
+    for &b in header.iter() {
+      self.reg_write_long(ofs, b);
+      ofs += 1;
+    }
+
+    for &b in payload.iter() {
+      self.reg_write_long(ofs, b);
+      ofs += 1;
+    }
+
+    self.set_TXNCON(0b00101);  // transmit with acknowledgment required
   }
 
   /// Perform the initialization by the spec

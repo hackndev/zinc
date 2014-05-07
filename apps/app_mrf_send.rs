@@ -3,6 +3,10 @@
 #![no_std]
 
 extern crate zinc;
+extern crate std;
+
+use std::str::{Str, StrSlice};
+use std::slice::Vector;
 
 use zinc::boards::mbed_lpc1768;
 use zinc::drivers::chario::CharIO;
@@ -76,10 +80,19 @@ pub fn main() {
   let spi = platform.spi.setup();
   let timer = platform.timer.setup();
 
+  uart.puts("MRF init...\n");
+
   let mrf = mrf24j40::Mrf24j40::new(&spi, &timer, platform.reset, platform.cs,
       platform.interrupt, 12);
 
+  mrf.set_pan(0xcafe);
+  mrf.set_short_address(0x6001);
+
+  uart.puts("PAN: "); uart.puth(mrf.get_pan() as u32); uart.puts("\n");
+  uart.puts("adr: "); uart.puth(mrf.get_short_address() as u32); uart.puts("\n");
   loop {
-    timer.wait(1);
+    uart.puts("Sending...\n");
+    mrf.send_to_short_address(0x6002, "hello".as_slice().as_bytes());
+    timer.wait(5);
   }
 }
