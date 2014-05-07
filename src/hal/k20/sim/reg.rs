@@ -17,9 +17,9 @@
 System Integration Module registers.
 */
 
-#[path="../../../../lib/ioreg.rs"] mod ioreg;
-
 use lib::volatile_cell::VolatileCell;
+
+#[path="../../../lib/ioreg.rs"] mod ioreg;
 
 ioreg!( SIMLPReg: SOPT1, SOPT1CFG)
 reg_rw!(SIMLPReg, SOPT1,    set_SOPT1,    SOPT1)
