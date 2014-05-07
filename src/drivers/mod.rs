@@ -18,3 +18,4 @@
 #[cfg(cfg_tft_lcd)] pub mod lcd;
 pub mod chario;
 pub mod dht22;
+pub mod mrf24j40;
