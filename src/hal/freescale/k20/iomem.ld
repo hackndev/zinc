@@ -16,7 +16,6 @@
 
 INCLUDE ./src/hal/cortex_m3/armmem.ld
 
-PROVIDE(isr_nmi             = isr_default_fault);
 PROVIDE(isr_dma_0           = isr_default_fault);
 PROVIDE(isr_dma_1           = isr_default_fault);
 PROVIDE(isr_dma_2           = isr_default_fault);
