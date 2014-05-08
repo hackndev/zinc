@@ -4,8 +4,9 @@ require 'build/helpers'
 require 'build/context'
 require 'build/deps'
 
-def report_size(fn)
-  Rake::Task.define_task :report_size => fn do |t|
+def report_size(n, h)
+  fn = h[:source]
+  Rake::Task.define_task n => fn do |t|
     fn = t.prerequisites.first
 
     stats = `#{TOOLCHAIN}-size #{fn}`.split("\n").last.split("\t").map {|s|s.strip}
@@ -23,7 +24,7 @@ def compile_rust(n, h)
   h.resolve_deps!
   Context.instance.rules[n] = h
 
-  outflags = h[:out_dir] ? "--out-dir #{Context.instance.build_dir}" : "-o #{h[:produce]}"
+  outflags = h[:out_dir] ? "--out-dir #{File.dirname(h[:produce])}" : "-o #{h[:produce]}"
   llvm_pass = h[:llvm_pass]
   lto = h[:lto]
   lto = true if lto == nil
@@ -51,6 +52,8 @@ def compile_rust(n, h)
 
   all_deps += recompile_on
 
+  search_paths = [h[:search_paths]].flatten.compact
+
   Rake::FileTask.define_task(h[:produce] => all_deps) do |t|
     do_lto = lto && t.name.end_with?('.o')
     emit = case File.extname(t.name)
@@ -71,9 +74,12 @@ def compile_rust(n, h)
       flags.gsub!(/--opt-level \d/, "--opt-level #{optimize}")
     end
 
+    search_paths = search_paths.map { |s| "-L #{s}"}.join(' ')
+    search_paths += " -L #{Context.instance.build_dir}"
+
     sh "#{:rustc.in_env} #{flags} " +
        "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} " +
-       "-L #{Context.instance.build_dir} #{codegen} " +
+       "#{search_paths} #{codegen} " +
        "#{outflags} #{ignore_warnings} #{rust_src}"
   end
 end

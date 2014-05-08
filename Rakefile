@@ -62,44 +62,53 @@ if features.include?(:multitasking)
   }
 end
 
-compile_rust :app_crate, {
-  source: Context.instance.application,
-  deps: [
-    :zinc_crate,
-  ],
-  produce: Context.instance.application.as_rlib.in_build,
-  out_dir: true,
-  recompile_on: [:triple, :platform, :application_name],
-}
+app_tasks = Context.instance.applications.map do |a|
+  compile_rust "app_#{a}_crate".to_sym, {
+    source: "apps/app_#{a}.rs".in_root,
+    deps: [
+      :zinc_crate,
+      :std_crate,
+    ],
+    produce: "apps/app_#{a}.rs".in_root.as_rlib.in_intermediate(a),
+    out_dir: true,
+    recompile_on: [:triple, :platform],
+  }
 
-compile_rust :app, {
-  source: 'lib/app.rs'.in_source,
-  deps: [
-    :std_crate,
-    :zinc_crate,
-    :app_crate,
-  ],
-  produce: 'app.o'.in_intermediate,
-}
+  compile_rust "app_#{a}".to_sym, {
+    source: 'lib/app.rs'.in_source,
+    deps: [
+      :std_crate,
+      :zinc_crate,
+      "app_#{a}_crate".to_sym,
+    ],
+    produce: "app_#{a}.o".in_intermediate(a),
+    search_paths: a.in_intermediate,
+  }
 
-link_binary :app_elf, {
-  script: 'layout.ld'.in_platform,
-  deps: [:app, :zinc_isr, :zinc_support] +
-        (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
-  produce: 'zinc.elf'.in_build,
-}
+  link_binary "app_#{a}_elf".to_sym, {
+    script: 'layout.ld'.in_platform,
+    deps: ["app_#{a}".to_sym, :zinc_isr, :zinc_support] +
+          (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
+    produce: "app_#{a}.elf".in_build,
+  }
 
-make_binary :app_bin, {
-  source:  'zinc.elf'.in_build,
-  produce: 'zinc.bin'.in_build,
-}
+  t_bin = make_binary "app_#{a}_bin".to_sym, {
+    source:  "app_#{a}.elf".in_build,
+    produce: "app_#{a}.bin".in_build,
+  }
 
-listing :app_lst, {
-  source:  'zinc.elf'.in_build,
-  produce: 'zinc.lst'.in_build,
-}
+  t_lst = listing "app_#{a}_lst".to_sym, {
+    source:  "app_#{a}.elf".in_build,
+    produce: "app_#{a}.lst".in_build,
+  }
 
-report_size 'zinc.elf'.in_build
+  t_size = report_size "app_#{a}_size".to_sym, {
+    source: "app_#{a}.elf".in_build,
+  }
 
-task :build => ['zinc.bin'.in_build, 'zinc.lst'.in_build, :report_size]
-task :default => :build
+  desc "Build application #{a}"
+  task "build_#{a}".to_sym => [t_bin.name, t_lst.name, t_size.name]
+end
+
+desc "Build all applications"
+task :build_all => app_tasks.map { |t| t.name }

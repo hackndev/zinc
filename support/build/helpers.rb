@@ -15,7 +15,7 @@
 
 class String
   def in_build; Context.instance.build_dir(self); end
-  def in_intermediate; Context.instance.intermediate_dir(self); end
+  def in_intermediate(*a); Context.instance.intermediate_dir(*a, self); end
   def in_root; Context.instance.root_dir(self); end
   def in_source; Context.instance.src_dir(self); end
   def in_platform; Context.instance.platform_dir(self); end

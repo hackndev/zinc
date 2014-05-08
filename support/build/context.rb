@@ -21,8 +21,8 @@ require 'build/tracking_tasks'
 require 'build/rlib'
 
 class Context
-  attr_reader :rules, :env, :application
-  attr_reader :tracking_application_name, :tracking_triple, :tracking_platform
+  attr_reader :rules, :env, :application, :tracking_triple, :tracking_platform
+  attr_reader :applications
 
   def self.create(*args)
     raise RuntimeError("Context already created") if @context_instance
@@ -49,13 +49,8 @@ class Context
         "available architectures: #{@available_archs.keys.join(', ')}")
 
     collect_config_flags!(build_features)
+    collect_applications!
     initialize_environment!
-    create_build_directories!
-
-    @application_name = env_const(:APP)
-    @application = root_dir('apps', @application_name + '.rs') or
-        ArgumentError.new("Application #{@application_name} not found in apps")
-
     define_tracking_tasks!
   end
 
@@ -66,13 +61,18 @@ class Context
   def src_dir(*args); File.join(root_dir, 'src', *args); end
 
   # Returns path relative to $root/build
-  def build_dir(*args); File.join(root_dir, 'build', *args); end
-
-  # Returns path relative to $build/intermediate
-  def intermediate_dir(*args); build_dir('intermediate', *args); end
+  def build_dir(*args)
+    path = File.join(root_dir, 'build', *args)
+    directory = File.dirname(path)
+    FileUtils.mkdir(directory) unless Dir.exists?(directory)
+    path
+  end
 
   # Returns path relative to $src/hal/$platform
   def platform_dir(*args); src_dir('hal', @platform.name, *args); end
+
+  # Returns path relative to $build/intermediate
+  def intermediate_dir(*args); build_dir('intermediate', *args); end
 
   # Returns rlib file name for given source file
   def rlib_name(src)
@@ -86,12 +86,6 @@ class Context
   private
   def self.new(*args)
     super *args
-  end
-
-  # Creates build directories
-  def create_build_directories!
-    FileUtils.mkdir(build_dir) unless Dir.exists?(build_dir)
-    FileUtils.mkdir(intermediate_dir) unless Dir.exists?(intermediate_dir)
   end
 
   def collect_config_flags!(build_features)
@@ -134,12 +128,16 @@ class Context
   end
 
   def define_tracking_tasks!
-    @tracking_application_name = TrackingTask.define_task(
-        build_dir('.application_name'), @application_name)
     @tracking_triple = TrackingTask.define_task(
         build_dir('.target_triple'), @platform.arch.target)
     @tracking_platform = TrackingTask.define_task(
         build_dir('.target_name'), @platform.name)
+  end
+
+  def collect_applications!
+    @applications = FileList[root_dir('apps/app_*.rs')].map do |a|
+      a.gsub(/^#{root_dir('apps')}\/app_(.+)\.rs/, '\1')
+    end
   end
 
   def env_const(name)
