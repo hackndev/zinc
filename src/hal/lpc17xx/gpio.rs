@@ -15,11 +15,11 @@
 
 //! GPIO configuration.
 
-use std::option::{Option, None};
+use std::option::{Option, Some, None};
 use std::intrinsics::{abort, transmute};
 
 use hal::gpio::{Direction, In, Out, Level, Low, High};
-use hal::gpio::{GPIOISRHandler, InterruptEdge, Rising, Falling};
+use hal::gpio::{GPIOInterruptHandler, InterruptEdge, Rising, Falling};
 use super::pin::{PinConf, Port0, Port1, Port2, Port3, Port4};
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
@@ -87,7 +87,7 @@ impl<'a> GPIO<'a> {
   }
 
   pub fn set_interrupt_handler(&self, edge: InterruptEdge,
-      h: Option<&GPIOISRHandler>) {
+      h: Option<&GPIOInterruptHandler>) {
     let b = match self.pin.port {
       Port0 => match edge {
         Rising  => GPIO0Rising,
@@ -114,11 +114,12 @@ impl<'a> GPIO<'a> {
   }
 }
 
-type GPIOBank = [Option<&'static GPIOISRHandler>, ..32];
+type GPIOBank = [Option<&'static GPIOInterruptHandler>, ..32];
 
 // TODO(farcaller): those static muts are accessed from both userland and isr,
 // so they must be synchronized in some way. Apparently, no scheduling should
 // happen while in gpio isr.
+// P.S.: geez, 1.5KB???
 static mut GPIO0RisingBank: GPIOBank = [None, ..32];
 static mut GPIO0FallingBank: GPIOBank = [None, ..32];
 static mut GPIO2RisingBank: GPIOBank = [None, ..32];
@@ -145,14 +146,14 @@ impl GPIOInterruptHandlerBank {
 }
 
 fn set_gpio_handler(bank: GPIOInterruptHandlerBank, pin: u8,
-    h: Option<&GPIOISRHandler>) {
+    h: Option<&GPIOInterruptHandler>) {
   bank.bank()[pin as uint] = unsafe { transmute(h) };
 }
 
 // TODO(farcaller): h shouldn't be called from isr, it actually should be passed
 // onto corresponding user task stack. DO NOT allow user code to run in MSP!
 // TODO(farcaller): this code is made with cmd+c / cmd+v.
-#[cfg(gpio_isr)]
+#[cfg(cfg_gpio_isr)]
 #[inline(always)]
 pub unsafe fn isr_gpio() {
   let mut rise0 = reg::GPIOINT.IO0IntStatR();
@@ -163,9 +164,9 @@ pub unsafe fn isr_gpio() {
   while rise0 > 0 {
     let bitloc = 31 - count_leading_zeroes(rise0);
     let bank = GPIO0Rising.bank();
-    let handler = bank[bitloc];
+    let handler = bank[bitloc as uint];
     match handler {
-      Some(h) => h(),
+      Some(h) => h.on_gpio_interrupt(),
       None => (),
     }
     let bit: u32 = 1 << bitloc;
@@ -176,9 +177,9 @@ pub unsafe fn isr_gpio() {
   while fall0 > 0 {
     let bitloc = 31 - count_leading_zeroes(fall0);
     let bank = GPIO0Falling.bank();
-    let handler = bank[bitloc];
+    let handler = bank[bitloc as uint];
     match handler {
-      Some(h) => h(),
+      Some(h) => h.on_gpio_interrupt(),
       None => (),
     }
     let bit: u32 = 1 << bitloc;
@@ -189,9 +190,9 @@ pub unsafe fn isr_gpio() {
   while rise2 > 0 {
     let bitloc = 31 - count_leading_zeroes(rise2);
     let bank = GPIO2Rising.bank();
-    let handler = bank[bitloc];
+    let handler = bank[bitloc as uint];
     match handler {
-      Some(h) => h(),
+      Some(h) => h.on_gpio_interrupt(),
       None => (),
     }
     let bit: u32 = 1 << bitloc;
@@ -202,9 +203,9 @@ pub unsafe fn isr_gpio() {
   while fall2 > 0 {
     let bitloc = 31 - count_leading_zeroes(fall2);
     let bank = GPIO2Falling.bank();
-    let handler = bank[bitloc];
+    let handler = bank[bitloc as uint];
     match handler {
-      Some(h) => h(),
+      Some(h) => h.on_gpio_interrupt(),
       None => (),
     }
     let bit: u32 = 1 << bitloc;

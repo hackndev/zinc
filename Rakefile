@@ -4,7 +4,7 @@ TOOLCHAIN = 'arm-none-eabi-'
 RUNTIME_LIB = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4/<%= @platform.arch.arch %>/libgcc.a'
 RUSTC = 'rustc'
 
-features = [:tft_lcd, :multitasking]
+features = [:tft_lcd, :multitasking, :gpio_isr]
 
 Context.create(__FILE__, ENV['PLATFORM'], features)
 

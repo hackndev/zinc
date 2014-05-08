@@ -40,6 +40,6 @@ pub enum InterruptEdge {
   Falling,
 }
 
-pub trait GPIOISRHandler {
-  fn handle_isr(&self);
+pub trait GPIOInterruptHandler {
+  fn on_gpio_interrupt(&self);
 }

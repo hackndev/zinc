@@ -50,3 +50,10 @@ pub extern fn __morestack() {
 pub unsafe fn task_scheduler() {
   zinc::os::task::task_scheduler();
 }
+
+#[no_split_stack]
+#[no_mangle]
+#[cfg(cfg_gpio_isr, mcu_lpc17xx)]
+pub unsafe fn isr_eint_3() {
+  zinc::hal::lpc17xx::gpio::isr_gpio();
+}
