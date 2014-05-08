@@ -16,10 +16,10 @@
 //! GPIO configuration.
 
 use std::option::{Option, None};
-use std::intrinsics::abort;
+use std::intrinsics::{abort, transmute};
 
 use hal::gpio::{Direction, In, Out, Level, Low, High};
-use hal::gpio::{InterruptEdge, Rising, Falling};
+use hal::gpio::{GPIOISRHandler, InterruptEdge, Rising, Falling};
 use super::pin::{PinConf, Port0, Port1, Port2, Port3, Port4};
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
@@ -91,7 +91,7 @@ impl<'a> GPIO<'a> {
   }
 
   pub fn set_interrupt_handler(&self, edge: InterruptEdge,
-      h: Option<GPIOHandler>) {
+      h: Option<&GPIOISRHandler>) {
     let b = match self.pin.port {
       Port0 => match edge {
         Rising  => GPIO0Rising,
@@ -118,8 +118,7 @@ impl<'a> GPIO<'a> {
   }
 }
 
-pub type GPIOHandler = fn();
-type GPIOBank = [Option<GPIOHandler>, ..32];
+type GPIOBank = [Option<&'static GPIOISRHandler>, ..32];
 
 // TODO(farcaller): those static muts are accessed from both userland and isr,
 // so they must be synchronized in some way. Apparently, no scheduling should
@@ -150,8 +149,8 @@ impl GPIOInterruptHandlerBank {
 }
 
 fn set_gpio_handler(bank: GPIOInterruptHandlerBank, pin: u8,
-    h: Option<GPIOHandler>) {
-  bank.bank()[pin as uint] = h;
+    h: Option<&GPIOISRHandler>) {
+  bank.bank()[pin as uint] = unsafe { transmute(h) };
 }
 
 // TODO(farcaller): h shouldn't be called from isr, it actually should be passed
