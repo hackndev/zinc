@@ -34,3 +34,8 @@ pub enum Level {
   Low,
   High,
 }
+
+pub enum InterruptEdge {
+  Rising,
+  Falling,
+}
