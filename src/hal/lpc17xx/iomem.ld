@@ -47,6 +47,8 @@ iomem_TIMER1    = 0x40008000;
 
 iomem_UART0     = 0x4000C000;
 
+iomem_GPIOINT   = 0x40028080;
+
 iomem_PINSEL0   = 0x4002C000;
 iomem_PINSEL1   = 0x4002C004;
 iomem_PINSEL2   = 0x4002C008;

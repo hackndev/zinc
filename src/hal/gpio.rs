@@ -20,7 +20,7 @@ GPIOConf is a MCU-specific struct, that requires a `PinConf` for a pin
 and a direction.
 */
 
-#[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::gpio::GPIOConf;
+#[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::gpio::{GPIOConf, GPIO};
 #[cfg(mcu_stm32f4)] pub use hal::stm32f4::gpio::GPIOConf;
 
 /// GPIO direction.
@@ -33,4 +33,13 @@ pub enum Direction {
 pub enum Level {
   Low,
   High,
+}
+
+pub enum InterruptEdge {
+  Rising,
+  Falling,
+}
+
+pub trait GPIOISRHandler {
+  fn handle_isr(&self);
 }
