@@ -4,7 +4,6 @@ before_install:
 install:
     - sudo apt-get install gcc-arm-none-eabi
     - curl http://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-gnu.tar.gz | tar xz
-    - gem install pry
     - mkdir thirdparty
     - cd thirdparty
     - curl http://static.rust-lang.org/dist/rust-nightly.tar.gz | tar xz
