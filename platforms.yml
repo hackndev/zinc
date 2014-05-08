@@ -1,0 +1,6 @@
+lpc17xx:
+  arch:   cortex_m3
+  features:
+    - mcu_has_spi
+stm32f4:
+  arch:   cortex_m4

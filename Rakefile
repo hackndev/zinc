@@ -1,41 +1,12 @@
 load 'support/rake.rb'
 
-TOOLCHAIN = ENV['TOOLCHAIN'] || 'arm-none-eabi'
-TOOLCHAIN_LIBS_PATH = ENV['TOOLCHAIN_LIBS_PATH'] || '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4'
-RUSTC = ENV['RUSTC'] || 'rustc'
-FORCE_NATIVE_BUILD = ENV['FORCE_NATIVE_BUILD'] || false
+TOOLCHAIN = 'arm-none-eabi'
+TOOLCHAIN_LIBS_PATH = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4'
+RUSTC = 'rustc'
 
 features = [:tft_lcd, :multitasking]
 
-architectures = {
-  cortex_m3: {
-    arch: 'armv7-m',
-    cpu: 'cortex-m3',
-    target: 'thumbv7m-linux-eabi',
-  },
-  cortex_m4: {
-    arch: 'armv7e-m',
-    cpu: 'cortex-m4',
-    target: 'thumbv7em-linux-eabi',
-  },
-}
-
-platforms = {
-  lpc17xx: {
-    arch: :cortex_m3,
-    config: :mcu_lpc17xx,
-    features: [:mcu_has_spi],
-  },
-  stm32f4: {
-    arch: :cortex_m4,
-    config: :mcu_stm32f4,
-  },
-}
-
-rsflags = %w[-Z no-landing-pads -C relocation_model=static]
-ldflags = %w[]
-
-Context.prepare!(rsflags, ldflags, platforms, architectures, features)
+Context.create(__FILE__, ENV['PLATFORM'], features)
 
 provide_stdlibs
 
@@ -43,6 +14,7 @@ compile_rust :libc_crate, {
   source:  'thirdparty/liblibc/lib.rs'.in_root,
   produce: 'thirdparty/liblibc/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
+  recompile_on: :triple,
 }
 
 compile_rust :std_crate, {
@@ -51,6 +23,7 @@ compile_rust :std_crate, {
   produce: 'thirdparty/libstd/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
   ignore_warnings: ['unused_variable'],
+  recompile_on: :triple,
 }
 
 # zinc crate
@@ -59,6 +32,7 @@ compile_rust :zinc_crate, {
   deps:    :std_crate,
   produce: 'main.rs'.in_source.as_rlib.in_build,
   out_dir: true,
+  recompile_on: [:triple, :platform, :features],
 }
 
 # zinc runtime support lib
@@ -67,6 +41,7 @@ compile_rust :zinc_support, {
   produce: 'support.o'.in_intermediate,
   llvm_pass: :inline,
   lto: false,
+  recompile_on: :triple,
 }
 
 # zinc isr crate
@@ -74,6 +49,7 @@ compile_rust :zinc_isr, {
   source:  'hal/isr.rs'.in_source,
   deps:    :std_crate,
   produce: 'isr.o'.in_intermediate,
+  recompile_on: [:triple, :features],
 }
 
 # zinc scheduler assembly
@@ -82,47 +58,57 @@ if features.include?(:multitasking)
   compile_c :zinc_isr_sched, {
     source:  'hal/cortex_m3/sched.S'.in_source,
     produce: 'isr_sched.o'.in_intermediate,
+    recompile_on: [:triple, :features],
   }
 end
 
-compile_rust :app_crate, {
-  source: Context.app,
-  deps: [
-    :zinc_crate,
-    Context.track_application_name,
-  ],
-  produce: Context.app.as_rlib.in_build,
-  out_dir: true,
-}
+app_tasks = Context.instance.applications.map do |a|
+  compile_rust "app_#{a}_crate".to_sym, {
+    source: "apps/app_#{a}.rs".in_root,
+    deps: [
+      :zinc_crate,
+      :std_crate,
+    ],
+    produce: "apps/app_#{a}.rs".in_root.as_rlib.in_intermediate(a),
+    out_dir: true,
+    recompile_on: [:triple, :platform, :features],
+  }
 
-compile_rust :app, {
-  source: 'lib/app.rs'.in_source,
-  deps: [
-    :std_crate,
-    :zinc_crate,
-    :app_crate,
-  ],
-  produce: 'app.o'.in_intermediate,
-}
+  compile_rust "app_#{a}".to_sym, {
+    source: 'lib/app.rs'.in_source,
+    deps: [
+      :std_crate,
+      :zinc_crate,
+      "app_#{a}_crate".to_sym,
+    ],
+    produce: "app_#{a}.o".in_intermediate(a),
+    search_paths: a.in_intermediate,
+  }
 
-link_binary :app_elf, {
-  script: 'layout.ld'.in_platform,
-  deps: [:app, :zinc_isr, :zinc_support] +
-        (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
-  produce: 'zinc.elf'.in_build,
-}
+  link_binary "app_#{a}_elf".to_sym, {
+    script: 'layout.ld'.in_platform,
+    deps: ["app_#{a}".to_sym, :zinc_isr, :zinc_support] +
+          (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
+    produce: "app_#{a}.elf".in_build,
+  }
 
-make_binary :app_bin, {
-  source:  'zinc.elf'.in_build,
-  produce: 'zinc.bin'.in_build,
-}
+  t_bin = make_binary "app_#{a}_bin".to_sym, {
+    source:  "app_#{a}.elf".in_build,
+    produce: "app_#{a}.bin".in_build,
+  }
 
-listing :app_lst, {
-  source:  'zinc.elf'.in_build,
-  produce: 'zinc.lst'.in_build,
-}
+  t_lst = listing "app_#{a}_lst".to_sym, {
+    source:  "app_#{a}.elf".in_build,
+    produce: "app_#{a}.lst".in_build,
+  }
 
-report_size 'zinc.elf'.in_build
+  t_size = report_size "app_#{a}_size".to_sym, {
+    source: "app_#{a}.elf".in_build,
+  }
 
-task :build => ['zinc.bin'.in_build, 'zinc.lst'.in_build, :report_size]
-task :default => :build
+  desc "Build application #{a}"
+  task "build_#{a}".to_sym => [t_bin.name, t_lst.name, t_size.name]
+end
+
+desc "Build all applications"
+task :build_all => app_tasks.map { |t| t.name }
