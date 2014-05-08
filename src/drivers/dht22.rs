@@ -16,14 +16,14 @@
 use std::option::{Option, Some, None};
 use std::iter::{Iterator, range};
 
-use hal::gpio::{GPIOConf, Low, High, In, Out, Level};
+use hal::gpio::{GPIO, GPIOConf, Low, High, In, Out, Level};
 use hal::timer::Timer;
 
 /// Basic DHT22 driver ported over from arduino example.
 ///
 /// TODO(farcaller): this driver doesn't conform to zinc's xxxConf layout.
 pub struct DHT22<'a, T> {
-  gpio: &'a GPIOConf,
+  gpio: GPIO<'a>,
   timer: &'a T,
 }
 
