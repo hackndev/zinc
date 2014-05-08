@@ -13,42 +13,66 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::intrinsics::abort;
+use std::intrinsics::{abort, uninit};
 use std::option::{Some, None};
 use std::slice::{ImmutableVector};
 use std::container::Container;
 use std::iter::Iterator;
 
-use hal::gpio::GPIOConf;
+use hal::gpio::{GPIOISRHandler, GPIO, GPIOConf, Falling};
 use hal::spi::SPI;
 use hal::timer::Timer;
 
 pub struct Mrf24j40<'a, S, T> {
   spi: &'a S,
   timer: &'a T,
-  reset: GPIOConf,
-  cs: GPIOConf,
-  interrupt: GPIOConf,
+  reset: GPIO<'a>,
+  cs: GPIO<'a>,
+  interrupt: GPIO<'a>,
 
   channel: u8,
+  interrupt_handler: InterruptHandler<'a, S, T>,
+}
+
+struct InterruptHandler<'a, S, T> {
+  driver: *Mrf24j40<'a, S, T>,
+}
+
+impl<'a, S: SPI, T: Timer> GPIOISRHandler for InterruptHandler<'a, S, T> {
+  fn handle_isr(&self) {
+    unsafe { (*self.driver).handle_isr() };
+  }
 }
 
 impl<'a, S: SPI, T: Timer> Mrf24j40<'a, S, T> {
-  pub fn new(spi: &'a S, timer: &'a T, reset: GPIOConf, cs: GPIOConf,
-      interrupt: GPIOConf, initial_channel: u8) -> Mrf24j40<'a, S, T> {
-    let radio = Mrf24j40 {
+  pub fn new(spi: &'a S, timer: &'a T, reset: &'a GPIOConf, cs: &'a GPIOConf,
+      interrupt: &'a GPIOConf, initial_channel: u8) -> Mrf24j40<'a, S, T> {
+    let int_gpio = interrupt.setup();
+    let mut radio = Mrf24j40 {
       spi: spi,
       timer: timer,
-      reset: *reset.setup(),
-      cs: *cs.setup(),
-      interrupt: *interrupt.setup(),
+      reset: reset.setup(),
+      cs: cs.setup(),
+      interrupt: int_gpio,
       channel: initial_channel,
+      interrupt_handler: InterruptHandler {
+        driver: 0 as *Mrf24j40<S, T>,
+      }
     };
+
+    radio.interrupt_handler.driver = &radio as *Mrf24j40<S, T>;
 
     radio.hard_reset();
     radio.reinitialize();
 
+    int_gpio.set_interrupt_handler(Falling, Some(&radio.interrupt_handler
+        as &GPIOISRHandler));
+
     radio
+  }
+
+  fn handle_isr(&self) {
+    // TODO(farcaller): implement
   }
 
   fn hard_reset(&self) {

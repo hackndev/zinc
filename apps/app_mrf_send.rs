@@ -82,8 +82,8 @@ pub fn main() {
 
   uart.puts("MRF init...\n");
 
-  let mrf = mrf24j40::Mrf24j40::new(&spi, &timer, platform.reset, platform.cs,
-      platform.interrupt, 12);
+  let mrf = mrf24j40::Mrf24j40::new(&spi, &timer, &platform.reset, &platform.cs,
+      &platform.interrupt, 12);
 
   mrf.set_pan(0xcafe);
   mrf.set_short_address(0x6001);
