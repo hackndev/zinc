@@ -127,8 +127,8 @@ def provide_stdlibs
   directory 'thirdparty'.in_root
 
   Rake::FileTask.define_task 'thirdparty/rust' do |t|
-    sh "git clone --single-branch --depth 1 https://github.com/mozilla/rust #{t.name} && " +
-    "cd thirdparty/rust/src && patch -p1 -i ../../../support/rust.patch"
+    sh "git clone --single-branch --depth 20 https://github.com/mozilla/rust #{t.name} && " +
+    "cd thirdparty/rust/src && git checkout 2dcbad5 && patch -p1 -i ../../../support/rust.patch"
   end
 
   Rake::FileTask.define_task libstd_src => 'thirdparty/rust' do |t|
