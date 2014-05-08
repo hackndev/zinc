@@ -39,3 +39,7 @@ pub enum InterruptEdge {
   Rising,
   Falling,
 }
+
+pub trait GPIOISRHandler {
+  fn handle_isr(&self);
+}
