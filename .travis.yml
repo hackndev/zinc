@@ -1,8 +1,6 @@
 before_install:
     - yes | sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded
-    - sudo apt-get update
-    - ls /etc/apt/sources.list.d
-    #-o Dir::Etc::sourcelist="sources.list.d/$1" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+    - sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/terry_guo-gcc-arm-embedded-precise.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 install:
     - sudo apt-get install gcc-arm-none-eabi
     - curl http://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-gnu.tar.gz | tar xz
