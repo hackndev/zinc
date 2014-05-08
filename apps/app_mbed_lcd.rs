@@ -62,8 +62,8 @@ pub fn main() {
 
   let timer = platform.timer.setup();
   let spi = platform.spi.setup();
-  let screen = &lcd::c12332::C12332::new(&spi, &timer, platform.lcd_dc,
-      platform.lcd_cs, platform.lcd_reset) as &lcd::LCD;
+  let screen = &lcd::c12332::C12332::new(&spi, &timer, &platform.lcd_dc,
+      &platform.lcd_cs, &platform.lcd_reset) as &lcd::LCD;
 
   screen.clear();
   screen.puts("hello lcd");
