@@ -43,7 +43,7 @@ class Context
 
     @platform = @available_platforms[platform] or raise ArgumentError.new(
         "Unknown platform #{platform}, " +
-        "available platforms: #{platforms.keys.join(', ')}")
+        "available platforms: #{@available_platforms.keys.join(', ')}")
     @platform.arch = @available_archs[@platform.arch_name] or raise ArgumentError.new(
         "Undefined arch #{@platform.arch_name} for platform #{@platform}, " +
         "available architectures: #{@available_archs.keys.join(', ')}")
