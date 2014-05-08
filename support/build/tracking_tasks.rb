@@ -29,7 +29,9 @@ class TrackingTask < Rake::Task
 
   def needed?
     if File.exist?(track_file)
-      track_expected != open(track_file).read.strip
+      track_actual = open(track_file).read
+      need_update = track_actual != track_expected
+      need_update
     else
       true
     end

@@ -45,8 +45,8 @@ def compile_rust(n, h)
       Context.instance.tracking_triple.name
     when :platform
       Context.instance.tracking_platform.name
-    when :application_name
-      Context.instance.tracking_application_name.name
+    when :features
+      Context.instance.tracking_features.name
     end
   end
 

@@ -32,7 +32,7 @@ compile_rust :zinc_crate, {
   deps:    :std_crate,
   produce: 'main.rs'.in_source.as_rlib.in_build,
   out_dir: true,
-  recompile_on: [:triple, :platform],
+  recompile_on: [:triple, :platform, :features],
 }
 
 # zinc runtime support lib
@@ -49,7 +49,7 @@ compile_rust :zinc_isr, {
   source:  'hal/isr.rs'.in_source,
   deps:    :std_crate,
   produce: 'isr.o'.in_intermediate,
-  recompile_on: :triple,
+  recompile_on: [:triple, :features],
 }
 
 # zinc scheduler assembly
@@ -58,7 +58,7 @@ if features.include?(:multitasking)
   compile_c :zinc_isr_sched, {
     source:  'hal/cortex_m3/sched.S'.in_source,
     produce: 'isr_sched.o'.in_intermediate,
-    recompile_on: :triple,
+    recompile_on: [:triple, :features],
   }
 end
 
@@ -71,7 +71,7 @@ app_tasks = Context.instance.applications.map do |a|
     ],
     produce: "apps/app_#{a}.rs".in_root.as_rlib.in_intermediate(a),
     out_dir: true,
-    recompile_on: [:triple, :platform],
+    recompile_on: [:triple, :platform, :features],
   }
 
   compile_rust "app_#{a}".to_sym, {

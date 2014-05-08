@@ -14,6 +14,7 @@
 # limitations under the License.
 
 require 'singleton'
+require 'yaml'
 
 require 'build/platform'
 require 'build/architecture'
@@ -22,7 +23,7 @@ require 'build/rlib'
 
 class Context
   attr_reader :rules, :env, :application, :tracking_triple, :tracking_platform
-  attr_reader :applications
+  attr_reader :applications, :tracking_features
 
   def self.create(*args)
     raise RuntimeError("Context already created") if @context_instance
@@ -36,6 +37,7 @@ class Context
   def initialize(rakefile, platform, build_features)
     @cached_rlib_names = {}
     @rules = {}
+    @build_features = build_features
 
     @root_path = File.dirname(rakefile)
     @available_platforms = Platform.from_yaml(root_dir('platforms.yml'))
@@ -48,7 +50,7 @@ class Context
         "Undefined arch #{@platform.arch_name} for platform #{@platform}, " +
         "available architectures: #{@available_archs.keys.join(', ')}")
 
-    collect_config_flags!(build_features)
+    collect_config_flags!
     collect_applications!
     initialize_environment!
     define_tracking_tasks!
@@ -88,8 +90,8 @@ class Context
     super *args
   end
 
-  def collect_config_flags!(build_features)
-    @config_flags = (@platform.features + build_features).map do |f|
+  def collect_config_flags!
+    @config_flags = (@platform.features + @build_features).map do |f|
       "cfg_#{f}"
     end
 
@@ -132,6 +134,8 @@ class Context
         build_dir('.target_triple'), @platform.arch.target)
     @tracking_platform = TrackingTask.define_task(
         build_dir('.target_name'), @platform.name)
+    @tracking_features = TrackingTask.define_task(
+        build_dir('.features'), build_features_hash)
   end
 
   def collect_applications!
@@ -144,5 +148,9 @@ class Context
     return ENV[name.to_s] if ENV[name.to_s]
     return Object.const_get(name) if Object.const_defined?(name)
     raise RuntimeError.new("Undefined constant #{name}")
+  end
+
+  def build_features_hash
+    @build_features.to_yaml
   end
 end
