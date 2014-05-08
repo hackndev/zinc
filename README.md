@@ -30,7 +30,7 @@ Get a gcc cross-toolchain for arm and configure `TOOLCHAIN` and
 To build an application from apps/ use the following rake command:
 
 ```
-rake PLATFORM=<platform> APP=<app>
+rake PLATFORM=<platform> build_all  # or build_<appname>
 ```
 
 ## License
