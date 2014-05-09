@@ -121,29 +121,15 @@ def make_binary(n, h)
 end
 
 def provide_stdlibs
-  liblibc_src = 'thirdparty/liblibc/lib.rs'.in_root
-  libstd_src = 'thirdparty/libstd/lib.rs'.in_root
+  libcore_src = 'thirdparty/libcore/lib.rs'.in_root
 
   directory 'thirdparty'.in_root
 
   Rake::FileTask.define_task 'thirdparty/rust' do |t|
-    sh "git clone --single-branch --depth 20 https://github.com/mozilla/rust #{t.name} && " +
-    "cd thirdparty/rust/src && git checkout 2dcbad5 && patch -p1 -i ../../../support/rust.patch"
+    sh "git clone --single-branch --depth 1 https://github.com/mozilla/rust #{t.name}"
   end
 
-  Rake::FileTask.define_task libstd_src => 'thirdparty/rust' do |t|
-    sh "ln -s rust/src/libstd thirdparty/libstd"
-  end.invoke
-
-  Rake::FileTask.define_task liblibc_src => 'thirdparty/rust' do |t|
-    sh "ln -s rust/src/liblibc thirdparty/liblibc"
-  end.invoke
-
-  Rake::FileTask.define_task 'librustrt.a'.in_build do |t|
-    sh "#{:ar.in_toolchain} cr #{t.name}"
-  end.invoke
-
-  Rake::FileTask.define_task 'libbacktrace.a'.in_build do |t|
-    sh "#{:ar.in_toolchain} cr #{t.name}"
+  Rake::FileTask.define_task libcore_src => 'thirdparty/rust' do |t|
+    sh "ln -s rust/src/libcore thirdparty/libcore"
   end.invoke
 end

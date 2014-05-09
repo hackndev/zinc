@@ -20,7 +20,7 @@
 #![crate_type="staticlib"]
 #![no_std]
 
-extern crate std;
+extern crate core;
 extern crate zinc;
 extern crate app;
 
@@ -35,7 +35,7 @@ pub extern fn main() {
 #[no_mangle]
 #[cfg(not(cfg_multitasking))]
 pub extern fn __morestack() {
-  unsafe { std::intrinsics::abort() };
+  unsafe { core::intrinsics::abort() };
 }
 
 #[no_split_stack]
@@ -50,4 +50,10 @@ pub extern fn __morestack() {
 #[cfg(cfg_multitasking)]
 pub unsafe fn task_scheduler() {
   zinc::os::task::task_scheduler();
+}
+
+#[no_split_stack]
+#[no_mangle]
+pub unsafe fn rust_fail_bounds_check() {
+  core::intrinsics::abort();
 }

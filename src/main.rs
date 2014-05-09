@@ -43,10 +43,25 @@ The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
 */
 
-extern crate std;
+extern crate core;
 
-pub mod hal;
-pub mod drivers;
-pub mod lib;
 pub mod boards;
+pub mod drivers;
+pub mod hal;
+pub mod lib;
 pub mod os;
+
+mod std {
+  pub use core::cast;
+  pub use core::cell;
+  pub use core::cmp;  // this seem to be the only required reexport
+                      // used for #[deriving(Eq)]
+  pub use core::container;
+  pub use core::intrinsics;
+  pub use core::iter;
+  pub use core::kinds;
+  pub use core::mem;
+  pub use core::option;
+  pub use core::slice;
+  pub use core::str;
+}
