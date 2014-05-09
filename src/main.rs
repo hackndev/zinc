@@ -51,6 +51,7 @@ pub mod hal;
 pub mod lib;
 pub mod os;
 
+// TODO(farcaller): clean up when fixed.
 mod std {
   pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
 }
