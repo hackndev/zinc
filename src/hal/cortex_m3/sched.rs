@@ -15,6 +15,9 @@
 
 //! Cortex-M3 specific support code for scheduler.
 
+use core::ops::Drop;
+use core::intrinsics::abort;
+
 use os::task::Task;
 use super::scb;
 
@@ -75,7 +78,56 @@ impl SavedState {
 }
 
 // TODO(farcaller): this should actually kill the task.
+// TODO(bgamari): It should also unlock anything the task holds
 /// Default handler for task that tries to return.
 unsafe fn task_finished() {
   asm!("bkpt" :::: "volatile");
+}
+
+/// Phantom type to indicate that interrupts are disabled
+pub struct NoInterrupts {
+  contents: ()
+}
+
+impl NoInterrupts {
+  pub fn new() -> NoInterrupts {
+    unsafe {
+      disable_irqs();
+    }
+    NoInterrupts { contents: () }
+  }
+}
+
+impl Drop for NoInterrupts {
+  fn drop(&mut self) {
+    unsafe {
+      enable_irqs();
+    }
+  }
+}
+
+static mut irq_level : uint = 0;
+
+/// Disables all interrupts except Reset, HardFault, and NMI.
+/// Note that this is reference counted: if `disable_irqs` is called
+/// twice then interrupts will only be re-enabled upon the second call
+/// to `enable_irqs`.
+#[inline(always)]
+unsafe fn disable_irqs() {
+  if irq_level == 0 {
+    asm!("cpsid i" :::: "volatile");
+  }
+  irq_level += 1;
+}
+
+/// Enables all interrupts except Reset, HardFault, and NMI.
+#[inline(always)]
+unsafe fn enable_irqs() {
+  if irq_level == 0 {
+    abort();
+  }
+  irq_level -= 1;
+  if irq_level == 0 {
+    asm!("cpsie i" :::: "volatile");
+  }
 }

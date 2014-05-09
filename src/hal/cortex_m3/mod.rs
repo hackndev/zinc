@@ -25,3 +25,4 @@ pub mod scb;
 pub mod nvic;
 pub mod mpu;
 #[cfg(cfg_multitasking)] pub mod sched;
+#[cfg(cfg_multitasking)] pub mod lock;
