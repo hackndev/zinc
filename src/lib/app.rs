@@ -51,9 +51,3 @@ pub extern fn __morestack() {
 pub unsafe fn task_scheduler() {
   zinc::os::task::task_scheduler();
 }
-
-#[no_split_stack]
-#[no_mangle]
-pub unsafe fn rust_fail_bounds_check() {
-  core::intrinsics::abort();
-}
