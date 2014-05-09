@@ -3,9 +3,9 @@
 #![no_std]
 
 extern crate zinc;
-extern crate std;
+extern crate core;
 
-use std::intrinsics::volatile_load;
+use core::intrinsics::volatile_load;
 
 #[cfg(mcu_lpc17xx)] use zinc::boards::mbed_lpc1768;
 use zinc::hal::gpio::GPIOConf;
