@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::intrinsics::abort;
-use std::option::{Some, None};
-use std::slice::{ImmutableVector};
-use std::container::Container;
-use std::iter::Iterator;
+use core::intrinsics::abort;
+use core::option::{Some, None};
+use core::slice::{ImmutableVector};
+use core::container::Container;
+use core::iter::Iterator;
 
 use hal::gpio::{GPIOInterruptHandler, GPIO, GPIOConf, Falling};
 use hal::spi::SPI;

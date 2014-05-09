@@ -3,10 +3,10 @@
 #![no_std]
 
 extern crate zinc;
-extern crate std;
+extern crate core;
 
-use std::str::{Str, StrSlice};
-use std::slice::Vector;
+use core::str::{Str, StrSlice};
+use core::slice::Vector;
 
 use zinc::boards::mbed_lpc1768;
 use zinc::drivers::chario::CharIO;

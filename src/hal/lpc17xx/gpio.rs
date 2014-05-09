@@ -15,8 +15,8 @@
 
 //! GPIO configuration.
 
-use std::option::{Option, Some, None};
-use std::intrinsics::{abort, transmute};
+use core::option::{Option, Some, None};
+use core::intrinsics::{abort, transmute};
 
 use hal::gpio::{Direction, In, Out, Level, Low, High};
 use hal::gpio::{GPIOInterruptHandler, InterruptEdge, Rising, Falling};
