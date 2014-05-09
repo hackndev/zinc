@@ -21,7 +21,7 @@
 #![crate_type="staticlib"]
 #![no_std]
 
-extern crate std;
+extern crate core;
 
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
 

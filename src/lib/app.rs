@@ -20,7 +20,7 @@
 #![crate_type="staticlib"]
 #![no_std]
 
-extern crate std;
+extern crate core;
 extern crate zinc;
 extern crate app;
 
@@ -35,7 +35,7 @@ pub extern fn main() {
 #[no_mangle]
 #[cfg(not(cfg_multitasking))]
 pub extern fn __morestack() {
-  unsafe { std::intrinsics::abort() };
+  unsafe { core::intrinsics::abort() };
 }
 
 #[no_split_stack]

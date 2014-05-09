@@ -78,34 +78,40 @@ pub fn abort() -> ! {
 #[no_split_stack]
 #[no_mangle]
 pub fn __aeabi_unwind_cpp_pr0() {
-  unsafe { asm!("bkpt") }
-  loop {}
+  abort();
 }
 
 #[no_split_stack]
 #[no_mangle]
 pub fn __aeabi_unwind_cpp_pr1() {
-  unsafe { asm!("bkpt") }
-  loop {}
+  abort();
 }
 
 #[no_split_stack]
 #[no_mangle]
 pub fn get_eit_entry() {
-  unsafe { asm!("bkpt") }
-  loop {}
+  abort();
 }
 
 #[no_split_stack]
 #[no_mangle]
 pub fn unwind_phase2_forced() {
-  unsafe { asm!("bkpt") }
-  loop {}
+  abort();
 }
 
 #[no_split_stack]
 #[no_mangle]
 pub fn unwind_phase2() {
-  unsafe { asm!("bkpt") }
-  loop {}
+  abort();
+}
+
+#[no_split_stack]
+#[no_mangle]
+pub unsafe fn rust_fail_bounds_check() {
+  abort();
+}
+#[no_split_stack]
+#[no_mangle]
+pub fn rust_begin_unwind() {
+  abort();
 }

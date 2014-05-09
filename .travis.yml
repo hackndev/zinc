@@ -8,13 +8,11 @@ install:
     - cd thirdparty
     - curl http://static.rust-lang.org/dist/rust-nightly.tar.gz | tar xz
     - mv rust-nightly rust
-    - cd rust/src
-    - patch -p1 -i ../../../support/rust.patch
-    - cd ../../..
+    - cd ..
 before_script:
     - export TOOLCHAIN_LIBS_PATH=/usr/lib/gcc/arm-none-eabi/4.8.3/
     - export RUSTC="`pwd`/rust-nightly-x86_64-unknown-linux-gnu/bin/rustc"
-    - ./rust-nightly-x86_64-unknown-linux-gnu/bin/rustc --version
+    - $RUSTC --version
 script:
     - rake build_all
 env:

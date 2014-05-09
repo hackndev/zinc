@@ -10,26 +10,17 @@ Context.create(__FILE__, ENV['PLATFORM'], features)
 
 provide_stdlibs
 
-compile_rust :libc_crate, {
-  source:  'thirdparty/liblibc/lib.rs'.in_root,
-  produce: 'thirdparty/liblibc/lib.rs'.in_root.as_rlib.in_build,
+compile_rust :core_crate, {
+  source:  'thirdparty/libcore/lib.rs'.in_root,
+  produce: 'thirdparty/libcore/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
-  recompile_on: :triple,
-}
-
-compile_rust :std_crate, {
-  source:  'thirdparty/libstd/lib.rs'.in_root,
-  deps:    :libc_crate,
-  produce: 'thirdparty/libstd/lib.rs'.in_root.as_rlib.in_build,
-  out_dir: true,
-  ignore_warnings: ['unused_variable'],
   recompile_on: :triple,
 }
 
 # zinc crate
 compile_rust :zinc_crate, {
   source:  'main.rs'.in_source,
-  deps:    :std_crate,
+  deps:    :core_crate,
   produce: 'main.rs'.in_source.as_rlib.in_build,
   out_dir: true,
   recompile_on: [:triple, :platform, :features],
@@ -47,7 +38,7 @@ compile_rust :zinc_support, {
 # zinc isr crate
 compile_rust :zinc_isr, {
   source:  'hal/isr.rs'.in_source,
-  deps:    :std_crate,
+  deps:    :core_crate,
   produce: 'isr.o'.in_intermediate,
   recompile_on: [:triple, :features],
 }
@@ -67,7 +58,7 @@ app_tasks = Context.instance.applications.map do |a|
     source: "apps/app_#{a}.rs".in_root,
     deps: [
       :zinc_crate,
-      :std_crate,
+      :core_crate,
     ],
     produce: "apps/app_#{a}.rs".in_root.as_rlib.in_intermediate(a),
     out_dir: true,
@@ -77,7 +68,7 @@ app_tasks = Context.instance.applications.map do |a|
   compile_rust "app_#{a}".to_sym, {
     source: 'lib/app.rs'.in_source,
     deps: [
-      :std_crate,
+      :core_crate,
       :zinc_crate,
       "app_#{a}_crate".to_sym,
     ],

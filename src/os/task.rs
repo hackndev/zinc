@@ -15,8 +15,8 @@
 
 //! Basic multitasking interface.
 
-use std::mem::size_of;
-use std::intrinsics::abort;
+use core::mem::size_of;
+use core::intrinsics::abort;
 
 use hal::cortex_m3::{sched, systick};
 use os::syscall::syscall;
@@ -45,7 +45,7 @@ static ReservedPivilegedStackSize: u32 = 256;
 static MaxTasksCount: uint = 4;
 
 mod defined_tasks_count {
-  use std::intrinsics::abort;
+  use core::intrinsics::abort;
 
   /// Total defined tasks count.
   static mut DefinedTasksCount: uint = 0;

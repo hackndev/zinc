@@ -15,9 +15,9 @@
 
 //! A cell that with volatile setter and getter.
 
-use std::kinds::marker;
-use std::intrinsics::{volatile_load, volatile_store};
-use std::cast::transmute_mut_unsafe;
+use core::kinds::marker;
+use core::intrinsics::{volatile_load, volatile_store};
+use core::cast::transmute_mut_unsafe;
 
 pub struct VolatileCell<T> {
   value: T,

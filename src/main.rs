@@ -43,10 +43,15 @@ The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
 */
 
-extern crate std;
+extern crate core;
 
-pub mod hal;
-pub mod drivers;
-pub mod lib;
 pub mod boards;
+pub mod drivers;
+pub mod hal;
+pub mod lib;
 pub mod os;
+
+// TODO(farcaller): clean up when fixed.
+mod std {
+  pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
+}

@@ -23,9 +23,9 @@ The driver uses SPI bus for output only, it never reads back from SPI, which
 might be an issue for any other peripheral sharing the same SPI bus.
 */
 
-use std::cell;
-use std::slice::ImmutableVector;
-use std::mem::init;
+use core::cell;
+use core::slice::ImmutableVector;
+use core::mem::init;
 
 use super::font_small_7;
 use super::LCD;
