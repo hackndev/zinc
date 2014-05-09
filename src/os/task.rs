@@ -19,6 +19,7 @@ use core::mem::size_of;
 use core::intrinsics::abort;
 
 use hal::cortex_m3::{sched, systick};
+use hal::cortex_m3::sched::NoInterrupts;
 use os::syscall::syscall;
 use hal::stack;
 
@@ -64,10 +65,24 @@ mod defined_tasks_count {
   }
 }
 
+pub enum Status {
+  Runnable,
+  Blocked
+}
+
 /// Task descriptor, provides task stack pointer.
 pub struct TaskDescriptor {
   pub stack_start: u32,
   pub stack_end: u32,
+  pub status: Status
+}
+
+impl TaskDescriptor {
+  pub fn block(&mut self, _: NoInterrupts) {
+    self.status = Blocked;
+    sched::switch_context();
+  }
+  pub fn unblock(&mut self, _: &NoInterrupts) { self.status = Runnable; }
 }
 
 struct TasksCollection {
@@ -75,13 +90,13 @@ struct TasksCollection {
   pub tasks: [TaskDescriptor, ..MaxTasksCount],
 }
 
-static mut Tasks: TasksCollection = TasksCollection {
+pub static mut Tasks: TasksCollection = TasksCollection {
   current_task: 0,
-  tasks: [TaskDescriptor { stack_start: 0, stack_end: 0 }, ..MaxTasksCount]
+  tasks: [TaskDescriptor { stack_start: 0, stack_end: 0, status: Runnable }, ..MaxTasksCount]
 };
 
 impl TasksCollection {
-  fn current_task<'a>(&'a mut self) -> &'a mut TaskDescriptor {
+  pub fn current_task<'a>(&'a mut self) -> &'a mut TaskDescriptor {
     &mut self.tasks[self.current_task]
   }
 
@@ -91,8 +106,10 @@ impl TasksCollection {
       if self.current_task == defined_tasks_count::get() {
         self.current_task = 0;
       }
-      if self.current_task().valid() {
-        break;
+      match self.current_task() {
+        &task if !task.valid()                 => {}
+        &TaskDescriptor {status: Runnable, ..} => break,
+        _                                      => {}
       }
     }
   }
@@ -165,6 +182,7 @@ impl TaskDescriptor {
     TaskDescriptor {
       stack_start: stack_top,
       stack_end: stack_base - stack_size,
+      status: Runnable,
     }
   }
 
