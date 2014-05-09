@@ -1,5 +1,5 @@
 // Zinc, the bare metal stack for rust.
-// Copyright 2014 Vladimir "farcaller" Pouzanov <farcaller@gmail.com>
+// Copyright 2014 Ben Gamari <bgamari@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,24 +13,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-HAL provides abstactions for specific MCU hardware.
-
-Each peripheral in `hal` has a `xxxConf` struct that can be defined statically,
-and each such struct has a `setup()` method that configures the hardware
-(returning the object to interact with it where applicable).
-*/
-
-
-#[cfg(mcu_lpc17xx)] pub mod lpc17xx;
-#[cfg(mcu_stm32f4)] pub mod stm32f4;
-#[cfg(mcu_k20)]     pub mod k20;
-
-#[cfg(arch_cortex_m3)] pub mod cortex_m3;
-
-pub mod mem_init;
-pub mod pin;
-pub mod spi;
-pub mod stack;
-pub mod timer;
-pub mod uart;
+//! HAL for Freescale Kinetis K20
