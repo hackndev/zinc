@@ -20,7 +20,7 @@ Some pins that could be configured here may be missing from actual MCU depending
 on the package.
 */
 
-use std::intrinsics::abort;
+use core::intrinsics::abort;
 
 #[path="pinmap.rs"] pub mod map;
 

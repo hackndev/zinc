@@ -20,7 +20,7 @@ Currently supports only SPI mode. Note that `SPI` is not the same peripheral and
 it's currently not supported at all.
 */
 
-use std::intrinsics::abort;
+use core::intrinsics::abort;
 
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, SSP0Clock, SSP1Clock};
 use hal::lpc17xx::init::system_clock;

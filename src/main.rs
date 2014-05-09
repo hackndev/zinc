@@ -52,16 +52,5 @@ pub mod lib;
 pub mod os;
 
 mod std {
-  pub use core::cast;
-  pub use core::cell;
-  pub use core::cmp;  // this seem to be the only required reexport
-                      // used for #[deriving(Eq)]
-  pub use core::container;
-  pub use core::intrinsics;
-  pub use core::iter;
-  pub use core::kinds;
-  pub use core::mem;
-  pub use core::option;
-  pub use core::slice;
-  pub use core::str;
+  pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
 }

@@ -15,9 +15,9 @@
 
 //! debug::port provides interface to output structured data over serial port.
 
-use std::mem::size_of;
-use std::cast::transmute;
-use std::intrinsics::abort;
+use core::mem::size_of;
+use core::cast::transmute;
+use core::intrinsics::abort;
 
 use drivers::chario::CharIO;
 use hal::uart::{UART, UARTConf};

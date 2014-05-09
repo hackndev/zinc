@@ -19,7 +19,7 @@ Peripheral clock management.
 This module should be considered private until further notice.
 */
 
-use std::intrinsics::abort;
+use core::intrinsics::abort;
 
 use super::init::system_clock;
 

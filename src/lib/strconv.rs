@@ -15,7 +15,7 @@
 
 //! A simple integer-to-string conversion code with statically sized buffers.
 
-use std::mem::uninit;
+use core::mem::uninit;
 
 pub fn itoa(val: u32, buf : &mut [u8], base: u32) {
   let mut rbuf : [u8, ..32] = unsafe { uninit() };

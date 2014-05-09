@@ -15,13 +15,13 @@
 
 //! Generic char output trait.
 
-use std::option::{Some, None};
-use std::str::{Str, StrSlice};
-use std::slice::{Vector, ImmutableVector};
-use std::container::Container;
-use std::iter::Iterator;
+use core::option::{Some, None};
+use core::str::{Str, StrSlice};
+use core::slice::{Vector, ImmutableVector};
+use core::container::Container;
+use core::iter::Iterator;
 
-use std::mem::init;
+use core::mem::init;
 
 use lib::strconv;
 

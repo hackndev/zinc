@@ -20,7 +20,7 @@ This code doesn't support UART1, while it really should (UART1 has more features
 than other UARTs in MCU).
 */
 
-use std::intrinsics::abort;
+use core::intrinsics::abort;
 
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, UART0Clock, UART2Clock, UART3Clock};
 use drivers::chario::CharIO;
