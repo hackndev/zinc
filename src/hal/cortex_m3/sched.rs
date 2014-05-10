@@ -31,7 +31,7 @@ pub fn switch_context() {
 #[cfg(not(test))]
 #[inline(always)]
 pub fn set_task_stack_pointer(val: u32) {
-  unsafe { asm!("msr psp, $0" :: "r"(val)) };
+  unsafe { asm!("msr psp, $0" :: "r"(val) :: "volatile") };
 }
 
 #[cfg(test)]
@@ -42,7 +42,7 @@ pub fn set_task_stack_pointer(val: u32) { unimplemented!() }
 #[inline(always)]
 pub fn get_task_stack_pointer() -> u32 {
   let mut val: u32;
-  unsafe { asm!("mrs $0, psp" : "=r"(val)) };
+  unsafe { asm!("mrs $0, psp" : "=r"(val) ::: "volatile") };
   val
 }
 
@@ -54,7 +54,7 @@ pub fn get_task_stack_pointer() -> u32 { unimplemented!() }
 #[inline(always)]
 pub fn get_current_stack_pointer() -> u32 {
   let mut val: u32;
-  unsafe { asm!("mov $0, sp" : "=r"(val)) };
+  unsafe { asm!("mov $0, sp" : "=r"(val) ::: "volatile") };
   val
 }
 
