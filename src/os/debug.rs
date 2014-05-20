@@ -15,8 +15,7 @@
 
 //! debug::port provides interface to output structured data over serial port.
 
-use core::mem::size_of;
-use core::cast::transmute;
+use core::mem::{size_of, transmute};
 use core::intrinsics::abort;
 
 use drivers::chario::CharIO;

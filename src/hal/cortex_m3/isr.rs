@@ -46,7 +46,7 @@ static ISRCount: uint = 16;
 
 #[link_section=".isr_vector"]
 #[no_mangle]
-pub static ISRVectors: [Option<extern unsafe fn()>, ..ISRCount] = [
+pub static ISRVectors: [Option<unsafe extern fn()>, ..ISRCount] = [
   Some(__STACK_BASE),
   Some(main),             // Reset
   Some(isr_nmi),          // NMI
