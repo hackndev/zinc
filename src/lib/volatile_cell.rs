@@ -17,8 +17,9 @@
 
 use core::kinds::marker;
 use core::intrinsics::{volatile_load, volatile_store};
-use core::cast::transmute_mut_unsafe;
 
+// TODO(bharrisau) I don't know enough about markers - is it better
+// to just use an Unsafe<T> here instead?
 pub struct VolatileCell<T> {
   value: T,
   invariant: marker::InvariantType<T>,
@@ -42,7 +43,7 @@ impl<T> VolatileCell<T> {
   #[inline]
   pub fn set(&self, value: T) {
     unsafe {
-      volatile_store(&mut (*transmute_mut_unsafe(&self.value)), value)
+      volatile_store(&self.value as *T as *mut T, value)
     }
   }
 }
