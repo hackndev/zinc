@@ -20,6 +20,7 @@ This module provides syscall interface that is implemented in assembly due to
 current rust restrictions (see hal/cortex_m3/sched.S for actual implementation).
 */
 
+#[link(name = "isr_sched")]
 extern {
   pub fn syscall(f: fn(u32), arg: u32);
 }

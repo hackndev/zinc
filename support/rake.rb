@@ -32,6 +32,7 @@ def compile_rust(n, h)
   crate_type = h[:crate_type] ? "--crate-type #{h[:crate_type]}" : ""
   ignore_warnings = h[:ignore_warnings] ? h[:ignore_warnings] : []
   ignore_warnings = ignore_warnings.map { |w| "-A #{w}" }.join(' ')
+  script = h[:script]
 
   declared_deps = h[:deps]
   rust_src = h[:source]
@@ -65,7 +66,18 @@ def compile_rust(n, h)
         '--emit asm'
       else
         ''
-    end
+      end
+
+    mapfn = Context.instance.build_dir(File.basename(t.name, File.extname(t.name)) + '.map')
+
+    linker = case File.extname(t.name)
+      when '.elf'
+        "-C linker=#{:gcc.in_toolchain} " +
+        "-C link-args=\"-T #{script} -Wl,-Map=#{mapfn} " +
+        :gccflags.in_env.join(' ') + '"'
+      else
+        ''
+      end
 
     codegen = llvm_pass ? "-C passes=#{llvm_pass}" : ''
 
@@ -79,7 +91,7 @@ def compile_rust(n, h)
 
     sh "#{:rustc.in_env} #{flags} " +
        "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} " +
-       "#{search_paths} #{codegen} " +
+       "#{search_paths} #{codegen} #{linker} " +
        "#{outflags} #{ignore_warnings} #{rust_src}"
   end
 end
@@ -105,6 +117,15 @@ def compile_c(n, h)
 
   Rake::FileTask.define_task(h[:produce] => [h[:source], h[:deps]].flatten.compact) do |t|
     sh "#{:gcc.in_toolchain} #{:cflags.in_env.join(' ')} -o #{h[:produce]} -c #{h[:source]}"
+  end
+end
+
+def compile_ar(n, h)
+  h.resolve_deps!
+  Context.instance.rules[n] = h
+
+  Rake::FileTask.define_task(h[:produce] => [h[:source], h[:deps]].flatten.compact) do |t|
+    sh "#{:ar.in_toolchain} cr -o #{h[:produce]} #{h[:source]}"
   end
 end
 

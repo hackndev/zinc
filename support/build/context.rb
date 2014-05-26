@@ -120,6 +120,10 @@ class Context
       "-L#{File.join(@env[:libs_path], @platform.arch.arch)}",
     ]
 
+    @env[:gccflags] = [
+      "-lgcc"
+    ]
+
     @env[:cflags] = [
       '-mthumb',
       "-mcpu=#{@platform.arch.cpu}",

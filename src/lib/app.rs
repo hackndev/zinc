@@ -17,8 +17,8 @@
 //! for stack management, scheduler, ISRs and other symbols with global
 //! visibility.
 
-#![crate_type="staticlib"]
 #![no_std]
+#![no_main]
 
 extern crate core;
 extern crate zinc;
@@ -26,7 +26,6 @@ extern crate app;
 
 #[no_split_stack]
 #[no_mangle]
-#[start]
 pub extern fn main() {
   app::main();
 }
@@ -48,6 +47,6 @@ pub extern fn __morestack() {
 #[no_split_stack]
 #[no_mangle]
 #[cfg(cfg_multitasking)]
-pub unsafe fn task_scheduler() {
+pub unsafe extern fn task_scheduler() {
   zinc::os::task::task_scheduler();
 }

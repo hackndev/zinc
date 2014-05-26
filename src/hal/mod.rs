@@ -23,6 +23,8 @@ and each such struct has a `setup()` method that configures the hardware
 
 mod mem_init;
 
+pub mod isr;
+
 #[cfg(mcu_lpc17xx)] pub mod lpc17xx;
 #[cfg(mcu_stm32f4)] pub mod stm32f4;
 

@@ -26,29 +26,25 @@ compile_rust :zinc_crate, {
   recompile_on: [:triple, :platform, :features],
 }
 
-# zinc runtime support lib
-compile_rust :zinc_support, {
-  source:  'lib/support.rs'.in_source,
-  produce: 'support.o'.in_intermediate,
-  llvm_pass: :inline,
-  lto: false,
-  recompile_on: :triple,
+# dummy archives
+compile_ar :dummy_morestack, {
+  produce: 'libmorestack.a'.in_intermediate,
 }
-
-# zinc isr crate
-compile_rust :zinc_isr, {
-  source:  'hal/isr.rs'.in_source,
-  deps:    :core_crate,
-  produce: 'isr.o'.in_intermediate,
-  recompile_on: [:triple, :features],
+compile_ar :dummy_compiler_rt, {
+  produce: 'libcompiler-rt.a'.in_intermediate,
 }
 
 # zinc scheduler assembly
 # TODO(farcaller): make platform-specific
 if features.include?(:multitasking)
-  compile_c :zinc_isr_sched, {
+  compile_c :zinc_isr_sched_c, {
     source:  'hal/cortex_m3/sched.S'.in_source,
-    produce: 'isr_sched.o'.in_intermediate,
+    produce: 'libisr_sched.o'.in_intermediate,
+    recompile_on: [:triple, :features],
+  }
+  compile_ar :zinc_isr_sched, {
+    source: 'libisr_sched.o'.in_intermediate,
+    produce: 'libisr_sched.a'.in_intermediate,
     recompile_on: [:triple, :features],
   }
 end
@@ -65,22 +61,18 @@ app_tasks = Context.instance.applications.map do |a|
     recompile_on: [:triple, :platform, :features],
   }
 
-  compile_rust "app_#{a}".to_sym, {
+  compile_rust "app_#{a}_elf".to_sym, {
+    script: 'layout.ld'.in_platform,
     source: 'lib/app.rs'.in_source,
     deps: [
       :core_crate,
       :zinc_crate,
       "app_#{a}_crate".to_sym,
-    ],
-    produce: "app_#{a}.o".in_intermediate(a),
-    search_paths: a.in_intermediate,
-  }
-
-  link_binary "app_#{a}_elf".to_sym, {
-    script: 'layout.ld'.in_platform,
-    deps: ["app_#{a}".to_sym, :zinc_isr, :zinc_support] +
-          (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
+      :dummy_morestack,
+      :dummy_compiler_rt,
+    ] + (features.include?(:multitasking) ? [:zinc_isr_sched] : []), 
     produce: "app_#{a}.elf".in_build,
+    search_paths: [a.in_intermediate, "intermediate".in_build],
   }
 
   t_bin = make_binary "app_#{a}_bin".to_sym, {
