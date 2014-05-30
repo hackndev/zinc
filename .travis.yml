@@ -16,4 +16,9 @@ before_script:
 script:
     - rake build_all
 env:
+  matrix:
     - PLATFORM=lpc17xx
+    - PLATFORM=stm32f4
+matrix:
+  allow_failures:
+    - env: PLATFORM=stm32f4
