@@ -27,3 +27,13 @@ extern crate core;
 
 #[cfg(mcu_lpc17xx)]
 #[path="lpc17xx/isr.rs"] pub mod isr_lpc17xx;
+
+#[lang="stack_exhausted"]
+#[no_split_stack]
+extern fn stack_exhausted() {}
+#[lang="eh_personality"]
+#[no_split_stack]
+extern fn eh_personality() {}
+#[lang="begin_unwind"]
+#[no_split_stack]
+extern fn begin_unwind() {}

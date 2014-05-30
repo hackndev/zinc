@@ -81,6 +81,10 @@ def compile_rust(n, h)
        "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} " +
        "#{search_paths} #{codegen} " +
        "#{outflags} #{ignore_warnings} #{rust_src}"
+    if File.extname(t.name) == '.o'
+      sh "#{:strip.in_toolchain} -N rust_stack_exhausted -N rust_begin_unwind " +
+         "-N rust_eh_personality #{t.name}"
+    end
   end
 end
 
