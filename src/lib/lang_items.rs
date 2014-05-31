@@ -13,12 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(not(test))]
 #[lang="stack_exhausted"]
 #[no_split_stack]
 extern fn stack_exhausted() {}
+
+#[cfg(not(test))]
 #[lang="eh_personality"]
 #[no_split_stack]
 extern fn eh_personality() {}
+
+#[cfg(not(test))]
 #[lang="begin_unwind"]
 #[no_split_stack]
 extern fn begin_unwind() {}

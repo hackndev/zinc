@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(globs, macro_rules, asm)]
+#![feature(globs, macro_rules, asm, phase)]
 #![crate_id="zinc"]
 #![crate_type="rlib"]
 #![allow(ctypes)]
@@ -45,6 +45,9 @@ STM32F403/407).
 
 extern crate core;
 
+#[cfg(test)] #[phase(syntax,link)] extern crate std;
+#[cfg(test)] extern crate native;
+
 pub mod boards;
 pub mod drivers;
 pub mod hal;
@@ -52,6 +55,11 @@ pub mod lib;
 pub mod os;
 
 // TODO(farcaller): clean up when fixed.
+#[cfg(not(test))]
 mod std {
   pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
+}
+
+#[test]
+fn dummy_test() {
 }
