@@ -13,15 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! This file is not part of zinc crate, it is linked separately, alongside the
 //! ISRs for the platform.
-
-#![feature(asm, globs)]
-#![crate_id="isr"]
-#![crate_type="staticlib"]
-#![no_std]
-
-extern crate core;
 
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
 

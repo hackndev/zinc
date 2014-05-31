@@ -12,6 +12,8 @@ SECTIONS
     {
         FILL(0xff)
 
+        /* Make sure our default fault handler isn't garbage collected */
+        KEEP(*(.text.isr_default_fault))
         *(.text*)
         *(.rodata .rodata.*)
     } > rom

@@ -13,16 +13,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![no_std]
-#![crate_type="rlib"]
-#![feature(asm)]
-
-extern "rust-intrinsic" {
-    fn offset<T>(dst: *T, offset: int) -> *T;
-}
+use core::intrinsics::offset;
 
 #[allow(non_camel_case_types)]
 pub type c_int = i32;
+
+#[lang = "stack_exhausted"]
+extern fn stack_exhausted() { /* ... */ }
+
+#[lang = "eh_personality"]
+extern fn eh_personality() { /* ... */ }
+
+#[lang = "begin_unwind"]
+extern fn begin_unwind() {
+    abort()
+}
+
+#[no_mangle]
+#[no_split_stack]
+pub extern "C" fn isr_default_fault() {
+  unsafe {
+    asm!("mrs r0, psp
+        mrs r1, msp
+        ldr r2, [r0, 0x18]
+        ldr r3, [r1, 0x18]
+        bkpt")
+  }
+}
 
 #[no_mangle]
 #[no_split_stack]

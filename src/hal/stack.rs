@@ -16,13 +16,14 @@
 //! Stack layout information.
 
 extern {
-  static     __STACK_BASE: u32;
+  // This is called an fn in ISR so needs to be an fn here.
+  fn     __STACK_BASE();
   static mut __STACK_LIMIT: u32;
 }
 
 /// Returns the address of main stack base (end of ram).
 pub fn stack_base() -> u32 {
-  (&__STACK_BASE as *u32) as u32
+  (__STACK_BASE as *u32) as u32
 }
 
 /// Returns the current stack limit.
