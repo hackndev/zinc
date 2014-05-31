@@ -27,3 +27,5 @@ extern crate core;
 
 #[cfg(mcu_lpc17xx)]
 #[path="lpc17xx/isr.rs"] pub mod isr_lpc17xx;
+
+#[path="../lib/lang_items.rs"] mod lang_items;
