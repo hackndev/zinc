@@ -22,10 +22,10 @@ IFS=$'\n\t'
 stats="$stats \"version_platform\":\"$PLATFORM\"},"
 
 echo "Setting up git"
-openssl aes-256-cbc -k $KEY1 -in support/.ssh/id_travis.enc \
+openssl aes-256-cbc -k $KEY1 -in support/stats-ssh-keys \
  -d -a -out id_travis
-ssh-add -D
 chmod 600 id_travis
+eval "$(ssh-agent)"
 ssh-add ./id_travis
 git clone -b $PLATFORM $STATS_REPO zinc-stats
 
