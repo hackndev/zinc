@@ -13,11 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Helper methods.
-
-pub mod strconv;
-pub mod volatile_cell;
-pub mod shared;
-pub mod queue;
-
-mod lang_items;
+#[lang="stack_exhausted"]
+#[no_split_stack]
+extern fn stack_exhausted() {}
+#[lang="eh_personality"]
+#[no_split_stack]
+extern fn eh_personality() {}
+#[lang="begin_unwind"]
+#[no_split_stack]
+extern fn begin_unwind() {}

@@ -55,13 +55,3 @@ pub mod os;
 mod std {
   pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
 }
-
-#[lang="stack_exhausted"]
-#[no_split_stack]
-extern fn stack_exhausted() {}
-#[lang="eh_personality"]
-#[no_split_stack]
-extern fn eh_personality() {}
-#[lang="begin_unwind"]
-#[no_split_stack]
-extern fn begin_unwind() {}
