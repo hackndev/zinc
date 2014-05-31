@@ -62,6 +62,12 @@ pub extern "C" fn __aeabi_memset(s: *mut u8, n: int, c: c_int) {
     memset(s, c, n);
 }
 
+#[cfg(test)]
+#[no_split_stack]
+#[no_mangle]
+pub fn breakpoint() { unimplemented!() }
+
+#[cfg(not(test))]
 #[no_split_stack]
 #[no_mangle]
 pub fn breakpoint() {
@@ -71,7 +77,7 @@ pub fn breakpoint() {
 #[no_split_stack]
 #[no_mangle]
 pub fn abort() -> ! {
-  unsafe { asm!("bkpt") }
+  breakpoint();
   loop {}
 }
 

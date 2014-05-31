@@ -30,6 +30,7 @@ extern {
   fn isr_systick();
 }
 
+#[cfg(not(test))]
 #[no_mangle]
 #[no_split_stack]
 pub extern fn isr_default_fault() {
@@ -41,6 +42,9 @@ pub extern fn isr_default_fault() {
         bkpt")
   }
 }
+
+#[cfg(test)]
+pub extern fn isr_default_fault() { unimplemented!() }
 
 static ISRCount: uint = 16;
 

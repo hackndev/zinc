@@ -28,12 +28,17 @@ pub fn switch_context() {
 }
 
 /// Sets task stack pointer (PSP).
+#[cfg(not(test))]
 #[inline(always)]
 pub fn set_task_stack_pointer(val: u32) {
   unsafe { asm!("msr psp, $0" :: "r"(val)) };
 }
 
+#[cfg(test)]
+pub fn set_task_stack_pointer(val: u32) { unimplemented!() }
+
 /// Returns task stack pointer (PSP).
+#[cfg(not(test))]
 #[inline(always)]
 pub fn get_task_stack_pointer() -> u32 {
   let mut val: u32;
@@ -41,13 +46,20 @@ pub fn get_task_stack_pointer() -> u32 {
   val
 }
 
+#[cfg(test)]
+pub fn get_task_stack_pointer() -> u32 { unimplemented!() }
+
 /// Returns current stack pointer (SP, which may be PSP or MSP).
+#[cfg(not(test))]
 #[inline(always)]
 pub fn get_current_stack_pointer() -> u32 {
   let mut val: u32;
   unsafe { asm!("mov $0, sp" : "=r"(val)) };
   val
 }
+
+#[cfg(test)]
+pub fn get_current_stack_pointer() -> u32 { unimplemented!() }
 
 /// State, that's saved by hardware upon entering an ISR.
 pub struct SavedState {
@@ -80,9 +92,13 @@ impl SavedState {
 // TODO(farcaller): this should actually kill the task.
 // TODO(bgamari): It should also unlock anything the task holds
 /// Default handler for task that tries to return.
+#[cfg(not(test))]
 unsafe fn task_finished() {
   asm!("bkpt" :::: "volatile");
 }
+
+#[cfg(test)]
+unsafe fn task_finished() { unimplemented!() }
 
 /// Phantom type to indicate that interrupts are disabled
 pub struct NoInterrupts {
@@ -112,6 +128,7 @@ static mut irq_level : uint = 0;
 /// Note that this is reference counted: if `disable_irqs` is called
 /// twice then interrupts will only be re-enabled upon the second call
 /// to `enable_irqs`.
+#[cfg(not(test))]
 #[inline(always)]
 unsafe fn disable_irqs() {
   if irq_level == 0 {
@@ -120,7 +137,11 @@ unsafe fn disable_irqs() {
   irq_level += 1;
 }
 
+#[cfg(test)]
+unsafe fn disable_irqs() { unimplemented!() }
+
 /// Enables all interrupts except Reset, HardFault, and NMI.
+#[cfg(not(test))]
 #[inline(always)]
 unsafe fn enable_irqs() {
   if irq_level == 0 {
@@ -131,3 +152,6 @@ unsafe fn enable_irqs() {
     asm!("cpsie i" :::: "volatile");
   }
 }
+
+#[cfg(test)]
+unsafe fn enable_irqs() { unimplemented!() }

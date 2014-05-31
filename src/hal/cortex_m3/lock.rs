@@ -29,6 +29,7 @@ pub struct Guard<'a>(&'a Lock);
 
 pub static STATIC_LOCK: Lock = Lock { locked: Unsafe { value: 0, marker1: InvariantType } };
 
+#[cfg(not(test))]
 #[inline(always)]
 unsafe fn exclusive_load(addr: *u32) -> u32 {
   let mut value: u32;
@@ -41,6 +42,10 @@ unsafe fn exclusive_load(addr: *u32) -> u32 {
   value
 }
 
+#[cfg(test)]
+unsafe fn exclusive_load(addr: *u32) -> u32 { unimplemented!() }
+
+#[cfg(not(test))]
 #[inline(always)]
 unsafe fn exclusive_store(addr: *mut u32, value: u32) -> bool {
   let mut success: u32;
@@ -51,6 +56,11 @@ unsafe fn exclusive_store(addr: *mut u32, value: u32) -> bool {
        : "volatile"
        );
   success == 0
+}
+
+#[cfg(test)]
+unsafe fn exclusive_store(addr: *mut u32, value: u32) -> bool {
+  unimplemented!()
 }
 
 impl Lock {
