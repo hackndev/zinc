@@ -21,14 +21,37 @@ IFS=$'\n\t'
 
 stats="$stats \"version_platform\":\"$PLATFORM\"},"
 
+echo "Setting up git"
+openssl aes-256-cbc -k $KEY1 -in support/.ssh/id_travis.enc \
+ -d -a -out id_travis
+ssh-add -D
+chmod 600 id_travis
+ssh-add ./id_travis
+git clone -b $PLATFORM $STATS_REPO zinc-stats
+
+echo "Collecting statistics"
+sed -i '$ d' zinc-stats/stats.json
+echo "$stats" >> zinc-stats/stats.json
+echo "{}]" >> zinc-stats/stats.json
+
+echo "Archiving optimised artefacts"
+rm -rf zinc-stats/optimised
+mkdir -p zinc-stats/optimised
+cp ./build/*.lst ./build/*.map zinc-stats/optimised
+
+#echo "Building unoptimised artefacts"
+#rm -rf ./build
+#TODO(bharrisau) Waiting on selectable OPT level for Rakefile
+
+#echo "Archiving unoptimised artefacts"
+#rm -rf zinc-stats/unoptimised
+#mkdir -p zinc-stats/unoptimised
+#cp ./build/*.lst ./build/*.map zinc-stats/unoptimised
+
 echo "Submitting statistics"
-git clone -b $PLATFORM git@github.com:bharr/zinc-stats
 cd zinc-stats
-sed -i '$ d' stats.json
-echo "$stats" >> stats.json
-echo "{}]" >> stats.json
-rm -f *.lst *.map
-cp ../build/*.lst ../build/*.map .
+git config user.email "<build-bot@zinc.rs>"
+git config user.name "<zinc> (via TravisCI)"
 git add -A .
 git commit -m "Updated build $(date)"
 git push origin +$PLATFORM
