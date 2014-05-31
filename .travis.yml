@@ -15,6 +15,8 @@ before_script:
     - $RUSTC --version
 script:
     - rake build_all
+after_success:
+    - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && ./support/record_stats.sh
 env:
   matrix:
     - PLATFORM=lpc17xx
