@@ -26,7 +26,6 @@ extern crate app;
 
 #[no_split_stack]
 #[no_mangle]
-#[start]
 pub extern fn main() {
   app::main();
 }
