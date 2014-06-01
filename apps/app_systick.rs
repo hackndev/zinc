@@ -23,13 +23,13 @@ static platform: Platform = Platform {
   led1: mbed_lpc1768::led1,
 };
 
+// TODO(farcaller): the demo is broken, as it's currently not possible to inject
+// a custom isr.
 static mut i: u32 = 0;
 static mut on: u32 = 0;
 
-/// TODO(farcaller): https://github.com/mozilla/rust/pull/13833
 #[inline(always)]
 #[no_split_stack]
-#[link_section=".text.insignificant"]
 unsafe fn systick_handler() {
   i += 1;
   if i > 100 {
