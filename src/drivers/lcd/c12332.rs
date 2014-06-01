@@ -25,7 +25,7 @@ might be an issue for any other peripheral sharing the same SPI bus.
 
 use core::cell;
 use core::slice::ImmutableVector;
-use core::mem::init;
+use core::mem::zeroed;
 
 use super::font_small_7;
 use super::LCD;
@@ -59,7 +59,7 @@ impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
       cs:    *cs.setup(),
       reset: *reset.setup(),
 
-      videobuf: unsafe { init() },
+      videobuf: unsafe { zeroed() },
 
       font: font_small_7::FONT,
       char_x: cell::Cell::new(0),

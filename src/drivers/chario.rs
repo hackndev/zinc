@@ -21,7 +21,7 @@ use core::slice::{Vector, ImmutableVector};
 use core::container::Container;
 use core::iter::Iterator;
 
-use core::mem::init;
+use core::mem::zeroed;
 
 use lib::strconv;
 
@@ -46,7 +46,7 @@ pub trait CharIO {
 
   /// Outputs an integer with given base.
   fn putint(&self, i: u32, base: u32) {
-    let mut buf : [u8, ..32] = unsafe { init() };
+    let mut buf : [u8, ..32] = unsafe { zeroed() };
     let bsl : &mut [u8] = buf;
     strconv::itoa(i, bsl, base);
 

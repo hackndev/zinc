@@ -15,10 +15,10 @@
 
 //! A simple integer-to-string conversion code with statically sized buffers.
 
-use core::mem::uninit;
+use core::mem::uninitialized;
 
 pub fn itoa(val: u32, buf : &mut [u8], base: u32) {
-  let mut rbuf : [u8, ..32] = unsafe { uninit() };
+  let mut rbuf : [u8, ..32] = unsafe { uninitialized() };
   let mut myval : u32 = val;
   let mut idx: int = 0;
 
