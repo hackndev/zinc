@@ -30,7 +30,7 @@ macro_rules! reg_r(
   ($t:ident, $getter_name:ident, $reg:ident) => (
     impl $t {
       #[no_split_stack]
-      #[allow(dead_code)]
+      #[allow(dead_code,non_snake_case_functions)]
       #[inline(always)]
       pub fn $getter_name(&self) -> u32 {
         self.$reg.get()
@@ -43,7 +43,7 @@ macro_rules! reg_w(
   ($t:ident, $setter_name:ident, $reg:ident) => (
     impl $t {
       #[no_split_stack]
-      #[allow(dead_code)]
+      #[allow(dead_code,non_snake_case_functions)]
       #[inline(always)]
       pub fn $setter_name(&self, val: u32) {
         self.$reg.set(val);
