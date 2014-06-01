@@ -29,7 +29,7 @@ pub enum Direction {
   Out,
 }
 
-#[deriving(Eq)]
+#[deriving(PartialEq)]
 pub enum Level {
   Low,
   High,
