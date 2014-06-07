@@ -128,6 +128,14 @@ def make_binary(n, h)
   end
 end
 
+def run_tests(n)
+  run_name = "run_#{n}".to_sym
+  build_task = Context.instance.rules[n]
+  Rake::Task.define_task(run_name => build_task[:produce]) do |t|
+    sh build_task[:produce]
+  end
+end
+
 def provide_stdlibs
   directory 'thirdparty'.in_root
 
