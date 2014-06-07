@@ -101,5 +101,25 @@ app_tasks = Context.instance.applications.map do |a|
   task "build_#{a}".to_sym => [t_bin.name, t_lst.name, t_size.name]
 end
 
+# platform tree
+compile_rust :platformtree_macro_crate, {
+  source:  'platformtree/macro.rs'.in_root,
+  produce: 'platformtree/macro.rs'.in_root.as_dylib.in_build,
+  out_dir: true,
+  build_for: :host,
+}
+
+compile_rust :platformtree_test, {
+  source:  'platformtree/test.rs'.in_root,
+  deps:    [:platformtree_macro_crate],
+  produce: 'platformtree_test'.in_build,
+  test: true,
+}
+
+run_tests :platformtree_test
+
+desc "Run tests"
+task :test => [:run_platformtree_test]
+
 desc "Build all applications"
 task :build_all => app_tasks.map { |t| t.name }
