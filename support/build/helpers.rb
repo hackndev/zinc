@@ -41,5 +41,5 @@ end
 
 class Symbol
   def in_env; Context.instance.env[self]; end
-  def in_toolchain; "#{Context.instance.env[:toolchain]}-#{self}"; end
+  def in_toolchain; "#{Context.instance.env[:toolchain]}#{self}"; end
 end

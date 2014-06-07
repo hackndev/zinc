@@ -9,7 +9,7 @@ def report_size(n, h)
   Rake::Task.define_task n => fn do |t|
     fn = t.prerequisites.first
 
-    stats = `#{TOOLCHAIN}-size #{fn}`.split("\n").last.split("\t").map {|s|s.strip}
+    stats = `#{:size.in_toolchain} #{fn}`.split("\n").last.split("\t").map {|s|s.strip}
     align = stats[3].length
     puts "Statistics for #{File.basename(fn)}"
     puts "  .text: #{stats[0].rjust(align)} bytes"
@@ -98,8 +98,6 @@ def link_binary(n, h)
 
     sh "#{:ld.in_toolchain} -Map #{mapfn} -o #{t.name} -T #{script} " +
        "#{t.prerequisites.join(' ')} #{:ldflags.in_env.join(' ')} --gc-sections -lgcc"
-
-    # sh "#{TOOLCHAIN}-strip -N ISRVectors -N NVICVectors -N support.rs -N app.rs -N isr.rs #{t.name}"
   end
 end
 
