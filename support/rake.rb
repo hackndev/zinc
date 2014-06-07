@@ -74,6 +74,8 @@ def compile_rust(n, h)
 
     flags = :rustcflags.in_env.join(' ')
     flags += ' ' + :rustcflags_cross.in_env.join(' ') unless build_for_host
+    flags += ' --test' if is_test
+
     if optimize
       flags.gsub!(/--opt-level \d/, "--opt-level #{optimize}")
     end
