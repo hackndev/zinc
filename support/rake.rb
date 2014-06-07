@@ -54,6 +54,9 @@ def compile_rust(n, h)
 
   search_paths = [h[:search_paths]].flatten.compact
 
+  is_test = h[:test] == true
+  build_for_host = h[:build_for] == :host || is_test
+
   Rake::FileTask.define_task(h[:produce] => all_deps) do |t|
     do_lto = lto && t.name.end_with?('.o')
     emit = case File.extname(t.name)
@@ -70,6 +73,7 @@ def compile_rust(n, h)
     codegen = llvm_pass ? "-C passes=#{llvm_pass}" : ''
 
     flags = :rustcflags.in_env.join(' ')
+    flags += ' ' + :rustcflags_cross.in_env.join(' ') unless build_for_host
     if optimize
       flags.gsub!(/--opt-level \d/, "--opt-level #{optimize}")
     end
