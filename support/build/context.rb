@@ -116,12 +116,12 @@ class Context
     @env[:rustcflags_cross] = [
       "--target #{@platform.arch.target}",
       "-Ctarget-cpu=#{@platform.arch.cpu}",
+      '-C relocation_model=static',
     ]
 
     @env[:rustcflags] = [
       '--opt-level 2',
       '-Z no-landing-pads',
-      '-C relocation_model=static',
     ] + @config_flags
 
     @env[:ldflags] = [resolve_runtime_lib]
