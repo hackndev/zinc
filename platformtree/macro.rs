@@ -33,6 +33,7 @@ use std::collections::hashmap;
 
 mod pt;
 
+/// Register available macros.
 #[macro_registrar]
 pub fn macro_registrar(register: |Name, SyntaxExtension|) {
   register(token::intern("platformtree_parse"), NormalTT(
@@ -44,20 +45,42 @@ pub fn macro_registrar(register: |Name, SyntaxExtension|) {
   );
 }
 
-/// Parse paltformtree to pt::Node
+/// platformtree_parse parses a platfrom tree into pt::Node struct.
 pub fn platformtree_parse(cx: &mut ExtCtxt, _: Span, tts: &[TokenTree])
     -> Box<MacResult> {
   let mut parser = Parser::new(cx, tts);
 
+  // parse one node
   let node = parser.parse_node();
+
+  // nothing should follow
   parser.should_finish();
 
+  // return new expr based on node value
   base::MacExpr::new(quote_expr!(&*cx, $node))
 }
 
+// A helper method for the next chunk of code
+trait ToStringExp {
+  fn to_stringexp(&self) -> String;
+}
+
+impl ToStringExp for ::std::string::String {
+  fn to_stringexp(&self) -> String {
+    // TODO(farcaller): this will break if " is present in a string.
+    format!("\"{}\".to_string()", self)
+  }
+}
+
+// Parser-specific extensions to pt::Node
 impl pt::Node {
+
+  /// Returns source representation of the node.
   pub fn to_source(&self) -> String {
-    let mappath: Vec<String> = self.path.path.iter().map(|x| format!("\"{}\".to_string()", x)).collect();
+    // wrap each path node into quoted string
+    let mappath: Vec<String> = self.path.path.iter().map(|x| x.to_stringexp()).collect();
+
+    // build a pt::Node initialization struct
     let node_struct = format!("pt::Node \\{ \
         name: {}, \
         path: pt::Path \\{ absolute: {}, path: vec!({}) \\}, \
@@ -65,30 +88,33 @@ impl pt::Node {
         subnodes: Vec::new() \
       \\}",
       match self.name {
-        Some(ref s) => format!("Some(\"{}\".to_string())", s),
+        Some(ref s) => format!("Some({})", s.to_stringexp()),
         None => "None".to_string(),
       },
       self.path.absolute,
       mappath.connect(", "));
 
     let mut init_chunks = "".to_string();
+    // for each attribute, add hash insertion code
     for (k, v) in self.attributes.iter() {
       let strinified_val = match v {
         &pt::UIntValue(ref u) => format!("pt::UIntValue({})", u),
-        &pt::StrValue(ref s)  => format!("pt::StrValue(\"{}\".to_string())", s),
-        &pt::RefValue(ref r)  => format!("pt::RefValue(\"{}\".to_string())", r),
+        &pt::StrValue(ref s)  => format!("pt::StrValue({})", s.to_stringexp()),
+        &pt::RefValue(ref r)  => format!("pt::RefValue({})", r.to_stringexp()),
       };
 
-      init_chunks = init_chunks.append(format!("attrs.insert(\"{}\".to_string(), {});",
-          k, strinified_val).as_slice());
+      init_chunks = init_chunks.append(format!("attrs.insert({}, {});",
+          k.to_stringexp(), strinified_val).as_slice());
     }
 
+    // for each subnode, add vec insertion code
     for sn in self.subnodes.iter() {
       init_chunks = init_chunks.append(format!(
           "nodes.push(box {});", sn.to_source()).as_slice());
     }
 
     // TODO(farcaller): this triggers unused_mut for some reason.
+    // wrap the struct above into struct + init code
     let init_struct = format!("
       \\{
         let mut node = {};
@@ -105,21 +131,33 @@ impl pt::Node {
 }
 
 impl ToTokens for pt::Node {
+  /// Returns pt::Node as an array of tokens. Used for quote_expr.
   fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
     (cx as &ExtParseUtils).parse_tts(self.to_source())
   }
 }
 
+/// Platform tree parser.
 struct Parser<'a> {
+  /// Tracks the parsing session.
   pub sess: &'a ParseSess,
+
+  /// Token reader.
   reader: Box<lexer::Reader:>,
 
+  /// The current token.
   token: token::Token,
+
+  /// The span of current token.
   span: Span,
 
+  /// Last visited token or None, if self.token is first token ever.
   last_token: Option<Box<token::Token>>,
+
+  /// Last visited span.
   last_span: Span,
 
+  /// Backlog for tokens, used as strorage if token is unbump'ed.
   backlog: Vec<lexer::TokenAndSpan>,
 }
 
@@ -148,10 +186,16 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// Raises a fatal parsing error for current span.
   fn fatal(&self, m: &str) -> ! {
     self.sess.span_diagnostic.span_fatal(self.span, m);
   }
 
+  /// Bumps a token.
+  ///
+  /// This moves current token to last token, pops a new token from backlog or
+  /// reader and returns the last token (i.e. the 'current' token at the time of
+  /// method call).
   fn bump(&mut self) -> token::Token {
     let tok = self.token.clone();
     self.last_span = self.span;
@@ -168,6 +212,11 @@ impl<'a> Parser<'a> {
     tok
   }
 
+  /// Un-bumps the token.
+  ///
+  /// Pushes the current token to backlog and restores an old one from
+  /// last_token. After this, last_token and last_span are broken (same as the
+  /// current token).
   fn unbump(&mut self) {
     let span = self.last_span;
     let boxtok: &Box<token::Token> = match self.last_token {
@@ -185,6 +234,7 @@ impl<'a> Parser<'a> {
     self.span = span;
   }
 
+  /// Expects that the current token is t. Bumps on success.
   fn expect(&mut self, t: &token::Token) {
     if self.token == *t {
       self.bump();
@@ -195,6 +245,7 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// Expects that the current token is IDENT. Bumps on success.
   fn expect_ident(&mut self) -> token::Token {
     match self.token {
       token::IDENT(_, _) => {
@@ -207,6 +258,7 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// Makes sure there are no more tokens (we are at the end of stream).
   pub fn should_finish(&mut self) {
     if self.bump() != token::EOF {
       let this_token_str = token::to_str(&self.token);
@@ -214,6 +266,7 @@ impl<'a> Parser<'a> {
     }
   }
 
+  /// Parses a platform tree node.
   pub fn parse_node(&mut self) -> pt::Node {
     let mut node = pt::Node::new();
     // NODE_ID @ NODE_PATH { CONTENTS }
@@ -221,11 +274,13 @@ impl<'a> Parser<'a> {
     //         @ NODE_PATH { CONTENTS }
 
     node.name = match self.token {
+      // this is NODE_ID
       token::IDENT(_, _) => {
         let ret = Some(token::to_str(&self.token));
         self.bump();
         ret
       },
+      // this is anonymous node
       token::AT => {
         None
       },
@@ -235,29 +290,41 @@ impl<'a> Parser<'a> {
       },
     };
 
+    // eat @
     self.expect(&token::AT);
 
+    // parse node path
     node.path = self.parse_path();
 
+    // eat {
     self.expect(&token::LBRACE);
+
+    // parse body
     self.parse_node_contents(&mut node);
+
+    // eat }
     self.expect(&token::RBRACE);
 
     node
   }
 
+  /// Parses node contents (attributes and subnodes).
   pub fn parse_node_contents(&mut self, node: &mut pt::Node) {
     let mut attrs = hashmap::HashMap::new();
     let mut nodes = Vec::new();
 
     loop {
       match self.token {
+        // got }, so it's end of current node
         token::RBRACE => break,
+
+        // got IDENT, so this is either attribute name or non-anonymous subnode
         token::IDENT(_, _) => {
           let name = token::to_str(&self.token);
           self.bump();
 
           match self.token {
+            // it's attribute
             token::EQ => {
               self.bump();
               let val = self.parse_attribute_value();
@@ -265,6 +332,7 @@ impl<'a> Parser<'a> {
 
               attrs.insert(name, val);
             },
+            // it's subnode, unbump the name and re-parse as node
             token::AT => {
               self.unbump();
               let node = self.parse_node();
@@ -276,6 +344,7 @@ impl<'a> Parser<'a> {
             }
           };
         }
+        // got @, so this must be anonymous subnode
         token::AT => {
           let node = self.parse_node();
           nodes.push(box node);
@@ -291,18 +360,23 @@ impl<'a> Parser<'a> {
     node.subnodes = nodes;
   }
 
+  /// Parses attribute value.
   pub fn parse_attribute_value(&mut self) -> pt::AttributeValue {
     let val = match self.token {
+      // a string
       token::LIT_STR(sv) => {
         let val = pt::StrValue(token::get_ident(sv).get().to_string());
         self.bump();
         val
       },
+      // an integer
+      /// TODO(farcaller): any other integers can surface here?
       token::LIT_INT_UNSUFFIXED(intval) => {
         let val = pt::UIntValue(intval as uint);
         self.bump();
         val
       },
+      // a reference (& + IDENT)
       token::BINOP(token::AND) => {
         self.bump();
         pt::RefValue(token::to_str(&self.expect_ident()).to_string())
@@ -316,11 +390,13 @@ impl<'a> Parser<'a> {
     val
   }
 
+  /// Parses node path
   pub fn parse_path(&mut self) -> pt::Path {
     let mut v = Vec::new();
     let mut expect_more = false;
     let mut absolute = false;
 
+    // path starts with ::, so it's absolute
     if self.token == token::MOD_SEP {
       self.bump();
       expect_more = true;
@@ -329,6 +405,7 @@ impl<'a> Parser<'a> {
 
     loop {
       match self.token {
+        // :: separator
         token::MOD_SEP => {
           if expect_more {
             let this_token_str = token::to_str(&self.token);
@@ -337,11 +414,13 @@ impl<'a> Parser<'a> {
           self.bump();
           expect_more = true;
         },
+        // path component
         token::IDENT(_, _) => {
           v.push(token::to_str(&self.token));
           self.bump();
           expect_more = false;
         },
+        // ints are allowed in paths as well
         token::LIT_INT_UNSUFFIXED(u) => {
           v.push(u.to_str());
           self.bump();
