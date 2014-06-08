@@ -10,7 +10,7 @@ install:
     - mv rust-nightly rust
     - cd ..
 before_script:
-    - export TOOLCHAIN_LIBS_PATH=/usr/lib/gcc/arm-none-eabi/4.8.3/
+    - export RUNTIME_LIB="/usr/lib/gcc/arm-none-eabi/4.8.3/<%= @platform.arch.arch %>/libgcc.a"
     - export RUSTC="`pwd`/rust-nightly-x86_64-unknown-linux-gnu/bin/rustc"
     - $RUSTC --version
 script:

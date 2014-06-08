@@ -15,6 +15,7 @@
 
 require 'singleton'
 require 'yaml'
+require 'erb'
 
 require 'build/platform'
 require 'build/architecture'
@@ -90,6 +91,12 @@ class Context
     super *args
   end
 
+  def resolve_runtime_lib
+    lib_tpl = env_const(:RUNTIME_LIB)
+    tpl = ERB.new(lib_tpl)
+    tpl.result(binding)
+  end
+
   def collect_config_flags!
     @config_flags = (@platform.features + @build_features).map do |f|
       "cfg_#{f}"
@@ -106,8 +113,6 @@ class Context
   def initialize_environment!
     @env = {}
 
-    @env[:libs_path] = env_const(:TOOLCHAIN_LIBS_PATH)
-
     @env[:rustcflags] = [
       '--opt-level 2',
       "--target #{@platform.arch.target}",
@@ -116,9 +121,7 @@ class Context
       '-C relocation_model=static',
     ] + @config_flags
 
-    @env[:ldflags] = [
-      "-L#{File.join(@env[:libs_path], @platform.arch.arch)}",
-    ]
+    @env[:ldflags] = [resolve_runtime_lib]
 
     @env[:cflags] = [
       '-mthumb',

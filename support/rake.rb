@@ -97,7 +97,7 @@ def link_binary(n, h)
     mapfn = Context.instance.build_dir(File.basename(t.name, File.extname(t.name)) + '.map')
 
     sh "#{:ld.in_toolchain} -Map #{mapfn} -o #{t.name} -T #{script} " +
-       "#{t.prerequisites.join(' ')} #{:ldflags.in_env.join(' ')} --gc-sections -lgcc"
+       "#{t.prerequisites.join(' ')} #{:ldflags.in_env.join(' ')} --gc-sections"
   end
 end
 
