@@ -3,6 +3,7 @@ $: << File.dirname(__FILE__)
 require 'build/helpers'
 require 'build/context'
 require 'build/deps'
+require 'build/test'
 
 def report_size(n, h)
   fn = h[:source]
@@ -137,6 +138,49 @@ def run_tests(n)
   build_task = Context.instance.rules[n]
   Rake::Task.define_task(run_name => build_task[:produce]) do |t|
     sh t.prerequisites.first
+  end
+end
+
+def ruby_tests(n, h)
+  tests = TestLoader.new(h[:source]).load
+
+  generate_task = Rake::Task.define_task(n)
+  run_task = Rake::Task.define_task("run_#{n}".to_sym)
+
+  tests.each do |k, test|
+    tpl = test[:source]
+
+    test_src_name = "#{k}.rs".in_intermediate(n.to_s)
+    ft = Rake::FileTask.define_task(test_src_name => h[:source]) do |t|
+      open(t.name, 'w') do |f|
+        f.write(tpl)
+      end
+    end
+    generate_task.enhance([ft])
+  end
+
+  generate_task.invoke # we need to generate/update srcs before building to allow
+                       # deps collection
+
+  tests.each do |k, test|
+    cond = test[:conditions]
+
+    test_src_name = "#{k}.rs".in_intermediate(n.to_s)
+    ct = compile_rust "generated_test_#{n}_#{k}".to_sym, {
+      source:  test_src_name,
+      deps:    h[:deps],
+      produce: "generated_test_#{n}_#{k}".in_build,
+      test: true,
+      should_fail: cond[:should_fail],
+    }
+    if cond[:should_fail]
+      run_task.enhance([ct])
+    else
+      rt = Rake::Task.define_task("run_generated_test_#{n}_#{k}".to_sym => "generated_test_#{n}_#{k}".in_build) do |t|
+        sh t.prerequisites.first
+      end
+      run_task.enhance([rt])
+    end
   end
 end
 
