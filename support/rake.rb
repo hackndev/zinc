@@ -123,15 +123,13 @@ def make_binary(n, h)
 end
 
 def provide_stdlibs
-  libcore_src = 'thirdparty/libcore/lib.rs'.in_root
-
   directory 'thirdparty'.in_root
 
   Rake::FileTask.define_task 'thirdparty/rust' do |t|
     sh "git clone --single-branch --depth 1 https://github.com/mozilla/rust #{t.name}"
-  end
+  end.invoke
 
-  Rake::FileTask.define_task libcore_src => 'thirdparty/rust' do |t|
+  Rake::FileTask.define_task 'thirdparty/libcore/lib.rs'.in_root do |t|
     sh "ln -s rust/src/libcore thirdparty/libcore"
   end.invoke
 end
