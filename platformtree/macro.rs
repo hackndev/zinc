@@ -341,6 +341,10 @@ impl<'a> Parser<'a> {
         }
         _ => {
           if !expect_more {
+            if v.len() == 0 {
+              self.fatal(format!("unfinished path, found {} `{}`", self.token,
+                  token::to_str(&self.token)).as_slice());
+            }
             break
           } else {
             self.fatal(format!("unfinished path, found {} `{}`", self.token,
