@@ -42,14 +42,16 @@ module Deps
     lines.each do |l|
       mp = mod_path_rx.match(l)
       if mp
-        subs << File.join(File.dirname(src), mp[1]) if mp
+        prefix = mp[1][0] == '/' ? '' : File.dirname(src)
+        subs << File.join(prefix, mp[1])
       else
         m = mod_rx.match(l)
         p = path_rx.match(prev)
 
         if m
           if p
-            subs << File.join(File.dirname(src), p[1])
+            prefix = p[1][0] == '/' ? '' : File.dirname(src)
+            subs << File.join(prefix, p[1])
           else
             subs << mod_to_src(src, m[1])
           end
@@ -61,9 +63,10 @@ module Deps
   end
 
   def self.mod_to_src(src, mod)
-    fn1 = File.join(File.dirname(src), mod + '.rs')
+    prefix = mod[0] == '/' ? '' : File.dirname(src)
+    fn1 = File.join(prefix, mod + '.rs')
     return fn1 if File.exists?(fn1)
-    fn2 = File.join(File.dirname(src), mod, 'mod.rs')
+    fn2 = File.join(prefix, mod, 'mod.rs')
     return fn2 if File.exists?(fn2)
     raise ArgumentError.new("Cannot resolve mod #{mod} in scope of #{src}, tried #{fn1} and #{fn2}")
   end
