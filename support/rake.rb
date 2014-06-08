@@ -57,6 +57,8 @@ def compile_rust(n, h)
   is_test = h[:test] == true
   build_for_host = h[:build_for] == :host || is_test
 
+  should_fail = h[:should_fail] == true
+
   Rake::FileTask.define_task(h[:produce] => all_deps) do |t|
     do_lto = lto && t.name.end_with?('.o')
     emit = case File.extname(t.name)
@@ -83,11 +85,13 @@ def compile_rust(n, h)
     search_paths = search_paths.map { |s| "-L #{s}"}.join(' ')
     search_paths += " -L #{Context.instance.build_dir}"
 
+    fail_wrap = should_fail ? '&& exit 1 || exit 0' : ''
+
     sh "#{:rustc.in_env} #{flags} " +
        "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} " +
        "#{search_paths} #{codegen} " +
-       "#{outflags} #{ignore_warnings} #{rust_src}"
-    if File.extname(t.name) == '.o'
+       "#{outflags} #{ignore_warnings} #{rust_src} #{fail_wrap}"
+    if File.extname(t.name) == '.o' && !should_fail
       sh "#{:strip.in_toolchain} -N rust_stack_exhausted -N rust_begin_unwind " +
          "-N rust_eh_personality #{t.name}"
     end
