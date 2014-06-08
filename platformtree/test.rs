@@ -86,3 +86,14 @@ fn parse_child_nodes() {
   assert!(p.subnodes.len() == 1);
   assert!(p.subnodes.get(0).name == Some("sub".to_string()));
 }
+
+#[test]
+fn parse_anonymous_child_nodes() {
+  let p = platformtree_parse!(
+    @root {
+      @child {}
+    }
+  );
+
+  assert!(p.subnodes.len() == 1);
+}

@@ -276,6 +276,10 @@ impl<'a> Parser<'a> {
             }
           };
         }
+        token::AT => {
+          let node = self.parse_node();
+          nodes.push(box node);
+        },
         _ => {
           let this_token_str = token::to_str(&self.token);
           self.fatal(format!("expected identifier or `\\}` but found `{}`", this_token_str).as_slice())
