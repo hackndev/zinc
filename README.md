@@ -24,8 +24,9 @@ Currently supported ARM MCUs:
 
 ## Usage
 
-Get a gcc cross-toolchain for arm and configure `TOOLCHAIN` and
-`TOOLCHAIN_LIBS_PATH` in Rakefile header as appropriate.
+Get a gcc cross-toolchain for arm and configure `TOOLCHAIN` and `RUNTIME_LIB` in
+Rakefile header as appropriate. `RUNTIME_LIB` should be either libgcc or
+libcompiler-rt ar archive, compiled for appropriate architecture.
 
 To build an application from apps/ use the following rake command:
 
