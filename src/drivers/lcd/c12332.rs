@@ -31,16 +31,16 @@ use super::font_small_7;
 use super::LCD;
 use drivers::chario::CharIO;
 use hal::timer::Timer;
-use hal::gpio::GPIOConf;
+use hal::gpio::{GPIO, GPIOConf};
 use hal::spi::SPI;
 
 pub struct C12332<'a, S, T> {
   spi: &'a S,
   timer: &'a T,
 
-  dc:    GPIOConf,
-  cs:    GPIOConf,
-  reset: GPIOConf,
+  dc:    GPIO<'a>,
+  cs:    GPIO<'a>,
+  reset: GPIO<'a>,
 
   videobuf: [cell::Cell<u8>, ..512],
 
@@ -50,14 +50,14 @@ pub struct C12332<'a, S, T> {
 }
 
 impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
-  pub fn new(spi: &'a S, timer: &'a T, dc: GPIOConf, cs: GPIOConf,
-      reset: GPIOConf) -> C12332<'a, S, T> {
+  pub fn new(spi: &'a S, timer: &'a T, dc: &'a GPIOConf, cs: &'a GPIOConf,
+      reset: &'a GPIOConf) -> C12332<'a, S, T> {
     let lcd = C12332 {
       spi:   spi,
       timer: timer,
-      dc:    *dc.setup(),
-      cs:    *cs.setup(),
-      reset: *reset.setup(),
+      dc:    dc.setup(),
+      cs:    cs.setup(),
+      reset: reset.setup(),
 
       videobuf: unsafe { zeroed() },
 
