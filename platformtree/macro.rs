@@ -21,13 +21,11 @@
 extern crate syntax;
 
 use syntax::ast::{Name, TokenTree};
-use syntax::ast;
 use syntax::codemap::{Span};
 use syntax::ext::base::{SyntaxExtension, BasicMacroExpander, NormalTT, ExtCtxt};
-use syntax::ext::base::{MacResult, MacExpr};
+use syntax::ext::base::MacResult;
 use syntax::ext::base;
 use syntax::parse::{token, ParseSess, lexer};
-use syntax::print::pprust::expr_to_str;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 
@@ -47,7 +45,7 @@ pub fn macro_registrar(register: |Name, SyntaxExtension|) {
 }
 
 /// Parse paltformtree to pt::Node
-pub fn platformtree_parse(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
+pub fn platformtree_parse(cx: &mut ExtCtxt, _: Span, tts: &[TokenTree])
     -> Box<MacResult> {
   let mut parser = Parser::new(cx, tts);
 
