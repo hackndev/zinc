@@ -52,6 +52,7 @@ pub fn platformtree_parse(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
   let mut parser = Parser::new(cx, tts);
 
   let node = parser.parse_node();
+  parser.should_finish();
 
   println!("PT parsed: {}", node);
 
@@ -194,7 +195,7 @@ impl<'a> Parser<'a> {
     } else {
       let token_str = token::to_str(t);
       let this_token_str = token::to_str(&self.token);
-      self.fatal(format!("expected `{}` but found `{}`", token_str, this_token_str).as_slice())
+      self.fatal(format!("expected `{}` but found `{}`", token_str, this_token_str).as_slice());
     }
   }
 
@@ -205,8 +206,15 @@ impl<'a> Parser<'a> {
       },
       _ => {
         let this_token_str = token::to_str(&self.token);
-        self.fatal(format!("expected identifier but found `{}`", this_token_str).as_slice())
+        self.fatal(format!("expected identifier but found `{}`", this_token_str).as_slice());
       },
+    }
+  }
+
+  pub fn should_finish(&mut self) {
+    if self.bump() != token::EOF {
+      let this_token_str = token::to_str(&self.token);
+      self.fatal(format!("trailing garbage: `{}`", this_token_str).as_slice());
     }
   }
 
