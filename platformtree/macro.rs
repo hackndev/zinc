@@ -54,8 +54,6 @@ pub fn platformtree_parse(cx: &mut ExtCtxt, sp: Span, tts: &[TokenTree])
   let node = parser.parse_node();
   parser.should_finish();
 
-  println!("PT parsed: {}", node);
-
   base::MacExpr::new(quote_expr!(&*cx, $node))
 }
 
