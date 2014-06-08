@@ -115,11 +115,15 @@ compile_rust :platformtree_test, {
   produce: 'platformtree_test'.in_build,
   test: true,
 }
-
 run_tests :platformtree_test
 
+ruby_tests :platformtree_failing_test, {
+  source: 'platformtree/failing_tests.rb',
+  deps:    [:platformtree_macro_crate],
+}
+
 desc "Run tests"
-task :test => [:run_platformtree_test]
+task :test => [:run_platformtree_test, :run_platformtree_failing_test]
 
 desc "Build all applications"
 task :build_all => app_tasks.map { |t| t.name }
