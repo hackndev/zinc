@@ -13,7 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-test :doesnt_parse_empty_path, should_fail: true do
-  "node@ {}"
+test :doesnt_parse_empty_pt, should_fail: true do
+  ''
 end
 
+test :doesnt_parse_node_with_no_body, should_fail: true do
+  'node@root'
+end
+
+test :doesnt_parse_node_with_no_path, should_fail: true do
+  'node@ {}'
+end
+
+test :doesnt_parse_node_with_broken_path, should_fail: true do
+  'node@::root::::blah {}'
+end
+
+test :doesnt_parse_trailing_garbage, should_fail: true do
+  'node@root {} node@root {}'
+end
