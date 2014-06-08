@@ -86,7 +86,7 @@ def compile_rust(n, h)
     search_paths = search_paths.map { |s| "-L #{s}"}.join(' ')
     search_paths += " -L #{Context.instance.build_dir}"
 
-    fail_wrap = should_fail ? '&& exit 1 || exit 0' : ''
+    fail_wrap = should_fail ? '&>/dev/null && exit 1 || exit 0' : ''
 
     sh "#{:rustc.in_env} #{flags} " +
        "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} " +
