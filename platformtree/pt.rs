@@ -47,7 +47,7 @@ pub struct Node {
 impl Node {
   pub fn new() -> Node {
     Node {
-      name: Some(String::from_str("test")),
+      name: None,
       path: Path {
         absolute: false,
         path: Vec::new(),
