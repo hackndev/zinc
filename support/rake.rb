@@ -3,6 +3,7 @@ $: << File.dirname(__FILE__)
 require 'build/helpers'
 require 'build/context'
 require 'build/deps'
+require 'build/test'
 
 def report_size(n, h)
   fn = h[:source]
@@ -54,6 +55,11 @@ def compile_rust(n, h)
 
   search_paths = [h[:search_paths]].flatten.compact
 
+  is_test = h[:test] == true
+  build_for_host = h[:build_for] == :host || is_test
+
+  should_fail = h[:should_fail] == true
+
   Rake::FileTask.define_task(h[:produce] => all_deps) do |t|
     do_lto = lto && t.name.end_with?('.o')
     emit = case File.extname(t.name)
@@ -70,6 +76,9 @@ def compile_rust(n, h)
     codegen = llvm_pass ? "-C passes=#{llvm_pass}" : ''
 
     flags = :rustcflags.in_env.join(' ')
+    flags += ' ' + :rustcflags_cross.in_env.join(' ') unless build_for_host
+    flags += ' --test' if is_test
+
     if optimize
       flags.gsub!(/--opt-level \d/, "--opt-level #{optimize}")
     end
@@ -77,11 +86,13 @@ def compile_rust(n, h)
     search_paths = search_paths.map { |s| "-L #{s}"}.join(' ')
     search_paths += " -L #{Context.instance.build_dir}"
 
-    sh "#{:rustc.in_env} #{flags} " +
+    fail_wrap = should_fail ? '&>/dev/null' : ''
+
+    sh "#{should_fail ? "! " : ""}#{:rustc.in_env} #{flags} " +
        "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} " +
        "#{search_paths} #{codegen} " +
-       "#{outflags} #{ignore_warnings} #{rust_src}"
-    if File.extname(t.name) == '.o'
+       "#{outflags} #{ignore_warnings} #{rust_src} #{fail_wrap}"
+    if File.extname(t.name) == '.o' && !should_fail
       sh "#{:strip.in_toolchain} -N rust_stack_exhausted -N rust_begin_unwind " +
          "-N rust_eh_personality #{t.name}"
     end
@@ -119,6 +130,57 @@ end
 def make_binary(n, h)
   Rake::FileTask.define_task(h[:produce] => h[:source]) do |t|
     sh "#{:objcopy.in_toolchain} #{t.prerequisites.first} #{t.name} -O binary"
+  end
+end
+
+def run_tests(n)
+  run_name = "run_#{n}".to_sym
+  build_task = Context.instance.rules[n]
+  Rake::Task.define_task(run_name => build_task[:produce]) do |t|
+    sh t.prerequisites.first
+  end
+end
+
+def ruby_tests(n, h)
+  tests = TestLoader.new(h[:source]).load
+
+  generate_task = Rake::Task.define_task(n)
+  run_task = Rake::Task.define_task("run_#{n}".to_sym)
+
+  tests.each do |k, test|
+    tpl = test[:source]
+
+    test_src_name = "#{k}.rs".in_intermediate(n.to_s)
+    ft = Rake::FileTask.define_task(test_src_name => h[:source]) do |t|
+      open(t.name, 'w') do |f|
+        f.write(tpl)
+      end
+    end
+    generate_task.enhance([ft])
+  end
+
+  generate_task.invoke # we need to generate/update srcs before building to allow
+                       # deps collection
+
+  tests.each do |k, test|
+    cond = test[:conditions]
+
+    test_src_name = "#{k}.rs".in_intermediate(n.to_s)
+    ct = compile_rust "generated_test_#{n}_#{k}".to_sym, {
+      source:  test_src_name,
+      deps:    h[:deps],
+      produce: "generated_test_#{n}_#{k}".in_build,
+      test: true,
+      should_fail: cond[:should_fail],
+    }
+    if cond[:should_fail]
+      run_task.enhance([ct])
+    else
+      rt = Rake::Task.define_task("run_generated_test_#{n}_#{k}".to_sym => "generated_test_#{n}_#{k}".in_build) do |t|
+        sh t.prerequisites.first
+      end
+      run_task.enhance([rt])
+    end
   end
 end
 

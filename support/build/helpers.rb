@@ -20,6 +20,7 @@ class String
   def in_source; Context.instance.src_dir(self); end
   def in_platform; Context.instance.platform_dir(self); end
   def as_rlib; Context.instance.rlib_name(self); end
+  def as_dylib; Context.instance.rlib_name(self).gsub(/\.rlib$/, '.dylib'); end
 end
 
 class Hash
