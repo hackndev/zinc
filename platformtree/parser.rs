@@ -13,52 +13,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![crate_id="platformtree_macro"]
-#![crate_type="dylib"]
-
-#![feature(macro_registrar, quote, managed_boxes)]
-
-extern crate syntax;
-
-use syntax::ast::{Name, TokenTree};
-use syntax::codemap::{Span};
-use syntax::ext::base::{SyntaxExtension, BasicMacroExpander, NormalTT, ExtCtxt};
-use syntax::ext::base::MacResult;
-use syntax::ext::base;
+use syntax::ast::TokenTree;
+use syntax::codemap::Span;
+use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer};
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 
 use std::collections::hashmap;
 
-mod pt;
-
-/// Register available macros.
-#[macro_registrar]
-pub fn macro_registrar(register: |Name, SyntaxExtension|) {
-  register(token::intern("platformtree_parse"), NormalTT(
-    box BasicMacroExpander {
-      expander: platformtree_parse,
-      span: None,
-    },
-    None)
-  );
-}
-
-/// platformtree_parse parses a platfrom tree into pt::Node struct.
-pub fn platformtree_parse(cx: &mut ExtCtxt, _: Span, tts: &[TokenTree])
-    -> Box<MacResult> {
-  let mut parser = Parser::new(cx, tts);
-
-  // parse one node
-  let node = parser.parse_node();
-
-  // nothing should follow
-  parser.should_finish();
-
-  // return new expr based on node value
-  base::MacExpr::new(quote_expr!(&*cx, $node))
-}
+use pt;
 
 // A helper method for the next chunk of code
 trait ToStringExp {
@@ -138,7 +102,7 @@ impl ToTokens for pt::Node {
 }
 
 /// Platform tree parser.
-struct Parser<'a> {
+pub struct Parser<'a> {
   /// Tracks the parsing session.
   pub sess: &'a ParseSess,
 

@@ -102,16 +102,16 @@ app_tasks = Context.instance.applications.map do |a|
 end
 
 # platform tree
-compile_rust :platformtree_macro_crate, {
-  source:  'platformtree/macro.rs'.in_root,
-  produce: 'platformtree/macro.rs'.in_root.as_dylib.in_build,
+compile_rust :macro_platformtree, {
+  source:  'macro/platformtree.rs'.in_root,
+  produce: 'macro/platformtree.rs'.in_root.as_dylib.in_build,
   out_dir: true,
   build_for: :host,
 }
 
 compile_rust :platformtree_test, {
   source:  'platformtree/test.rs'.in_root,
-  deps:    [:platformtree_macro_crate],
+  deps:    [:macro_platformtree],
   produce: 'platformtree_test'.in_build,
   test: true,
 }
@@ -119,7 +119,7 @@ run_tests :platformtree_test
 
 ruby_tests :platformtree_failing_test, {
   source: 'platformtree/failing_tests.rb',
-  deps:    [:platformtree_macro_crate],
+  deps:    [:macro_platformtree],
 }
 
 desc "Run tests"
