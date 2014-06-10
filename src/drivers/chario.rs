@@ -18,7 +18,7 @@
 use core::option::{Some, None};
 use core::str::{Str, StrSlice};
 use core::slice::{Vector, ImmutableVector};
-use core::container::Container;
+use core::collections::Collection;
 use core::iter::Iterator;
 
 use core::mem::zeroed;
