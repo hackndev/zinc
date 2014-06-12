@@ -133,12 +133,14 @@ def make_binary(n, h)
   end
 end
 
-def run_tests(n)
-  run_name = "run_#{n}".to_sym
-  build_task = Context.instance.rules[n]
-  Rake::Task.define_task(run_name => build_task[:produce]) do |t|
+def rust_tests(n, h)
+  h[:test] = true
+  compile_rust n, h
+  run_task = Rake::Task.define_task("run_#{n}".to_sym => h[:produce]) do |t|
     sh t.prerequisites.first
   end
+
+  Rake::Task[:test].enhance([run_task])
 end
 
 def ruby_tests(n, h)
@@ -182,6 +184,8 @@ def ruby_tests(n, h)
       run_task.enhance([rt])
     end
   end
+
+  Rake::Task[:test].enhance([run_task])
 end
 
 def provide_stdlibs

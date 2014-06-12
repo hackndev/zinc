@@ -10,6 +10,9 @@ Context.create(__FILE__, ENV['PLATFORM'], features)
 
 provide_stdlibs
 
+desc "Run tests"
+task :test
+
 compile_rust :core_crate, {
   source:  'thirdparty/libcore/lib.rs'.in_root,
   produce: 'thirdparty/libcore/lib.rs'.in_root.as_rlib.in_build,
@@ -101,6 +104,9 @@ app_tasks = Context.instance.applications.map do |a|
   task "build_#{a}".to_sym => [t_bin.name, t_lst.name, t_size.name]
 end
 
+desc "Build all applications"
+task :build_all => app_tasks.map { |t| t.name }
+
 # platform tree
 compile_rust :platformtree_crate, {
   source:    'platformtree/platformtree.rs'.in_root,
@@ -109,6 +115,7 @@ compile_rust :platformtree_crate, {
   build_for: :host,
 }
 
+# macros
 compile_rust :macro_platformtree, {
   source:    'macro/platformtree.rs'.in_root,
   deps:      [:platformtree_crate],
@@ -117,21 +124,13 @@ compile_rust :macro_platformtree, {
   build_for: :host,
 }
 
-compile_rust :platformtree_test, {
-  source:  'platformtree/test.rs'.in_root,
-  deps:    [:macro_platformtree, :platformtree_crate],
-  produce: 'platformtree_test'.in_build,
-  test:    true,
+rust_tests :macro_platformtree_test, {
+  source:  'macro/platformtree_test.rs'.in_root,
+  deps:    [:macro_platformtree],
+  produce: 'macro_platformtree_test'.in_build,
 }
-run_tests :platformtree_test
 
-ruby_tests :platformtree_gentest, {
-  source: 'platformtree/gentest.rb',
+ruby_tests :macro_platformtree_testgen, {
+  source: 'macro/platformtree_testgen.rb',
   deps:    [:macro_platformtree],
 }
-
-desc "Run tests"
-task :test => [:run_platformtree_test, :run_platformtree_gentest]
-
-desc "Build all applications"
-task :build_all => app_tasks.map { |t| t.name }
