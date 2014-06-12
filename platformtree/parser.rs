@@ -22,7 +22,7 @@ use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 
 use std::collections::hashmap;
 
-use pt;
+use node;
 
 // A helper method for the next chunk of code
 trait ToStringExp {
@@ -36,18 +36,18 @@ impl ToStringExp for ::std::string::String {
   }
 }
 
-// Parser-specific extensions to pt::Node
-impl pt::Node {
+// Parser-specific extensions to node::Node
+impl node::Node {
 
   /// Returns source representation of the node.
   pub fn to_source(&self) -> String {
     // wrap each path node into quoted string
     let mappath: Vec<String> = self.path.path.iter().map(|x| x.to_stringexp()).collect();
 
-    // build a pt::Node initialization struct
-    let node_struct = format!("pt::Node \\{ \
+    // build a node::Node initialization struct
+    let node_struct = format!("node::Node \\{ \
         name: {}, \
-        path: pt::Path \\{ absolute: {}, path: vec!({}) \\}, \
+        path: node::Path \\{ absolute: {}, path: vec!({}) \\}, \
         attributes: hashmap::HashMap::new(), \
         subnodes: Vec::new() \
       \\}",
@@ -62,9 +62,9 @@ impl pt::Node {
     // for each attribute, add hash insertion code
     for (k, v) in self.attributes.iter() {
       let strinified_val = match v {
-        &pt::UIntValue(ref u) => format!("pt::UIntValue({})", u),
-        &pt::StrValue(ref s)  => format!("pt::StrValue({})", s.to_stringexp()),
-        &pt::RefValue(ref r)  => format!("pt::RefValue({})", r.to_stringexp()),
+        &node::UIntValue(ref u) => format!("node::UIntValue({})", u),
+        &node::StrValue(ref s)  => format!("node::StrValue({})", s.to_stringexp()),
+        &node::RefValue(ref r)  => format!("node::RefValue({})", r.to_stringexp()),
       };
 
       init_chunks = init_chunks.append(format!("attrs.insert({}, {});",
@@ -94,8 +94,8 @@ impl pt::Node {
   }
 }
 
-impl ToTokens for pt::Node {
-  /// Returns pt::Node as an array of tokens. Used for quote_expr.
+impl ToTokens for node::Node {
+  /// Returns node::Node as an array of tokens. Used for quote_expr.
   fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
     (cx as &ExtParseUtils).parse_tts(self.to_source())
   }
@@ -231,8 +231,8 @@ impl<'a> Parser<'a> {
   }
 
   /// Parses a platform tree node.
-  pub fn parse_node(&mut self) -> pt::Node {
-    let mut node = pt::Node::new();
+  pub fn parse_node(&mut self) -> node::Node {
+    let mut node = node::Node::new();
     // NODE_ID @ NODE_PATH { CONTENTS }
     // or
     //         @ NODE_PATH { CONTENTS }
@@ -273,7 +273,7 @@ impl<'a> Parser<'a> {
   }
 
   /// Parses node contents (attributes and subnodes).
-  pub fn parse_node_contents(&mut self, node: &mut pt::Node) {
+  pub fn parse_node_contents(&mut self, node: &mut node::Node) {
     let mut attrs = hashmap::HashMap::new();
     let mut nodes = Vec::new();
 
@@ -325,25 +325,25 @@ impl<'a> Parser<'a> {
   }
 
   /// Parses attribute value.
-  pub fn parse_attribute_value(&mut self) -> pt::AttributeValue {
+  pub fn parse_attribute_value(&mut self) -> node::AttributeValue {
     let val = match self.token {
       // a string
       token::LIT_STR(sv) => {
-        let val = pt::StrValue(token::get_ident(sv).get().to_string());
+        let val = node::StrValue(token::get_ident(sv).get().to_string());
         self.bump();
         val
       },
       // an integer
       /// TODO(farcaller): any other integers can surface here?
       token::LIT_INT_UNSUFFIXED(intval) => {
-        let val = pt::UIntValue(intval as uint);
+        let val = node::UIntValue(intval as uint);
         self.bump();
         val
       },
       // a reference (& + IDENT)
       token::BINOP(token::AND) => {
         self.bump();
-        pt::RefValue(token::to_str(&self.expect_ident()).to_string())
+        node::RefValue(token::to_str(&self.expect_ident()).to_string())
       },
       _ => {
         let this_token_str = token::to_str(&self.token);
@@ -355,7 +355,7 @@ impl<'a> Parser<'a> {
   }
 
   /// Parses node path
-  pub fn parse_path(&mut self) -> pt::Path {
+  pub fn parse_path(&mut self) -> node::Path {
     let mut v = Vec::new();
     let mut expect_more = false;
     let mut absolute = false;
@@ -404,7 +404,7 @@ impl<'a> Parser<'a> {
         }
       }
     }
-    pt::Path {
+    node::Path {
       absolute: absolute,
       path: v,
     }

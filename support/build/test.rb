@@ -36,8 +36,7 @@ class LoaderInstance
   def test(name, h, &block)
     tpl = TEMPLATE.
         gsub('TEST_NAME', name.to_s).
-        gsub('TEST_CODE', block.call()).
-        gsub('MOD_PT_PATH', "platformtree/pt.rs".in_root)
+        gsub('TEST_CODE', block.call())
     @tests[name] = {
       conditions: h,
       source: tpl,
@@ -50,10 +49,10 @@ TEMPLATE = <<EOF
 #![allow(unused_mut,dead_code)]
 
 #[phase(plugin)] extern crate macro_platformtree;
+extern crate platformtree;
 
 use std::collections::hashmap;
-
-#[path="MOD_PT_PATH"] mod pt;
+use platformtree::node;
 
 #[test]
 fn TEST_NAME() {

@@ -17,10 +17,10 @@
 #![allow(unused_mut,dead_code)]
 
 #[phase(plugin)] extern crate macro_platformtree;
+extern crate platformtree;
 
 use std::collections::hashmap;
-
-mod pt;
+use platformtree::node;
 
 #[test]
 fn parse_basic_node() {
@@ -70,9 +70,9 @@ fn parse_node_attributes() {
     }
   );
 
-  assert!(p.attributes.get(&"str".to_string()) == &pt::StrValue("test".to_string()));
-  assert!(p.attributes.get(&"int".to_string()) == &pt::UIntValue(10));
-  assert!(p.attributes.get(&"ref".to_string()) == &pt::RefValue("test".to_string()));
+  assert!(p.attributes.get(&"str".to_string()) == &node::StrValue("test".to_string()));
+  assert!(p.attributes.get(&"int".to_string()) == &node::UIntValue(10));
+  assert!(p.attributes.get(&"ref".to_string()) == &node::RefValue("test".to_string()));
 }
 
 #[test]
