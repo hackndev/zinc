@@ -49,7 +49,7 @@ TEMPLATE = <<EOF
 #![feature(phase)]
 #![allow(unused_mut,dead_code)]
 
-#[phase(syntax)] extern crate platformtree_macro;
+#[phase(plugin)] extern crate platformtree_macro;
 
 use std::collections::hashmap;
 
