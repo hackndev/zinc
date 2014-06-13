@@ -47,9 +47,9 @@ impl node::Node {
     // build a node::Node initialization struct
     let node_struct = format!("node::Node \\{ \
         name: {}, \
-        path: node::Path \\{ absolute: {}, path: vec!({}) \\}, \
+        path: node::Path \\{ absolute: {}, path: vec!({}), span: None \\}, \
         attributes: hashmap::HashMap::new(), \
-        subnodes: Vec::new() \
+        subnodes: Vec::new(), \
       \\}",
       match self.name {
         Some(ref s) => format!("Some({})", s.to_stringexp()),
@@ -359,6 +359,7 @@ impl<'a> Parser<'a> {
     let mut v = Vec::new();
     let mut expect_more = false;
     let mut absolute = false;
+    let mut path_span = self.span.clone();
 
     // path starts with ::, so it's absolute
     if self.token == token::MOD_SEP {
@@ -404,9 +405,11 @@ impl<'a> Parser<'a> {
         }
       }
     }
+    path_span.hi = self.last_span.hi;
     node::Path {
       absolute: absolute,
       path: v,
+      span: Some(path_span),
     }
   }
 }

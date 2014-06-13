@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use syntax::codemap::{DUMMY_SP, Span};
 use std::collections::hashmap;
 
 #[deriving(Show, PartialEq)]
@@ -26,6 +27,17 @@ pub enum AttributeValue {
 pub struct Path {
   pub absolute: bool,
   pub path: Vec<String>,
+  pub span: Option<Span>,
+}
+
+impl Path {
+  pub fn new(absolute: bool, path: Vec<&str>) -> Path {
+    Path {
+      absolute: absolute,
+      path: path.iter().map(|x| x.to_string()).collect(),
+      span: Some(DUMMY_SP),
+    }
+  }
 }
 
 /// Tree node.
@@ -51,6 +63,7 @@ impl Node {
       path: Path {
         absolute: false,
         path: Vec::new(),
+        span: Some(DUMMY_SP),
       },
       attributes: hashmap::HashMap::new(),
       subnodes: Vec::new(),
