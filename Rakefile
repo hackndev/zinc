@@ -1,8 +1,12 @@
 load 'support/rake.rb'
 
-TOOLCHAIN = 'arm-none-eabi-'
-RUNTIME_LIB = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4/<%= @platform.arch.arch %>/libgcc.a'
-RUSTC = 'rustc'
+if File.exists? 'toolchain.rb'
+  load 'toolchain.rb'
+else
+  TOOLCHAIN = 'arm-none-eabi-'
+  RUNTIME_LIB = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4/<%= @platform.arch.arch %>/libgcc.a'
+  RUSTC = 'rustc'
+end
 
 features = [:tft_lcd, :multitasking]
 
