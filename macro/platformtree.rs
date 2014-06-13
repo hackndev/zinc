@@ -27,14 +27,16 @@ use syntax::ast::TokenTree;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult};
 use syntax::ext::base;
-use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
+use syntax::ext::quote::rt::{ToTokens, ToSource, ExtParseUtils};
 
 use platformtree::parser::Parser;
+use platformtree::context;
 
 /// Register available macros.
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("platformtree_parse", platformtree_parse);
+  reg.register_macro("platformtree_get_main_src", platformtree_get_main_src);
 }
 
 /// platformtree_parse parses a platfrom tree into node::Node struct.
@@ -44,4 +46,17 @@ pub fn platformtree_parse(cx: &mut ExtCtxt, _: Span, tts: &[TokenTree])
   let node = parser.parse_node();
   parser.should_finish();
   base::MacExpr::new(quote_expr!(&*cx, $node))
+}
+
+pub fn platformtree_get_main_src(cx: &mut ExtCtxt, _: Span, tts: &[TokenTree])
+    -> Box<MacResult> {
+  let mut parser = Parser::new(cx, tts);
+  let node = parser.parse_node();
+  parser.should_finish();
+  let mut pcx = context::PlatformContext::new();
+  context::process_node(&mut pcx, cx, box(GC) node);
+  let b = pcx.get_main_block(cx);
+  let b_src = b.to_source();
+  let b_slice = b_src.as_slice();
+  base::MacExpr::new(quote_expr!(&*cx, $b_slice))
 }

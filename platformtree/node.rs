@@ -17,7 +17,7 @@ use syntax::codemap::{DUMMY_SP, Span};
 use std::collections::hashmap;
 use std::gc::Gc;
 
-#[deriving(Show, PartialEq)]
+#[deriving(Show, PartialEq, Clone)]
 pub enum AttributeValue {
   UIntValue(uint),
   StrValue(String),

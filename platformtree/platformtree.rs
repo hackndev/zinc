@@ -15,6 +15,7 @@
 
 //! Platform tree operations crate
 
+#![feature(quote)]
 #![crate_id="platformtree"]
 #![crate_type="rlib"]
 
@@ -22,3 +23,4 @@ extern crate syntax;
 
 pub mod node;
 pub mod parser;
+pub mod context;
