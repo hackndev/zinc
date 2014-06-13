@@ -16,16 +16,16 @@
 #![crate_id="macro_platformtree"]
 #![crate_type="dylib"]
 
-#![feature(macro_registrar, quote, managed_boxes)]
+#![feature(plugin_registrar, quote, managed_boxes)]
 
+extern crate rustc;
 extern crate syntax;
 
-use syntax::ast::{Name, TokenTree};
+use rustc::plugin::Registry;
+use syntax::ast::TokenTree;
 use syntax::codemap::Span;
-use syntax::ext::base::{SyntaxExtension, BasicMacroExpander, NormalTT, ExtCtxt};
-use syntax::ext::base::MacResult;
+use syntax::ext::base::{ExtCtxt, MacResult};
 use syntax::ext::base;
-use syntax::parse::token;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 
 use parser::Parser;
@@ -35,15 +35,9 @@ use parser::Parser;
 
 
 /// Register available macros.
-#[macro_registrar]
-pub fn macro_registrar(register: |Name, SyntaxExtension|) {
-  register(token::intern("platformtree_parse"), NormalTT(
-    box BasicMacroExpander {
-      expander: platformtree_parse,
-      span: None,
-    },
-    None)
-  );
+#[plugin_registrar]
+pub fn plugin_registrar(reg: &mut Registry) {
+  reg.register_macro("platformtree_parse", platformtree_parse);
 }
 
 /// platformtree_parse parses a platfrom tree into pt::Node struct.

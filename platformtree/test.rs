@@ -16,7 +16,7 @@
 #![feature(phase)]
 #![allow(unused_mut,dead_code)]
 
-#[phase(syntax)] extern crate macro_platformtree;
+#[phase(plugin)] extern crate macro_platformtree;
 
 use std::collections::hashmap;
 
