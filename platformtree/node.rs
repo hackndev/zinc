@@ -15,6 +15,7 @@
 
 use syntax::codemap::{DUMMY_SP, Span};
 use std::collections::hashmap;
+use std::gc::Gc;
 
 #[deriving(Show, PartialEq)]
 pub enum AttributeValue {
@@ -53,7 +54,7 @@ pub struct Node {
   pub attributes: hashmap::HashMap<String, AttributeValue>,
 
   /// Child nodes.
-  pub subnodes: Vec<Box<Node>>,
+  pub subnodes: Vec<Gc<Node>>,
 }
 
 impl Node {

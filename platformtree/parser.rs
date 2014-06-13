@@ -74,7 +74,7 @@ impl node::Node {
     // for each subnode, add vec insertion code
     for sn in self.subnodes.iter() {
       init_chunks = init_chunks.append(format!(
-          "nodes.push(box {});", sn.to_source()).as_slice());
+          "nodes.push(box(GC) {});", sn.to_source()).as_slice());
     }
 
     // TODO(farcaller): this triggers unused_mut for some reason.
@@ -300,7 +300,7 @@ impl<'a> Parser<'a> {
             token::AT => {
               self.unbump();
               let node = self.parse_node();
-              nodes.push(box node);
+              nodes.push(box(GC) node);
             },
             _ => {
               let this_token_str = token::to_str(&self.token);
@@ -311,7 +311,7 @@ impl<'a> Parser<'a> {
         // got @, so this must be anonymous subnode
         token::AT => {
           let node = self.parse_node();
-          nodes.push(box node);
+          nodes.push(box(GC) node);
         },
         _ => {
           let this_token_str = token::to_str(&self.token);
