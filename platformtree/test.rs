@@ -26,7 +26,7 @@ use parser::Parser;
 use node;
 
 #[test]
-fn parse_node_with_no_name() {
+fn parse_anonymous_node() {
   with_parsed_node("root {}", |node| {
     assert!(node.name == None);
     assert!(node.path == "root".to_str());
@@ -122,6 +122,13 @@ fn fails_to_parse_malformed_attibute() {
 
 #[test]
 fn parse_named_subnode() {
+  with_parsed_node("test@root { child; }", |node| {
+    assert!(node.subnodes.len() == 1);
+  });
+}
+
+#[test]
+fn parse_anonymous_subnode() {
   with_parsed_node("test@root { sub@child; }", |node| {
     assert!(node.subnodes.len() == 1);
   });

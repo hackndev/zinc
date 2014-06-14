@@ -202,63 +202,63 @@ impl<'a> Parser<'a> {
       // |
       // v
       // ATTR = VAL ;
-      let name_span = self.span;
-      let some_name = match self.expect_ident() {
-        Some(name) => name,
-        None => return None,
-      };
+      // NAME @ PATH
+      // PATH { ... }
+      // PATH ;
+      //      ^-- peeking here
+      if self.reader.peek().tok == token::EQ {
+        // we're here
+        // |
+        // v
+        // ATTR = VAL ;
+        let name_span = self.span;
+        let some_name = match self.expect_ident() {
+          Some(name) => name,
+          None => return None,
+        };
 
-      if attrs.contains_key(&some_name) {
-        self.error(format!("key `{}` is already defined", some_name));
-        return None;
-      }
-
-      // we're here
-      //      |
-      //      v
-      // ATTR = VAL ;
-      //
-      // this might also be
-      //      |
-      //      v
-      // NAME @ PATH { ... }
-      match self.bump() {
-        token::EQ => {
-          // we're here
-          //        |
-          //        v
-          // ATTR = VAL ;
-          let attr_value_span = self.span;
-          let attr_value = match self.parse_attribute_value() {
-            Some(value) => value,
-            None => return None,
-          };
-
-          //   we're here
-          //            |
-          //            v
-          // ATTR = VAL ;
-          if !self.expect(&token::SEMI) {
-            return None;
-          }
-
-          attrs.insert(some_name, node::Attribute::new(
-              attr_value, name_span, attr_value_span));
-        },
-        token::AT => {
-          let node = match self.parse_node_from_at(
-              Some(name_span), Some(some_name)) {
-            Some(node) => node,
-            None => return None,
-          };
-
-          subnodes.push(box(GC) node);
-        },
-        ref other => {
-          self.error(format!("expected `=` or `@` but found `{}`",
-              token::to_str(other)));
+        if attrs.contains_key(&some_name) {
+          self.error(format!("key `{}` is already defined", some_name));
           return None;
         }
+
+        self.bump(); // bump token::EQ
+
+        // we're here
+        //        |
+        //        v
+        // ATTR = VAL ;
+        let attr_value_span = self.span;
+        let attr_value = match self.parse_attribute_value() {
+          Some(value) => value,
+          None => return None,
+        };
+
+        //   we're here
+        //            |
+        //            v
+        // ATTR = VAL ;
+        if !self.expect(&token::SEMI) {
+          return None;
+        }
+
+        attrs.insert(some_name, node::Attribute::new(
+            attr_value, name_span, attr_value_span));
+      } else {
+        // this should be a subnode
+        let oldsp = self.span;
+        let oldtok = self.token.clone();
+        let node = match self.parse_node() {
+          Some(node) => node,
+          None => {
+            self.span = oldsp;
+            self.error(format!("expected `=` or node but found `{}`",
+                token::to_str(&oldtok)));
+            return None;
+          },
+        };
+
+        subnodes.push(box(GC) node);
       }
     }
 
