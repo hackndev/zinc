@@ -34,34 +34,3 @@ template :assert_pt_compiles do
     src: 'node@root {} node@root {}'
   }
 end
-
-template :assert_pt_main_source_equals do
-  test :generates_clock_for_lpc11xx, {}, {
-    src: '
-      mcu@mcu::lpc17xx {
-        @clock {
-          source = "main-oscillator";
-          source_frequency = 12_000_000;
-          pll_m = 50;
-          pll_n = 3;
-          pll_divisor = 4;
-        }
-      }
-    ',
-    out: '
-      {
-        zinc::hal::lpc17xx::init::init_clock(
-            zinc::hal::lpc17xx::init::Clock{
-              source: zinc::hal::lpc17xx::init::Main(Some(12000000)),
-              pll: zinc::hal::lpc17xx::init::PLL0{
-                enabled: true,
-                m: 50u,
-                n: 3u,
-                divisor: 4u,
-              },
-            }
-        );
-      }
-    '.gsub(/(\n|\s)*/, '')
-  }
-end
