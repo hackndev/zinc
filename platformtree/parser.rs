@@ -89,19 +89,16 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_node(&mut self) -> Option<node::Node> {
-    let mut node_span: Span;
-    let node_path_span: Span;
+    let node_span: Option<Span>;
     let node_name: Option<String>;
-    let attributes: hashmap::HashMap<String, node::Attribute>;
 
-    // check if next token is @
-    //    we're here
-    //   /
-    //   v
-    //   NAME @ PATH { ... }
-    //        ^-- peeking here
+    //  we're here
+    // /
+    // v
+    // NAME @ PATH { ... }
+    //      ^-- peeking here
     if self.reader.peek().tok == token::AT {
-      node_span = self.span;
+      node_span = Some(self.span);
       node_name = match self.expect_ident() {
         Some(name) => Some(name),
         None => return None,
@@ -111,8 +108,18 @@ impl<'a> Parser<'a> {
       }
     } else {
       node_name = None;
-      node_span = mk_sp(BytePos(0), BytePos(0));
+      node_span = None;
     }
+
+    self.parse_node_from_at(node_span, node_name)
+  }
+
+  fn parse_node_from_at(&mut self, name_span: Option<Span>,
+      node_name: Option<String>) -> Option<node::Node> {
+    let node_span: Span;
+    let node_path_span: Span;
+    let attributes: hashmap::HashMap<String, node::Attribute>;
+    let subnodes: Vec<Gc<node::Node>>;
 
     // NAME is resolved, if it was there anyway.
     //    we're here
@@ -123,7 +130,7 @@ impl<'a> Parser<'a> {
     if node_name == None {
       node_span = self.span;
     } else {
-      node_span.hi = self.span.hi;
+      node_span = mk_sp(name_span.unwrap().lo, self.span.hi);
     }
 
     let node_path = match self.token {
@@ -148,12 +155,14 @@ impl<'a> Parser<'a> {
     // it's either a body, or a semicolon (no body)
     match self.bump() {
       token::LBRACE => {
-        attributes = match self.parse_node_body() {
-          Some(attrs) => attrs,
+        let (a, s) = match self.parse_node_body() {
+          Some((attrs, subnodes)) => (attrs, subnodes),
           // TODO(farcaller): eat everything up to '}' and continue if failed
           // we can still parse further nodes.
           None => return None,
         };
+        attributes = a;
+        subnodes = s;
 
         if !self.expect(&token::RBRACE) {
           return None;
@@ -161,6 +170,7 @@ impl<'a> Parser<'a> {
       },
       token::SEMI => {
         attributes = hashmap::HashMap::new();
+        subnodes = Vec::new();
       },
       ref other => {
         self.error(format!("expected `\\{` or `;` but found `{}`",
@@ -171,12 +181,17 @@ impl<'a> Parser<'a> {
 
     let mut node = node::Node::new(node_name, node_span, node_path, node_path_span);
     node.attributes = attributes;
+    node.subnodes = subnodes;
     Some(node)
   }
 
   fn parse_node_body(&mut self)
-      -> Option<hashmap::HashMap<String, node::Attribute>> {
+      -> Option<(
+          hashmap::HashMap<String, node::Attribute>,
+          Vec<Gc<node::Node>>)> {
     let mut attrs = hashmap::HashMap::new();
+    let mut subnodes = Vec::new();
+
     loop {
       // break early if at brace
       if self.token == token::RBRACE {
@@ -187,14 +202,14 @@ impl<'a> Parser<'a> {
       // |
       // v
       // ATTR = VAL ;
-      let attr_key_span = self.span;
-      let attr_name = match self.expect_ident() {
+      let name_span = self.span;
+      let some_name = match self.expect_ident() {
         Some(name) => name,
         None => return None,
       };
 
-      if attrs.contains_key(&attr_name) {
-        self.error(format!("key `{}` is already defined", attr_name));
+      if attrs.contains_key(&some_name) {
+        self.error(format!("key `{}` is already defined", some_name));
         return None;
       }
 
@@ -202,33 +217,52 @@ impl<'a> Parser<'a> {
       //      |
       //      v
       // ATTR = VAL ;
-      if !self.expect(&token::EQ) {
-        return None;
+      //
+      // this might also be
+      //      |
+      //      v
+      // NAME @ PATH { ... }
+      match self.bump() {
+        token::EQ => {
+          // we're here
+          //        |
+          //        v
+          // ATTR = VAL ;
+          let attr_value_span = self.span;
+          let attr_value = match self.parse_attribute_value() {
+            Some(value) => value,
+            None => return None,
+          };
+
+          //   we're here
+          //            |
+          //            v
+          // ATTR = VAL ;
+          if !self.expect(&token::SEMI) {
+            return None;
+          }
+
+          attrs.insert(some_name, node::Attribute::new(
+              attr_value, name_span, attr_value_span));
+        },
+        token::AT => {
+          let node = match self.parse_node_from_at(
+              Some(name_span), Some(some_name)) {
+            Some(node) => node,
+            None => return None,
+          };
+
+          subnodes.push(box(GC) node);
+        },
+        ref other => {
+          self.error(format!("expected `=` or `@` but found `{}`",
+              token::to_str(other)));
+          return None;
+        }
       }
-
-      // we're here
-      //        |
-      //        v
-      // ATTR = VAL ;
-      let attr_value_span = self.span;
-      let attr_value = match self.parse_attribute_value() {
-        Some(value) => value,
-        None => return None,
-      };
-
-      //   we're here
-      //            |
-      //            v
-      // ATTR = VAL ;
-      if !self.expect(&token::SEMI) {
-        return None;
-      }
-
-      attrs.insert(attr_name, node::Attribute::new(
-          attr_value, attr_key_span, attr_value_span));
     }
 
-    Some(attrs)
+    Some((attrs, subnodes))
   }
 
   fn parse_attribute_value(&mut self) -> Option<node::AttributeValue> {

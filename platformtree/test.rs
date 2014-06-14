@@ -120,6 +120,13 @@ fn fails_to_parse_malformed_attibute() {
   fails_to_parse("test@root { k = &\"q\"; }");
 }
 
+#[test]
+fn parse_named_subnode() {
+  with_parsed_node("test@root { sub@child; }", |node| {
+    assert!(node.subnodes.len() == 1);
+  });
+}
+
 // helpers
 fn fails_to_parse(src: &str) {
   with_parsed_tts(src, |failed, pt| {
