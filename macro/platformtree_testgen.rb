@@ -13,22 +13,55 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-test :doesnt_parse_empty_pt, should_fail: true do
-  ''
+template :assert_pt_compiles do
+  test :doesnt_parse_empty_pt, {should_fail: true}, {
+    src: ''
+  }
+
+  test :doesnt_parse_node_with_no_body, {should_fail: true}, {
+    src: 'node@root'
+  }
+
+  test :doesnt_parse_node_with_no_path, {should_fail: true}, {
+    src: 'node@ {}'
+  }
+
+  test :doesnt_parse_node_with_broken_path, {should_fail: true}, {
+    src: 'node@::root::::blah {}'
+  }
+
+  test :doesnt_parse_trailing_garbage, {should_fail: true}, {
+    src: 'node@root {} node@root {}'
+  }
 end
 
-test :doesnt_parse_node_with_no_body, should_fail: true do
-  'node@root'
-end
-
-test :doesnt_parse_node_with_no_path, should_fail: true do
-  'node@ {}'
-end
-
-test :doesnt_parse_node_with_broken_path, should_fail: true do
-  'node@::root::::blah {}'
-end
-
-test :doesnt_parse_trailing_garbage, should_fail: true do
-  'node@root {} node@root {}'
+template :assert_pt_main_source_equals do
+  test :generates_clock_for_lpc11xx, {}, {
+    src: '
+      mcu@mcu::lpc17xx {
+        @clock {
+          source = "main-oscillator";
+          source_frequency = 12_000_000;
+          pll_m = 50;
+          pll_n = 3;
+          pll_divisor = 4;
+        }
+      }
+    ',
+    out: '
+      {
+        zinc::hal::lpc17xx::init::init_clock(
+            zinc::hal::lpc17xx::init::Clock{
+              source: zinc::hal::lpc17xx::init::Main(Some(12000000)),
+              pll: zinc::hal::lpc17xx::init::PLL0{
+                enabled: true,
+                m: 50u,
+                n: 3u,
+                divisor: 4u,
+              },
+            }
+        );
+      }
+    '.gsub(/(\n|\s)*/, '')
+  }
 end

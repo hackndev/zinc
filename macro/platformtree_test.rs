@@ -97,21 +97,3 @@ fn parse_anonymous_child_nodes() {
 
   assert!(p.subnodes.len() == 1);
 }
-
-#[test]
-fn build_main_block_src() {
-  let p = platformtree_get_main_src!(
-    mcu@mcu::lpc17xx {
-      @clock {
-        source = "main-oscillator";
-        source_frequency = 12_000_000;
-        pll_m = 50;
-        pll_n = 3;
-        pll_divisor = 4;
-      }
-    }
-  );
-
-  println!("src '{}'", p);
-  assert!(false);
-}

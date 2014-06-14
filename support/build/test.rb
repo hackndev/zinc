@@ -33,18 +33,24 @@ class LoaderInstance
     @tests = {}
   end
 
-  def test(name, h, &block)
-    tpl = TEMPLATE.
-        gsub('TEST_NAME', name.to_s).
-        gsub('TEST_CODE', block.call())
+  def template(name)
+    @template = Object.const_get("TEMPLATE_#{name.upcase}")
+    yield
+  end
+
+  def test(name, opts, vals)
+    tpl = @template.gsub('TEST_NAME', name.to_s)
+    vals.each do |k,v|
+      tpl = tpl.gsub(k.to_s.upcase, v)
+    end
     @tests[name] = {
-      conditions: h,
+      conditions: opts,
       source: tpl,
     }
   end
 end
 
-TEMPLATE = <<EOF
+TEMPLATE_ASSERT_PT_COMPILES = <<EOF
 #![feature(phase)]
 #![allow(unused_mut,dead_code)]
 
@@ -57,9 +63,36 @@ use platformtree::node;
 #[test]
 fn TEST_NAME() {
   let p = platformtree_parse!(
-    TEST_CODE
+    SRC
   );
 
   assert!(true);
+}
+EOF
+
+TEMPLATE_ASSERT_PT_MAIN_SOURCE_EQUALS = <<EOF
+#![feature(phase)]
+#![allow(unused_mut,dead_code)]
+
+#[phase(plugin)] extern crate macro_platformtree;
+extern crate platformtree;
+
+#[test]
+fn TEST_NAME() {
+  let p = platformtree_get_main_src!(
+    SRC
+  );
+
+  let mut stripped = p.replace("\n", "").replace("\t", "");
+  loop {
+    match stripped.as_slice().find_str(" ") {
+      Some(_) => stripped = stripped.replace(" ", ""),
+      None    => break,
+    }
+  }
+  let ok = "OUT".to_str();
+  println!("Expected: {}", ok);
+  println!("Received: {}", stripped);
+  assert!(stripped == ok);
 }
 EOF
