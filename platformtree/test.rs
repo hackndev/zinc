@@ -92,6 +92,13 @@ fn fails_to_parse_duplicate_attributes() {
   fails_to_parse("test@root { a = \"1\"; a = \"2\"; }");
 }
 
+#[test]
+fn parse_integer_attribute() {
+  with_parsed_node("test@root { key = 10; second = \"other\"; }", |node| {
+    assert!(node.get_int_attr("key") == Some(10));
+  });
+}
+
 // helpers
 fn fails_to_parse(src: &str) {
   with_parsed_tts(src, |failed, pt| {

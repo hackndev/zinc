@@ -77,6 +77,19 @@ impl Node {
       None => None,
     }
   }
+
+  pub fn get_int_attr(&self, key: &str) -> Option<uint> {
+    let val = self.attributes.find(&key.to_str());
+    match val {
+      Some(av) => {
+        match av.value {
+          UIntValue(ref u) => Some(*u),
+          _ => None,
+        }
+      }
+      None => None,
+    }
+  }
 }
 
 pub struct PlatformTree {
