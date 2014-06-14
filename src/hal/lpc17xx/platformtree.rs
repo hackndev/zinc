@@ -42,11 +42,19 @@ pub fn process_nodes(pcx: &mut PlatformContext, ecx: &ExtCtxt, nodes: &Vec<Gc<no
 }
 
 /// A simple wrapper to allow custom tokenization of ClockSource
-struct TokenSource {
+struct ClockSource {
   pub s: String,
 }
 
-impl ToTokens for TokenSource {
+impl ClockSource {
+  pub fn new(s: String) -> ClockSource {
+    ClockSource {
+      s: s,
+    }
+  }
+}
+
+impl ToTokens for ClockSource {
   fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
     (cx as &ExtParseUtils).parse_tts(self.s.clone())
   }
@@ -74,8 +82,8 @@ fn process_clock(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: &Gc<node::Node>
   let pll_n = some_pll_n.unwrap();
   let pll_divisor = some_pll_divisor.unwrap();
 
-  let token_source = TokenSource { s: match source.as_slice() {
     "internal-oscillator" => "zinc::hal::lpc17xx::init::Internal".to_str(),
+  let clock_source = ClockSource::new(match source.as_slice() {
     "main-oscillator"     => {
       let source_frequency = node.unwrap_int(ecx, "source_frequency");
       if source_frequency == None {
@@ -90,7 +98,7 @@ fn process_clock(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: &Gc<node::Node>
           format!("unknown oscillator value `{}`", other).as_slice());
       return
     },
-  }};
+  });
 
   let ex = quote_expr!(&*ecx,
       zinc::hal::lpc17xx::init::init_clock(
