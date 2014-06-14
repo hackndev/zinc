@@ -66,29 +66,17 @@ impl Node {
   }
 
   pub fn get_string_attr<'a>(&'a self, key: &str) -> Option<&'a String> {
-    let val = self.attributes.find(&key.to_str());
-    match val {
-      Some(av) => {
-        match av.value {
-          StrValue(ref s) => Some(s),
-          _ => None,
-        }
-      }
-      None => None,
-    }
+    self.attributes.find(&key.to_str()).and_then(|av| match av.value {
+      StrValue(ref s) => Some(s),
+      _ => None,
+    })
   }
 
   pub fn get_int_attr(&self, key: &str) -> Option<uint> {
-    let val = self.attributes.find(&key.to_str());
-    match val {
-      Some(av) => {
-        match av.value {
-          UIntValue(ref u) => Some(*u),
-          _ => None,
-        }
-      }
-      None => None,
-    }
+    self.attributes.find(&key.to_str()).and_then(|av| match av.value {
+      UIntValue(ref u) => Some(*u),
+      _ => None,
+    })
   }
 }
 
