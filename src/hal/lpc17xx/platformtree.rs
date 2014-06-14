@@ -29,7 +29,8 @@ use super::PlatformContext;
 ///          mod platformtree
 ///   ecx:   ExtCtxt for building ASTs
 ///   nodes: a vector of nodes inside of the mcu node.
-pub fn process_nodes(pcx: &mut PlatformContext, ecx: &ExtCtxt, nodes: &Vec<Gc<node::Node>>) {
+pub fn process_nodes(pcx: &mut PlatformContext, ecx: &ExtCtxt,
+    nodes: &Vec<Gc<node::Node>>) {
   for n in nodes.iter() {
     let path = n.path.path.get(0).as_slice();
     match path {
@@ -61,7 +62,8 @@ impl ToTokens for ClockSource {
 }
 
 /// Parses @clock node into pll init code.
-fn process_clock(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: &Gc<node::Node>) {
+fn process_clock(pcx: &mut PlatformContext, ecx: &ExtCtxt,
+    node: &Gc<node::Node>) {
   if node.path.path.len() != 1 {
     ecx.span_err(node.path.span.unwrap(), "node lpc17xx::clock is final");
     return

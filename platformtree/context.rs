@@ -50,7 +50,8 @@ impl PlatformContext {
   }
 }
 
-pub fn process_node(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: Gc<node::Node>) {
+pub fn process_node(pcx: &mut PlatformContext, ecx: &ExtCtxt,
+    node: Gc<node::Node>) {
   match node.path.path.get(0).as_slice() {
     "mcu" => process_mcu(pcx, ecx, node.path.path.get(1), node),
     other => ecx.span_err(
@@ -59,7 +60,8 @@ pub fn process_node(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: Gc<node::Nod
   }
 }
 
-fn process_mcu(pcx: &mut PlatformContext, ecx: &ExtCtxt, mcu: &String, node: Gc<node::Node>) {
+fn process_mcu(pcx: &mut PlatformContext, ecx: &ExtCtxt, mcu: &String,
+    node: Gc<node::Node>) {
   match mcu.as_slice() {
     "lpc17xx" => lpc17xx_pt::process_nodes(pcx, ecx, &node.subnodes),
     other => ecx.span_err(
@@ -76,7 +78,8 @@ impl node::Node {
         _ => {
           ecx.span_err(
               self.path.span.unwrap(),  // TODO: wrong span
-              format!("required string key `{}` is not of a string type", attr).as_slice());
+              format!("required string key `{}` is not of a string type",
+                  attr).as_slice());
           None
         }
       },
@@ -91,7 +94,8 @@ impl node::Node {
         _ => {
           ecx.span_err(
               self.path.span.unwrap(),  // TODO: wrong span
-              format!("required string key `{}` is not of a string type", attr).as_slice());
+              format!("required string key `{}` is not of a string type",
+                  attr).as_slice());
           None
         }
       },
@@ -99,7 +103,8 @@ impl node::Node {
     }
   }
 
-  fn unwrap_attribute(&self, ecx: &ExtCtxt, attr: &str) -> Option<node::AttributeValue> {
+  fn unwrap_attribute(&self, ecx: &ExtCtxt, attr: &str)
+      -> Option<node::AttributeValue> {
     match self.attributes.find_equiv(&attr.to_str()) {
       Some(a) => Some(a.clone()),
       None => {
