@@ -89,7 +89,7 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_node(&mut self) -> Option<node::Node> {
-    let node_span: Option<Span>;
+    let name_span: Option<Span>;
     let node_name: Option<String>;
 
     //  we're here
@@ -98,7 +98,7 @@ impl<'a> Parser<'a> {
     // NAME @ PATH { ... }
     //      ^-- peeking here
     if self.reader.peek().tok == token::AT {
-      node_span = Some(self.span);
+      name_span = Some(self.span);
       node_name = match self.expect_ident() {
         Some(name) => Some(name),
         None => return None,
@@ -108,14 +108,9 @@ impl<'a> Parser<'a> {
       }
     } else {
       node_name = None;
-      node_span = None;
+      name_span = None;
     }
 
-    self.parse_node_from_at(node_span, node_name)
-  }
-
-  fn parse_node_from_at(&mut self, name_span: Option<Span>,
-      node_name: Option<String>) -> Option<node::Node> {
     let node_span: Span;
     let node_path_span: Span;
     let attributes: hashmap::HashMap<String, node::Attribute>;
