@@ -22,6 +22,13 @@ use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 use node;
 use super::PlatformContext;
 
+/// Entry point for parsing an mcu node.
+///
+/// Arguments:
+///   pcx:   PlatformContext, used to generate any static items in
+///          mod platformtree
+///   ecx:   ExtCtxt for building ASTs
+///   nodes: a vector of nodes inside of the mcu node.
 pub fn process_nodes(pcx: &mut PlatformContext, ecx: &ExtCtxt, nodes: &Vec<Gc<node::Node>>) {
   for n in nodes.iter() {
     let path = n.path.path.get(0).as_slice();
@@ -34,6 +41,7 @@ pub fn process_nodes(pcx: &mut PlatformContext, ecx: &ExtCtxt, nodes: &Vec<Gc<no
   }
 }
 
+/// A simple wrapper to allow custom tokenization of ClockSource
 struct TokenSource {
   pub s: String,
 }
@@ -44,6 +52,7 @@ impl ToTokens for TokenSource {
   }
 }
 
+/// Parses @clock node into pll init code.
 fn process_clock(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: &Gc<node::Node>) {
   if node.path.path.len() != 1 {
     ecx.span_err(node.path.span.unwrap(), "node lpc17xx::clock is final");
