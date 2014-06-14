@@ -13,14 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax::ast;
-use syntax::codemap::Span;
 use std::gc::Gc;
-use syntax::ext::base::ExtCtxt;
+use syntax::ast;
 use syntax::codemap::{mk_sp, BytePos};
+use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 
 use node;
+
+#[path="../src/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
 
 pub struct PlatformContext {
   mod_items: Vec<Gc<ast::Item>>,
@@ -108,94 +109,5 @@ impl node::Node {
         None
       }
     }
-  }
-}
-
-mod lpc17xx_pt {
-  use syntax::codemap::Span;
-  use std::gc::Gc;
-  use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
-  use syntax::ext::base::ExtCtxt;
-  use syntax::ast::TokenTree;
-  use syntax::ext::build::AstBuilder;
-
-  use super::PlatformContext;
-  use node;
-
-  pub fn process_nodes(pcx: &mut PlatformContext, ecx: &ExtCtxt, nodes: &Vec<Gc<node::Node>>) {
-    for n in nodes.iter() {
-      let path = n.path.path.get(0).as_slice();
-      match path {
-        "clock" => process_clock(pcx, ecx, n),
-        other => ecx.span_err(
-            n.path.span.unwrap(),
-            format!("unknown subnode `{}` in lpc17xx mcu", other).as_slice()),
-      }
-    }
-  }
-
-  struct TokenSource {
-    pub s: String,
-  }
-
-  impl ToTokens for TokenSource {
-    fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
-      (cx as &ExtParseUtils).parse_tts(self.s.clone())
-    }
-  }
-
-  fn process_clock(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: &Gc<node::Node>) {
-    if node.path.path.len() != 1 {
-      ecx.span_err(node.path.span.unwrap(), "node lpc17xx::clock is final");
-      return
-    }
-
-    let some_source = node.unwrap_string(ecx, "source");
-    let some_pll_m = node.unwrap_int(ecx, "pll_m");
-    let some_pll_n = node.unwrap_int(ecx, "pll_n");
-    let some_pll_divisor = node.unwrap_int(ecx, "pll_divisor");
-
-    if some_source == None || some_pll_m == None || some_pll_m == None ||
-        some_pll_divisor == None {
-      return
-    }
-
-    let source = some_source.unwrap();
-    let pll_m = some_pll_m.unwrap();
-    let pll_n = some_pll_n.unwrap();
-    let pll_divisor = some_pll_divisor.unwrap();
-
-    let token_source = TokenSource { s: match source.as_slice() {
-      "internal-oscillator" => "zinc::hal::lpc17xx::init::Internal".to_str(),
-      "main-oscillator"     => {
-        let source_frequency = node.unwrap_int(ecx, "source_frequency");
-        if source_frequency == None {
-          return
-        }
-        format!("zinc::hal::lpc17xx::init::Main({})", source_frequency)
-      }
-      "rtc-oscillator"      => "zinc::hal::lpc17xx::init::RTC".to_str(),
-      other => {
-        ecx.span_err(
-            node.path.span.unwrap(), // TODO: span
-            format!("unknown oscillator value `{}`", other).as_slice());
-        return
-      },
-    }};
-
-    let ex = quote_expr!(&*ecx,
-        zinc::hal::lpc17xx::init::init_clock(
-            zinc::hal::lpc17xx::init::Clock {
-              source: $token_source,
-              pll: zinc::hal::lpc17xx::init::PLL0 {
-                enabled: true,
-                m: $pll_m,
-                n: $pll_n,
-                divisor: $pll_divisor,
-              }
-            }
-        );
-    );
-    pcx.add_main_statement(ecx.stmt_expr(ex));
   }
 }
