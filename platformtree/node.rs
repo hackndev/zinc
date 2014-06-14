@@ -78,6 +78,13 @@ impl Node {
       _ => None,
     })
   }
+
+  pub fn get_ref_attr<'a>(&'a self, key: &str) -> Option<&'a String> {
+    self.attributes.find(&key.to_str()).and_then(|av| match av.value {
+      RefValue(ref s) => Some(s),
+      _ => None,
+    })
+  }
 }
 
 pub struct PlatformTree {

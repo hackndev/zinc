@@ -74,16 +74,32 @@ fn parse_node_with_numeric_path() {
 }
 
 #[test]
+fn parse_attributes() {
+  with_parsed_node("test@root { a = \"value\"; b = 1; c = &ref; }", |node| {
+    assert!(node.get_string_attr("a") == Some(&"value".to_str()));
+    assert!(node.get_int_attr("b")    == Some(1));
+    assert!(node.get_ref_attr("c")    == Some(&"ref".to_str()));
+  });
+}
+
+#[test]
 fn parse_string_attribute() {
-  with_parsed_node("test@root { key = \"value\"; second = \"other\"; }", |node| {
+  with_parsed_node("test@root { key = \"value\"; }", |node| {
     assert!(node.get_string_attr("key") == Some(&"value".to_str()));
   });
 }
 
 #[test]
 fn parse_integer_attribute() {
-  with_parsed_node("test@root { key = 10; second = \"other\"; }", |node| {
+  with_parsed_node("test@root { key = 10; }", |node| {
     assert!(node.get_int_attr("key") == Some(10));
+  });
+}
+
+#[test]
+fn parse_ref_attribute() {
+  with_parsed_node("test@root { key = &ref; }", |node| {
+    assert!(node.get_ref_attr("key") == Some(&"ref".to_str()));
   });
 }
 
@@ -100,6 +116,8 @@ fn fails_to_parse_malformed_attibute() {
   fails_to_parse("test@root { k = 10u8; }");
   fails_to_parse("test@root { k = 10i8; }");
   fails_to_parse("test@root { k = -42; }");
+  fails_to_parse("test@root { k = &1; }");
+  fails_to_parse("test@root { k = &\"q\"; }");
 }
 
 // helpers

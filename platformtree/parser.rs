@@ -238,10 +238,17 @@ impl<'a> Parser<'a> {
         let string = token::get_ident(string_val).get().to_str();
         Some(node::StrValue(string))
       },
-      // TODO(farcaller): any other integers can surface here?
       token::LIT_INT_UNSUFFIXED(intval) => {
         self.bump();
         Some(node::UIntValue(intval as uint))
+      },
+      token::BINOP(token::AND) => {
+        self.bump();
+        let name = match self.expect_ident() {
+          Some(name) => name,
+          None => return None,
+        };
+        Some(node::RefValue(name))
       },
       ref other => {
         self.error(format!("expected string but found `{}`",
