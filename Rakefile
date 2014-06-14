@@ -78,11 +78,6 @@ compile_rust :macro_platformtree, {
   build_for: :host,
 }
 
-ruby_tests :macro_platformtree_testgen, {
-  source: 'macro/platformtree_testgen.rb',
-  deps:    [:macro_platformtree],
-}
-
 ruby_tests :macro_platformtree_lpc17xx_testgen, {
   source: 'hal/lpc17xx/platformtree_testgen.rb'.in_source,
   deps:    [:macro_platformtree],

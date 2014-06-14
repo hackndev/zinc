@@ -14,9 +14,12 @@
 // limitations under the License.
 
 use syntax::ext::base::ExtCtxt;
-use syntax::parse::new_parse_sess;
+use syntax::parse::{new_parse_sess, new_parse_sess_special_handler};
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
+use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler, mk_handler};
+use syntax::codemap;
+use syntax::codemap::{Span, CodeMap};
 
 use parser::Parser;
 use node;
@@ -86,6 +89,54 @@ fn parse_anonymous_child_nodes() {
   });
 }
 
+#[test]
+fn doesnt_parse_empty_pt() {
+  expect_failure("");
+}
+
+#[test]
+fn doesnt_parse_node_with_no_body() {
+  expect_failure("node@root");
+}
+
+#[test]
+fn doesnt_parse_node_with_no_path() {
+  expect_failure("node@ {}");
+}
+
+#[test]
+fn doesnt_parse_node_with_broken_path() {
+  expect_failure("node@::root::::blah {}");
+}
+
+#[test]
+fn doesnt_parse_trailing_garbage() {
+  expect_failure("node@root {} node@root {}");
+}
+
+fn expect_failure(src: &str) {
+  let ce = CustomEmmiter::new();
+  let sh = mk_span_handler(mk_handler(box ce), CodeMap::new());
+  let parse_sess = new_parse_sess_special_handler(sh);
+  let cfg = Vec::new();
+  let ecfg = ExpansionConfig {
+    deriving_hash_type_parameter: false,
+    crate_id: from_str("test").unwrap(),
+  };
+  let cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
+  let tts = cx.parse_tts(src.to_str());
+
+  let mut parser = Parser::new(&cx, tts.as_slice());
+  let p = parser.parse_node();
+  let failed_parse = match p {
+    Ok(p) => false,
+    Err(e) => true,
+  };
+  parser.should_finish();
+
+  assert!(ce.failed() == true || failed_parse);
+}
+
 fn with_parsed_node(src: &str, block: |node: &node::Node|) {
   let parse_sess = new_parse_sess();
   let cfg = Vec::new();
@@ -97,8 +148,41 @@ fn with_parsed_node(src: &str, block: |node: &node::Node|) {
   let tts = cx.parse_tts(src.to_str());
 
   let mut parser = Parser::new(&cx, tts.as_slice());
-  let p = parser.parse_node();
+  let p = match parser.parse_node() {
+    Ok(n) => n,
+    Err(e) => {
+      assert!(false);
+      fail!();
+    },
+  };
   parser.should_finish();
 
   block(&p);
+}
+
+struct CustomEmmiter {
+  failed: bool,
+}
+
+impl CustomEmmiter {
+  pub fn new() -> CustomEmmiter {
+    CustomEmmiter {
+      failed: false,
+    }
+  }
+
+  pub fn failed(&self) -> bool {
+    self.failed
+  }
+}
+
+impl Emitter for CustomEmmiter {
+  fn emit(&mut self, cmsp: Option<(&codemap::CodeMap, Span)>,
+          msg: &str, lvl: Level) {
+    self.failed = true;
+  }
+  fn custom_emit(&mut self, cm: &codemap::CodeMap,
+                 sp: RenderSpan, msg: &str, lvl: Level) {
+    self.failed = true;
+  }
 }

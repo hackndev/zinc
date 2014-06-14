@@ -199,39 +199,42 @@ impl<'a> Parser<'a> {
   }
 
   /// Expects that the current token is t. Bumps on success.
-  fn expect(&mut self, t: &token::Token) {
+  fn expect(&mut self, t: &token::Token) -> Option<String> {
     if self.token == *t {
       self.bump();
+      None
     } else {
       let token_str = token::to_str(t);
       let this_token_str = token::to_str(&self.token);
-      self.fatal(format!("expected `{}` but found `{}`", token_str, this_token_str).as_slice());
+      Some(format!("expected `{}` but found `{}`", token_str, this_token_str))
     }
   }
 
   /// Expects that the current token is IDENT. Bumps on success.
-  fn expect_ident(&mut self) -> token::Token {
+  fn expect_ident(&mut self) -> Result<token::Token, String> {
     match self.token {
       token::IDENT(_, _) => {
-        self.bump()
+        Ok(self.bump())
       },
       _ => {
         let this_token_str = token::to_str(&self.token);
-        self.fatal(format!("expected identifier but found `{}`", this_token_str).as_slice());
+        Err(format!("expected identifier but found `{}`", this_token_str))
       },
     }
   }
 
   /// Makes sure there are no more tokens (we are at the end of stream).
-  pub fn should_finish(&mut self) {
+  pub fn should_finish(&mut self) -> Option<String> {
     if self.bump() != token::EOF {
       let this_token_str = token::to_str(&self.token);
-      self.fatal(format!("trailing garbage: `{}`", this_token_str).as_slice());
+      Some(format!("trailing garbage: `{}`", this_token_str))
+    } else {
+      None
     }
   }
 
   /// Parses a platform tree node.
-  pub fn parse_node(&mut self) -> node::Node {
+  pub fn parse_node(&mut self) -> Result<node::Node, String> {
     let mut node = node::Node::new();
     // NODE_ID @ NODE_PATH { CONTENTS }
     // or
@@ -250,30 +253,45 @@ impl<'a> Parser<'a> {
       },
       _ => {
         let this_token_str = token::to_str(&self.token);
-        self.fatal(format!("expected identifier or `@` but found `{}`", this_token_str).as_slice())
+        return Err(format!("expected identifier or `@` but found `{}`", this_token_str))
       },
     };
 
     // eat @
-    self.expect(&token::AT);
+    match self.expect(&token::AT) {
+      Some(e) => return Err(e),
+      None => (),
+    }
 
     // parse node path
-    node.path = self.parse_path();
+    node.path = match self.parse_path() {
+      Ok(p) => p,
+      Err(e) => return Err(e),
+    };
 
     // eat {
-    self.expect(&token::LBRACE);
+    match self.expect(&token::LBRACE) {
+      Some(e) => return Err(e),
+      None => (),
+    }
 
     // parse body
-    self.parse_node_contents(&mut node);
+    match self.parse_node_contents(&mut node) {
+      Some(e) => return Err(e),
+      None => (),
+    }
 
     // eat }
-    self.expect(&token::RBRACE);
+    match self.expect(&token::RBRACE) {
+      Some(e) => return Err(e),
+      None => (),
+    }
 
-    node
+    Ok(node)
   }
 
   /// Parses node contents (attributes and subnodes).
-  pub fn parse_node_contents(&mut self, node: &mut node::Node) {
+  pub fn parse_node_contents(&mut self, node: &mut node::Node) -> Option<String> {
     let mut attrs = hashmap::HashMap::new();
     let mut nodes = Vec::new();
 
@@ -291,41 +309,55 @@ impl<'a> Parser<'a> {
             // it's attribute
             token::EQ => {
               self.bump();
-              let val = self.parse_attribute_value();
-              self.expect(&token::SEMI);
+              let val = match self.parse_attribute_value() {
+                Ok(v) => v,
+                Err(e) => return Some(e),
+              };
+              match self.expect(&token::SEMI) {
+                Some(e) => return Some(e),
+                None => (),
+              }
 
               attrs.insert(name, val);
             },
             // it's subnode, unbump the name and re-parse as node
             token::AT => {
               self.unbump();
-              let node = self.parse_node();
+              let node = match self.parse_node() {
+                Ok(n) => n,
+                Err(e) => return Some(e),
+              };
               nodes.push(box(GC) node);
             },
             _ => {
               let this_token_str = token::to_str(&self.token);
-              self.fatal(format!("expected `@` or `=` but found `{}`", this_token_str).as_slice())
+              return Some(format!("expected `@` or `=` but found `{}`", this_token_str));
             }
           };
         }
         // got @, so this must be anonymous subnode
         token::AT => {
-          let node = self.parse_node();
+          let node = match self.parse_node() {
+            Ok(n) => n,
+            Err(e) => return Some(e),
+          };
           nodes.push(box(GC) node);
         },
         _ => {
           let this_token_str = token::to_str(&self.token);
-          self.fatal(format!("expected identifier or `\\}` but found `{}`", this_token_str).as_slice())
+          return Some(format!("expected identifier or `\\}` but found `{}`", this_token_str));
         }
       }
     }
 
     node.attributes = attrs;
     node.subnodes = nodes;
+
+    None
   }
 
   /// Parses attribute value.
-  pub fn parse_attribute_value(&mut self) -> node::AttributeValue {
+  pub fn parse_attribute_value(&mut self) -> Result<node::AttributeValue, String> {
     let val = match self.token {
       // a string
       token::LIT_STR(sv) => {
@@ -343,19 +375,23 @@ impl<'a> Parser<'a> {
       // a reference (& + IDENT)
       token::BINOP(token::AND) => {
         self.bump();
-        node::RefValue(token::to_str(&self.expect_ident()).to_string())
+        let ident = match self.expect_ident() {
+          Ok(i) => i,
+          Err(e) => return Err(e),
+        };
+        node::RefValue(token::to_str(&ident).to_string())
       },
       _ => {
         let this_token_str = token::to_str(&self.token);
-        self.fatal(format!("expected integer or string but found {} `{}`", self.token, this_token_str).as_slice())
+        return Err(format!("expected integer or string but found {} `{}`", self.token, this_token_str));
       }
     };
 
-    val
+    Ok(val)
   }
 
   /// Parses node path
-  pub fn parse_path(&mut self) -> node::Path {
+  pub fn parse_path(&mut self) -> Result<node::Path, String> {
     let mut v = Vec::new();
     let mut expect_more = false;
     let mut absolute = false;
@@ -394,22 +430,22 @@ impl<'a> Parser<'a> {
         _ => {
           if !expect_more {
             if v.len() == 0 {
-              self.fatal(format!("unfinished path, found {} `{}`", self.token,
-                  token::to_str(&self.token)).as_slice());
+              return Err(format!("unfinished path, found {} `{}`", self.token,
+                  token::to_str(&self.token)));
             }
             break
           } else {
-            self.fatal(format!("unfinished path, found {} `{}`", self.token,
-                token::to_str(&self.token)).as_slice());
+            return Err(format!("unfinished path, found {} `{}`", self.token,
+                token::to_str(&self.token)));
           }
         }
       }
     }
     path_span.hi = self.last_span.hi;
-    node::Path {
+    Ok(node::Path {
       absolute: absolute,
       path: v,
       span: Some(path_span),
-    }
+    })
   }
 }
