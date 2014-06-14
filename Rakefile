@@ -56,6 +56,39 @@ if features.include?(:multitasking)
   }
 end
 
+# platform tree
+compile_rust :platformtree_crate, {
+  source:    'platformtree/platformtree.rs'.in_root,
+  produce:   'platformtree/platformtree.rs'.in_root.as_rlib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
+
+# macros
+compile_rust :macro_platformtree, {
+  source:    'macro/platformtree.rs'.in_root,
+  deps:      [:platformtree_crate],
+  produce:   'macro/platformtree.rs'.in_root.as_dylib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
+
+rust_tests :macro_platformtree_test, {
+  source:  'macro/platformtree_test.rs'.in_root,
+  deps:    [:macro_platformtree],
+  produce: 'macro_platformtree_test'.in_build,
+}
+
+ruby_tests :macro_platformtree_testgen, {
+  source: 'macro/platformtree_testgen.rb',
+  deps:    [:macro_platformtree],
+}
+
+ruby_tests :macro_platformtree_lpc17xx_testgen, {
+  source: 'hal/lpc17xx/platformtree_testgen.rb'.in_source,
+  deps:    [:macro_platformtree],
+}
+
 app_tasks = Context.instance.applications.map do |a|
   compile_rust "app_#{a}_crate".to_sym, {
     source: "apps/app_#{a}.rs".in_root,
@@ -106,36 +139,3 @@ end
 
 desc "Build all applications"
 task :build_all => app_tasks.map { |t| t.name }
-
-# platform tree
-compile_rust :platformtree_crate, {
-  source:    'platformtree/platformtree.rs'.in_root,
-  produce:   'platformtree/platformtree.rs'.in_root.as_rlib.in_build,
-  out_dir:   true,
-  build_for: :host,
-}
-
-# macros
-compile_rust :macro_platformtree, {
-  source:    'macro/platformtree.rs'.in_root,
-  deps:      [:platformtree_crate],
-  produce:   'macro/platformtree.rs'.in_root.as_dylib.in_build,
-  out_dir:   true,
-  build_for: :host,
-}
-
-rust_tests :macro_platformtree_test, {
-  source:  'macro/platformtree_test.rs'.in_root,
-  deps:    [:macro_platformtree],
-  produce: 'macro_platformtree_test'.in_build,
-}
-
-ruby_tests :macro_platformtree_testgen, {
-  source: 'macro/platformtree_testgen.rb',
-  deps:    [:macro_platformtree],
-}
-
-ruby_tests :macro_platformtree_lpc17xx_testgen, {
-  source: 'hal/lpc17xx/platformtree_testgen.rb'.in_source,
-  deps:    [:macro_platformtree],
-}
