@@ -89,10 +89,43 @@ impl<'a> Parser<'a> {
   }
 
   pub fn parse_node(&mut self) -> Option<node::Node> {
+    let mut node_span: Span;
     let node_path_span: Span;
+    let node_name: Option<String>;
+
+    // check if next token is @
+    //    we're here
+    //   /
+    //   v
+    //   NAME @ PATH
+    //        ^-- peeking here
+    if self.reader.peek().tok == token::AT {
+      node_span = self.span;
+      node_name = match self.expect_ident() {
+        Some(name) => Some(name),
+        None => return None,
+      };
+      if !self.expect(&token::AT) {
+        return None;
+      }
+    } else {
+      node_name = None;
+      node_span = mk_sp(BytePos(0), BytePos(0));
+    }
+
+    // NAME is resolved, if it was there anyway.
+    //    we're here
+    //          |
+    //          v
+    //   NAME @ PATH
     let node_path = match self.token {
       token::IDENT(_, _) => {
         node_path_span = self.span;
+        if node_name == None {
+          node_span = self.span;
+        } else {
+          node_span.hi = self.span.hi;
+        }
         token::to_str(&self.bump())
       },
       ref other => {
@@ -110,8 +143,7 @@ impl<'a> Parser<'a> {
       return None;
     }
 
-    let node = node::Node::new(None, mk_sp(BytePos(0), BytePos(0)),
-        node_path, node_path_span);
+    let node = node::Node::new(node_name, node_span, node_path, node_path_span);
     Some(node)
   }
 
@@ -148,6 +180,22 @@ impl<'a> Parser<'a> {
       self.error(format!("expected `{}` but found `{}`", token_str,
           this_token_str));
       false
+    }
+  }
+
+  /// Expects that the current token is IDENT, returns its string value. Bumps
+  /// on success.
+  fn expect_ident(&mut self) -> Option<String> {
+    let tok_str = token::to_str(&self.token);
+    match self.token {
+      token::IDENT(_, _) => {
+        self.bump();
+        Some(tok_str)
+      },
+      _ => {
+        self.error(format!("expected identifier but found `{}`", tok_str));
+        None
+      },
     }
   }
 }

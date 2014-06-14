@@ -35,16 +35,57 @@ fn parse_node_with_no_name() {
   });
 }
 
+#[test]
+fn parse_node_with_name() {
+  with_parsed_node("test@root {}", |node: &Gc<node::Node>| {
+    assert!(node.name == Some("test".to_str()));
+    assert!(node.path == "root".to_str());
+    assert!(node.attributes.len() == 0);
+    assert!(node.subnodes.len() == 0);
+  });
+}
+
+#[test]
+fn fails_to_parse_node_with_bad_name() {
+  fails_to_parse("1@root {}");
+  fails_to_parse("@root {}");
+  fails_to_parse("+@root {}");
+}
+
+#[test]
+fn fails_to_parse_node_with_bad_path() {
+  fails_to_parse("test root {}");
+  fails_to_parse("test@ {}");
+  fails_to_parse("test@- {}");
+}
+
+// helpers
+fn fails_to_parse(src: &str) {
+  with_parsed_tts(src, |failed, pt| {
+    assert!(failed == true);
+    assert!(pt.is_none());
+  });
+}
+
+fn with_parsed(src: &str, block: |node: &node::PlatformTree|) {
+  with_parsed_tts(src, |failed, pt| {
+    assert!(failed == false);
+    block(&pt.unwrap());
+  });
+}
+
 fn with_parsed_node(src: &str, block: |node: &Gc<node::Node>|) {
-  with_parsed(src, |pt: &node::PlatformTree| {
+  with_parsed(src, |pt| {
     assert!(pt.nodes.len() == 1);
     block(pt.nodes.get(0));
   });
 }
 
-fn with_parsed(src: &str, block: |node: &node::PlatformTree|) {
-  let ce = CustomEmmiter::new();
-  let sh = mk_span_handler(mk_handler(box ce), CodeMap::new());
+fn with_parsed_tts(src: &str, block: |bool, Option<node::PlatformTree>|) {
+  let mut failed = false;
+  let failptr = &mut failed as *mut bool;
+  let ce = box CustomEmmiter::new(failptr);
+  let sh = mk_span_handler(mk_handler(ce), CodeMap::new());
   let parse_sess = new_parse_sess_special_handler(sh);
   let cfg = Vec::new();
   let ecfg = ExpansionConfig {
@@ -55,34 +96,30 @@ fn with_parsed(src: &str, block: |node: &node::PlatformTree|) {
   let tts = cx.parse_tts(src.to_str());
 
   let mut parser = Parser::new(&cx, tts.as_slice());
-  let nodes = parser.parse_platformtree().unwrap();
-  assert!(ce.failed() == false);
+  let nodes = parser.parse_platformtree();
 
-  block(&nodes);
+  block(failed, nodes);
 }
 
 struct CustomEmmiter {
-  failed: bool,
+  failed: *mut bool
 }
 
 impl CustomEmmiter {
-  pub fn new() -> CustomEmmiter {
+  pub fn new(fp: *mut bool) -> CustomEmmiter {
     CustomEmmiter {
-      failed: false,
+      failed: fp,
     }
-  }
-
-  pub fn failed(&self) -> bool {
-    self.failed
   }
 }
 
 impl Emitter for CustomEmmiter {
-  fn emit(&mut self, _: Option<(&codemap::CodeMap, Span)>, _: &str, _: Level) {
-    self.failed = true;
+  fn emit(&mut self, _: Option<(&codemap::CodeMap, Span)>, m: &str, l: Level) {
+    unsafe { *self.failed = true };
+    println!("{} {}", l, m);
   }
   fn custom_emit(&mut self, _: &codemap::CodeMap, _: RenderSpan, _: &str,
       _: Level) {
-    self.failed = true;
+    fail!();
   }
 }
