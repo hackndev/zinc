@@ -29,6 +29,17 @@ pub struct Attribute {
   pub value_span: Span,
 }
 
+impl Attribute {
+  pub fn new(value: AttributeValue, key_span: Span, value_span: Span)
+      -> Attribute {
+    Attribute {
+      value: value,
+      key_span: key_span,
+      value_span: value_span,
+    }
+  }
+}
+
 pub struct Node {
   pub name: Option<String>,
   pub name_span: Span,
@@ -51,6 +62,19 @@ impl Node {
       path_span: path_span,
       attributes: hashmap::HashMap::new(),
       subnodes: Vec::new(),
+    }
+  }
+
+  pub fn get_string_attr<'a>(&'a self, key: &str) -> Option<&'a String> {
+    let val = self.attributes.find(&key.to_str());
+    match val {
+      Some(av) => {
+        match av.value {
+          StrValue(ref s) => Some(s),
+          _ => None,
+        }
+      }
+      None => None,
     }
   }
 }

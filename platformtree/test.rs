@@ -73,6 +73,15 @@ fn parse_node_with_numeric_path() {
   });
 }
 
+#[test]
+fn parse_string_attribute() {
+  with_parsed_node("test@root {
+    key = \"value\";
+  }", |node| {
+    assert!(node.get_string_attr("key") == Some(&"value".to_str()));
+  });
+}
+
 // helpers
 fn fails_to_parse(src: &str) {
   with_parsed_tts(src, |failed, pt| {

@@ -41,8 +41,8 @@ impl<'a> Parser<'a> {
   pub fn new<'a>(cx: &'a ExtCtxt, tts: &[TokenTree]) -> Parser<'a> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
-    let mut reader = box lexer::new_tt_reader(&sess.span_diagnostic, None, ttsvec)
-        as Box<lexer::Reader>;
+    let mut reader = box lexer::new_tt_reader(
+        &sess.span_diagnostic, None, ttsvec) as Box<lexer::Reader>;
 
     let tok0 = reader.next_token();
     let token = tok0.tok;
@@ -88,10 +88,11 @@ impl<'a> Parser<'a> {
     }
   }
 
-  pub fn parse_node(&mut self) -> Option<node::Node> {
+  fn parse_node(&mut self) -> Option<node::Node> {
     let mut node_span: Span;
     let node_path_span: Span;
     let node_name: Option<String>;
+    let attributes: hashmap::HashMap<String, node::Attribute>;
 
     // check if next token is @
     //    we're here
@@ -147,12 +148,20 @@ impl<'a> Parser<'a> {
     // it's either a body, or a semicolon (no body)
     match self.bump() {
       token::LBRACE => {
+        attributes = match self.parse_node_body() {
+          Some(attrs) => attrs,
+          // TODO(farcaller): eat everything up to '}' and continue if failed
+          // we can still parse further nodes.
+          None => return None,
+        };
 
         if !self.expect(&token::RBRACE) {
           return None;
         }
       },
-      token::SEMI => (),
+      token::SEMI => {
+        attributes = hashmap::HashMap::new();
+      },
       ref other => {
         self.error(format!("expected `\\{` or `;` but found `{}`",
             token::to_str(other)));
@@ -160,8 +169,76 @@ impl<'a> Parser<'a> {
       }
     }
 
-    let node = node::Node::new(node_name, node_span, node_path, node_path_span);
+    let mut node = node::Node::new(node_name, node_span, node_path, node_path_span);
+    node.attributes = attributes;
     Some(node)
+  }
+
+  fn parse_node_body(&mut self)
+      -> Option<hashmap::HashMap<String, node::Attribute>> {
+    let mut attrs = hashmap::HashMap::new();
+    loop {
+      // break early if at brace
+      if self.token == token::RBRACE {
+        break;
+      }
+
+      // we're here
+      // |
+      // v
+      // ATTR = VAL ;
+      let attr_key_span = self.span;
+      let attr_name = match self.expect_ident() {
+        Some(name) => name,
+        None => return None,
+      };
+
+      // we're here
+      //      |
+      //      v
+      // ATTR = VAL ;
+      if !self.expect(&token::EQ) {
+        return None;
+      }
+
+      // we're here
+      //        |
+      //        v
+      // ATTR = VAL ;
+      let attr_value_span = self.span;
+      let attr_value = match self.parse_attribute_value() {
+        Some(value) => value,
+        None => return None,
+      };
+
+      //   we're here
+      //            |
+      //            v
+      // ATTR = VAL ;
+      if !self.expect(&token::SEMI) {
+        return None;
+      }
+
+      attrs.insert(attr_name, node::Attribute::new(
+          attr_value, attr_key_span, attr_value_span));
+    }
+
+    Some(attrs)
+  }
+
+  fn parse_attribute_value(&mut self) -> Option<node::AttributeValue> {
+    match self.token {
+      token::LIT_STR(string_val) => {
+        self.bump();
+        let string = token::get_ident(string_val).get().to_str();
+        Some(node::StrValue(string))
+      },
+      ref other => {
+        self.error(format!("expected string but found `{}`",
+            token::to_str(other)));
+        None
+      }
+    }
   }
 
   fn error(&self, m: String) {
