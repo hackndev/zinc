@@ -13,61 +13,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax::codemap::{DUMMY_SP, Span};
+use syntax::codemap::Span;
 use std::collections::hashmap;
 use std::gc::Gc;
 
-#[deriving(Show, PartialEq, Clone)]
 pub enum AttributeValue {
   UIntValue(uint),
   StrValue(String),
   RefValue(String),
 }
 
-#[deriving(Show)]
-pub struct Path {
-  pub absolute: bool,
-  pub path: Vec<String>,
-  pub span: Option<Span>,
+pub struct Attribute {
+  pub value: AttributeValue,
+  pub key_span: Span,
+  pub value_span: Span,
 }
 
-impl Path {
-  pub fn new(absolute: bool, path: Vec<&str>) -> Path {
-    Path {
-      absolute: absolute,
-      path: path.iter().map(|x| x.to_string()).collect(),
-      span: Some(DUMMY_SP),
-    }
-  }
-}
-
-/// Tree node.
-#[deriving(Show)]
 pub struct Node {
-  /// Node name.
   pub name: Option<String>,
+  pub name_span: Span,
 
-  /// Node path.
-  pub path: Path,
+  pub path: String,
+  pub path_span: Span,
 
-  /// Node attributes.
-  pub attributes: hashmap::HashMap<String, AttributeValue>,
+  pub attributes: hashmap::HashMap<String, Attribute>,
 
-  /// Child nodes.
   pub subnodes: Vec<Gc<Node>>,
 }
 
 impl Node {
-  pub fn new() -> Node {
+  pub fn new(name: Option<String>, name_span: Span, path: String,
+      path_span: Span) -> Node {
     Node {
-      name: None,
-      path: Path {
-        absolute: false,
-        path: Vec::new(),
-        span: Some(DUMMY_SP),
-      },
+      name: name,
+      name_span: name_span,
+      path: path,
+      path_span: path_span,
       attributes: hashmap::HashMap::new(),
       subnodes: Vec::new(),
     }
+  }
+}
+
+pub struct PlatformTree {
+  pub nodes: Vec<Gc<Node>>,
+}
+
+impl PlatformTree {
+  pub fn new(nodes: Vec<Gc<Node>>) -> PlatformTree {
+    PlatformTree {nodes: nodes}
   }
 }
