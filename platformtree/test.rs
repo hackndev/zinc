@@ -81,22 +81,25 @@ fn parse_string_attribute() {
 }
 
 #[test]
-fn fails_to_parse_malformed_attibute() {
-  fails_to_parse("test@root { 1 = \"value\"; }");
-  fails_to_parse("test@root { k = v; }");
-  fails_to_parse("test@root { k = \"value\" }");
-}
-
-#[test]
-fn fails_to_parse_duplicate_attributes() {
-  fails_to_parse("test@root { a = \"1\"; a = \"2\"; }");
-}
-
-#[test]
 fn parse_integer_attribute() {
   with_parsed_node("test@root { key = 10; second = \"other\"; }", |node| {
     assert!(node.get_int_attr("key") == Some(10));
   });
+}
+
+#[test]
+fn fails_to_parse_duplicate_attributes() {
+  fails_to_parse("test@root { a = 1; a = \"2\"; }");
+}
+
+#[test]
+fn fails_to_parse_malformed_attibute() {
+  fails_to_parse("test@root { k = \"value\" }");
+  fails_to_parse("test@root { 1 = \"value\"; }");
+  fails_to_parse("test@root { k = v; }");
+  fails_to_parse("test@root { k = 10u8; }");
+  fails_to_parse("test@root { k = 10i8; }");
+  fails_to_parse("test@root { k = -42; }");
 }
 
 // helpers
