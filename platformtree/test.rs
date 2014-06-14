@@ -75,11 +75,21 @@ fn parse_node_with_numeric_path() {
 
 #[test]
 fn parse_string_attribute() {
-  with_parsed_node("test@root {
-    key = \"value\";
-  }", |node| {
+  with_parsed_node("test@root { key = \"value\"; second = \"other\"; }", |node| {
     assert!(node.get_string_attr("key") == Some(&"value".to_str()));
   });
+}
+
+#[test]
+fn fails_to_parse_malformed_attibute() {
+  fails_to_parse("test@root { 1 = \"value\"; }");
+  fails_to_parse("test@root { k = v; }");
+  fails_to_parse("test@root { k = \"value\" }");
+}
+
+#[test]
+fn fails_to_parse_duplicate_attributes() {
+  fails_to_parse("test@root { a = \"1\"; a = \"2\"; }");
 }
 
 // helpers

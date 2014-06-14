@@ -193,6 +193,11 @@ impl<'a> Parser<'a> {
         None => return None,
       };
 
+      if attrs.contains_key(&attr_name) {
+        self.error(format!("key `{}` is already defined", attr_name));
+        return None;
+      }
+
       // we're here
       //      |
       //      v
