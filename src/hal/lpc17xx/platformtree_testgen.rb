@@ -27,11 +27,12 @@ template :assert_pt_main_source_equals do
       }
     ',
     out: '
-      {
-        zinc::hal::lpc17xx::init::init_clock(
-            zinc::hal::lpc17xx::init::Clock{
-              source: zinc::hal::lpc17xx::init::Main(Some(12000000)),
-              pll: zinc::hal::lpc17xx::init::PLL0{
+      {{
+        use zinc::hal::lpc17xx::init;
+        init::init_clock(
+            init::Clock {
+              source: init::Main(Some(12000000)),
+              pll: init::PLL0 {
                 enabled: true,
                 m: 50u,
                 n: 3u,
@@ -39,7 +40,7 @@ template :assert_pt_main_source_equals do
               },
             }
         );
-      }
+      };}
     '.gsub(/(\n|\s)*/, '')
   }
 end

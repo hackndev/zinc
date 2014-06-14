@@ -82,16 +82,16 @@ fn process_clock(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: &Gc<node::Node>
   let pll_n = some_pll_n.unwrap();
   let pll_divisor = some_pll_divisor.unwrap();
 
-    "internal-oscillator" => "zinc::hal::lpc17xx::init::Internal".to_str(),
   let clock_source = ClockSource::new(match source.as_slice() {
+    "internal-oscillator" => "init::Internal".to_str(),
     "main-oscillator"     => {
       let source_frequency = node.unwrap_int(ecx, "source_frequency");
       if source_frequency == None {
         return
       }
-      format!("zinc::hal::lpc17xx::init::Main({})", source_frequency)
+      format!("init::Main({})", source_frequency)
     }
-    "rtc-oscillator"      => "zinc::hal::lpc17xx::init::RTC".to_str(),
+    "rtc-oscillator"      => "init::RTC".to_str(),
     other => {
       ecx.span_err(
           node.path.span.unwrap(), // TODO: span
@@ -101,17 +101,20 @@ fn process_clock(pcx: &mut PlatformContext, ecx: &ExtCtxt, node: &Gc<node::Node>
   });
 
   let ex = quote_expr!(&*ecx,
-      zinc::hal::lpc17xx::init::init_clock(
-          zinc::hal::lpc17xx::init::Clock {
-            source: $token_source,
-            pll: zinc::hal::lpc17xx::init::PLL0 {
-              enabled: true,
-              m: $pll_m,
-              n: $pll_n,
-              divisor: $pll_divisor,
+      {
+        use zinc::hal::lpc17xx::init;
+        init::init_clock(
+            init::Clock {
+              source: $clock_source,
+              pll: init::PLL0 {
+                enabled: true,
+                m: $pll_m,
+                n: $pll_n,
+                divisor: $pll_divisor,
+              }
             }
-          }
-      );
+        );
+      }
   );
   pcx.add_main_statement(ecx.stmt_expr(ex));
 }
