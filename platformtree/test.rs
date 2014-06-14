@@ -66,6 +66,13 @@ fn parse_node_with_no_body() {
   });
 }
 
+#[test]
+fn parse_node_with_numeric_path() {
+  with_parsed_node("test@1 {}", |node| {
+    assert!(node.path == "1".to_str());
+  });
+}
+
 // helpers
 fn fails_to_parse(src: &str) {
   with_parsed_tts(src, |failed, pt| {

@@ -118,16 +118,21 @@ impl<'a> Parser<'a> {
     //          |
     //          v
     //   NAME @ PATH { ... }
+    node_path_span = self.span;
+    if node_name == None {
+      node_span = self.span;
+    } else {
+      node_span.hi = self.span.hi;
+    }
+
     let node_path = match self.token {
       token::IDENT(_, _) => {
-        node_path_span = self.span;
-        if node_name == None {
-          node_span = self.span;
-        } else {
-          node_span.hi = self.span.hi;
-        }
         token::to_str(&self.bump())
       },
+      token::LIT_INT_UNSUFFIXED(u) => {
+        self.bump();
+        u.to_str()
+      }
       ref other => {
         self.error(format!("expected node path but found `{}`",
             token::to_str(other)));
