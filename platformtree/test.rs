@@ -27,7 +27,7 @@ use node;
 
 #[test]
 fn parse_node_with_no_name() {
-  with_parsed_node("root {}", |node: &Gc<node::Node>| {
+  with_parsed_node("root {}", |node| {
     assert!(node.name == None);
     assert!(node.path == "root".to_str());
     assert!(node.attributes.len() == 0);
@@ -37,7 +37,7 @@ fn parse_node_with_no_name() {
 
 #[test]
 fn parse_node_with_name() {
-  with_parsed_node("test@root {}", |node: &Gc<node::Node>| {
+  with_parsed_node("test@root {}", |node| {
     assert!(node.name == Some("test".to_str()));
     assert!(node.path == "root".to_str());
     assert!(node.attributes.len() == 0);
@@ -57,6 +57,13 @@ fn fails_to_parse_node_with_bad_path() {
   fails_to_parse("test root {}");
   fails_to_parse("test@ {}");
   fails_to_parse("test@- {}");
+}
+
+#[test]
+fn parse_node_with_no_body() {
+  with_parsed_node("test@root;", |_| {
+    assert!(true);
+  });
 }
 
 // helpers

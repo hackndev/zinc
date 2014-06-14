@@ -97,7 +97,7 @@ impl<'a> Parser<'a> {
     //    we're here
     //   /
     //   v
-    //   NAME @ PATH
+    //   NAME @ PATH { ... }
     //        ^-- peeking here
     if self.reader.peek().tok == token::AT {
       node_span = self.span;
@@ -117,7 +117,7 @@ impl<'a> Parser<'a> {
     //    we're here
     //          |
     //          v
-    //   NAME @ PATH
+    //   NAME @ PATH { ... }
     let node_path = match self.token {
       token::IDENT(_, _) => {
         node_path_span = self.span;
@@ -135,12 +135,24 @@ impl<'a> Parser<'a> {
       }
     };
 
-    if !self.expect(&token::LBRACE) {
-      return None;
-    }
+    //    we're here
+    //             |
+    //             v
+    // NAME @ PATH { ... }
+    // it's either a body, or a semicolon (no body)
+    match self.bump() {
+      token::LBRACE => {
 
-    if !self.expect(&token::RBRACE) {
-      return None;
+        if !self.expect(&token::RBRACE) {
+          return None;
+        }
+      },
+      token::SEMI => (),
+      ref other => {
+        self.error(format!("expected `\\{` or `;` but found `{}`",
+            token::to_str(other)));
+        return None;
+      }
     }
 
     let node = node::Node::new(node_name, node_span, node_path, node_path_span);
