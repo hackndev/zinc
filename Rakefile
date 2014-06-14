@@ -64,6 +64,11 @@ compile_rust :platformtree_crate, {
   build_for: :host,
 }
 
+rust_tests :platformtree_test, {
+  source:  'platformtree/platformtree.rs'.in_root,
+  produce: 'platformtree_test'.in_build,
+}
+
 # macros
 compile_rust :macro_platformtree, {
   source:    'macro/platformtree.rs'.in_root,
@@ -71,12 +76,6 @@ compile_rust :macro_platformtree, {
   produce:   'macro/platformtree.rs'.in_root.as_dylib.in_build,
   out_dir:   true,
   build_for: :host,
-}
-
-rust_tests :macro_platformtree_test, {
-  source:  'macro/platformtree_test.rs'.in_root,
-  deps:    [:macro_platformtree],
-  produce: 'macro_platformtree_test'.in_build,
 }
 
 ruby_tests :macro_platformtree_testgen, {
