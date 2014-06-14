@@ -125,11 +125,17 @@ fn parse_named_subnode() {
   with_parsed_node("test@root { child; }", |node| {
     assert!(node.subnodes.len() == 1);
   });
+  with_parsed_node("test@root { child {} }", |node| {
+    assert!(node.subnodes.len() == 1);
+  });
 }
 
 #[test]
 fn parse_anonymous_subnode() {
   with_parsed_node("test@root { sub@child; }", |node| {
+    assert!(node.subnodes.len() == 1);
+  });
+  with_parsed_node("test@root { sub@child {} }", |node| {
     assert!(node.subnodes.len() == 1);
   });
 }
