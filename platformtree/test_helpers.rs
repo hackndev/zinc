@@ -13,22 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::gc::Gc;
+use syntax::ast;
+use syntax::codemap::{Span, CodeMap};
+use syntax::codemap;
+use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler, mk_handler};
 use syntax::ext::base::ExtCtxt;
-use syntax::parse::new_parse_sess_special_handler;
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
-use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler, mk_handler};
-use syntax::codemap;
-use syntax::codemap::{Span, CodeMap};
-use std::gc::Gc;
+use syntax::ext::quote::rt::ToSource;
+use syntax::parse::new_parse_sess_special_handler;
 
-use parser::Parser;
+use builder::build_platformtree;
 use node;
+use parser::Parser;
 
 pub fn fails_to_parse(src: &str) {
   with_parsed_tts(src, |_, failed, pt| {
     assert!(unsafe{*failed} == true);
     assert!(pt.is_none());
+  });
+}
+
+pub fn fails_to_build(src: &str) {
+  with_parsed(src, |cx, failed, pt| {
+    build_platformtree(cx, pt);
+    assert!(unsafe{*failed} == true);
   });
 }
 
@@ -85,4 +95,18 @@ impl Emitter for CustomEmmiter {
       _: Level) {
     fail!();
   }
+}
+
+pub fn assert_equal_source(stmt: &Gc<ast::Stmt>, src: &str) {
+  let gen_src = match stmt.node {
+    ast::StmtExpr(e, _) | ast::StmtSemi(e, _) => e.to_source(),
+    _ => fail!(),
+  };
+  println!("generated: {}", gen_src);
+  println!("expected:  {}", src);
+
+  let stripped_gen_src = gen_src.replace(" ", "").replace("\n", "");
+  let stripped_src = src.replace(" ", "").replace("\n", "");
+
+  assert!(stripped_gen_src == stripped_src);
 }

@@ -13,13 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax;
-use syntax::ast;
-use syntax::ext::quote::rt::ToSource;
-use std::gc::Gc;
-
 use builder::build_platformtree;
-use test_helpers::{with_parsed};
+use test_helpers::{assert_equal_source, with_parsed, fails_to_build};
 
 #[test]
 fn parses_lpc17xx() {
@@ -41,59 +36,77 @@ fn parses_lpc17xx() {
   });
 }
 
-// #[test]
-// fn parses_lpc17xx_clock() {
-//   with_parsed("mcu@lpc17xx {
-//       clock {
-//         source = \"main-oscillator\";
-//         source_frequency = 12_000_000;
-//         pll {
-//           m = 50;
-//           n = 3;
-//           divisor = 4;
-//         }
-//       }
-//     }", |cx, failed, pt| {
-//     let builder = build_platformtree(cx, pt);
-//     assert!(unsafe{*failed} == false);
-//     assert!(builder.main_stmts.len() == 2);
-//   });
-// }
+#[test]
+fn fails_to_parse_lpc17xx_with_garbage_attrs() {
+  fails_to_build("mcu@lpc17xx { key = 1; }");
+}
+
+#[test]
+fn parses_lpc17xx_clock() {
+  with_parsed("mcu@lpc17xx {
+      clock {
+        source = \"main-oscillator\";
+        source_frequency = 12_000_000;
+        pll {
+          m = 50;
+          n = 3;
+          divisor = 4;
+        }
+      }
+    }", |cx, failed, pt| {
+    let builder = build_platformtree(cx, pt);
+    assert!(unsafe{*failed} == false);
+    assert!(builder.main_stmts.len() == 3);
+
+    assert_equal_source(builder.main_stmts.get(2),
+        "{
+          use zinc::hal::lpc17xx::init;
+          init::init_clock(
+              init::Clock {
+                source: init::Main(12000000),
+                pll: init::PLL0 {
+                  enabled: true,
+                  m: 50u,
+                  n: 3u,
+                  divisor: 4u,
+                },
+              }
+          );
+        }");
+  });
+}
+
+#[test]
+fn fails_to_parse_lpc17xx_with_bad_clock_conf() {
+  fails_to_build("mcu@lpc17xx { clock {
+    no_source = 1;
+    source_frequency = 12_000_000;
+  }}");
+  fails_to_build("mcu@lpc17xx { clock {
+    source = \"missing\";
+    source_frequency = 12_000_000;
+  }}");
+}
+
+#[test]
+fn fails_to_parse_lpc17xx_with_no_pll() {
+  fails_to_build("mcu@lpc17xx { clock {
+    source = \"main-oscillator\";
+    source_frequency = 12_000_000;
+  }}");
+}
 
 #[test]
 fn fails_to_parse_pt_with_anonymous_root_node() {
-  with_parsed("node {}", |cx, failed, pt| {
-    build_platformtree(cx, pt);
-    assert!(unsafe{*failed} == true);
-  });
+  fails_to_build("node {}");
 }
 
 #[test]
 fn fails_to_parse_pt_with_unknown_root_node() {
-  with_parsed("unknown@node {}", |cx, failed, pt| {
-    build_platformtree(cx, pt);
-    assert!(unsafe{*failed} == true);
-  });
+  fails_to_build("unknown@node {}");
 }
 
 #[test]
 fn fails_to_parse_pt_with_unknown_mcu() {
-  with_parsed("mcu@bad {}", |cx, failed, pt| {
-    build_platformtree(cx, pt);
-    assert!(unsafe{*failed} == true);
-  });
-}
-
-fn assert_equal_source(stmt: &Gc<syntax::ast::Stmt>, src: &str) {
-  let gen_src = match stmt.node {
-    ast::StmtExpr(e, _) | ast::StmtSemi(e, _) => e.to_source(),
-    _ => fail!(),
-  };
-  println!("generated: {}", gen_src);
-  println!("expected:  {}", src);
-
-  let stripped_gen_src = gen_src.replace(" ", "").replace("\n", "");
-  let stripped_src = src.replace(" ", "").replace("\n", "");
-
-  assert!(stripped_gen_src == stripped_src);
+  fails_to_build("mcu@bad {}");
 }
