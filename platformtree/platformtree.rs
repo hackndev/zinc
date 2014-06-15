@@ -25,5 +25,5 @@ pub mod node;
 pub mod parser;
 // pub mod context;
 
-#[cfg(test)]
-mod test;
+#[cfg(test)] mod test_helpers;
+#[cfg(test)] mod parser_test;

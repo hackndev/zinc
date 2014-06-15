@@ -13,17 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax::ext::base::ExtCtxt;
-use syntax::parse::new_parse_sess_special_handler;
-use syntax::ext::expand::ExpansionConfig;
-use syntax::ext::quote::rt::ExtParseUtils;
-use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler, mk_handler};
-use syntax::codemap;
-use syntax::codemap::{Span, CodeMap};
-use std::gc::Gc;
-
-use parser::Parser;
-use node;
+use test_helpers::{fails_to_parse, with_parsed, with_parsed_node};
 
 #[test]
 fn parse_anonymous_node() {
@@ -152,68 +142,4 @@ fn tracks_nodes_by_name() {
 #[test]
 fn fails_to_parse_duplicate_node_names() {
   fails_to_parse("duplicate@root { duplicate@child; }");
-}
-
-// helpers
-fn fails_to_parse(src: &str) {
-  with_parsed_tts(src, |failed, pt| {
-    assert!(failed == true);
-    assert!(pt.is_none());
-  });
-}
-
-fn with_parsed(src: &str, block: |&node::PlatformTree|) {
-  with_parsed_tts(src, |failed, pt| {
-    assert!(failed == false);
-    block(&pt.unwrap());
-  });
-}
-
-fn with_parsed_node(src: &str, block: |&Gc<node::Node>|) {
-  with_parsed(src, |pt| {
-    block(pt.get(0));
-  });
-}
-
-fn with_parsed_tts(src: &str, block: |bool, Option<node::PlatformTree>|) {
-  let mut failed = false;
-  let failptr = &mut failed as *mut bool;
-  let ce = box CustomEmmiter::new(failptr);
-  let sh = mk_span_handler(mk_handler(ce), CodeMap::new());
-  let parse_sess = new_parse_sess_special_handler(sh);
-  let cfg = Vec::new();
-  let ecfg = ExpansionConfig {
-    deriving_hash_type_parameter: false,
-    crate_id: from_str("test").unwrap(),
-  };
-  let cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
-  let tts = cx.parse_tts(src.to_str());
-
-  let mut parser = Parser::new(&cx, tts.as_slice());
-  let nodes = parser.parse_platformtree();
-
-  block(failed, nodes);
-}
-
-struct CustomEmmiter {
-  failed: *mut bool
-}
-
-impl CustomEmmiter {
-  pub fn new(fp: *mut bool) -> CustomEmmiter {
-    CustomEmmiter {
-      failed: fp,
-    }
-  }
-}
-
-impl Emitter for CustomEmmiter {
-  fn emit(&mut self, _: Option<(&codemap::CodeMap, Span)>, m: &str, l: Level) {
-    unsafe { *self.failed = true };
-    println!("{} {}", l, m);
-  }
-  fn custom_emit(&mut self, _: &codemap::CodeMap, _: RenderSpan, _: &str,
-      _: Level) {
-    fail!();
-  }
 }
