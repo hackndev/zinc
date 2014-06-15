@@ -21,18 +21,7 @@ fn builds_stack_data_init() {
   with_parsed("mcu@lpc17xx;", |cx, failed, pt| {
     let builder = build_platformtree(cx, pt);
     assert!(unsafe{*failed} == false);
-    assert!(builder.main_stmts.len() == 2);
-
-    assert_equal_source(builder.main_stmts.get(0),
-        "{
-          use zinc::hal::stack;
-          extern \"C\" {
-            static _eglobals: u32;
-          }
-          stack::set_stack_limit((&_eglobals as *u32) as u32);
-        }");
-    assert_equal_source(builder.main_stmts.get(1),
-        "zinc::hal::mem_init::init_data()");
+    assert!(builder.main_stmts.len() == 0);
   });
 }
 
@@ -56,9 +45,9 @@ fn builds_clock_init() {
     }", |cx, failed, pt| {
     let builder = build_platformtree(cx, pt);
     assert!(unsafe{*failed} == false);
-    assert!(builder.main_stmts.len() == 3);
+    assert!(builder.main_stmts.len() == 1);
 
-    assert_equal_source(builder.main_stmts.get(2),
+    assert_equal_source(builder.main_stmts.get(0),
         "{
           use zinc::hal::lpc17xx::init;
           init::init_clock(

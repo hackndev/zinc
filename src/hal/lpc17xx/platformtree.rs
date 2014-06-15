@@ -27,19 +27,6 @@ pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
   if !node.expect_no_attributes(cx) {
     return;
   }
-  // init stack
-  builder.add_main_statement(cx.stmt_expr(quote_expr!(&*cx,
-      {
-        use zinc::hal::stack;
-        extern { static _eglobals: u32; }
-        stack::set_stack_limit((&_eglobals as *u32) as u32);
-      }
-  )));
-
-  // init data
-  builder.add_main_statement(cx.stmt_expr(quote_expr!(&*cx,
-      zinc::hal::mem_init::init_data();
-  )));
 
   node.get_by_path("clock").and_then(|sub| -> Option<bool> {
     build_clock(builder, cx, sub);
