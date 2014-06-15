@@ -97,7 +97,7 @@ fn init_stack() {
 }
 
 #[inline(always)]
-fn init_clock(clock: &Clock) {
+pub fn init_clock(clock: &Clock) {
   let src_clock: u32 = match clock.source {
     Internal =>   4_000_000,
     Main(freq) => freq,
