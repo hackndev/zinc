@@ -13,9 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax::codemap::Span;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
+use std::slice::Items;
+use syntax::codemap::Span;
 
 #[deriving(Show)]
 pub enum AttributeValue {
@@ -111,5 +112,9 @@ impl PlatformTree {
 
   pub fn get<'a>(&'a self, idx: uint) -> &'a Gc<Node> {
     self.nodes.get(idx)
+  }
+
+  pub fn iter<'a>(&'a self) -> Items<'a, Gc<Node>> {
+    self.nodes.iter()
   }
 }
