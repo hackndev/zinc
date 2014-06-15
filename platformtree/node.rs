@@ -17,12 +17,19 @@ use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 use std::slice::Items;
 use syntax::codemap::Span;
+use syntax::ext::base::ExtCtxt;
 
 #[deriving(Show)]
 pub enum AttributeValue {
   UIntValue(uint),
   StrValue(String),
   RefValue(String),
+}
+
+pub enum AttributeType {
+  StringAttribute,
+  IntAttribute,
+  RefAttribute,
 }
 
 #[deriving(Show)]
@@ -69,6 +76,10 @@ impl Node {
     }
   }
 
+  pub fn get_attr<'a>(&'a self, key: &str) -> &'a Attribute {
+    self.attributes.get(&key.to_str())
+  }
+
   pub fn get_string_attr<'a>(&'a self, key: &str) -> Option<&'a String> {
     self.attributes.find(&key.to_str()).and_then(|av| match av.value {
       StrValue(ref s) => Some(s),
@@ -89,6 +100,96 @@ impl Node {
       _ => None,
     })
   }
+
+  pub fn get_required_string_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
+      -> Option<&'a String> {
+    match self.get_string_attr(key) {
+      Some(val) => Some(val),
+      None => {
+        cx.parse_sess().span_diagnostic.span_err(self.name_span,
+            format!("required string attribute `{}` is missing", key)
+            .as_slice());
+        None
+      }
+    }
+  }
+
+  pub fn get_required_int_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
+      -> Option<uint> {
+    match self.get_int_attr(key) {
+      Some(val) => Some(val),
+      None => {
+        cx.parse_sess().span_diagnostic.span_err(self.name_span,
+            format!("required integer attribute `{}` is missing", key)
+            .as_slice());
+        None
+      }
+    }
+  }
+
+  pub fn get_required_ref_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
+      -> Option<&'a String> {
+    match self.get_ref_attr(key) {
+      Some(val) => Some(val),
+      None => {
+        cx.parse_sess().span_diagnostic.span_err(self.name_span,
+            format!("required ref attribute `{}` is missing", key)
+            .as_slice());
+        None
+      }
+    }
+  }
+
+  pub fn expect_no_attributes(&self, cx: &ExtCtxt) -> bool {
+    let mut ok = true;
+    for (_, v) in self.attributes.iter() {
+      ok = false;
+      cx.parse_sess().span_diagnostic.span_err(v.key_span,
+          "no attributes expected");
+    }
+    ok
+  }
+
+  pub fn expect_no_subnodes(&self, cx: &ExtCtxt) -> bool {
+    let mut ok = true;
+    for sub in self.subnodes.iter() {
+      ok = false;
+      cx.parse_sess().span_diagnostic.span_err(sub.name_span,
+          "no subnodes expected");
+    }
+    ok
+  }
+
+  pub fn expect_attributes(&self, cx: &ExtCtxt,
+      expectations: Vec<(&str, AttributeType)>) -> bool {
+    let mut ok = true;
+    for &(n, ref t) in expectations.iter() {
+      match t {
+        &StringAttribute => {
+          if self.get_required_string_attr(cx, n).is_none() {ok = false}
+        },
+        &IntAttribute => {
+          if self.get_required_int_attr(cx, n).is_none() {ok = false}
+        },
+        &RefAttribute => {
+          if self.get_required_ref_attr(cx, n).is_none() {ok = false}
+        },
+      }
+    }
+    ok
+  }
+
+  pub fn get_by_path<'a>(&'a self, path: &str) -> Option<&'a Gc<Node>> {
+    // TODO(farcaller): if this is commonly used it would be better to rewrite
+    // subnodes as hash as well.
+    let path_str = path.to_str();
+    for n in self.subnodes.iter() {
+      if n.path == path_str {
+        return Some(n);
+      }
+    }
+    None
+  }
 }
 
 #[deriving(Show)]
@@ -106,8 +207,8 @@ impl PlatformTree {
     }
   }
 
-  pub fn get_by_name<'a>(&'a self, name: String) -> Option<&'a Gc<Node>> {
-    self.named.find(&name)
+  pub fn get_by_name<'a>(&'a self, name: &str) -> Option<&'a Gc<Node>> {
+    self.named.find(&name.to_str())
   }
 
   pub fn get<'a>(&'a self, idx: uint) -> &'a Gc<Node> {
