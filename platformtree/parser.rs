@@ -22,7 +22,6 @@ use syntax::parse::{token, ParseSess, lexer};
 
 use node;
 
-#[allow(dead_code)]
 pub struct Parser<'a> {
   pub sess: &'a ParseSess,
   reader: Box<lexer::Reader:>,
@@ -34,7 +33,6 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-  #[allow(dead_code)]
   pub fn new<'a>(cx: &'a ExtCtxt, tts: &[TokenTree]) -> Parser<'a> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
