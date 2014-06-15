@@ -136,7 +136,12 @@ def rust_tests(n, h)
   h[:test] = true
   compile_rust n, h
   run_task = Rake::Task.define_task("run_#{n}".to_sym => h[:produce]) do |t|
-    sh t.prerequisites.first
+    if File.exists?('kcov')
+      path = "build/coverage/#{n}"
+      sh "mkdir -p #{path} && ./kcov #{path} #{t.prerequisites.first}"
+    else
+      sh t.prerequisites.first
+    end
   end
 
   Rake::Task[:test].enhance([run_task])

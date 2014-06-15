@@ -1,29 +1,44 @@
 before_install:
-    - yes | sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded
-    - sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/terry_guo-gcc-arm-embedded-precise.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
+- yes | sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded
+- sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/terry_guo-gcc-arm-embedded-precise.list"
+  -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 install:
-    - sudo apt-get install gcc-arm-none-eabi
-    - curl http://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-gnu.tar.gz | tar xz
-    - mkdir thirdparty
-    - cd thirdparty
-    - curl http://static.rust-lang.org/dist/rust-nightly.tar.gz | tar xz
-    - mv rust-nightly rust
-    - cd ..
+- wget http://vfp.in/kcov.gz && gunzip kcov.gz && chmod 755 kcov
+- sudo apt-get install gcc-arm-none-eabi
+- curl http://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-gnu.tar.gz
+  | tar xz
+- mkdir thirdparty
+- cd thirdparty
+- curl http://static.rust-lang.org/dist/rust-nightly.tar.gz | tar xz
+- mv rust-nightly rust
+- cd ..
 before_script:
-    - export RUNTIME_LIB="/usr/lib/gcc/arm-none-eabi/4.8.4/<%= @platform.arch.arch %>/libgcc.a"
-    - export RUSTC="`pwd`/rust-nightly-x86_64-unknown-linux-gnu/bin/rustc"
-    - $RUSTC --version
+- export RUNTIME_LIB="/usr/lib/gcc/arm-none-eabi/4.8.4/<%= @platform.arch.arch %>/libgcc.a"
+- export RUSTC="`pwd`/rust-nightly-x86_64-unknown-linux-gnu/bin/rustc"
+- "$RUSTC --version"
 script:
-    - rake build_all test
+- rake build_all test
 after_success:
-    - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && ./support/record_stats.sh
+- test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && ./support/record_stats.sh
 env:
   global:
-    - STATS_REPO="git@github.com:bharr/zinc-stats"
-    - secure: "NPM3mliwtjsO/W6ywlL36WvjgtMLKI5ZOR5Pd1OJNFVYTTJXE6sKfKDYhVVyn9kp+6eieXal/ntBaXpABTY5W1UrgnG4uFKoz5Bi06oQAZDxnwK1bH3EowGbiXtEkI50tD5SfhnLig2cNjabgu8eg/u/UrXyZovLz1oOgCpaUWc="
+  - STATS_REPO="git@github.com:bharr/zinc-stats"
+  - secure: NPM3mliwtjsO/W6ywlL36WvjgtMLKI5ZOR5Pd1OJNFVYTTJXE6sKfKDYhVVyn9kp+6eieXal/ntBaXpABTY5W1UrgnG4uFKoz5Bi06oQAZDxnwK1bH3EowGbiXtEkI50tD5SfhnLig2cNjabgu8eg/u/UrXyZovLz1oOgCpaUWc=
   matrix:
-    - PLATFORM=lpc17xx
-    - PLATFORM=stm32f4
+  - PLATFORM=lpc17xx
+  - PLATFORM=stm32f4
 matrix:
   allow_failures:
-    - env: PLATFORM=stm32f4
+  - env: PLATFORM=stm32f4
+deploy:
+  provider: s3
+  access_key_id: AKIAIXCRAWKV367B373A
+  secret_access_key:
+    secure: "DyKmiVjiehWB76WjTYiDqbnYL97L7s/udXL6iUe4kQz7qvjZ6ZTqwhhR/OQEPmVOXE+JWyW4ZRblegBGrrXLpt1RpL7i5fve5ds541pPvskwJtgBqHjNj/X4icZU0MsW5aVY9V+0NcRiPxyuG1o7FFTOtMBoMAfktIHPcBpraYs="
+  bucket: cov.zinc.rs
+  local-dir: build/coverage
+  skip_cleanup: true
+  endpoint: cov.zinc.rs.s3-website-us-east-1.amazonaws.com
+  region: us-east-1
+  on:
+    branch: master
