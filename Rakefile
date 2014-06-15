@@ -10,6 +10,9 @@ Context.create(__FILE__, ENV['PLATFORM'], features)
 
 provide_stdlibs
 
+desc "Run tests"
+task :test
+
 compile_rust :core_crate, {
   source:  'thirdparty/libcore/lib.rs'.in_root,
   produce: 'thirdparty/libcore/lib.rs'.in_root.as_rlib.in_build,
@@ -52,6 +55,28 @@ if features.include?(:multitasking)
     recompile_on: [:triple, :features],
   }
 end
+
+# platform tree
+compile_rust :platformtree_crate, {
+  source:    'platformtree/platformtree.rs'.in_root,
+  produce:   'platformtree/platformtree.rs'.in_root.as_rlib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
+
+rust_tests :platformtree_test, {
+  source:  'platformtree/platformtree.rs'.in_root,
+  produce: 'platformtree_test'.in_build,
+}
+
+# macros
+compile_rust :macro_platformtree, {
+  source:    'macro/platformtree.rs'.in_root,
+  deps:      [:platformtree_crate],
+  produce:   'macro/platformtree.rs'.in_root.as_dylib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
 
 app_tasks = Context.instance.applications.map do |a|
   compile_rust "app_#{a}_crate".to_sym, {
@@ -100,30 +125,6 @@ app_tasks = Context.instance.applications.map do |a|
   desc "Build application #{a}"
   task "build_#{a}".to_sym => [t_bin.name, t_lst.name, t_size.name]
 end
-
-# platform tree
-compile_rust :macro_platformtree, {
-  source:  'macro/platformtree.rs'.in_root,
-  produce: 'macro/platformtree.rs'.in_root.as_dylib.in_build,
-  out_dir: true,
-  build_for: :host,
-}
-
-compile_rust :platformtree_test, {
-  source:  'platformtree/test.rs'.in_root,
-  deps:    [:macro_platformtree],
-  produce: 'platformtree_test'.in_build,
-  test: true,
-}
-run_tests :platformtree_test
-
-ruby_tests :platformtree_failing_test, {
-  source: 'platformtree/failing_tests.rb',
-  deps:    [:macro_platformtree],
-}
-
-desc "Run tests"
-task :test => [:run_platformtree_test, :run_platformtree_failing_test]
 
 desc "Build all applications"
 task :build_all => app_tasks.map { |t| t.name }

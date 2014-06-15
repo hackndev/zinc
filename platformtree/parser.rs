@@ -13,124 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::hashmap::HashMap;
+use std::gc::{Gc, GC};
 use syntax::ast::TokenTree;
-use syntax::codemap::Span;
+use syntax::codemap::{Span, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer};
-use syntax::ext::build::AstBuilder;
-use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 
-use std::collections::hashmap;
+use node;
 
-use pt;
-
-// A helper method for the next chunk of code
-trait ToStringExp {
-  fn to_stringexp(&self) -> String;
-}
-
-impl ToStringExp for ::std::string::String {
-  fn to_stringexp(&self) -> String {
-    // TODO(farcaller): this will break if " is present in a string.
-    format!("\"{}\".to_string()", self)
-  }
-}
-
-// Parser-specific extensions to pt::Node
-impl pt::Node {
-
-  /// Returns source representation of the node.
-  pub fn to_source(&self) -> String {
-    // wrap each path node into quoted string
-    let mappath: Vec<String> = self.path.path.iter().map(|x| x.to_stringexp()).collect();
-
-    // build a pt::Node initialization struct
-    let node_struct = format!("pt::Node \\{ \
-        name: {}, \
-        path: pt::Path \\{ absolute: {}, path: vec!({}) \\}, \
-        attributes: hashmap::HashMap::new(), \
-        subnodes: Vec::new() \
-      \\}",
-      match self.name {
-        Some(ref s) => format!("Some({})", s.to_stringexp()),
-        None => "None".to_string(),
-      },
-      self.path.absolute,
-      mappath.connect(", "));
-
-    let mut init_chunks = "".to_string();
-    // for each attribute, add hash insertion code
-    for (k, v) in self.attributes.iter() {
-      let strinified_val = match v {
-        &pt::UIntValue(ref u) => format!("pt::UIntValue({})", u),
-        &pt::StrValue(ref s)  => format!("pt::StrValue({})", s.to_stringexp()),
-        &pt::RefValue(ref r)  => format!("pt::RefValue({})", r.to_stringexp()),
-      };
-
-      init_chunks = init_chunks.append(format!("attrs.insert({}, {});",
-          k.to_stringexp(), strinified_val).as_slice());
-    }
-
-    // for each subnode, add vec insertion code
-    for sn in self.subnodes.iter() {
-      init_chunks = init_chunks.append(format!(
-          "nodes.push(box {});", sn.to_source()).as_slice());
-    }
-
-    // TODO(farcaller): this triggers unused_mut for some reason.
-    // wrap the struct above into struct + init code
-    let init_struct = format!("
-      \\{
-        let mut node = {};
-        let mut attrs = hashmap::HashMap::new();
-        let mut nodes = Vec::new();
-        {}
-        node.attributes = attrs;
-        node.subnodes = nodes;
-        node
-      \\}", node_struct, init_chunks);
-
-    init_struct
-  }
-}
-
-impl ToTokens for pt::Node {
-  /// Returns pt::Node as an array of tokens. Used for quote_expr.
-  fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
-    (cx as &ExtParseUtils).parse_tts(self.to_source())
-  }
-}
-
-/// Platform tree parser.
 pub struct Parser<'a> {
-  /// Tracks the parsing session.
   pub sess: &'a ParseSess,
-
-  /// Token reader.
   reader: Box<lexer::Reader:>,
-
-  /// The current token.
   token: token::Token,
-
-  /// The span of current token.
   span: Span,
 
-  /// Last visited token or None, if self.token is first token ever.
   last_token: Option<Box<token::Token>>,
-
-  /// Last visited span.
   last_span: Span,
-
-  /// Backlog for tokens, used as strorage if token is unbump'ed.
-  backlog: Vec<lexer::TokenAndSpan>,
 }
 
 impl<'a> Parser<'a> {
   pub fn new<'a>(cx: &'a ExtCtxt, tts: &[TokenTree]) -> Parser<'a> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
-    let mut reader = box lexer::new_tt_reader(&sess.span_diagnostic, None, ttsvec)
-        as Box<lexer::Reader>;
+    let mut reader = box lexer::new_tt_reader(
+        &sess.span_diagnostic, None, ttsvec) as Box<lexer::Reader>;
 
     let tok0 = reader.next_token();
     let token = tok0.tok;
@@ -145,14 +52,301 @@ impl<'a> Parser<'a> {
 
       last_token: None,
       last_span: span,
-
-      backlog: Vec::new(),
     }
   }
 
-  /// Raises a fatal parsing error for current span.
-  fn fatal(&self, m: &str) -> ! {
-    self.sess.span_diagnostic.span_fatal(self.span, m);
+  /// Parse the platform tree from passed in tokens.
+  pub fn parse_platformtree(&mut self) -> Option<node::PlatformTree> {
+    let mut nodes: HashMap<String, Gc<node::Node>> = HashMap::new();
+    let mut nodes_by_path: HashMap<String, Gc<node::Node>> = HashMap::new();
+    let mut failed = false;
+    loop {
+      if self.token == token::EOF {
+        break
+      }
+
+      let node = match self.parse_node() {
+        Some(node) => box(GC) node,
+        None => {
+          failed = true;
+          self.bump();
+          continue
+        }
+      };
+
+      let path = node.path.clone();
+      if nodes_by_path.contains_key(&path) {
+        failed = true;
+        self.sess.span_diagnostic.span_err(node.path_span,
+            format!("duplicate node definition `{}`", path).as_slice());
+        let old_node: &Gc<node::Node> = nodes_by_path.get(&path);
+        self.sess.span_diagnostic.span_err(old_node.path_span,
+            "previously defined here");
+      } else {
+        nodes_by_path.insert(node.path.clone(), node);
+      }
+
+      match node.name {
+        Some(ref name) => { nodes.insert(name.clone(), node); },
+        None => {
+          failed = true;
+          self.sess.span_diagnostic.span_err(node.name_span,
+              "missing name for root node");
+        }
+      }
+    }
+
+    if failed {
+      None
+    } else {
+      let mut map = HashMap::new();
+      if self.collect_node_names(&mut map, &nodes) {
+        Some(node::PlatformTree::new(nodes, map))
+      } else {
+        None
+      }
+    }
+  }
+
+  fn collect_node_names(&self, map: &mut HashMap<String, Gc<node::Node>>,
+      nodes: &HashMap<String, Gc<node::Node>>) -> bool {
+    for (_, n) in nodes.iter() {
+      if !self.collect_node_names(map, &n.subnodes) {
+        return false;
+      }
+
+      match n.name {
+        Some(ref name) => {
+          if map.contains_key(name) {
+            self.sess.span_diagnostic.span_err(n.name_span, format!(
+                "duplicate `{}` definition", name).as_slice());
+
+            self.sess.span_diagnostic.span_warn(
+                map.get(name).name_span,
+                "previously defined here");
+            return false;
+          } else {
+            map.insert(name.clone(), *n);
+          }
+        },
+        None => (),
+      }
+    }
+    true
+  }
+
+  fn parse_node(&mut self) -> Option<node::Node> {
+    let name_span: Option<Span>;
+    let node_name: Option<String>;
+
+    //  we're here
+    // /
+    // v
+    // NAME @ PATH { ... }
+    //      ^-- peeking here
+    if self.reader.peek().tok == token::AT {
+      name_span = Some(self.span);
+      node_name = match self.expect_ident() {
+        Some(name) => Some(name),
+        None => return None,
+      };
+      if !self.expect(&token::AT) {
+        return None;
+      }
+    } else {
+      node_name = None;
+      name_span = None;
+    }
+
+    let node_span: Span;
+    let node_path_span: Span;
+    let attributes: HashMap<String, node::Attribute>;
+    let subnodes: HashMap<String, Gc<node::Node>>;
+
+    // NAME is resolved, if it was there anyway.
+    //    we're here
+    //          |
+    //          v
+    //   NAME @ PATH { ... }
+    node_path_span = self.span;
+    if node_name == None {
+      node_span = self.span;
+    } else {
+      node_span = mk_sp(name_span.unwrap().lo, self.span.hi);
+    }
+
+    let node_path = match self.token {
+      token::IDENT(_, _) => {
+        token::to_str(&self.bump())
+      },
+      token::LIT_INT_UNSUFFIXED(u) => {
+        self.bump();
+        u.to_str()
+      }
+      ref other => {
+        self.error(format!("expected node path but found `{}`",
+            token::to_str(other)));
+        return None;
+      }
+    };
+
+    //    we're here
+    //             |
+    //             v
+    // NAME @ PATH { ... }
+    // it's either a body, or a semicolon (no body)
+    match self.bump() {
+      token::LBRACE => {
+        let (a, s) = match self.parse_node_body() {
+          Some((attrs, subnodes)) => (attrs, subnodes),
+          // TODO(farcaller): eat everything up to '}' and continue if failed
+          // we can still parse further nodes.
+          None => return None,
+        };
+        attributes = a;
+        subnodes = s;
+
+        if !self.expect(&token::RBRACE) {
+          return None;
+        }
+      },
+      token::SEMI => {
+        attributes = HashMap::new();
+        subnodes = HashMap::new();
+      },
+      ref other => {
+        self.error(format!("expected `{{` or `;` but found `{}`",
+            token::to_str(other)));
+        return None;
+      }
+    }
+
+    let mut node = node::Node::new(node_name, node_span, node_path, node_path_span);
+    node.attributes = attributes;
+    node.subnodes = subnodes;
+    Some(node)
+  }
+
+  fn parse_node_body(&mut self)
+      -> Option<(
+          HashMap<String, node::Attribute>,
+          HashMap<String, Gc<node::Node>>)> {
+    let mut attrs = HashMap::new();
+    let mut subnodes = HashMap::new();
+
+    loop {
+      // break early if at brace
+      if self.token == token::RBRACE {
+        break;
+      }
+
+      // we're here
+      // |
+      // v
+      // ATTR = VAL ;
+      // NAME @ PATH
+      // PATH { ... }
+      // PATH ;
+      //      ^-- peeking here
+      if self.reader.peek().tok == token::EQ {
+        // we're here
+        // |
+        // v
+        // ATTR = VAL ;
+        let name_span = self.span;
+        let some_name = match self.expect_ident() {
+          Some(name) => name,
+          None => return None,
+        };
+
+        if attrs.contains_key(&some_name) {
+          self.error(format!("key `{}` is already defined", some_name));
+          return None;
+        }
+
+        self.bump(); // bump token::EQ
+
+        // we're here
+        //        |
+        //        v
+        // ATTR = VAL ;
+        let attr_value_span = self.span;
+        let attr_value = match self.parse_attribute_value() {
+          Some(value) => value,
+          None => return None,
+        };
+
+        //   we're here
+        //            |
+        //            v
+        // ATTR = VAL ;
+        if !self.expect(&token::SEMI) {
+          return None;
+        }
+
+        attrs.insert(some_name, node::Attribute::new(
+            attr_value, name_span, attr_value_span));
+      } else {
+        // this should be a subnode
+        let oldsp = self.span;
+        let oldtok = self.token.clone();
+        let node = match self.parse_node() {
+          Some(node) => node,
+          None => {
+            self.span = oldsp;
+            self.error(format!("expected `=` or node but found `{}`",
+                token::to_str(&oldtok)));
+            return None;
+          },
+        };
+
+        let path = node.path.clone();
+        if subnodes.contains_key(&path) {
+          self.span = node.path_span;
+          self.error(format!("duplicate node definition `{}`",
+              path));
+          let old_node: &Gc<node::Node> = subnodes.get(&path);
+          self.span = old_node.path_span.clone();
+          self.error("previously defined here".to_str());
+          return None;
+        } else {
+          subnodes.insert(path, box(GC) node);
+        }
+      }
+    }
+
+    Some((attrs, subnodes))
+  }
+
+  fn parse_attribute_value(&mut self) -> Option<node::AttributeValue> {
+    match self.token {
+      token::LIT_STR(string_val) => {
+        self.bump();
+        let string = token::get_ident(string_val).get().to_str();
+        Some(node::StrValue(string))
+      },
+      token::LIT_INT_UNSUFFIXED(intval) => {
+        self.bump();
+        Some(node::UIntValue(intval as uint))
+      },
+      token::BINOP(token::AND) => {
+        self.bump();
+        let name = match self.expect_ident() {
+          Some(name) => name,
+          None => return None,
+        };
+        Some(node::RefValue(name))
+      },
+      ref other => {
+        self.error(format!("expected string but found `{}`",
+            token::to_str(other)));
+        None
+      }
+    }
+  }
+
+  fn error(&self, m: String) {
+    self.sess.span_diagnostic.span_err(self.span, m.as_slice());
   }
 
   /// Bumps a token.
@@ -165,10 +359,7 @@ impl<'a> Parser<'a> {
     self.last_span = self.span;
     self.last_token = Some(box tok.clone());
 
-    let next = match self.backlog.pop() {
-      Some(ts) => ts,
-      None => self.reader.next_token(),
-    };
+    let next = self.reader.next_token();
 
     self.span = next.sp;
     self.token = next.tok;
@@ -176,237 +367,33 @@ impl<'a> Parser<'a> {
     tok
   }
 
-  /// Un-bumps the token.
-  ///
-  /// Pushes the current token to backlog and restores an old one from
-  /// last_token. After this, last_token and last_span are broken (same as the
-  /// current token).
-  fn unbump(&mut self) {
-    let span = self.last_span;
-    let boxtok: &Box<token::Token> = match self.last_token {
-      Some(ref t) => t,
-      None => fail!(),
-    };
-    let tok = *boxtok.clone();
-
-    self.backlog.push(lexer::TokenAndSpan {
-      tok: self.token.clone(),
-      sp: self.span,
-    });
-
-    self.token = tok;
-    self.span = span;
-  }
-
   /// Expects that the current token is t. Bumps on success.
-  fn expect(&mut self, t: &token::Token) {
+  fn expect(&mut self, t: &token::Token) -> bool {
     if self.token == *t {
       self.bump();
+      true
     } else {
       let token_str = token::to_str(t);
       let this_token_str = token::to_str(&self.token);
-      self.fatal(format!("expected `{}` but found `{}`", token_str, this_token_str).as_slice());
+      self.error(format!("expected `{}` but found `{}`", token_str,
+          this_token_str));
+      false
     }
   }
 
-  /// Expects that the current token is IDENT. Bumps on success.
-  fn expect_ident(&mut self) -> token::Token {
+  /// Expects that the current token is IDENT, returns its string value. Bumps
+  /// on success.
+  fn expect_ident(&mut self) -> Option<String> {
+    let tok_str = token::to_str(&self.token);
     match self.token {
       token::IDENT(_, _) => {
-        self.bump()
+        self.bump();
+        Some(tok_str)
       },
       _ => {
-        let this_token_str = token::to_str(&self.token);
-        self.fatal(format!("expected identifier but found `{}`", this_token_str).as_slice());
-      },
-    }
-  }
-
-  /// Makes sure there are no more tokens (we are at the end of stream).
-  pub fn should_finish(&mut self) {
-    if self.bump() != token::EOF {
-      let this_token_str = token::to_str(&self.token);
-      self.fatal(format!("trailing garbage: `{}`", this_token_str).as_slice());
-    }
-  }
-
-  /// Parses a platform tree node.
-  pub fn parse_node(&mut self) -> pt::Node {
-    let mut node = pt::Node::new();
-    // NODE_ID @ NODE_PATH { CONTENTS }
-    // or
-    //         @ NODE_PATH { CONTENTS }
-
-    node.name = match self.token {
-      // this is NODE_ID
-      token::IDENT(_, _) => {
-        let ret = Some(token::to_str(&self.token));
-        self.bump();
-        ret
-      },
-      // this is anonymous node
-      token::AT => {
+        self.error(format!("expected identifier but found `{}`", tok_str));
         None
       },
-      _ => {
-        let this_token_str = token::to_str(&self.token);
-        self.fatal(format!("expected identifier or `@` but found `{}`", this_token_str).as_slice())
-      },
-    };
-
-    // eat @
-    self.expect(&token::AT);
-
-    // parse node path
-    node.path = self.parse_path();
-
-    // eat {
-    self.expect(&token::LBRACE);
-
-    // parse body
-    self.parse_node_contents(&mut node);
-
-    // eat }
-    self.expect(&token::RBRACE);
-
-    node
-  }
-
-  /// Parses node contents (attributes and subnodes).
-  pub fn parse_node_contents(&mut self, node: &mut pt::Node) {
-    let mut attrs = hashmap::HashMap::new();
-    let mut nodes = Vec::new();
-
-    loop {
-      match self.token {
-        // got }, so it's end of current node
-        token::RBRACE => break,
-
-        // got IDENT, so this is either attribute name or non-anonymous subnode
-        token::IDENT(_, _) => {
-          let name = token::to_str(&self.token);
-          self.bump();
-
-          match self.token {
-            // it's attribute
-            token::EQ => {
-              self.bump();
-              let val = self.parse_attribute_value();
-              self.expect(&token::SEMI);
-
-              attrs.insert(name, val);
-            },
-            // it's subnode, unbump the name and re-parse as node
-            token::AT => {
-              self.unbump();
-              let node = self.parse_node();
-              nodes.push(box node);
-            },
-            _ => {
-              let this_token_str = token::to_str(&self.token);
-              self.fatal(format!("expected `@` or `=` but found `{}`", this_token_str).as_slice())
-            }
-          };
-        }
-        // got @, so this must be anonymous subnode
-        token::AT => {
-          let node = self.parse_node();
-          nodes.push(box node);
-        },
-        _ => {
-          let this_token_str = token::to_str(&self.token);
-          self.fatal(format!("expected identifier or `\\}` but found `{}`", this_token_str).as_slice())
-        }
-      }
-    }
-
-    node.attributes = attrs;
-    node.subnodes = nodes;
-  }
-
-  /// Parses attribute value.
-  pub fn parse_attribute_value(&mut self) -> pt::AttributeValue {
-    let val = match self.token {
-      // a string
-      token::LIT_STR(sv) => {
-        let val = pt::StrValue(token::get_ident(sv).get().to_string());
-        self.bump();
-        val
-      },
-      // an integer
-      /// TODO(farcaller): any other integers can surface here?
-      token::LIT_INT_UNSUFFIXED(intval) => {
-        let val = pt::UIntValue(intval as uint);
-        self.bump();
-        val
-      },
-      // a reference (& + IDENT)
-      token::BINOP(token::AND) => {
-        self.bump();
-        pt::RefValue(token::to_str(&self.expect_ident()).to_string())
-      },
-      _ => {
-        let this_token_str = token::to_str(&self.token);
-        self.fatal(format!("expected integer or string but found {} `{}`", self.token, this_token_str).as_slice())
-      }
-    };
-
-    val
-  }
-
-  /// Parses node path
-  pub fn parse_path(&mut self) -> pt::Path {
-    let mut v = Vec::new();
-    let mut expect_more = false;
-    let mut absolute = false;
-
-    // path starts with ::, so it's absolute
-    if self.token == token::MOD_SEP {
-      self.bump();
-      expect_more = true;
-      absolute = true;
-    }
-
-    loop {
-      match self.token {
-        // :: separator
-        token::MOD_SEP => {
-          if expect_more {
-            let this_token_str = token::to_str(&self.token);
-            self.fatal(format!("expected identifier but found `{}`", this_token_str).as_slice())
-          }
-          self.bump();
-          expect_more = true;
-        },
-        // path component
-        token::IDENT(_, _) => {
-          v.push(token::to_str(&self.token));
-          self.bump();
-          expect_more = false;
-        },
-        // ints are allowed in paths as well
-        token::LIT_INT_UNSUFFIXED(u) => {
-          v.push(u.to_str());
-          self.bump();
-          expect_more = false;
-        }
-        _ => {
-          if !expect_more {
-            if v.len() == 0 {
-              self.fatal(format!("unfinished path, found {} `{}`", self.token,
-                  token::to_str(&self.token)).as_slice());
-            }
-            break
-          } else {
-            self.fatal(format!("unfinished path, found {} `{}`", self.token,
-                token::to_str(&self.token)).as_slice());
-          }
-        }
-      }
-    }
-    pt::Path {
-      absolute: absolute,
-      path: v,
     }
   }
 }

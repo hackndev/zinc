@@ -20,19 +20,17 @@
 
 extern crate rustc;
 extern crate syntax;
+extern crate platformtree;
 
 use rustc::plugin::Registry;
 use syntax::ast::TokenTree;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult};
 use syntax::ext::base;
-use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
+use syntax::ext::quote::rt::{ToTokens, ToSource, ExtParseUtils};
 
-use parser::Parser;
-
-#[path="../platformtree/pt.rs"] mod pt;
-#[path="../platformtree/parser.rs"] mod parser;
-
+use platformtree::parser::Parser;
+use platformtree::context;
 
 /// Register available macros.
 #[plugin_registrar]
@@ -40,17 +38,8 @@ pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("platformtree_parse", platformtree_parse);
 }
 
-/// platformtree_parse parses a platfrom tree into pt::Node struct.
+/// platformtree_parse parses a platfrom tree into node::Node struct.
 pub fn platformtree_parse(cx: &mut ExtCtxt, _: Span, tts: &[TokenTree])
     -> Box<MacResult> {
-  let mut parser = Parser::new(cx, tts);
-
-  // parse one node
-  let node = parser.parse_node();
-
-  // nothing should follow
-  parser.should_finish();
-
-  // return new expr based on node value
-  base::MacExpr::new(quote_expr!(&*cx, $node))
+  base::MacExpr::new(quote_expr!(&*cx, true))
 }
