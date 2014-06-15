@@ -78,11 +78,6 @@ compile_rust :macro_platformtree, {
   build_for: :host,
 }
 
-ruby_tests :macro_platformtree_lpc17xx_testgen, {
-  source: 'hal/lpc17xx/platformtree_testgen.rb'.in_source,
-  deps:    [:macro_platformtree],
-}
-
 app_tasks = Context.instance.applications.map do |a|
   compile_rust "app_#{a}_crate".to_sym, {
     source: "apps/app_#{a}.rs".in_root,
