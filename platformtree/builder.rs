@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::gc::{Gc, GC};
 use syntax::ast;
 use syntax::codemap::{ExpnInfo, NameAndSpan, MacroBang};
 use syntax::ext::base::ExtCtxt;

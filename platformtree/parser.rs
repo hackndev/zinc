@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use std::collections::hashmap::HashMap;
-use std::gc::Gc;
+use std::gc::{Gc, GC};
 use syntax::ast::TokenTree;
 use syntax::codemap::{Span, mk_sp};
 use syntax::ext::base::ExtCtxt;
