@@ -177,6 +177,19 @@ impl Node {
     ok
   }
 
+  pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
+    let mut ok = true;
+    for (path, sub) in self.subnodes.iter() {
+      if !expectations.contains(&path.as_slice()) {
+        ok = false;
+        cx.parse_sess().span_diagnostic.span_err(sub.path_span,
+            format!("unknown subnode `{}` in node `{}`",
+                path, self.path).as_slice());
+      }
+    }
+    ok
+  }
+
   pub fn get_by_path<'a>(&'a self, path: &str) -> Option<&'a Gc<Node>> {
     self.subnodes.find(&path.to_str())
   }
