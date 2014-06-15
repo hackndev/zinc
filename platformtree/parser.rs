@@ -20,7 +20,7 @@
 #[allow(unused_imports)] use syntax::ext::build::AstBuilder;
 #[allow(unused_imports)] use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 
-#[allow(unused_imports)] use std::collections::hashmap;
+use std::collections::hashmap::HashMap;
 
 use node;
 use std::gc::Gc;
@@ -113,7 +113,7 @@ impl<'a> Parser<'a> {
 
     let node_span: Span;
     let node_path_span: Span;
-    let attributes: hashmap::HashMap<String, node::Attribute>;
+    let attributes: HashMap<String, node::Attribute>;
     let subnodes: Vec<Gc<node::Node>>;
 
     // NAME is resolved, if it was there anyway.
@@ -164,7 +164,7 @@ impl<'a> Parser<'a> {
         }
       },
       token::SEMI => {
-        attributes = hashmap::HashMap::new();
+        attributes = HashMap::new();
         subnodes = Vec::new();
       },
       ref other => {
@@ -181,10 +181,8 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_node_body(&mut self)
-      -> Option<(
-          hashmap::HashMap<String, node::Attribute>,
-          Vec<Gc<node::Node>>)> {
-    let mut attrs = hashmap::HashMap::new();
+      -> Option<(HashMap<String, node::Attribute>, Vec<Gc<node::Node>>)> {
+    let mut attrs = HashMap::new();
     let mut subnodes = Vec::new();
 
     loop {

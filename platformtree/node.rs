@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use syntax::codemap::Span;
-use std::collections::hashmap;
+use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 
 #[deriving(Show)]
@@ -50,7 +50,7 @@ pub struct Node {
   pub path: String,
   pub path_span: Span,
 
-  pub attributes: hashmap::HashMap<String, Attribute>,
+  pub attributes: HashMap<String, Attribute>,
 
   pub subnodes: Vec<Gc<Node>>,
 }
@@ -63,7 +63,7 @@ impl Node {
       name_span: name_span,
       path: path,
       path_span: path_span,
-      attributes: hashmap::HashMap::new(),
+      attributes: HashMap::new(),
       subnodes: Vec::new(),
     }
   }
