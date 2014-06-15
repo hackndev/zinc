@@ -112,13 +112,22 @@ impl Builder {
 pub fn build_platformtree(cx: &mut ExtCtxt, pt: &node::PlatformTree) -> Builder {
   let mut builder = Builder::new();
 
-  if !pt.expect_subnodes(cx, ["mcu"]) {
+  if !pt.expect_subnodes(cx, ["mcu", "os"]) {
     return builder;  // TODO(farcaller): report error?
   }
 
   match pt.get_by_path("mcu") {
     Some(node) => build_mcu(&mut builder, cx, node),
     None => (),  // TODO(farcaller): should it actaully fail?
+  }
+
+  match pt.get_by_path("os") {
+    Some(node) => build_os(&mut builder, cx, node),
+    None => {
+      // TODO(farcaller): provide span for whole PT?
+      cx.parse_sess().span_diagnostic.span_err(mk_sp(BytePos(0), BytePos(0)),
+          "root node `os` must be present");
+    }
   }
 
   builder
@@ -146,9 +155,54 @@ fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
     },
     None => {
       cx.parse_sess().span_diagnostic.span_err(node.name_span,
-          "mcu node must have a name");
+          "`mcu` node must have a name");
     },
   }
 
   cx.bt_pop();
+}
+
+fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
+  cx.bt_push(ExpnInfo {
+    call_site: node.name_span,
+    callee: NameAndSpan {
+      name: "platformtree".to_str(),
+      format: MacroBang,
+      span: None,
+    },
+  });
+
+  if !node.expect_no_attributes(cx) ||
+     !node.expect_subnodes(cx, ["single_task"]) {
+    return;
+  }
+
+  let some_single_task = node.get_by_path("single_task");
+  match some_single_task {
+    Some(single_task) => {
+      build_single_task(builder, cx, single_task);
+    },
+    None => {
+      cx.parse_sess().span_diagnostic.span_err(node.name_span,
+          "subnode `single_task` must be present");
+    }
+  }
+
+  cx.bt_pop();
+}
+
+fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
+    node: &Gc<node::Node>) {
+  let some_loop_fn = node.get_required_string_attr(cx, "loop");
+  match some_loop_fn {
+    Some(loop_fn) => {
+      let call_expr = cx.expr_call_ident(
+          node.get_attr("loop").value_span,
+          cx.ident_of(loop_fn.as_slice()),
+          vec!());
+      let call_stmt = cx.stmt_expr(call_expr);
+      builder.add_main_statement(call_stmt);
+    },
+    None => (),
+  }
 }

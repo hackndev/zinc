@@ -19,11 +19,11 @@ platformtree!(
     }
   }
 
-  // os@os {
-  //   single_task {
-  //     loop = "run";
-  //   }
-  // }
+  os {
+    single_task {
+      loop = "run";
+    }
+  }
 )
 
 #[no_split_stack]
