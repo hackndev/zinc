@@ -18,7 +18,7 @@ use test_helpers::{assert_equal_source, with_parsed, fails_to_build};
 
 #[test]
 fn builds_stack_data_init() {
-  with_parsed("mcu@lpc17xx;", |cx, failed, pt| {
+  with_parsed("lpc17xx@mcu;", |cx, failed, pt| {
     let builder = build_platformtree(cx, pt);
     assert!(unsafe{*failed} == false);
     assert!(builder.main_stmts.len() == 0);
@@ -27,12 +27,12 @@ fn builds_stack_data_init() {
 
 #[test]
 fn fails_to_parse_garbage_attrs() {
-  fails_to_build("mcu@lpc17xx { key = 1; }");
+  fails_to_build("lpc17xx@mcu { key = 1; }");
 }
 
 #[test]
 fn builds_clock_init() {
-  with_parsed("mcu@lpc17xx {
+  with_parsed("lpc17xx@mcu {
       clock {
         source = \"main-oscillator\";
         source_frequency = 12_000_000;
@@ -55,9 +55,9 @@ fn builds_clock_init() {
                 source: init::Main(12000000),
                 pll: init::PLL0 {
                   enabled: true,
-                  m: 50u,
-                  n: 3u,
-                  divisor: 4u,
+                  m: 50u8,
+                  n: 3u8,
+                  divisor: 4u8,
                 },
               }
           );
@@ -67,11 +67,11 @@ fn builds_clock_init() {
 
 #[test]
 fn fails_to_parse_bad_clock_conf() {
-  fails_to_build("mcu@lpc17xx { clock {
+  fails_to_build("lpc17xx@mcu { clock {
     no_source = 1;
     source_frequency = 12_000_000;
   }}");
-  fails_to_build("mcu@lpc17xx { clock {
+  fails_to_build("lpc17xx@mcu { clock {
     source = \"missing\";
     source_frequency = 12_000_000;
   }}");
@@ -79,7 +79,7 @@ fn fails_to_parse_bad_clock_conf() {
 
 #[test]
 fn fails_to_parse_no_pll_clock() {
-  fails_to_build("mcu@lpc17xx { clock {
+  fails_to_build("lpc17xx@mcu { clock {
     source = \"main-oscillator\";
     source_frequency = 12_000_000;
   }}");

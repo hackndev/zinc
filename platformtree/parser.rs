@@ -58,7 +58,6 @@ impl<'a> Parser<'a> {
   /// Parse the platform tree from passed in tokens.
   pub fn parse_platformtree(&mut self) -> Option<node::PlatformTree> {
     let mut nodes: HashMap<String, Gc<node::Node>> = HashMap::new();
-    let mut nodes_by_path: HashMap<String, Gc<node::Node>> = HashMap::new();
     let mut failed = false;
     loop {
       if self.token == token::EOF {
@@ -75,24 +74,15 @@ impl<'a> Parser<'a> {
       };
 
       let path = node.path.clone();
-      if nodes_by_path.contains_key(&path) {
+      if nodes.contains_key(&path) {
         failed = true;
         self.sess.span_diagnostic.span_err(node.path_span,
             format!("duplicate node definition `{}`", path).as_slice());
-        let old_node: &Gc<node::Node> = nodes_by_path.get(&path);
+        let old_node: &Gc<node::Node> = nodes.get(&path);
         self.sess.span_diagnostic.span_err(old_node.path_span,
             "previously defined here");
       } else {
-        nodes_by_path.insert(node.path.clone(), node);
-      }
-
-      match node.name {
-        Some(ref name) => { nodes.insert(name.clone(), node); },
-        None => {
-          failed = true;
-          self.sess.span_diagnostic.span_err(node.name_span,
-              "root node must have a name");
-        }
+        nodes.insert(node.path.clone(), node);
       }
     }
 

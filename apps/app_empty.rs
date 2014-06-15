@@ -7,7 +7,7 @@ extern crate zinc;
 #[phase(plugin)] extern crate macro_platformtree;
 
 platformtree!(
-  mcu@lpc17xx {
+  lpc17xx@mcu {
     clock {
       source = "main-oscillator";
       source_frequency = 12_000_000;

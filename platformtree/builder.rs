@@ -116,7 +116,7 @@ pub fn build_platformtree(cx: &mut ExtCtxt, pt: &node::PlatformTree) -> Builder 
     return builder;  // TODO(farcaller): report error?
   }
 
-  match pt.get("mcu") {
+  match pt.get_by_path("mcu") {
     Some(node) => build_mcu(&mut builder, cx, node),
     None => (),  // TODO(farcaller): should it actaully fail?
   }
@@ -134,11 +134,19 @@ fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
     },
   });
 
-  match node.path.as_slice() {
-    "lpc17xx" => lpc17xx_pt::build_mcu(builder, cx, node),
-    other => {
+  match node.name {
+    Some(ref name) => {
+      match name.as_slice() {
+        "lpc17xx" => lpc17xx_pt::build_mcu(builder, cx, node),
+        other => {
+          cx.parse_sess().span_diagnostic.span_err(node.name_span,
+              format!("unknown mcu `{}`", other).as_slice());
+        },
+      }
+    },
+    None => {
       cx.parse_sess().span_diagnostic.span_err(node.name_span,
-          format!("unknown mcu `{}`", other).as_slice());
+          "mcu node must have a name");
     },
   }
 
