@@ -13,17 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#[allow(unused_imports)] use syntax::ast::TokenTree;
-#[allow(unused_imports)] use syntax::codemap::{Span, mk_sp, BytePos};
-#[allow(unused_imports)] use syntax::ext::base::ExtCtxt;
-#[allow(unused_imports)] use syntax::parse::{token, ParseSess, lexer};
-#[allow(unused_imports)] use syntax::ext::build::AstBuilder;
-#[allow(unused_imports)] use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
-
 use std::collections::hashmap::HashMap;
+use std::gc::Gc;
+use syntax::ast::TokenTree;
+use syntax::codemap::{Span, mk_sp};
+use syntax::ext::base::ExtCtxt;
+use syntax::parse::{token, ParseSess, lexer};
 
 use node;
-use std::gc::Gc;
 
 #[allow(dead_code)]
 pub struct Parser<'a> {
