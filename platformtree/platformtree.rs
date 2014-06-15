@@ -23,7 +23,8 @@ extern crate syntax;
 
 pub mod node;
 pub mod parser;
-// pub mod context;
+pub mod builder;
 
 #[cfg(test)] mod test_helpers;
 #[cfg(test)] mod parser_test;
+#[cfg(test)] mod builder_test;
