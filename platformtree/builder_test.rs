@@ -97,11 +97,6 @@ fn fails_to_parse_lpc17xx_with_no_pll() {
 }
 
 #[test]
-fn fails_to_parse_pt_with_anonymous_root_node() {
-  fails_to_build("node {}");
-}
-
-#[test]
 fn fails_to_parse_pt_with_unknown_root_node() {
   fails_to_build("unknown@node {}");
 }

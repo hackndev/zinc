@@ -57,7 +57,8 @@ impl<'a> Parser<'a> {
 
   /// Parse the platform tree from passed in tokens.
   pub fn parse_platformtree(&mut self) -> Option<node::PlatformTree> {
-    let mut nodes: Vec<Gc<node::Node>> = Vec::new();
+    let mut nodes: HashMap<String, Gc<node::Node>> = HashMap::new();
+    let mut nodes_by_path: HashMap<String, Gc<node::Node>> = HashMap::new();
     let mut failed = false;
     loop {
       if self.token == token::EOF {
@@ -73,14 +74,32 @@ impl<'a> Parser<'a> {
         }
       };
 
-      nodes.push(node);
+      let path = node.path.clone();
+      if nodes_by_path.contains_key(&path) {
+        failed = true;
+        self.sess.span_diagnostic.span_err(node.path_span,
+            format!("duplicate node definition `{}`", path).as_slice());
+        let old_node: &Gc<node::Node> = nodes_by_path.get(&path);
+        self.sess.span_diagnostic.span_err(old_node.path_span,
+            "previously defined here");
+      } else {
+        nodes_by_path.insert(node.path.clone(), node);
+      }
+
+      match node.name {
+        Some(ref name) => { nodes.insert(name.clone(), node); },
+        None => {
+          failed = true;
+          self.sess.span_diagnostic.span_err(node.name_span,
+              "missing name for root node");
+        }
+      }
     }
 
     if failed {
       None
     } else {
       let mut map = HashMap::new();
-
       if self.collect_node_names(&mut map, &nodes) {
         Some(node::PlatformTree::new(nodes, map))
       } else {
@@ -90,8 +109,8 @@ impl<'a> Parser<'a> {
   }
 
   fn collect_node_names(&self, map: &mut HashMap<String, Gc<node::Node>>,
-      nodes: &Vec<Gc<node::Node>>) -> bool {
-    for n in nodes.iter() {
+      nodes: &HashMap<String, Gc<node::Node>>) -> bool {
+    for (_, n) in nodes.iter() {
       if !self.collect_node_names(map, &n.subnodes) {
         return false;
       }
@@ -142,7 +161,7 @@ impl<'a> Parser<'a> {
     let node_span: Span;
     let node_path_span: Span;
     let attributes: HashMap<String, node::Attribute>;
-    let subnodes: Vec<Gc<node::Node>>;
+    let subnodes: HashMap<String, Gc<node::Node>>;
 
     // NAME is resolved, if it was there anyway.
     //    we're here
@@ -193,7 +212,7 @@ impl<'a> Parser<'a> {
       },
       token::SEMI => {
         attributes = HashMap::new();
-        subnodes = Vec::new();
+        subnodes = HashMap::new();
       },
       ref other => {
         self.error(format!("expected `\\{` or `;` but found `{}`",
@@ -209,9 +228,11 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_node_body(&mut self)
-      -> Option<(HashMap<String, node::Attribute>, Vec<Gc<node::Node>>)> {
+      -> Option<(
+          HashMap<String, node::Attribute>,
+          HashMap<String, Gc<node::Node>>)> {
     let mut attrs = HashMap::new();
-    let mut subnodes = Vec::new();
+    let mut subnodes = HashMap::new();
 
     loop {
       // break early if at brace
@@ -279,7 +300,18 @@ impl<'a> Parser<'a> {
           },
         };
 
-        subnodes.push(box(GC) node);
+        let path = node.path.clone();
+        if subnodes.contains_key(&path) {
+          self.span = node.path_span;
+          self.error(format!("duplicate node definition `{}`",
+              path));
+          let old_node: &Gc<node::Node> = subnodes.get(&path);
+          self.span = old_node.path_span.clone();
+          self.error("previously defined here".to_str());
+          return None;
+        } else {
+          subnodes.insert(path, box(GC) node);
+        }
       }
     }
 

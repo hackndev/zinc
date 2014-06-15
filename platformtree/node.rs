@@ -15,7 +15,6 @@
 
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
-use std::slice::Items;
 use syntax::codemap::Span;
 use syntax::ext::base::ExtCtxt;
 
@@ -59,8 +58,7 @@ pub struct Node {
   pub path_span: Span,
 
   pub attributes: HashMap<String, Attribute>,
-
-  pub subnodes: Vec<Gc<Node>>,
+  pub subnodes: HashMap<String, Gc<Node>>,
 }
 
 impl Node {
@@ -72,7 +70,7 @@ impl Node {
       path: path,
       path_span: path_span,
       attributes: HashMap::new(),
-      subnodes: Vec::new(),
+      subnodes: HashMap::new(),
     }
   }
 
@@ -152,7 +150,7 @@ impl Node {
 
   pub fn expect_no_subnodes(&self, cx: &ExtCtxt) -> bool {
     let mut ok = true;
-    for sub in self.subnodes.iter() {
+    for (_, sub) in self.subnodes.iter() {
       ok = false;
       cx.parse_sess().span_diagnostic.span_err(sub.name_span,
           "no subnodes expected");
@@ -180,26 +178,18 @@ impl Node {
   }
 
   pub fn get_by_path<'a>(&'a self, path: &str) -> Option<&'a Gc<Node>> {
-    // TODO(farcaller): if this is commonly used it would be better to rewrite
-    // subnodes as hash as well.
-    let path_str = path.to_str();
-    for n in self.subnodes.iter() {
-      if n.path == path_str {
-        return Some(n);
-      }
-    }
-    None
+    self.subnodes.find(&path.to_str())
   }
 }
 
 #[deriving(Show)]
 pub struct PlatformTree {
-  nodes: Vec<Gc<Node>>,
+  nodes: HashMap<String, Gc<Node>>,
   named: HashMap<String, Gc<Node>>,
 }
 
 impl PlatformTree {
-  pub fn new(nodes: Vec<Gc<Node>>, named: HashMap<String, Gc<Node>>)
+  pub fn new(nodes: HashMap<String, Gc<Node>>, named: HashMap<String, Gc<Node>>)
       -> PlatformTree {
     PlatformTree {
       nodes: nodes,
@@ -211,11 +201,23 @@ impl PlatformTree {
     self.named.find(&name.to_str())
   }
 
-  pub fn get<'a>(&'a self, idx: uint) -> &'a Gc<Node> {
-    self.nodes.get(idx)
+  pub fn get<'a>(&'a self, name: &str) -> Option<&'a Gc<Node>> {
+    self.nodes.find(&name.to_str())
   }
 
-  pub fn iter<'a>(&'a self) -> Items<'a, Gc<Node>> {
-    self.nodes.iter()
+  pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
+    let mut ok = true;
+    for (_, sub) in self.nodes.iter() {
+      // TODO(farcaller): fix this code
+      let some_name: Option<String> = sub.name.clone();
+      let name = some_name.unwrap();
+      let name_slice = name.as_slice();
+      if !expectations.contains(&name_slice) {
+        ok = false;
+        cx.parse_sess().span_diagnostic.span_err(sub.name_span,
+            format!("unknown root node `{}`", name).as_slice());
+      }
+    }
+    ok
   }
 }

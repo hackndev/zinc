@@ -49,9 +49,9 @@ pub fn with_parsed(src: &str, block: |&mut ExtCtxt, *mut bool, &node::PlatformTr
   });
 }
 
-pub fn with_parsed_node(src: &str, block: |&Gc<node::Node>|) {
+pub fn with_parsed_node(name: &str, src: &str, block: |&Gc<node::Node>|) {
   with_parsed(src, |_, _, pt| {
-    block(pt.get(0));
+    block(pt.get(name).unwrap());
   });
 }
 

@@ -39,26 +39,13 @@ impl Builder {
 pub fn build_platformtree(cx: &mut ExtCtxt, pt: &node::PlatformTree) -> Builder {
   let mut builder = Builder::new();
 
-  for n in pt.iter() {
-    match n.name {
-      None => {
-        cx.parse_sess().span_diagnostic.span_err(n.name_span,
-            "root node cannot be anonymous");
-        continue;
-      },
-      Some(ref name) => {
-        match name.as_slice() {
-          "mcu" => {
-            build_mcu(&mut builder, cx, n);
-          },
-          other => {
-            cx.parse_sess().span_diagnostic.span_err(n.name_span,
-                format!("unknown root node `{}`", other).as_slice());
-            continue;
-          }
-        }
-      },
-    }
+  if !pt.expect_subnodes(cx, ["mcu"]) {
+    return builder;  // TODO(farcaller): report error?
+  }
+
+  match pt.get("mcu") {
+    Some(node) => build_mcu(&mut builder, cx, node),
+    None => (),  // TODO(farcaller): should it actaully fail?
   }
 
   builder
