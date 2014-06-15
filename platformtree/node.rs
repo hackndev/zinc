@@ -159,7 +159,7 @@ impl Node {
   }
 
   pub fn expect_attributes(&self, cx: &ExtCtxt,
-      expectations: Vec<(&str, AttributeType)>) -> bool {
+      expectations: &[(&str, AttributeType)]) -> bool {
     let mut ok = true;
     for &(n, ref t) in expectations.iter() {
       match t {

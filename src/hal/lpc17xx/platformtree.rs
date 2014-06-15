@@ -36,7 +36,7 @@ pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
 
 pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
     node: &Gc<node::Node>) {
-  if !node.expect_attributes(cx, vec!(("source", node::StringAttribute))) {
+  if !node.expect_attributes(cx, [("source", node::StringAttribute)]) {
     return;
   }
 
@@ -63,10 +63,10 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let some_pll_conf = node.get_by_path("pll").and_then(|sub|
       -> Option<(uint, uint, uint)> {
-    if !sub.expect_no_subnodes(cx) || !sub.expect_attributes(cx, vec!(
+    if !sub.expect_no_subnodes(cx) || !sub.expect_attributes(cx, [
         ("m", node::IntAttribute),
         ("n", node::IntAttribute),
-        ("divisor", node::IntAttribute))) {
+        ("divisor", node::IntAttribute)]) {
       None
     } else {
       let m = sub.get_int_attr("m").unwrap();
