@@ -95,18 +95,21 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   }
 
   let (m, n, divisor) = some_pll_conf.unwrap();
+  let pll_m: u8 = m as u8;
+  let pll_n: u8 = n as u8;
+  let pll_divisor: u8 = divisor as u8;
 
   let ex = quote_expr!(&*cx,
       {
         use zinc::hal::lpc17xx::init;
         init::init_clock(
-            init::Clock {
+            &init::Clock {
               source: $clock_source,
               pll: init::PLL0 {
                 enabled: true,
-                m: $m,
-                n: $n,
-                divisor: $divisor,
+                m: $pll_m,
+                n: $pll_n,
+                divisor: $pll_divisor,
               }
             }
         );
