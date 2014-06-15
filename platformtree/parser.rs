@@ -215,7 +215,7 @@ impl<'a> Parser<'a> {
         subnodes = HashMap::new();
       },
       ref other => {
-        self.error(format!("expected `\\{` or `;` but found `{}`",
+        self.error(format!("expected `{{` or `;` but found `{}`",
             token::to_str(other)));
         return None;
       }
