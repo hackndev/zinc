@@ -91,7 +91,7 @@ impl<'a> Parser<'a> {
         None => {
           failed = true;
           self.sess.span_diagnostic.span_err(node.name_span,
-              "missing name for root node");
+              "root node must have a name");
         }
       }
     }
