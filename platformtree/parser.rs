@@ -79,49 +79,41 @@ impl<'a> Parser<'a> {
     if failed {
       None
     } else {
-      let some_named = self.collect_node_names(&HashMap::new(), &nodes);
+      let mut map = HashMap::new();
 
-      if some_named.is_none() {
-        None
+      if self.collect_node_names(&mut map, &nodes) {
+        Some(node::PlatformTree::new(nodes, map))
       } else {
-        Some(node::PlatformTree::new(nodes, some_named.unwrap()))
+        None
       }
     }
   }
 
-  fn collect_node_names(&self, map: &HashMap<String, Gc<node::Node>>,
-      nodes: &Vec<Gc<node::Node>>) -> Option<HashMap<String, Gc<node::Node>>> {
-    let mut local_map: HashMap<String, Gc<node::Node>> = HashMap::new();
-    for (k,v) in map.iter() {
-      local_map.insert(k.clone(), *v);
-    }
+  fn collect_node_names(&self, map: &mut HashMap<String, Gc<node::Node>>,
+      nodes: &Vec<Gc<node::Node>>) -> bool {
     for n in nodes.iter() {
-      let collected_sub = self.collect_node_names(&local_map, &n.subnodes);
-      if collected_sub.is_none() {
-        return None;
-      } else {
-        for (k,v) in collected_sub.unwrap().iter() {
-          local_map.insert(k.clone(), *v);
-        }
+      if !self.collect_node_names(map, &n.subnodes) {
+        return false;
       }
+
       match n.name {
         Some(ref name) => {
-          if local_map.contains_key(name) {
+          if map.contains_key(name) {
             self.sess.span_diagnostic.span_err(n.name_span, format!(
                 "duplicate `{}` definition", name).as_slice());
 
             self.sess.span_diagnostic.span_warn(
-                local_map.get(name).name_span,
+                map.get(name).name_span,
                 "previously defined here");
-            return None;
+            return false;
           } else {
-            local_map.insert(name.clone(), *n);
+            map.insert(name.clone(), *n);
           }
         },
         None => (),
       }
     }
-    Some(local_map)
+    true
   }
 
   fn parse_node(&mut self) -> Option<node::Node> {
