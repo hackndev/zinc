@@ -17,12 +17,14 @@ use syntax::codemap::Span;
 use std::collections::hashmap;
 use std::gc::Gc;
 
+#[deriving(Show)]
 pub enum AttributeValue {
   UIntValue(uint),
   StrValue(String),
   RefValue(String),
 }
 
+#[deriving(Show)]
 pub struct Attribute {
   pub value: AttributeValue,
   pub key_span: Span,
@@ -40,6 +42,7 @@ impl Attribute {
   }
 }
 
+#[deriving(Show)]
 pub struct Node {
   pub name: Option<String>,
   pub name_span: Span,
@@ -87,6 +90,7 @@ impl Node {
   }
 }
 
+#[deriving(Show)]
 pub struct PlatformTree {
   pub nodes: Vec<Gc<Node>>,
 }
