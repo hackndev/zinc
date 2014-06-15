@@ -79,26 +79,15 @@ compile_rust :macro_platformtree, {
 }
 
 app_tasks = Context.instance.applications.map do |a|
-  compile_rust "app_#{a}_crate".to_sym, {
+  compile_rust "app_#{a}".to_sym, {
     source: "apps/app_#{a}.rs".in_root,
     deps: [
       :zinc_crate,
       :core_crate,
-    ],
-    produce: "apps/app_#{a}.rs".in_root.as_rlib.in_intermediate(a),
-    out_dir: true,
-    recompile_on: [:triple, :platform, :features],
-  }
-
-  compile_rust "app_#{a}".to_sym, {
-    source: 'lib/app.rs'.in_source,
-    deps: [
-      :core_crate,
-      :zinc_crate,
-      "app_#{a}_crate".to_sym,
+      :macro_platformtree,
     ],
     produce: "app_#{a}.o".in_intermediate(a),
-    search_paths: a.in_intermediate,
+    recompile_on: [:triple, :platform, :features],
   }
 
   link_binary "app_#{a}_elf".to_sym, {
