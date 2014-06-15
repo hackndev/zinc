@@ -92,11 +92,24 @@ impl Node {
 
 #[deriving(Show)]
 pub struct PlatformTree {
-  pub nodes: Vec<Gc<Node>>,
+  nodes: Vec<Gc<Node>>,
+  named: HashMap<String, Gc<Node>>,
 }
 
 impl PlatformTree {
-  pub fn new(nodes: Vec<Gc<Node>>) -> PlatformTree {
-    PlatformTree {nodes: nodes}
+  pub fn new(nodes: Vec<Gc<Node>>, named: HashMap<String, Gc<Node>>)
+      -> PlatformTree {
+    PlatformTree {
+      nodes: nodes,
+      named: named,
+    }
+  }
+
+  pub fn get_by_name<'a>(&'a self, name: String) -> Option<&'a Gc<Node>> {
+    self.named.find(&name)
+  }
+
+  pub fn get<'a>(&'a self, idx: uint) -> &'a Gc<Node> {
+    self.nodes.get(idx)
   }
 }

@@ -140,6 +140,20 @@ fn parse_named_subnode() {
   });
 }
 
+#[test]
+fn tracks_nodes_by_name() {
+  with_parsed("test@root { sub@child; }", |pt| {
+    let subnode = pt.get_by_name("sub".to_str());
+    assert!(subnode.is_some());
+    assert!(subnode.unwrap().path == "child".to_str());
+  });
+}
+
+#[test]
+fn fails_to_parse_duplicate_node_names() {
+  fails_to_parse("duplicate@root { duplicate@child; }");
+}
+
 // helpers
 fn fails_to_parse(src: &str) {
   with_parsed_tts(src, |failed, pt| {
@@ -148,17 +162,16 @@ fn fails_to_parse(src: &str) {
   });
 }
 
-fn with_parsed(src: &str, block: |node: &node::PlatformTree|) {
+fn with_parsed(src: &str, block: |&node::PlatformTree|) {
   with_parsed_tts(src, |failed, pt| {
     assert!(failed == false);
     block(&pt.unwrap());
   });
 }
 
-fn with_parsed_node(src: &str, block: |node: &Gc<node::Node>|) {
+fn with_parsed_node(src: &str, block: |&Gc<node::Node>|) {
   with_parsed(src, |pt| {
-    assert!(pt.nodes.len() == 1);
-    block(pt.nodes.get(0));
+    block(pt.get(0));
   });
 }
 
