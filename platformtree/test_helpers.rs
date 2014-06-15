@@ -26,26 +26,26 @@ use parser::Parser;
 use node;
 
 pub fn fails_to_parse(src: &str) {
-  with_parsed_tts(src, |failed, pt| {
-    assert!(failed == true);
+  with_parsed_tts(src, |_, failed, pt| {
+    assert!(unsafe{*failed} == true);
     assert!(pt.is_none());
   });
 }
 
-pub fn with_parsed(src: &str, block: |&node::PlatformTree|) {
-  with_parsed_tts(src, |failed, pt| {
-    assert!(failed == false);
-    block(&pt.unwrap());
+pub fn with_parsed(src: &str, block: |&mut ExtCtxt, *mut bool, &node::PlatformTree|) {
+  with_parsed_tts(src, |cx, failed, pt| {
+    assert!(unsafe{*failed} == false);
+    block(cx, failed, &pt.unwrap());
   });
 }
 
 pub fn with_parsed_node(src: &str, block: |&Gc<node::Node>|) {
-  with_parsed(src, |pt| {
+  with_parsed(src, |_, _, pt| {
     block(pt.get(0));
   });
 }
 
-fn with_parsed_tts(src: &str, block: |bool, Option<node::PlatformTree>|) {
+pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<node::PlatformTree>|) {
   let mut failed = false;
   let failptr = &mut failed as *mut bool;
   let ce = box CustomEmmiter::new(failptr);
@@ -56,13 +56,12 @@ fn with_parsed_tts(src: &str, block: |bool, Option<node::PlatformTree>|) {
     deriving_hash_type_parameter: false,
     crate_id: from_str("test").unwrap(),
   };
-  let cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
+  let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
   let tts = cx.parse_tts(src.to_str());
 
-  let mut parser = Parser::new(&cx, tts.as_slice());
-  let nodes = parser.parse_platformtree();
+  let nodes = Parser::new(&mut cx, tts.as_slice()).parse_platformtree();
 
-  block(failed, nodes);
+  block(&mut cx, failptr, nodes);
 }
 
 struct CustomEmmiter {

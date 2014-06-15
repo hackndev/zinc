@@ -132,7 +132,7 @@ fn parse_named_subnode() {
 
 #[test]
 fn tracks_nodes_by_name() {
-  with_parsed("test@root { sub@child; }", |pt| {
+  with_parsed("test@root { sub@child; }", |_, _, pt| {
     let subnode = pt.get_by_name("sub".to_str());
     assert!(subnode.is_some());
     assert!(subnode.unwrap().path == "child".to_str());
