@@ -17,12 +17,11 @@ use test_helpers::{fails_to_parse, with_parsed, with_parsed_node};
 
 #[test]
 fn parse_anonymous_node() {
-  with_parsed_node("node", "root@node { node {} }", |node| {
-    let sub = node.get_by_path("node").unwrap();
-    assert!(sub.name == None);
-    assert!(sub.path == "node".to_str());
-    assert!(sub.attributes.len() == 0);
-    assert!(sub.subnodes.len() == 0);
+  with_parsed_node("node", "node {}", |node| {
+    assert!(node.name == None);
+    assert!(node.path == "node".to_str());
+    assert!(node.attributes.len() == 0);
+    assert!(node.subnodes.len() == 0);
   });
 }
 

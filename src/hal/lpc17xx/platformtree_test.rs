@@ -51,7 +51,7 @@ fn builds_clock_init() {
         "{
           use zinc::hal::lpc17xx::init;
           init::init_clock(
-              init::Clock {
+              &init::Clock {
                 source: init::Main(12000000),
                 pll: init::PLL0 {
                   enabled: true,
