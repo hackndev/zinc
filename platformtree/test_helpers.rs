@@ -15,7 +15,8 @@
 
 use std::gc::Gc;
 use syntax::ast;
-use syntax::codemap::{Span, CodeMap};
+use syntax::codemap::{CodeMap, Span, mk_sp, BytePos, ExpnInfo, NameAndSpan};
+use syntax::codemap::MacroBang;
 use syntax::codemap;
 use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler, mk_handler};
 use syntax::ext::base::ExtCtxt;
@@ -67,6 +68,14 @@ pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<node::
     crate_id: from_str("test").unwrap(),
   };
   let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
+  cx.bt_push(ExpnInfo {
+    call_site: mk_sp(BytePos(0), BytePos(0)),
+    callee: NameAndSpan {
+      name: "platformtree".to_str(),
+      format: MacroBang,
+      span: None,
+    },
+  });
   let tts = cx.parse_tts(src.to_str());
 
   let nodes = Parser::new(&mut cx, tts.as_slice()).parse_platformtree();

@@ -17,7 +17,7 @@ use std::gc::{Gc, GC};
 use syntax::abi;
 use syntax::ast;
 use syntax::ast_util::empty_generics;
-use syntax::codemap::{Span, mk_sp, BytePos, ExpnInfo, NameAndSpan, MacroBang};
+use syntax::codemap::{Span, mk_sp, BytePos};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token::InternedString;
@@ -134,15 +134,6 @@ pub fn build_platformtree(cx: &mut ExtCtxt, pt: &node::PlatformTree) -> Builder 
 }
 
 fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
-  cx.bt_push(ExpnInfo {
-    call_site: node.name_span,
-    callee: NameAndSpan {
-      name: "platformtree".to_str(),
-      format: MacroBang,
-      span: None,
-    },
-  });
-
   match node.name {
     Some(ref name) => {
       match name.as_slice() {
@@ -158,20 +149,9 @@ fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
           "`mcu` node must have a name");
     },
   }
-
-  cx.bt_pop();
 }
 
 fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
-  cx.bt_push(ExpnInfo {
-    call_site: node.name_span,
-    callee: NameAndSpan {
-      name: "platformtree".to_str(),
-      format: MacroBang,
-      span: None,
-    },
-  });
-
   if !node.expect_no_attributes(cx) ||
      !node.expect_subnodes(cx, ["single_task"]) {
     return;
@@ -187,8 +167,6 @@ fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
           "subnode `single_task` must be present");
     }
   }
-
-  cx.bt_pop();
 }
 
 fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
