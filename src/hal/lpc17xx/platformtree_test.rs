@@ -13,17 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use builder::build_platformtree;
+use builder::{Builder, build_platformtree};
+use lpc17xx_pt;
 use test_helpers::{assert_equal_source, with_parsed, fails_to_build};
-
-#[test]
-fn builds_stack_data_init() {
-  with_parsed("lpc17xx@mcu;", |cx, failed, pt| {
-    let builder = build_platformtree(cx, pt);
-    assert!(unsafe{*failed} == false);
-    assert!(builder.main_stmts.len() == 0);
-  });
-}
 
 #[test]
 fn fails_to_parse_garbage_attrs() {
@@ -32,18 +24,18 @@ fn fails_to_parse_garbage_attrs() {
 
 #[test]
 fn builds_clock_init() {
-  with_parsed("lpc17xx@mcu {
-      clock {
-        source = \"main-oscillator\";
-        source_frequency = 12_000_000;
-        pll {
-          m = 50;
-          n = 3;
-          divisor = 4;
-        }
+  with_parsed("
+    clock {
+      source = \"main-oscillator\";
+      source_frequency = 12_000_000;
+      pll {
+        m = 50;
+        n = 3;
+        divisor = 4;
       }
     }", |cx, failed, pt| {
-    let builder = build_platformtree(cx, pt);
+    let mut builder = Builder::new();
+    lpc17xx_pt::build_clock(&mut builder, cx, pt.get_by_path("clock").unwrap());
     assert!(unsafe{*failed} == false);
     assert!(builder.main_stmts.len() == 1);
 
