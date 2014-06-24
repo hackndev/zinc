@@ -72,7 +72,7 @@ fn builds_single_task_with_args() {
     assert!(builder.type_items.len() == 1);
 
     assert_equal_source(&cx.stmt_item(DUMMY_SP, *builder.type_items.get(0)),
-        "struct run_args<'a> {
+        "pub struct run_args<'a> {
           pub a: u32,
           pub b: &'static str,
           pub c: &'a hello::world::Struct,
@@ -80,7 +80,7 @@ fn builds_single_task_with_args() {
 
     assert_equal_source(builder.main_stmts.get(0),
         "loop {
-          run(run_args {
+          run(&pt::run_args {
             a: 1u,
             b: \"a\",
             c: &named,

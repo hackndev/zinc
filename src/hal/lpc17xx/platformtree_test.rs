@@ -130,6 +130,7 @@ fn builds_gpio() {
             direction: hal::gpio::Out,
           };
           conf.pin.setup();
+          conf
         };");
     assert_equal_source(builder.main_stmts.get(1),
         "let pin = pin_conf.setup();");
