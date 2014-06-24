@@ -38,9 +38,9 @@ pub struct C12332<'a, S, T> {
   spi: &'a S,
   timer: &'a T,
 
-  dc:    GPIO<'a>,
-  cs:    GPIO<'a>,
-  reset: GPIO<'a>,
+  dc:    GPIO,
+  cs:    GPIO,
+  reset: GPIO,
 
   videobuf: [cell::Cell<u8>, ..512],
 

@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::cell::Cell;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 use syntax::codemap::Span;
@@ -59,6 +60,8 @@ pub struct Node {
 
   pub attributes: HashMap<String, Attribute>,
   pub subnodes: HashMap<String, Gc<Node>>,
+
+  pub type_name: Cell<Option<&'static str>>,
 }
 
 impl Node {
@@ -71,6 +74,7 @@ impl Node {
       path_span: path_span,
       attributes: HashMap::new(),
       subnodes: HashMap::new(),
+      type_name: Cell::new(None),
     }
   }
 

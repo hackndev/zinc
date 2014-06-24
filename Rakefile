@@ -116,4 +116,4 @@ app_tasks = Context.instance.applications.map do |a|
 end
 
 desc "Build all applications"
-task :build_all => [:build_empty]
+task :build_all => [:build_empty, :build_blink]

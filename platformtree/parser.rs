@@ -24,7 +24,7 @@ use node;
 
 pub struct Parser<'a> {
   pub sess: &'a ParseSess,
-  reader: Box<lexer::Reader:>,
+  reader: Box<lexer::Reader>,
   token: token::Token,
   span: Span,
 
@@ -56,7 +56,7 @@ impl<'a> Parser<'a> {
   }
 
   /// Parse the platform tree from passed in tokens.
-  pub fn parse_platformtree(&mut self) -> Option<node::PlatformTree> {
+  pub fn parse_platformtree(&mut self) -> Option<Gc<node::PlatformTree>> {
     let mut nodes: HashMap<String, Gc<node::Node>> = HashMap::new();
     let mut failed = false;
     loop {
@@ -91,7 +91,7 @@ impl<'a> Parser<'a> {
     } else {
       let mut map = HashMap::new();
       if self.collect_node_names(&mut map, &nodes) {
-        Some(node::PlatformTree::new(nodes, map))
+        Some(box(GC) node::PlatformTree::new(nodes, map))
       } else {
         None
       }

@@ -15,15 +15,15 @@
 
 use std::gc::Gc;
 use syntax::ast;
-use syntax::codemap::{CodeMap, Span, mk_sp, BytePos, ExpnInfo, NameAndSpan};
 use syntax::codemap::MacroBang;
+use syntax::codemap::{CodeMap, Span, mk_sp, BytePos, ExpnInfo, NameAndSpan};
 use syntax::codemap;
 use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler, mk_handler};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
-use syntax::ext::quote::rt::ToSource;
 use syntax::parse::new_parse_sess_special_handler;
+use syntax::print::pprust;
 
 use builder::build_platformtree;
 use node;
@@ -43,7 +43,7 @@ pub fn fails_to_build(src: &str) {
   });
 }
 
-pub fn with_parsed(src: &str, block: |&mut ExtCtxt, *mut bool, &node::PlatformTree|) {
+pub fn with_parsed(src: &str, block: |&mut ExtCtxt, *mut bool, &Gc<node::PlatformTree>|) {
   with_parsed_tts(src, |cx, failed, pt| {
     assert!(unsafe{*failed} == false);
     block(cx, failed, &pt.unwrap());
@@ -56,7 +56,7 @@ pub fn with_parsed_node(name: &str, src: &str, block: |&Gc<node::Node>|) {
   });
 }
 
-pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<node::PlatformTree>|) {
+pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<Gc<node::PlatformTree>>|) {
   let mut failed = false;
   let failptr = &mut failed as *mut bool;
   let ce = box CustomEmmiter::new(failptr);
@@ -78,9 +78,9 @@ pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<node::
   });
   let tts = cx.parse_tts(src.to_str());
 
-  let nodes = Parser::new(&mut cx, tts.as_slice()).parse_platformtree();
+  let pt = Parser::new(&mut cx, tts.as_slice()).parse_platformtree();
 
-  block(&mut cx, failptr, nodes);
+  block(&mut cx, failptr, pt);
 }
 
 struct CustomEmmiter {
@@ -107,10 +107,7 @@ impl Emitter for CustomEmmiter {
 }
 
 pub fn assert_equal_source(stmt: &Gc<ast::Stmt>, src: &str) {
-  let gen_src = match stmt.node {
-    ast::StmtExpr(e, _) | ast::StmtSemi(e, _) => e.to_source(),
-    _ => fail!(),
-  };
+  let gen_src = pprust::stmt_to_str(stmt.deref());
   println!("generated: {}", gen_src);
   println!("expected:  {}", src);
 

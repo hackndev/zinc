@@ -20,14 +20,14 @@
 
 extern crate rustc;
 extern crate syntax;
-extern crate debug;
 extern crate platformtree;
 
-use std::gc::Gc;
 use rustc::plugin::Registry;
+use std::gc::Gc;
 use syntax::ast;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult};
+use syntax::print::pprust;
 use syntax::util::small_vector::SmallVector;
 
 use platformtree::parser::Parser;
@@ -36,6 +36,7 @@ use platformtree::builder::build_platformtree;
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("platformtree", macro_platformtree);
+  reg.register_macro("platformtree_verbose", macro_platformtree_verbose);
 }
 
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
@@ -45,6 +46,19 @@ pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
 
   let items = builder.emit_items(cx);
   MacItems::new(items)
+}
+
+
+pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
+    tts: &[ast::TokenTree]) -> Box<MacResult> {
+  let result = macro_platformtree(cx, sp, tts);
+
+  println!("Platform Tree dump:")
+  for i in result.make_items().unwrap().as_slice().iter() {
+    println!("{}", pprust::item_to_str(i.deref()));
+  }
+
+  result
 }
 
 pub struct MacItems {

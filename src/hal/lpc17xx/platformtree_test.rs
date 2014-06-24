@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use builder::{Builder, build_platformtree};
+use builder::Builder;
 use lpc17xx_pt;
 use test_helpers::{assert_equal_source, with_parsed, fails_to_build};
 
@@ -34,7 +34,7 @@ fn builds_clock_init() {
         divisor = 4;
       }
     }", |cx, failed, pt| {
-    let mut builder = Builder::new();
+    let mut builder = Builder::new(pt);
     lpc17xx_pt::build_clock(&mut builder, cx, pt.get_by_path("clock").unwrap());
     assert!(unsafe{*failed} == false);
     assert!(builder.main_stmts.len() == 1);
@@ -53,7 +53,7 @@ fn builds_clock_init() {
                 },
               }
           );
-        }");
+        };");
   });
 }
 
@@ -75,4 +75,63 @@ fn fails_to_parse_no_pll_clock() {
     source = \"main-oscillator\";
     source_frequency = 12_000_000;
   }}");
+}
+
+#[test]
+fn builds_timer() {
+  with_parsed("
+    timer {
+      tim@1 {
+        counter = 25;
+        divisor = 4;
+      }
+    }", |cx, failed, pt| {
+    let mut builder = Builder::new(pt);
+    lpc17xx_pt::build_timer(&mut builder, cx, pt.get_by_path("timer").unwrap());
+    assert!(unsafe{*failed} == false);
+    assert!(builder.main_stmts.len() == 1);
+
+    assert_equal_source(builder.main_stmts.get(0),
+        "let tim = {
+          use zinc::hal::lpc17xx::timer;
+          let conf = timer::TimerConf {
+            timer: timer::Timer1,
+            counter: 25u32,
+            divisor: 4u8,
+          };
+          conf.setup()
+        };");
+  });
+}
+
+#[test]
+fn builds_gpio() {
+  with_parsed("
+    gpio {
+      1 {
+        pin@2 { direction = \"out\"; }
+      }
+    }", |cx, failed, pt| {
+    let mut builder = Builder::new(pt);
+    lpc17xx_pt::build_gpio(&mut builder, cx, pt.get_by_path("gpio").unwrap());
+    assert!(unsafe{*failed} == false);
+    assert!(builder.main_stmts.len() == 2);
+
+    assert_equal_source(builder.main_stmts.get(0),
+        "let pin_conf = {
+          use zinc::hal;
+          use zinc::hal::lpc17xx::{pin, gpio};
+          let conf = gpio::GPIOConf {
+            pin: pin::PinConf {
+              port: pin::Port1,
+              pin: 2u8,
+              function: pin::GPIO,
+            },
+            direction: hal::gpio::Out,
+          };
+          conf.pin.setup();
+        };");
+    assert_equal_source(builder.main_stmts.get(1),
+        "let pin = pin_conf.setup();");
+  });
 }

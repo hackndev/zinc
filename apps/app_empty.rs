@@ -1,7 +1,6 @@
-#![feature(asm)]
+#![feature(phase, asm)]
 #![crate_type="staticlib"]
 #![no_std]
-#![feature(phase)]
 
 extern crate zinc;
 #[phase(plugin)] extern crate macro_platformtree;
@@ -28,7 +27,5 @@ platformtree!(
 
 #[no_split_stack]
 fn run() {
-  loop {
-    unsafe { asm!("nop") }
-  }
+  unsafe { asm!("nop") }
 }

@@ -23,7 +23,7 @@ use hal::timer::Timer;
 ///
 /// TODO(farcaller): this driver doesn't conform to zinc's xxxConf layout.
 pub struct DHT22<'a, T> {
-  gpio: GPIO<'a>,
+  gpio: GPIO,
   timer: &'a T,
 }
 
