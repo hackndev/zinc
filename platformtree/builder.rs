@@ -219,7 +219,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     let v = node.attributes.get(k);
 
     let (ty, val) = match v.value {
-      node::UIntValue(i) =>
+      node::IntValue(i) =>
         (cx.ty_ident(DUMMY_SP, cx.ident_of("u32")),
             quote_expr!(&*cx, $i)),
       node::StrValue(ref string)  => {

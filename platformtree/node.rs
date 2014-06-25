@@ -21,7 +21,7 @@ use syntax::ext::base::ExtCtxt;
 
 #[deriving(Show)]
 pub enum AttributeValue {
-  UIntValue(uint),
+  IntValue(uint),
   StrValue(String),
   RefValue(String),
 }
@@ -91,7 +91,7 @@ impl Node {
 
   pub fn get_int_attr(&self, key: &str) -> Option<uint> {
     self.attributes.find(&key.to_str()).and_then(|av| match av.value {
-      UIntValue(ref u) => Some(*u),
+      IntValue(ref u) => Some(*u),
       _ => None,
     })
   }

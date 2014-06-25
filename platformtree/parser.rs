@@ -317,7 +317,7 @@ impl<'a> Parser<'a> {
       },
       token::LIT_INT_UNSUFFIXED(intval) => {
         self.bump();
-        Some(node::UIntValue(intval as uint))
+        Some(node::IntValue(intval as uint))
       },
       token::BINOP(token::AND) => {
         self.bump();
