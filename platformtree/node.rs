@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 use syntax::codemap::Span;
@@ -22,7 +22,7 @@ use syntax::ext::base::ExtCtxt;
 /// Holds a value for an attribute.
 ///
 /// The value can be an unsigned integer, string or reference.
-#[deriving(Show)]
+#[deriving(Clone)]
 pub enum AttributeValue {
   IntValue(uint),
   StrValue(String),
@@ -43,7 +43,7 @@ pub enum AttributeType {
 ///
 /// Stored inside of a HashMap, the key to HashMap is the attribute name.
 /// Provides spans for both key and value.
-#[deriving(Show)]
+#[deriving(Clone)]
 pub struct Attribute {
   pub value: AttributeValue,
   pub key_span: Span,
@@ -67,7 +67,6 @@ impl Attribute {
 /// path_span. Attributes are stored by name, subnodes are stored by path.
 /// Type_name, if present, must specify the type path for the node's
 /// materialized object.
-#[deriving(Show)]
 pub struct Node {
   pub name: Option<String>,
   pub name_span: Span,
@@ -75,7 +74,7 @@ pub struct Node {
   pub path: String,
   pub path_span: Span,
 
-  pub attributes: HashMap<String, Attribute>,
+  pub attributes: RefCell<HashMap<String, Attribute>>,
   pub subnodes: HashMap<String, Gc<Node>>,
 
   pub type_name: Cell<Option<&'static str>>,
@@ -89,22 +88,22 @@ impl Node {
       name_span: name_span,
       path: path,
       path_span: path_span,
-      attributes: HashMap::new(),
+      attributes: RefCell::new(HashMap::new()),
       subnodes: HashMap::new(),
       type_name: Cell::new(None),
     }
   }
 
   /// Returns attribute by name or fail!()s.
-  pub fn get_attr<'a>(&'a self, key: &str) -> &'a Attribute {
-    self.attributes.get(&key.to_str())
+  pub fn get_attr(&self, key: &str) -> Attribute {
+    self.attributes.borrow().get(&key.to_str()).clone()
   }
 
   /// Returns a string attribute by name or None, if it's not present or not of
   /// a StringAttribute type.
-  pub fn get_string_attr<'a>(&'a self, key: &str) -> Option<&'a String> {
-    self.attributes.find(&key.to_str()).and_then(|av| match av.value {
-      StrValue(ref s) => Some(s),
+  pub fn get_string_attr(&self, key: &str) -> Option<String> {
+    self.attributes.borrow().find(&key.to_str()).and_then(|av| match av.value {
+      StrValue(ref s) => Some(s.clone()),
       _ => None,
     })
   }
@@ -112,7 +111,7 @@ impl Node {
   /// Returns an integer attribute by name or None, if it's not present or not
   /// of an IntAttribute type.
   pub fn get_int_attr(&self, key: &str) -> Option<uint> {
-    self.attributes.find(&key.to_str()).and_then(|av| match av.value {
+    self.attributes.borrow().find(&key.to_str()).and_then(|av| match av.value {
       IntValue(ref u) => Some(*u),
       _ => None,
     })
@@ -120,9 +119,9 @@ impl Node {
 
   /// Returns a reference attribute by name or None, if it's not present or not
   /// of a RefAttribute type.
-  pub fn get_ref_attr<'a>(&'a self, key: &str) -> Option<&'a String> {
-    self.attributes.find(&key.to_str()).and_then(|av| match av.value {
-      RefValue(ref s) => Some(s),
+  pub fn get_ref_attr(&self, key: &str) -> Option<String> {
+    self.attributes.borrow().find(&key.to_str()).and_then(|av| match av.value {
+      RefValue(ref s) => Some(s.clone()),
       _ => None,
     })
   }
@@ -130,8 +129,8 @@ impl Node {
   /// Returns a string attribute by name or None, if it's not present or not of
   /// a StringAttribute type. Reports a parser error if an attribute is
   /// missing.
-  pub fn get_required_string_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
-      -> Option<&'a String> {
+  pub fn get_required_string_attr(&self, cx: &ExtCtxt, key: &str)
+      -> Option<String> {
     match self.get_string_attr(key) {
       Some(val) => Some(val),
       None => {
@@ -146,7 +145,7 @@ impl Node {
   /// Returns an integer attribute by name or None, if it's not present or not
   /// of an IntAttribute type. Reports a parser error if an attribute is
   /// missing.
-  pub fn get_required_int_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
+  pub fn get_required_int_attr(&self, cx: &ExtCtxt, key: &str)
       -> Option<uint> {
     match self.get_int_attr(key) {
       Some(val) => Some(val),
@@ -162,8 +161,8 @@ impl Node {
   /// Returns a reference attribute by name or None, if it's not present or not
   /// of a RefAttribute type. Reports a parser error if an attribute is
   /// missing.
-  pub fn get_required_ref_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
-      -> Option<&'a String> {
+  pub fn get_required_ref_attr(&self, cx: &ExtCtxt, key: &str)
+      -> Option<String> {
     match self.get_ref_attr(key) {
       Some(val) => Some(val),
       None => {
@@ -179,7 +178,7 @@ impl Node {
   /// error for each found attribute otherwise.
   pub fn expect_no_attributes(&self, cx: &ExtCtxt) -> bool {
     let mut ok = true;
-    for (_, v) in self.attributes.iter() {
+    for (_, v) in self.attributes.borrow().iter() {
       ok = false;
       cx.parse_sess().span_diagnostic.span_err(v.key_span,
           "no attributes expected");
@@ -245,7 +244,6 @@ impl Node {
 ///
 /// Root nodes are stored by path in `nodes`, All the nmaed nodes are also
 /// stored by name in `named`.
-#[deriving(Show)]
 pub struct PlatformTree {
   nodes: HashMap<String, Gc<Node>>,
   named: HashMap<String, Gc<Node>>,

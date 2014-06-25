@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::cell::RefCell;
 use std::collections::hashmap::HashMap;
 use std::gc::{Gc, GC};
 use syntax::ast::TokenTree;
@@ -212,7 +213,7 @@ impl<'a> Parser<'a> {
     }
 
     let mut node = node::Node::new(node_name, node_span, node_path, node_path_span);
-    node.attributes = attributes;
+    node.attributes = RefCell::new(attributes);
     node.subnodes = subnodes;
     Some(node)
   }

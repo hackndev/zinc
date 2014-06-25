@@ -51,7 +51,7 @@ fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
     Some(loop_fn) => {
       let args_node = node.get_by_path("args");
       let args = match args_node.and_then(|args| {
-        Some(build_args(builder, cx, loop_fn, args))
+        Some(build_args(builder, cx, &loop_fn, args))
       }) {
         None => vec!(),
         Some(arg) => vec!(arg),
@@ -72,15 +72,16 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     struct_name: &String, node: &Gc<node::Node>) -> Gc<ast::Expr> {
   let mut fields = Vec::new();
   let mut expr_fields = Vec::new();
+  let node_attr = node.attributes.borrow();
 
   // this is a bit slower than for (k, v) in node.attributes.iter(), but we need
   // to preserve sort order to make reasonably simple test code
   let mut all_keys = Vec::new();
-  for k in node.attributes.keys() { all_keys.push(k.clone()) };
+  for k in node_attr.keys() { all_keys.push(k.clone()) };
   all_keys.sort();
 
   for k in all_keys.iter() {
-    let v = node.attributes.get(k);
+    let v = node_attr.get(k);
 
     let (ty, val) = match v.value {
       node::IntValue(i) =>
