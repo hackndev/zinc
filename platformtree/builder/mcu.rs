@@ -13,21 +13,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Platform tree operations crate
+use std::gc::Gc;
+use syntax::ext::base::ExtCtxt;
 
-#![feature(quote)]
-#![crate_id="platformtree"]
-#![crate_type="rlib"]
+use lpc17xx_pt;
+use node;
 
-extern crate syntax;
+use super::Builder;
 
-pub mod node;
-pub mod parser;
-pub mod builder;
-
-#[path="../src/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
-#[cfg(test)]
-#[path="../src/hal/lpc17xx/platformtree_test.rs"] mod lpc17xx_pt_test;
-
-#[cfg(test)] mod test_helpers;
-#[cfg(test)] mod parser_test;
+pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
+  match node.name {
+    Some(ref name) => {
+      match name.as_slice() {
+        "lpc17xx" => lpc17xx_pt::build_mcu(builder, cx, node),
+        other => {
+          cx.parse_sess().span_diagnostic.span_err(node.name_span,
+              format!("unknown mcu `{}`", other).as_slice());
+        },
+      }
+    },
+    None => {
+      cx.parse_sess().span_diagnostic.span_err(node.name_span,
+          "`mcu` node must have a name");
+    },
+  }
+}

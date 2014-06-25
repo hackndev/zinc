@@ -14,153 +14,17 @@
 // limitations under the License.
 
 use std::gc::{Gc, GC};
-use syntax::abi;
-use syntax::ast::TokenTree;
 use syntax::ast;
-use syntax::ast_util::empty_generics;
-use syntax::codemap::{Span, respan, DUMMY_SP};
+use syntax::codemap::{respan, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 use syntax::owned_slice::OwnedSlice;
-use syntax::parse::token::{InternedString, intern};
+use syntax::parse::token::intern;
 
-use lpc17xx_pt;
 use node;
 
-pub struct Builder {
-  pub main_stmts: Vec<Gc<ast::Stmt>>,
-  pub type_items: Vec<Gc<ast::Item>>,
-  pub pt: Gc<node::PlatformTree>,
-}
-
-impl Builder {
-  pub fn new(pt: &Gc<node::PlatformTree>) -> Builder {
-    Builder {
-      main_stmts: Vec::new(),
-      type_items: Vec::new(),
-      pt: *pt,
-    }
-  }
-
-  pub fn add_main_statement(&mut self, stmt: Gc<ast::Stmt>) {
-    self.main_stmts.push(stmt);
-  }
-
-  pub fn add_type_item(&mut self, item: Gc<ast::Item>) {
-    self.type_items.push(item);
-  }
-
-  fn emit_main(&self, cx: &ExtCtxt) -> Gc<ast::Item> {
-    // init stack
-    let init_stack_stmt = cx.stmt_expr(quote_expr!(&*cx,
-        zinc::hal::mem_init::init_stack();
-    ));
-
-    // init data
-    let init_data_stmt = cx.stmt_expr(quote_expr!(&*cx,
-        zinc::hal::mem_init::init_data();
-    ));
-
-    let mut stmts = vec!(init_stack_stmt, init_data_stmt);
-    stmts = stmts.append(self.main_stmts.as_slice());
-
-    let empty_span = DUMMY_SP; // TODO(farcaller): fix span
-    let body = cx.block(empty_span, stmts, None);
-
-    self.item_fn(cx, empty_span, "main", body)
-  }
-
-  fn emit_morestack(&self, cx: &ExtCtxt) -> Gc<ast::Item> {
-    let stmt = cx.stmt_expr(quote_expr!(&*cx,
-        core::intrinsics::abort()
-        // or
-        // zinc::os::task::morestack();
-    ));
-    let empty_span = DUMMY_SP;
-    let body = cx.block(empty_span, vec!(stmt), None);
-    self.item_fn(cx, empty_span, "__morestack", body)
-  }
-
-  pub fn emit_items(&self, cx: &ExtCtxt) -> Vec<Gc<ast::Item>> {
-    let non_camel_case_types = cx.meta_word(DUMMY_SP,
-        InternedString::new("non_camel_case_types"));
-    let allow = cx.meta_list(
-        DUMMY_SP,
-        InternedString::new("allow"), vec!(non_camel_case_types));
-    let allow_noncamel = cx.attribute(DUMMY_SP, allow);
-    let use_zinc = cx.view_use_simple(DUMMY_SP, ast::Inherited, cx.path_ident(
-        DUMMY_SP, cx.ident_of("zinc")));
-    let pt_mod_item = cx.item_mod(DUMMY_SP, DUMMY_SP, cx.ident_of("pt"),
-        vec!(allow_noncamel), vec!(use_zinc), self.type_items.clone());
-
-    vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx))
-  }
-
-  fn item_fn(&self, cx: &ExtCtxt, span: Span, name: &str,
-      body: ast::P<ast::Block>) -> Gc<ast::Item> {
-    let attr_no_mangle = cx.attribute(span, cx.meta_word(
-        span, InternedString::new("no_mangle")));
-    let attr_no_split_stack = cx.attribute(span, cx.meta_word(
-        span, InternedString::new("no_split_stack")));
-
-    box(GC) ast::Item {
-      ident: cx.ident_of(name),
-      attrs: vec!(attr_no_mangle, attr_no_split_stack),
-      id: ast::DUMMY_NODE_ID,
-      node: ast::ItemFn(
-          cx.fn_decl(Vec::new(), cx.ty_nil()),
-          ast::UnsafeFn,
-          abi::Rust, // TODO(farcaller): should this be abi::C?
-          empty_generics(),
-          body),
-      vis: ast::Public,
-      span: span,
-    }
-  }
-}
-
-pub fn build_platformtree(cx: &mut ExtCtxt, pt: &Gc<node::PlatformTree>) -> Builder {
-  let mut builder = Builder::new(pt);
-
-  if !pt.expect_subnodes(cx, ["mcu", "os"]) {
-    return builder;  // TODO(farcaller): report error?
-  }
-
-  match pt.get_by_path("mcu") {
-    Some(node) => build_mcu(&mut builder, cx, node),
-    None => (),  // TODO(farcaller): should it actaully fail?
-  }
-
-  match pt.get_by_path("os") {
-    Some(node) => build_os(&mut builder, cx, node),
-    None => {
-      // TODO(farcaller): provide span for whole PT?
-      cx.parse_sess().span_diagnostic.span_err(DUMMY_SP,
-          "root node `os` must be present");
-    }
-  }
-
-  builder
-}
-
-fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
-  match node.name {
-    Some(ref name) => {
-      match name.as_slice() {
-        "lpc17xx" => lpc17xx_pt::build_mcu(builder, cx, node),
-        other => {
-          cx.parse_sess().span_diagnostic.span_err(node.name_span,
-              format!("unknown mcu `{}`", other).as_slice());
-        },
-      }
-    },
-    None => {
-      cx.parse_sess().span_diagnostic.span_err(node.name_span,
-          "`mcu` node must have a name");
-    },
-  }
-}
+use super::{Builder, TokenString};
 
 pub fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
   if !node.expect_no_attributes(cx) ||
@@ -286,20 +150,72 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str) -> ast::Path {
   cx.path(DUMMY_SP, ty.split_str("::").map(|t| cx.ident_of(t)).collect())
 }
 
-pub struct TokenString {
-  pub s: String,
-}
+#[cfg(test)]
+mod test {
+  use syntax::codemap::DUMMY_SP;
+  use syntax::ext::build::AstBuilder;
 
-impl TokenString {
-  pub fn new(s: String) -> TokenString {
-    TokenString {
-      s: s,
-    }
+  use builder::Builder;
+  use super::build_os;
+  use test_helpers::{assert_equal_source, with_parsed};
+
+  #[test]
+  fn builds_single_task_os_loop() {
+    with_parsed("os {
+        single_task {
+          loop = \"run\";
+        }
+      }", |cx, failed, pt| {
+      let mut builder = Builder::new(pt);
+      build_os(&mut builder, cx, pt.get_by_path("os").unwrap());
+      assert!(unsafe{*failed} == false);
+      assert!(builder.main_stmts.len() == 1);
+
+      assert_equal_source(builder.main_stmts.get(0),
+          "loop {
+            run();
+          }");
+    });
   }
-}
 
-impl ToTokens for TokenString {
-  fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
-    (cx as &ExtParseUtils).parse_tts(self.s.clone())
+  #[test]
+  fn builds_single_task_with_args() {
+    with_parsed("os {
+        single_task {
+          loop = \"run\";
+          args {
+            a = 1;
+            b = \"a\";
+            c = &named;
+          }
+        }
+      }
+
+      named@ref;
+      ", |cx, failed, pt| {
+      let mut builder = Builder::new(pt);
+      pt.get_by_path("ref").unwrap().type_name.set(Some("hello::world::Struct"));
+
+      build_os(&mut builder, cx, pt.get_by_path("os").unwrap());
+      assert!(unsafe{*failed} == false);
+      assert!(builder.main_stmts.len() == 1);
+      assert!(builder.type_items.len() == 1);
+
+      assert_equal_source(&cx.stmt_item(DUMMY_SP, *builder.type_items.get(0)),
+          "pub struct run_args<'a> {
+            pub a: u32,
+            pub b: &'static str,
+            pub c: &'a hello::world::Struct,
+          }");
+
+      assert_equal_source(builder.main_stmts.get(0),
+          "loop {
+            run(&pt::run_args {
+              a: 1u,
+              b: \"a\",
+              c: &named,
+            });
+          }");
+    });
   }
 }
