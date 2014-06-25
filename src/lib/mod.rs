@@ -17,7 +17,7 @@
 
 pub mod strconv;
 pub mod volatile_cell;
-pub mod shared;
-pub mod queue;
+#[cfg(cfg_multitasking)] pub mod shared;
+#[cfg(cfg_multitasking)] pub mod queue;
 
 mod lang_items;
