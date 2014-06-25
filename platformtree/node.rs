@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::cell::Cell;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 use syntax::codemap::Span;
@@ -59,6 +60,8 @@ pub struct Node {
 
   pub attributes: HashMap<String, Attribute>,
   pub subnodes: HashMap<String, Gc<Node>>,
+
+  pub type_name: Cell<Option<&'static str>>,
 }
 
 impl Node {
@@ -71,6 +74,7 @@ impl Node {
       path_span: path_span,
       attributes: HashMap::new(),
       subnodes: HashMap::new(),
+      type_name: Cell::new(None),
     }
   }
 
@@ -159,7 +163,7 @@ impl Node {
   }
 
   pub fn expect_attributes(&self, cx: &ExtCtxt,
-      expectations: Vec<(&str, AttributeType)>) -> bool {
+      expectations: &[(&str, AttributeType)]) -> bool {
     let mut ok = true;
     for &(n, ref t) in expectations.iter() {
       match t {
@@ -172,6 +176,19 @@ impl Node {
         &RefAttribute => {
           if self.get_required_ref_attr(cx, n).is_none() {ok = false}
         },
+      }
+    }
+    ok
+  }
+
+  pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
+    let mut ok = true;
+    for (path, sub) in self.subnodes.iter() {
+      if !expectations.contains(&path.as_slice()) {
+        ok = false;
+        cx.parse_sess().span_diagnostic.span_err(sub.path_span,
+            format!("unknown subnode `{}` in node `{}`",
+                path, self.path).as_slice());
       }
     }
     ok
@@ -201,21 +218,17 @@ impl PlatformTree {
     self.named.find(&name.to_str())
   }
 
-  pub fn get<'a>(&'a self, name: &str) -> Option<&'a Gc<Node>> {
+  pub fn get_by_path<'a>(&'a self, name: &str) -> Option<&'a Gc<Node>> {
     self.nodes.find(&name.to_str())
   }
 
   pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
     let mut ok = true;
-    for (_, sub) in self.nodes.iter() {
-      // TODO(farcaller): fix this code
-      let some_name: Option<String> = sub.name.clone();
-      let name = some_name.unwrap();
-      let name_slice = name.as_slice();
-      if !expectations.contains(&name_slice) {
+    for (path, sub) in self.nodes.iter() {
+      if !expectations.contains(&path.as_slice()) {
         ok = false;
-        cx.parse_sess().span_diagnostic.span_err(sub.name_span,
-            format!("unknown root node `{}`", name).as_slice());
+        cx.parse_sess().span_diagnostic.span_err(sub.path_span,
+            format!("unknown root node `{}`", path).as_slice());
       }
     }
     ok

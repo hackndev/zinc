@@ -23,23 +23,55 @@ extern crate syntax;
 extern crate platformtree;
 
 use rustc::plugin::Registry;
-use syntax::ast::TokenTree;
+use std::gc::Gc;
+use syntax::ast;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult};
-use syntax::ext::base;
-use syntax::ext::quote::rt::{ToTokens, ToSource, ExtParseUtils};
+use syntax::print::pprust;
+use syntax::util::small_vector::SmallVector;
 
 use platformtree::parser::Parser;
-use platformtree::context;
+use platformtree::builder::build_platformtree;
 
-/// Register available macros.
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
-  reg.register_macro("platformtree_parse", platformtree_parse);
+  reg.register_macro("platformtree", macro_platformtree);
+  reg.register_macro("platformtree_verbose", macro_platformtree_verbose);
 }
 
-/// platformtree_parse parses a platfrom tree into node::Node struct.
-pub fn platformtree_parse(cx: &mut ExtCtxt, _: Span, tts: &[TokenTree])
+pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     -> Box<MacResult> {
-  base::MacExpr::new(quote_expr!(&*cx, true))
+  let pt = Parser::new(cx, tts).parse_platformtree();
+  let builder = build_platformtree(cx, &pt.unwrap());
+
+  let items = builder.emit_items(cx);
+  MacItems::new(items)
+}
+
+
+pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
+    tts: &[ast::TokenTree]) -> Box<MacResult> {
+  let result = macro_platformtree(cx, sp, tts);
+
+  println!("Platform Tree dump:")
+  for i in result.make_items().unwrap().as_slice().iter() {
+    println!("{}", pprust::item_to_str(i.deref()));
+  }
+
+  result
+}
+
+pub struct MacItems {
+  items: Vec<Gc<ast::Item>>
+}
+
+impl MacItems {
+  pub fn new(items: Vec<Gc<ast::Item>>) -> Box<MacResult> {
+    box MacItems { items: items } as Box<MacResult>
+  }
+}
+impl MacResult for MacItems {
+  fn make_items(&self) -> Option<SmallVector<Gc<ast::Item>>> {
+    Some(SmallVector::many(self.items.clone()))
+  }
 }

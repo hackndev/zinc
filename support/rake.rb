@@ -32,6 +32,7 @@ def compile_rust(n, h)
   crate_type = h[:crate_type] ? "--crate-type #{h[:crate_type]}" : ""
   ignore_warnings = h[:ignore_warnings] ? h[:ignore_warnings] : []
   ignore_warnings = ignore_warnings.map { |w| "-A #{w}" }.join(' ')
+  more_flags = h[:flags] || ""
 
   declared_deps = h[:deps]
   rust_src = h[:source]
@@ -77,6 +78,7 @@ def compile_rust(n, h)
     flags = :rustcflags.in_env.join(' ')
     flags += ' ' + :rustcflags_cross.in_env.join(' ') unless build_for_host
     flags += ' --test' if is_test
+    flags += ' ' + more_flags
 
     if optimize
       flags.gsub!(/--opt-level \d/, "--opt-level #{optimize}")
@@ -134,6 +136,7 @@ end
 
 def rust_tests(n, h)
   h[:test] = true
+  h[:flags] = '-g'
   compile_rust n, h
   run_task = Rake::Task.define_task("run_#{n}".to_sym => h[:produce]) do |t|
     sh t.prerequisites.first

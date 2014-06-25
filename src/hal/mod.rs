@@ -21,13 +21,13 @@ and each such struct has a `setup()` method that configures the hardware
 (returning the object to interact with it where applicable).
 */
 
-mod mem_init;
 
 #[cfg(mcu_lpc17xx)] pub mod lpc17xx;
 #[cfg(mcu_stm32f4)] pub mod stm32f4;
 
 #[cfg(arch_cortex_m3)] pub mod cortex_m3;
 
+pub mod mem_init;
 pub mod gpio;
 pub mod init;
 pub mod pin;

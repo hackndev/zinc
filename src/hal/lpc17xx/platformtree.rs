@@ -16,10 +16,8 @@
 use std::gc::Gc;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
-use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
-use syntax::ast::TokenTree;
 
-use builder::Builder;
+use builder::{Builder, TokenString};
 use node;
 
 pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
@@ -27,34 +25,31 @@ pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
   if !node.expect_no_attributes(cx) {
     return;
   }
-  // init stack
-  builder.add_main_statement(cx.stmt_expr(quote_expr!(&*cx,
-      {
-        use zinc::hal::stack;
-        extern { static _eglobals: u32; }
-        stack::set_stack_limit((&_eglobals as *u32) as u32);
-      }
-  )));
-
-  // init data
-  builder.add_main_statement(cx.stmt_expr(quote_expr!(&*cx,
-      zinc::hal::mem_init::init_data();
-  )));
 
   node.get_by_path("clock").and_then(|sub| -> Option<bool> {
     build_clock(builder, cx, sub);
+    None
+  });
+
+  node.get_by_path("timer").and_then(|sub| -> Option<bool> {
+    build_timer(builder, cx, sub);
+    None
+  });
+
+  node.get_by_path("gpio").and_then(|sub| -> Option<bool> {
+    build_gpio(builder, cx, sub);
     None
   });
 }
 
 pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
     node: &Gc<node::Node>) {
-  if !node.expect_attributes(cx, vec!(("source", node::StringAttribute))) {
+  if !node.expect_attributes(cx, [("source", node::StringAttribute)]) {
     return;
   }
 
   let source = node.get_string_attr("source").unwrap();
-  let clock_source = ClockSource::new(match source.as_slice() {
+  let clock_source = TokenString::new(match source.as_slice() {
     "internal-oscillator" => "init::Internal".to_str(),
     "rtc-oscillator"      => "init::RTC".to_str(),
     "main-oscillator"     => {
@@ -76,10 +71,10 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let some_pll_conf = node.get_by_path("pll").and_then(|sub|
       -> Option<(uint, uint, uint)> {
-    if !sub.expect_no_subnodes(cx) || !sub.expect_attributes(cx, vec!(
+    if !sub.expect_no_subnodes(cx) || !sub.expect_attributes(cx, [
         ("m", node::IntAttribute),
         ("n", node::IntAttribute),
-        ("divisor", node::IntAttribute))) {
+        ("divisor", node::IntAttribute)]) {
       None
     } else {
       let m = sub.get_int_attr("m").unwrap();
@@ -95,18 +90,21 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   }
 
   let (m, n, divisor) = some_pll_conf.unwrap();
+  let pll_m: u8 = m as u8;
+  let pll_n: u8 = n as u8;
+  let pll_divisor: u8 = divisor as u8;
 
   let ex = quote_expr!(&*cx,
       {
         use zinc::hal::lpc17xx::init;
         init::init_clock(
-            init::Clock {
+            &init::Clock {
               source: $clock_source,
               pll: init::PLL0 {
                 enabled: true,
-                m: $m,
-                n: $n,
-                divisor: $divisor,
+                m: $pll_m,
+                n: $pll_n,
+                divisor: $pll_divisor,
               }
             }
         );
@@ -115,20 +113,131 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   builder.add_main_statement(cx.stmt_expr(ex));
 }
 
-struct ClockSource {
-  pub s: String,
-}
+pub fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt,
+    node: &Gc<node::Node>) {
+  if !node.expect_no_attributes(cx) {
+    return;
+  }
 
-impl ClockSource {
-  pub fn new(s: String) -> ClockSource {
-    ClockSource {
-      s: s,
+  for (path, sub) in node.subnodes.iter() {
+    if !sub.expect_attributes(cx, [
+        ("counter", node::IntAttribute),
+        ("divisor", node::IntAttribute)]) {
+      continue;
     }
+
+    if sub.name.is_none() {
+      cx.parse_sess().span_diagnostic.span_err(sub.name_span,
+          "timer node must have a name");
+      continue;
+    }
+
+    let name = TokenString::new(sub.name.clone().unwrap());
+    let timer_index: uint = from_str(path.as_slice()).unwrap();
+    let counter: u32 = sub.get_int_attr("counter").unwrap() as u32;
+    let divisor: u8 = sub.get_int_attr("divisor").unwrap() as u8;
+
+    let timer_name = match timer_index {
+      0..3 => TokenString::new(format!("timer::Timer{}", timer_index)),
+      other => {
+        cx.parse_sess().span_diagnostic.span_err(sub.path_span,
+            format!("unknown timer index `{}`, allowed indexes: 0, 1, 2, 3",
+                other).as_slice());
+        continue;
+      }
+    };
+
+    sub.type_name.set(Some("zinc::hal::lpc17xx::timer::Timer"));
+
+    let st = quote_stmt!(&*cx,
+        let $name = {
+          use zinc::hal::lpc17xx::timer;
+          let conf = timer::TimerConf {
+            timer: $timer_name,
+            counter: $counter,
+            divisor: $divisor,
+          };
+          conf.setup()
+        }
+    );
+    builder.add_main_statement(st);
   }
 }
 
-impl ToTokens for ClockSource {
-  fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
-    (cx as &ExtParseUtils).parse_tts(self.s.clone())
+pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
+    node: &Gc<node::Node>) {
+  if !node.expect_no_attributes(cx) { return }
+
+  for (port_path, port_node) in node.subnodes.iter() {
+    if !port_node.expect_no_attributes(cx) { continue }
+
+    let port_str = format!("pin::Port{}", match from_str(port_path.as_slice()).unwrap() {
+      0..4 => port_path,
+      other => {
+        cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
+            format!("unknown port `{}`, allowed values: 0..4",
+                other).as_slice());
+        continue;
+      }
+    });
+    let port = TokenString::new(port_str);
+
+    for (pin_path, pin_node) in port_node.subnodes.iter() {
+      if pin_node.name.is_none() {
+        cx.parse_sess().span_diagnostic.span_err(pin_node.name_span,
+            "pin node must have a name");
+        continue;
+      }
+
+      let direction_str = match pin_node.get_string_attr("direction")
+          .unwrap().as_slice() {
+        "out" => "hal::gpio::Out",
+        "in"  => "hal::gpio::In",
+        other => {
+          let attr = pin_node.get_attr("direction");
+          cx.parse_sess().span_diagnostic.span_err(attr.value_span,
+              format!("unknown direction `{}`, allowed values: `in`, `out`",
+                  other).as_slice());
+          continue;
+        }
+      };
+      let direction = TokenString::new(direction_str.to_str());
+
+      let pin_str = match from_str(pin_path.as_slice()).unwrap() {
+        0..31 => pin_path,
+        other => {
+          cx.parse_sess().span_diagnostic.span_err(pin_node.path_span,
+              format!("unknown pin `{}`, allowed values: 0..31",
+                  other).as_slice());
+          continue;
+        }
+      };
+      let pin = TokenString::new(format!("{}u8", pin_str));
+      let pin_name = TokenString::new(pin_node.name.clone().unwrap());
+      let pin_name_conf = TokenString::new(format!(
+          "{}_conf", pin_node.name.clone().unwrap()));
+
+      pin_node.type_name.set(Some("zinc::hal::lpc17xx::gpio::GPIO"));
+
+      let st_conf = quote_stmt!(&*cx,
+          let $pin_name_conf = {
+            use zinc::hal;
+            use zinc::hal::lpc17xx::{pin, gpio};
+            let conf = gpio::GPIOConf {
+              pin: pin::PinConf {
+                port: $port,
+                pin: $pin,
+                function: pin::GPIO,
+              },
+              direction: $direction,
+            };
+            conf.pin.setup();
+            conf
+          }
+      );
+      let st = quote_stmt!(&*cx, let $pin_name = $pin_name_conf.setup() );
+      builder.add_main_statement(st_conf);
+      builder.add_main_statement(st);
+    }
   }
 }

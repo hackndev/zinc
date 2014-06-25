@@ -16,7 +16,7 @@
 //! This file is not part of zinc crate, it is linked separately, alongside the
 //! ISRs for the platform.
 
-#![feature(asm, globs)]
+#![feature(asm, globs, lang_items)]
 #![crate_id="isr"]
 #![crate_type="staticlib"]
 #![no_std]

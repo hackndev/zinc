@@ -17,18 +17,17 @@ use test_helpers::{fails_to_parse, with_parsed, with_parsed_node};
 
 #[test]
 fn parse_anonymous_node() {
-  with_parsed_node("root", "root@node { node {} }", |node| {
-    let sub = node.get_by_path("node").unwrap();
-    assert!(sub.name == None);
-    assert!(sub.path == "node".to_str());
-    assert!(sub.attributes.len() == 0);
-    assert!(sub.subnodes.len() == 0);
+  with_parsed_node("node", "node {}", |node| {
+    assert!(node.name == None);
+    assert!(node.path == "node".to_str());
+    assert!(node.attributes.len() == 0);
+    assert!(node.subnodes.len() == 0);
   });
 }
 
 #[test]
 fn parse_node_with_name() {
-  with_parsed_node("test", "test@root {}", |node| {
+  with_parsed_node("root", "test@root {}", |node| {
     assert!(node.name == Some("test".to_str()));
     assert!(node.path == "root".to_str());
     assert!(node.attributes.len() == 0);
@@ -62,21 +61,21 @@ fn fails_to_parse_root_nodes_with_repeated_paths() {
 
 #[test]
 fn parse_node_with_no_body() {
-  with_parsed_node("test", "test@root;", |_| {
+  with_parsed_node("root", "test@root;", |_| {
     assert!(true);
   });
 }
 
 #[test]
 fn parse_node_with_numeric_path() {
-  with_parsed_node("test", "test@1 {}", |node| {
+  with_parsed_node("1", "test@1 {}", |node| {
     assert!(node.path == "1".to_str());
   });
 }
 
 #[test]
 fn parse_attributes() {
-  with_parsed_node("test", "test@root { a = \"value\"; b = 1; c = &ref; }", |node| {
+  with_parsed_node("root", "test@root { a = \"value\"; b = 1; c = &ref; }", |node| {
     assert!(node.get_string_attr("a") == Some(&"value".to_str()));
     assert!(node.get_int_attr("b")    == Some(1));
     assert!(node.get_ref_attr("c")    == Some(&"ref".to_str()));
@@ -85,21 +84,21 @@ fn parse_attributes() {
 
 #[test]
 fn parse_string_attribute() {
-  with_parsed_node("test", "test@root { key = \"value\"; }", |node| {
+  with_parsed_node("root", "test@root { key = \"value\"; }", |node| {
     assert!(node.get_string_attr("key") == Some(&"value".to_str()));
   });
 }
 
 #[test]
 fn parse_integer_attribute() {
-  with_parsed_node("test", "test@root { key = 10; }", |node| {
+  with_parsed_node("root", "test@root { key = 10; }", |node| {
     assert!(node.get_int_attr("key") == Some(10));
   });
 }
 
 #[test]
 fn parse_ref_attribute() {
-  with_parsed_node("test", "test@root { key = &ref; }", |node| {
+  with_parsed_node("root", "test@root { key = &ref; }", |node| {
     assert!(node.get_ref_attr("key") == Some(&"ref".to_str()));
   });
 }
@@ -123,20 +122,20 @@ fn fails_to_parse_malformed_attibute() {
 
 #[test]
 fn parse_anonymous_subnode() {
-  with_parsed_node("test", "test@root { child; }", |node| {
+  with_parsed_node("root", "test@root { child; }", |node| {
     assert!(node.subnodes.len() == 1);
   });
-  with_parsed_node("test", "test@root { child {} }", |node| {
+  with_parsed_node("root", "test@root { child {} }", |node| {
     assert!(node.subnodes.len() == 1);
   });
 }
 
 #[test]
 fn parse_named_subnode() {
-  with_parsed_node("test", "test@root { sub@child; }", |node| {
+  with_parsed_node("root", "test@root { sub@child; }", |node| {
     assert!(node.subnodes.len() == 1);
   });
-  with_parsed_node("test", "test@root { sub@child {} }", |node| {
+  with_parsed_node("root", "test@root { sub@child {} }", |node| {
     assert!(node.subnodes.len() == 1);
   });
 }

@@ -24,7 +24,7 @@ use node;
 
 pub struct Parser<'a> {
   pub sess: &'a ParseSess,
-  reader: Box<lexer::Reader:>,
+  reader: Box<lexer::Reader>,
   token: token::Token,
   span: Span,
 
@@ -56,9 +56,8 @@ impl<'a> Parser<'a> {
   }
 
   /// Parse the platform tree from passed in tokens.
-  pub fn parse_platformtree(&mut self) -> Option<node::PlatformTree> {
+  pub fn parse_platformtree(&mut self) -> Option<Gc<node::PlatformTree>> {
     let mut nodes: HashMap<String, Gc<node::Node>> = HashMap::new();
-    let mut nodes_by_path: HashMap<String, Gc<node::Node>> = HashMap::new();
     let mut failed = false;
     loop {
       if self.token == token::EOF {
@@ -75,24 +74,15 @@ impl<'a> Parser<'a> {
       };
 
       let path = node.path.clone();
-      if nodes_by_path.contains_key(&path) {
+      if nodes.contains_key(&path) {
         failed = true;
         self.sess.span_diagnostic.span_err(node.path_span,
             format!("duplicate node definition `{}`", path).as_slice());
-        let old_node: &Gc<node::Node> = nodes_by_path.get(&path);
+        let old_node: &Gc<node::Node> = nodes.get(&path);
         self.sess.span_diagnostic.span_err(old_node.path_span,
             "previously defined here");
       } else {
-        nodes_by_path.insert(node.path.clone(), node);
-      }
-
-      match node.name {
-        Some(ref name) => { nodes.insert(name.clone(), node); },
-        None => {
-          failed = true;
-          self.sess.span_diagnostic.span_err(node.name_span,
-              "missing name for root node");
-        }
+        nodes.insert(node.path.clone(), node);
       }
     }
 
@@ -101,7 +91,7 @@ impl<'a> Parser<'a> {
     } else {
       let mut map = HashMap::new();
       if self.collect_node_names(&mut map, &nodes) {
-        Some(node::PlatformTree::new(nodes, map))
+        Some(box(GC) node::PlatformTree::new(nodes, map))
       } else {
         None
       }

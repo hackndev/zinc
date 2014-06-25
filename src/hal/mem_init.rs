@@ -13,12 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use hal::stack::set_stack_limit;
+
 extern {
   static _data_load: u32;
   static mut _data: u32;
   static mut _edata: u32;
   static mut _bss: u32;
   static mut _ebss: u32;
+
+  static _eglobals: u32;
+}
+
+#[inline(always)]
+pub fn init_stack() {
+  set_stack_limit((&_eglobals as *u32) as u32);
 }
 
 /// Helper function to copy over .data from rom to ram and zero out .bss

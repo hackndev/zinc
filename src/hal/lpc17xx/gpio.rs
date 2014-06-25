@@ -29,15 +29,15 @@ pub struct GPIOConf {
   pub direction: Direction,
 }
 
-pub struct GPIO<'a> {
-  pin: &'a PinConf,
+pub struct GPIO {
+  pin: PinConf,
 }
 
 impl GPIOConf {
   /// Returns a GPIO object that can be used to toggle or read GPIO value.
-  pub fn setup<'a>(&'a self) -> GPIO<'a> {
+  pub fn setup(self) -> GPIO {
     let gpio: GPIO = GPIO {
-      pin: &self.pin,
+      pin: self.pin,
     };
 
     gpio.set_direction(self.direction);
@@ -46,7 +46,7 @@ impl GPIOConf {
   }
 }
 
-impl<'a> GPIO<'a> {
+impl GPIO {
   /// Sets output GPIO value to high.
   pub fn set_high(&self) {
     self.reg().set_FIOSET(1 << self.pin.pin);

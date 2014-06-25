@@ -1,7 +1,7 @@
 load 'support/rake.rb'
 
 TOOLCHAIN = 'arm-none-eabi-'
-RUNTIME_LIB = '/opt/gcc-arm-none-eabi-4_7-2013q3/lib/gcc/arm-none-eabi/4.7.4/<%= @platform.arch.arch %>/libgcc.a'
+RUNTIME_LIB = '/opt/gcc-arm-none-eabi-4_8-2014q2/lib/gcc/arm-none-eabi/4.8.4/<%= @platform.arch.arch %>/libgcc.a'
 RUSTC = 'rustc'
 
 features = [:tft_lcd, :multitasking]
@@ -79,26 +79,15 @@ compile_rust :macro_platformtree, {
 }
 
 app_tasks = Context.instance.applications.map do |a|
-  compile_rust "app_#{a}_crate".to_sym, {
+  compile_rust "app_#{a}".to_sym, {
     source: "apps/app_#{a}.rs".in_root,
     deps: [
       :zinc_crate,
       :core_crate,
-    ],
-    produce: "apps/app_#{a}.rs".in_root.as_rlib.in_intermediate(a),
-    out_dir: true,
-    recompile_on: [:triple, :platform, :features],
-  }
-
-  compile_rust "app_#{a}".to_sym, {
-    source: 'lib/app.rs'.in_source,
-    deps: [
-      :core_crate,
-      :zinc_crate,
-      "app_#{a}_crate".to_sym,
+      :macro_platformtree,
     ],
     produce: "app_#{a}.o".in_intermediate(a),
-    search_paths: a.in_intermediate,
+    recompile_on: [:triple, :platform, :features],
   }
 
   link_binary "app_#{a}_elf".to_sym, {
@@ -127,4 +116,4 @@ app_tasks = Context.instance.applications.map do |a|
 end
 
 desc "Build all applications"
-task :build_all => app_tasks.map { |t| t.name }
+task :build_all => [:build_empty, :build_blink]

@@ -13,7 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use test_helpers::fails_to_build;
+use syntax::codemap::DUMMY_SP;
+use syntax::ext::build::AstBuilder;
+
+use builder::{Builder, build_os};
+use test_helpers::{assert_equal_source, with_parsed, fails_to_build};
 
 #[test]
 fn fails_to_parse_pt_with_unknown_root_node() {
@@ -23,4 +27,64 @@ fn fails_to_parse_pt_with_unknown_root_node() {
 #[test]
 fn fails_to_parse_pt_with_unknown_mcu() {
   fails_to_build("mcu@bad {}");
+}
+
+#[test]
+fn builds_single_task_os_loop() {
+  with_parsed("os {
+      single_task {
+        loop = \"run\";
+      }
+    }", |cx, failed, pt| {
+    let mut builder = Builder::new(pt);
+    build_os(&mut builder, cx, pt.get_by_path("os").unwrap());
+    assert!(unsafe{*failed} == false);
+    assert!(builder.main_stmts.len() == 1);
+
+    assert_equal_source(builder.main_stmts.get(0),
+        "loop {
+          run();
+        }");
+  });
+}
+
+#[test]
+fn builds_single_task_with_args() {
+  with_parsed("os {
+      single_task {
+        loop = \"run\";
+        args {
+          a = 1;
+          b = \"a\";
+          c = &named;
+        }
+      }
+    }
+
+    named@ref;
+    ", |cx, failed, pt| {
+    let mut builder = Builder::new(pt);
+    pt.get_by_path("ref").unwrap().type_name.set(Some("hello::world::Struct"));
+
+    build_os(&mut builder, cx, pt.get_by_path("os").unwrap());
+    assert!(unsafe{*failed} == false);
+    assert!(builder.main_stmts.len() == 1);
+    assert!(builder.type_items.len() == 1);
+
+    assert_equal_source(&cx.stmt_item(DUMMY_SP, *builder.type_items.get(0)),
+        "pub struct run_args<'a> {
+          pub a: u32,
+          pub b: &'static str,
+          pub c: &'a hello::world::Struct,
+        }");
+
+    assert_equal_source(builder.main_stmts.get(0),
+        "loop {
+          run(&pt::run_args {
+            a: 1u,
+            b: \"a\",
+            c: &named,
+          });
+        }");
+  });
 }
