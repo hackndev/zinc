@@ -2,6 +2,7 @@
 #![crate_type="staticlib"]
 #![no_std]
 
+extern crate core;
 extern crate zinc;
 #[phase(plugin)] extern crate macro_platformtree;
 

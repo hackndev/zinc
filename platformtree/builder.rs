@@ -71,26 +71,15 @@ impl Builder {
     self.item_fn(cx, empty_span, "main", body)
   }
 
-  // TODO(farcaller): emit based on sched.
   fn emit_morestack(&self, cx: &ExtCtxt) -> Gc<ast::Item> {
     let stmt = cx.stmt_expr(quote_expr!(&*cx,
-        zinc::os::task::morestack();
+        core::intrinsics::abort()
         // or
-        // core::intrinsics::abort()
+        // zinc::os::task::morestack();
     ));
     let empty_span = DUMMY_SP;
     let body = cx.block(empty_span, vec!(stmt), None);
     self.item_fn(cx, empty_span, "__morestack", body)
-  }
-
-  // TODO(farcaller): emit based on sched.
-  fn emit_sched(&self, cx: &ExtCtxt) -> Gc<ast::Item> {
-    let stmt = cx.stmt_expr(quote_expr!(&*cx,
-        zinc::os::task::task_scheduler();
-    ));
-    let empty_span = DUMMY_SP;
-    let body = cx.block(empty_span, vec!(stmt), None);
-    self.item_fn(cx, empty_span, "task_scheduler", body)
   }
 
   pub fn emit_items(&self, cx: &ExtCtxt) -> Vec<Gc<ast::Item>> {
@@ -104,8 +93,8 @@ impl Builder {
         DUMMY_SP, cx.ident_of("zinc")));
     let pt_mod_item = cx.item_mod(DUMMY_SP, DUMMY_SP, cx.ident_of("pt"),
         vec!(allow_noncamel), vec!(use_zinc), self.type_items.clone());
-    vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx),
-        self.emit_sched(cx))
+
+    vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx))
   }
 
   fn item_fn(&self, cx: &ExtCtxt, span: Span, name: &str,
