@@ -34,3 +34,12 @@ pub enum Level {
   Low,
   High,
 }
+
+pub enum InterruptEdge {
+  Rising,
+  Falling,
+}
+
+pub trait GPIOInterruptHandler {
+  fn on_gpio_interrupt(&self);
+}
