@@ -15,7 +15,7 @@
 
 #![no_std]
 #![crate_type="rlib"]
-#![feature(asm)]
+#![feature(asm, intrinsics)]
 
 extern "rust-intrinsic" {
     fn offset<T>(dst: *T, offset: int) -> *T;
