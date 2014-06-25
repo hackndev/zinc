@@ -19,6 +19,9 @@ use std::gc::Gc;
 use syntax::codemap::Span;
 use syntax::ext::base::ExtCtxt;
 
+/// Holds a value for an attribute.
+///
+/// The value can be an unsigned integer, string or reference.
 #[deriving(Show)]
 pub enum AttributeValue {
   IntValue(uint),
@@ -26,12 +29,20 @@ pub enum AttributeValue {
   RefValue(String),
 }
 
+/// Expected attribute type.
+///
+/// Used in Node::expect_attributes to provide the expected type of the
+/// attribute.
 pub enum AttributeType {
-  StringAttribute,
   IntAttribute,
+  StringAttribute,
   RefAttribute,
 }
 
+/// Attribute value and metadata.
+///
+/// Stored inside of a HashMap, the key to HashMap is the attribute name.
+/// Provides spans for both key and value.
 #[deriving(Show)]
 pub struct Attribute {
   pub value: AttributeValue,
@@ -50,6 +61,12 @@ impl Attribute {
   }
 }
 
+/// PlatformTree node.
+///
+/// Might have an optional name, is the name is missing, name_span is equal to
+/// path_span. Attributes are stored by name, subnodes are stored by path.
+/// Type_name, if present, must specify the type path for the node's
+/// materialized object.
 #[deriving(Show)]
 pub struct Node {
   pub name: Option<String>,
@@ -78,10 +95,13 @@ impl Node {
     }
   }
 
+  /// Returns attribute by name or fail!()s.
   pub fn get_attr<'a>(&'a self, key: &str) -> &'a Attribute {
     self.attributes.get(&key.to_str())
   }
 
+  /// Returns a string attribute by name or None, if it's not present or not of
+  /// a StringAttribute type.
   pub fn get_string_attr<'a>(&'a self, key: &str) -> Option<&'a String> {
     self.attributes.find(&key.to_str()).and_then(|av| match av.value {
       StrValue(ref s) => Some(s),
@@ -89,6 +109,8 @@ impl Node {
     })
   }
 
+  /// Returns an integer attribute by name or None, if it's not present or not
+  /// of an IntAttribute type.
   pub fn get_int_attr(&self, key: &str) -> Option<uint> {
     self.attributes.find(&key.to_str()).and_then(|av| match av.value {
       IntValue(ref u) => Some(*u),
@@ -96,6 +118,8 @@ impl Node {
     })
   }
 
+  /// Returns a reference attribute by name or None, if it's not present or not
+  /// of a RefAttribute type.
   pub fn get_ref_attr<'a>(&'a self, key: &str) -> Option<&'a String> {
     self.attributes.find(&key.to_str()).and_then(|av| match av.value {
       RefValue(ref s) => Some(s),
@@ -103,6 +127,9 @@ impl Node {
     })
   }
 
+  /// Returns a string attribute by name or None, if it's not present or not of
+  /// a StringAttribute type. Reports a parser error if an attribute is
+  /// missing.
   pub fn get_required_string_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
       -> Option<&'a String> {
     match self.get_string_attr(key) {
@@ -116,6 +143,9 @@ impl Node {
     }
   }
 
+  /// Returns an integer attribute by name or None, if it's not present or not
+  /// of an IntAttribute type. Reports a parser error if an attribute is
+  /// missing.
   pub fn get_required_int_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
       -> Option<uint> {
     match self.get_int_attr(key) {
@@ -129,6 +159,9 @@ impl Node {
     }
   }
 
+  /// Returns a reference attribute by name or None, if it's not present or not
+  /// of a RefAttribute type. Reports a parser error if an attribute is
+  /// missing.
   pub fn get_required_ref_attr<'a>(&'a self, cx: &ExtCtxt, key: &str)
       -> Option<&'a String> {
     match self.get_ref_attr(key) {
@@ -142,6 +175,8 @@ impl Node {
     }
   }
 
+  /// Returns true if node has no attributes. Returs false and reports a parser
+  /// error for each found attribute otherwise.
   pub fn expect_no_attributes(&self, cx: &ExtCtxt) -> bool {
     let mut ok = true;
     for (_, v) in self.attributes.iter() {
@@ -152,6 +187,8 @@ impl Node {
     ok
   }
 
+  /// Returns true if node has no subnodes. Returs false and reports a parser
+  /// error for each found subnode otherwise.
   pub fn expect_no_subnodes(&self, cx: &ExtCtxt) -> bool {
     let mut ok = true;
     for (_, sub) in self.subnodes.iter() {
@@ -162,6 +199,8 @@ impl Node {
     ok
   }
 
+  /// Returns true if node has all of the requested attributes and their types
+  /// match. Reports parser errors and returns false otherwise.
   pub fn expect_attributes(&self, cx: &ExtCtxt,
       expectations: &[(&str, AttributeType)]) -> bool {
     let mut ok = true;
@@ -181,6 +220,8 @@ impl Node {
     ok
   }
 
+  /// Returns true if node has all of the requested subnodes matched by path.
+  /// Reports parser errors and returns false otherwise.
   pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
     let mut ok = true;
     for (path, sub) in self.subnodes.iter() {
@@ -194,11 +235,16 @@ impl Node {
     ok
   }
 
+  /// Returns a subnode by path or None, if not found.
   pub fn get_by_path<'a>(&'a self, path: &str) -> Option<&'a Gc<Node>> {
     self.subnodes.find(&path.to_str())
   }
 }
 
+/// PlatformTree root object.
+///
+/// Root nodes are stored by path in `nodes`, All the nmaed nodes are also
+/// stored by name in `named`.
 #[deriving(Show)]
 pub struct PlatformTree {
   nodes: HashMap<String, Gc<Node>>,
@@ -214,14 +260,18 @@ impl PlatformTree {
     }
   }
 
+  /// Returns a node by name or None, if not found.
   pub fn get_by_name<'a>(&'a self, name: &str) -> Option<&'a Gc<Node>> {
     self.named.find(&name.to_str())
   }
 
+  /// Returns a root node by path or None, if not found.
   pub fn get_by_path<'a>(&'a self, name: &str) -> Option<&'a Gc<Node>> {
     self.nodes.find(&name.to_str())
   }
 
+  /// Returns true if PT has all of the requested root odes matched by path.
+  /// Reports parser errors and returns false otherwise.
   pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
     let mut ok = true;
     for (path, sub) in self.nodes.iter() {
