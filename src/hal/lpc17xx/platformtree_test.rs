@@ -58,6 +58,28 @@ fn builds_clock_init() {
 }
 
 #[test]
+fn clock_provides_out_frequency() {
+  with_parsed("
+    clock {
+      source = \"main-oscillator\";
+      source_frequency = 12_000_000;
+      pll {
+        m = 50;
+        n = 3;
+        divisor = 4;
+      }
+    }", |cx, _, pt| {
+    let mut builder = Builder::new(pt);
+    let node = pt.get_by_path("clock").unwrap();
+    lpc17xx_pt::build_clock(&mut builder, cx, node);
+
+    let out_freq = node.get_int_attr("system_frequency");
+    assert!(out_freq.is_some());
+    assert!(out_freq.unwrap() == 100_000_000);
+  });
+}
+
+#[test]
 fn fails_to_parse_bad_clock_conf() {
   fails_to_build("lpc17xx@mcu { clock {
     no_source = 1;

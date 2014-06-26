@@ -16,7 +16,7 @@
 use std::cell::{Cell, RefCell};
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
-use syntax::codemap::Span;
+use syntax::codemap::{Span, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 
 /// Holds a value for an attribute.
@@ -57,6 +57,14 @@ impl Attribute {
       value: value,
       key_span: key_span,
       value_span: value_span,
+    }
+  }
+
+  pub fn new_nosp(value: AttributeValue) -> Attribute {
+    Attribute {
+      value: value,
+      key_span: DUMMY_SP,
+      value_span: DUMMY_SP,
     }
   }
 }

@@ -49,19 +49,29 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   }
 
   let source = node.get_string_attr("source").unwrap();
+  let source_freq: uint;
   let clock_source = TokenString::new(match source.as_slice() {
-    "internal-oscillator" => "init::Internal".to_str(),
-    "rtc-oscillator"      => "init::RTC".to_str(),
+    "internal-oscillator" => {
+      source_freq = 4_000_000;
+      "init::Internal".to_str()
+    },
+    "rtc-oscillator"      => {
+      source_freq = 32_000;
+      "init::RTC".to_str()
+    },
     "main-oscillator"     => {
       let some_source_frequency =
           node.get_required_int_attr(cx, "source_frequency");
       if some_source_frequency == None {
+        source_freq = 0;
         "BAD".to_str()
       } else {
-        format!("init::Main({})", some_source_frequency.unwrap())
+        source_freq = some_source_frequency.unwrap();
+        format!("init::Main({})", source_freq)
       }
     },
     other => {
+      source_freq = 0;
       cx.span_err(
           node.get_attr("source").value_span,
           format!("unknown oscillator value `{}`", other).as_slice());
@@ -93,6 +103,11 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   let pll_m: u8 = m as u8;
   let pll_n: u8 = n as u8;
   let pll_divisor: u8 = divisor as u8;
+
+  let sysfreq = source_freq * 2 * pll_m as uint / pll_n as uint
+      / pll_divisor as uint;
+  node.attributes.borrow_mut().insert("system_frequency".to_str(),
+      node::Attribute::new_nosp(node::IntValue(sysfreq)));
 
   let ex = quote_expr!(&*cx,
       {
