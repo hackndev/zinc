@@ -22,8 +22,6 @@ on the package.
 
 use core::intrinsics::abort;
 
-#[path="pinmap.rs"] pub mod map;
-
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 /// Pin configuration.

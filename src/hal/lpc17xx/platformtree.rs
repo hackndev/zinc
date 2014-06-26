@@ -20,6 +20,8 @@ use syntax::ext::build::AstBuilder;
 use builder::{Builder, TokenString};
 use node;
 
+mod pinmap;
+
 pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
     node: &Gc<node::Node>) {
   if !node.expect_no_attributes(cx) {
@@ -227,6 +229,42 @@ pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
           continue;
         }
       };
+
+      let port_def = pinmap::port_def();
+      let function_str = match pin_node.get_string_attr("function") {
+        None => "GPIO".to_str(),
+        Some(fun) => {
+          let pins = port_def.get(port_path);
+          let maybe_pin = pins.get(from_str(pin_path.as_slice()).unwrap());
+          match maybe_pin {
+            &None => {
+              cx.parse_sess().span_diagnostic.span_err(
+                  pin_node.get_attr("function").value_span,
+                  format!("unknown pin function `{}`, only GPIO avaliable on this pin",
+                      fun).as_slice());
+              continue;
+            }
+            &Some(ref pin_funcs) => {
+              let maybe_func = pin_funcs.find(&fun);
+              match maybe_func {
+                None => {
+                  let avaliable: Vec<String> = pin_funcs.keys().map(|k|{k.to_str()}).collect();
+                  cx.parse_sess().span_diagnostic.span_err(
+                      pin_node.get_attr("function").value_span,
+                      format!("unknown pin function `{}`, allowed functions: {}",
+                          fun, avaliable.connect(", ")).as_slice());
+                  continue;
+                },
+                Some(func_idx) => {
+                  format!("AltFunction{}", func_idx)
+                }
+              }
+            }
+          }
+        }
+      };
+
+      let function = TokenString::new(function_str);
       let pin = TokenString::new(format!("{}u8", pin_str));
       let pin_name = TokenString::new(pin_node.name.clone().unwrap());
       let pin_name_conf = TokenString::new(format!(
@@ -242,7 +280,7 @@ pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
               pin: pin::PinConf {
                 port: $port,
                 pin: $pin,
-                function: pin::GPIO,
+                function: pin::$function,
               },
               direction: $direction,
             };

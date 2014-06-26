@@ -102,6 +102,8 @@ class PinParse < Rly::Yacc
     index = next_pin_index
     unless f.value.compact.empty?
       ret.value = Pin.new(index, f.value)
+    else
+      ret.value = Pin.new(index, [])
     end
   end
 
@@ -139,7 +141,7 @@ end
 def gen_lpc(src)
   map = PinParse.new(PinLex.new).parse(src)
   eruby = Erubis::Eruby.new(LPC_TEMPLATE)
-  eruby.result(ports: map.ports, prelude: map.prelude)
+  eruby.result(ports: map.ports, prelude: map.prelude).gsub(/^\s+\n/, '')
 end
 
 def unwrap_traits(attrs)
@@ -166,30 +168,37 @@ end
 
 LPC_TEMPLATE = <<-EOF
 <%= prelude.join("\n") %>
-<% for port in ports %>
-pub mod port<%= port.name %> {
-  <% for pin in port.pins %>
-    pub mod pin<%= pin.index %> {
-      pub use super::super::super::{PinConf, Port0, Port1, Port2, Port3, Port4, AltFunction1, AltFunction2, AltFunction3};
 
-      pub static GPIO: PinConf = PinConf {
-        port:     Port<%= port.name %>,
-        pin:      <%= pin.index %>,
-        function: super::super::super::GPIO,
-      };
-      <% pin.functions.each_with_index do |fn, i| %>
-      <% unless fn.nil? %>
-      pub static <%= fn.name %>: PinConf = PinConf {
-        port:     Port<%= port.name %>,
-        pin:      <%= pin.index %>,
-        function: AltFunction<%= i+1 %>,
-      };
-      <% end %>
+use std::collections::hashmap::HashMap;
+
+type PinDef = HashMap<String, uint>;
+type PinsDef = Vec<Option<PinDef>>;
+
+pub fn port_def() -> HashMap<String, PinsDef> {
+  let mut h = HashMap::new();
+
+  <% for port in ports %>
+  {
+    let mut pins = Vec::new();
+    <% for pin in port.pins %>
+    {
+      <% if pin.functions.length > 0 %>
+      let mut pin = HashMap::new();
+      <% pin.functions.each_with_index do |fn, i| %><% unless fn.nil? %>
+      pin.insert("<%= fn.name.downcase %>".to_str(), <%= i %>);
+      <% end %><% end %>
+      pins.push(Some(pin));
+      <% else %>
+      pins.push(None);
       <% end %>
     }
+    <% end %>
+    h.insert("<%= port.name %>".to_str(), pins);
+  }
   <% end %>
+
+  h
 }
-<% end %>
 EOF
 
 f_in = ARGV[0]
