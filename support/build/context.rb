@@ -91,12 +91,6 @@ class Context
     super *args
   end
 
-  def resolve_runtime_lib
-    lib_tpl = env_const(:RUNTIME_LIB)
-    tpl = ERB.new(lib_tpl)
-    tpl.result(binding)
-  end
-
   def collect_config_flags!
     @config_flags = (@platform.features + @build_features).map do |f|
       "cfg_#{f}"
@@ -124,12 +118,13 @@ class Context
       '-Z no-landing-pads',
     ] + @config_flags
 
-    @env[:ldflags] = [resolve_runtime_lib]
 
     @env[:cflags] = [
       '-mthumb',
       "-mcpu=#{@platform.arch.cpu}",
     ]
+
+    @env[:ldflags] = [ %x( #{TOOLCHAIN}gcc -print-libgcc-file-name #{@env[:cflags].join(' ')}).chomp ]
 
     @env[:rustc] = env_const(:RUSTC)
     @env[:toolchain] = env_const(:TOOLCHAIN)
