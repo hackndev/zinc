@@ -213,7 +213,7 @@ fn builds_altfn_gpio() {
             pin: pin::PinConf {
               port: pin::Port0,
               pin: 3u8,
-              function: pin::AltFunction1,
+              function: pin::AltFunction2,
             },
             direction: hal::gpio::Out,
           };
