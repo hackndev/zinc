@@ -35,7 +35,7 @@ pub enum AttributeValue {
 /// attribute.
 pub enum AttributeType {
   IntAttribute,
-  StringAttribute,
+  StrAttribute,
   RefAttribute,
 }
 
@@ -108,7 +108,7 @@ impl Node {
   }
 
   /// Returns a string attribute by name or None, if it's not present or not of
-  /// a StringAttribute type.
+  /// a StrAttribute type.
   pub fn get_string_attr(&self, key: &str) -> Option<String> {
     self.attributes.borrow().find(&key.to_str()).and_then(|av| match av.value {
       StrValue(ref s) => Some(s.clone()),
@@ -135,7 +135,7 @@ impl Node {
   }
 
   /// Returns a string attribute by name or None, if it's not present or not of
-  /// a StringAttribute type. Reports a parser error if an attribute is
+  /// a StrAttribute type. Reports a parser error if an attribute is
   /// missing.
   pub fn get_required_string_attr(&self, cx: &ExtCtxt, key: &str)
       -> Option<String> {
@@ -213,7 +213,7 @@ impl Node {
     let mut ok = true;
     for &(n, ref t) in expectations.iter() {
       match t {
-        &StringAttribute => {
+        &StrAttribute => {
           if self.get_required_string_attr(cx, n).is_none() {ok = false}
         },
         &IntAttribute => {

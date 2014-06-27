@@ -46,7 +46,7 @@ pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
 
 pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
     node: &Gc<node::Node>) {
-  if !node.expect_attributes(cx, [("source", node::StringAttribute)]) {
+  if !node.expect_attributes(cx, [("source", node::StrAttribute)]) {
     return;
   }
 
