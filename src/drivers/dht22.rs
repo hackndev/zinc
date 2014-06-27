@@ -58,7 +58,7 @@ impl<'a, T: Timer> DHT22<'a, T> {
       return None
     }
 
-    for _ in range(0, 40) {
+    for _ in range(0u, 40) {
       if !self.wait_while(Low, 80) {
         return None
       }
