@@ -49,17 +49,17 @@ impl GPIOConf {
 impl GPIO {
   /// Sets output GPIO value to high.
   pub fn set_high(&self) {
-    self.reg().set_FIOSET(1 << self.pin.pin);
+    self.reg().set_FIOSET(1 << (self.pin.pin as uint));
   }
 
   /// Sets output GPIO value to low.
   pub fn set_low(&self) {
-    self.reg().set_FIOCLR(1 << self.pin.pin);
+    self.reg().set_FIOCLR(1 << (self.pin.pin as uint));
   }
 
   /// Sets output GPIO direction.
   pub fn set_direction(&self, new_mode: Direction) {
-    let bit: u32 = 1 << self.pin.pin;
+    let bit: u32 = 1 << (self.pin.pin as uint);
     let mask: u32 = !bit;
     let reg = self.reg();
     let val: u32 = reg.FIODIR();
@@ -73,7 +73,7 @@ impl GPIO {
 
   /// Returns input GPIO level.
   pub fn level(&self) -> Level {
-    let bit: u32 = 1 << self.pin.pin;
+    let bit: u32 = 1 << (self.pin.pin as uint);
     let reg = self.reg();
 
     match reg.FIOPIN() & bit {

@@ -171,7 +171,7 @@ pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
   for (port_path, port_node) in node.subnodes.iter() {
     if !port_node.expect_no_attributes(cx) { continue }
 
-    let port_str = format!("pin::Port{}", match from_str(port_path.as_slice()).unwrap() {
+    let port_str = format!("pin::Port{}", match from_str::<uint>(port_path.as_slice()).unwrap() {
       0..4 => port_path,
       other => {
         cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
@@ -203,7 +203,7 @@ pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
       };
       let direction = TokenString::new(direction_str.to_str());
 
-      let pin_str = match from_str(pin_path.as_slice()).unwrap() {
+      let pin_str = match from_str::<uint>(pin_path.as_slice()).unwrap() {
         0..31 => pin_path,
         other => {
           cx.parse_sess().span_diagnostic.span_err(pin_node.path_span,

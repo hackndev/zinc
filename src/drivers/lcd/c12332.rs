@@ -121,10 +121,10 @@ impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
     let index = x + (y/8) * 128;
     if color == 0 {
       self.videobuf[index as uint].set(
-        self.videobuf[index as uint].get() & !(1 << (y%8) as u8));
+        self.videobuf[index as uint].get() & !(1 << (y%8) as uint) as u8);
     } else {
       self.videobuf[index as uint].set(
-        self.videobuf[index as uint].get() | (1 << (y%8)));
+        self.videobuf[index as uint].get() | (1 << ((y%8) as uint)));
     }
   }
 
@@ -174,7 +174,7 @@ impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
       i = 0;
       while i < hor {
         z =  zeichen[(bpl * i + ((j & 0xF8) >> 3)+1) as uint];
-        b = 1 << (j & 0x07);
+        b = 1 << ((j & 0x07) as uint);
         if ( z & b ) == 0x00 {
           self.set_pixel(x+i as i32, y+j as i32, 0);
         } else {
