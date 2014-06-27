@@ -36,7 +36,6 @@ module GitHist
     end
 
     def generate(site)
-      return
       page = site.pages.detect {|page| page.data['git_history']}
 
       repo = Rugged::Repository.new('/Users/farcaller/src/zinc')
