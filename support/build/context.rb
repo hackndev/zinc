@@ -122,6 +122,7 @@ class Context
     @env[:rustcflags] = [
       '--opt-level 2',
       '-Z no-landing-pads',
+      '-g',
     ] + @config_flags
 
     @env[:ldflags] = [resolve_runtime_lib]

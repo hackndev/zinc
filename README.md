@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/hackndev/zinc.svg)](https://travis-ci.org/hackndev/zinc) [![Stories in Ready](https://badge.waffle.io/hackndev/zinc.png?label=ready&title=Ready)](https://waffle.io/hackndev/zinc)
+[![Build Status](https://travis-ci.org/hackndev/zinc.svg)](https://travis-ci.org/hackndev/zinc) [![Stories in Ready](https://badge.waffle.io/hackndev/zinc.png?label=ready&title=Ready)](https://waffle.io/hackndev/zinc) [![Coverage](http://img.shields.io/badge/coverage-passing-brightgreen.svg)](http://cov.zinc.rs/platformtree_test/)
 Zinc, the bare metal stack for rust
 ===================================
 
