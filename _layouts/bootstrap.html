@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Blog Home Template for Bootstrap 3</title>
+
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+    <link href="{{ "/css/bootstrap.css" | prepend: site.baseurl }}" rel="stylesheet">
+    <link href="{{ "/css/octicons.css" | prepend: site.baseurl }}" rel="stylesheet">
+    <link href="{{ "/css/more.css" | prepend: site.baseurl }}" rel="stylesheet">
+
+    <!-- <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
+</head>
+
+<body>
+
+    <aside style="
+      position: fixed;
+      width: 25%;
+      height: 100%;
+      text-align: center;
+      border-right: 3px solid #DDDDDD;
+      <!-- background-color: #444; -->
+      background-position: center center;
+      background-size: cover;
+      ">
+      <div class="page-header">
+        <h1>zinc.rs</h1>
+      </div>
+
+      <div class="list-group" style="width: 95%; padding-left: 5%;">
+        <a href="/" class="list-group-item {% if page.menuidx == 'index' %}active{% endif %}"> about </a>
+        <a href="/blog" class="list-group-item {% if page.menuidx == 'blog' %}active{% endif %}"> blog </a>
+        <a href="/stats" class="list-group-item {% if page.menuidx == 'stats' %}active{% endif %}"> build stats </a>
+        <a href="https://github.com/hackndev/zinc" class="list-group-item"> fork us at github </a>
+      </div>
+
+      <p>
+        <a href="https://travis-ci.org/hackndev/zinc"><img src="https://camo.githubusercontent.com/c17028aba2bff3a47632cbbf92c1ce807a932b84/68747470733a2f2f7472617669732d63692e6f72672f6861636b6e6465762f7a696e632e737667" alt="Build Status" data-canonical-src="https://travis-ci.org/hackndev/zinc.svg" style="max-width:100%;"></a>
+        <a href="https://waffle.io/hackndev/zinc"><img src="https://camo.githubusercontent.com/b372d9c089210ddecb9a56c63d5a963571d568c8/68747470733a2f2f62616467652e776166666c652e696f2f6861636b6e6465762f7a696e632e706e673f6c6162656c3d7265616479267469746c653d5265616479" alt="Stories in Ready" data-canonical-src="https://badge.waffle.io/hackndev/zinc.png?label=ready&amp;title=Ready" style="max-width:100%;"></a>
+      </p>
+
+      <footer style="
+        position: absolute;
+        bottom: 0;
+        padding: 7% 0 6% 0;
+        width: 100%;
+      ">
+        Copyright 2014 Vladimir Pouzanov and the&nbsp;Hack&amp;Dev&nbsp;project
+      </footer>
+    </aside>
+    <div style="margin-left: 25%; padding: 3% 5%;">
+      {{ content }}
+    </div>
+    <!-- /.container -->
+
+    <!-- JavaScript -->
+    <script src="js/jquery-1.10.2.js"></script>
+    <script src="js/bootstrap.js"></script>
+
+</body>
+
+</html>

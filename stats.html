@@ -1,0 +1,53 @@
+---
+layout: bootstrap
+title: About
+permalink: /stats/
+git_history: true
+menuidx: stats
+---
+
+<h2>Open pulls</h2>
+<table class="table table-striped table-hover ">
+  <thead>
+    <td>Author</td>
+    <td>Title</td>
+    {% for d in page.pr_apps %}<td>{{ d }}</td>{% endfor %}
+  </thead>
+  {% for ci in page.pulls %}
+  <tr class={% case ci.state %}
+    {% when 'passed' %}"success"
+    {% when 'failed' or 'errored' %}"danger"
+    {% else %}""
+    {% endcase %}>
+    <td>{{ ci.author }}</td>
+    <td>{{ ci.title }}</td>
+    {% for d in page.pr_apps %}
+    <td>{{ ci|build_size: d }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Master branch history</h2>
+<table class="table table-striped table-hover ">
+  <thead>
+    <td>Commit</td>
+    <td>Message</td>
+    {% for d in page.apps %}<td>{{ d }}</td>{% endfor %}
+  </thead>
+  {% for ci in page.commits %}
+  <tr class={% case ci.state %}
+    {% when 'passed' %}"success"
+    {% when 'failed' or 'errored' %}"danger"
+    {% else %}""
+    {% endcase %}>
+    <td>{{ ci.oid }}</td>
+    <td>
+      {{ ci.message }}
+    </td>
+    {% for d in page.apps %}
+    <td>{{ ci|build_size: d }}</td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+</table>

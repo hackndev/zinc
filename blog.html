@@ -1,0 +1,15 @@
+---
+layout: bootstrap
+menuidx: blog
+---
+
+{% for post in site.posts %}
+  <h2>{{ post.title }}</h2>
+  <div class="post-date">Published on {{ post.date | date: "%b %-d, %Y" }}</div>
+
+  {{ post.content }}
+  <!-- <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a> -->
+  <hr />
+{% endfor %}
+
+<!-- <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | prepend: site.baseurl }}">via RSS</a></p> -->
