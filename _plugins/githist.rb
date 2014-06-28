@@ -26,7 +26,13 @@ module GitHist
     end
 
     def build_by_id(bid)
-      builds.detect { |_, b| b['build_id'] == bid }.last
+      b = builds.detect { |_, b| b['build_id'] == bid }
+      if b == nil || b.empty?
+        puts "!!! cannot find build by id #{bid}"
+        nil
+      else
+        b.last
+      end
     end
 
     def latest_build_for_commit(sha)
@@ -38,7 +44,7 @@ module GitHist
     def generate(site)
       page = site.pages.detect {|page| page.data['git_history']}
 
-      repo = Rugged::Repository.new('.')
+      repo = Rugged::Repository.new('../zinc')
       master = repo.refs.detect {|r| r.name == 'refs/heads/master'}
 
       walker = Rugged::Walker.new(repo)
@@ -86,13 +92,15 @@ module GitHist
       pr_apps = Set.new
       prs = github.pull_requests.list('hackndev', 'zinc', state: 'open')
       page.data['pulls'] = prs.map do |pr|
-        status = github.repos.statuses.all('hackndev', 'zinc', pr['head']['sha'])
-            .sort{ |a,b| a['created_at'] <=> b['created_at'] }.last
-        if status['context'] == 'continuous-integration/travis-ci'
-          build_id = status['target_url'].gsub(/.+\//,'').to_i
+        statuses = github.repos.statuses.all('hackndev', 'zinc', pr['head']['sha'])
+            .sort{ |a,b| a['created_at'] <=> b['created_at'] }
+        if statuses.empty?
+          build = nil
+        elsif statuses.last['context'] == 'continuous-integration/travis-ci'
+          build_id = statuses.last['target_url'].gsub(/.+\//,'').to_i
           build = build_by_id(build_id)
         else
-          puts "Unknown status #{status} num=#{pr['number']} sha=#{pr['head']['sha']}"
+          puts "Unknown status #{statuses.last} num=#{pr['number']} sha=#{pr['head']['sha']}"
           build = nil
         end
 
