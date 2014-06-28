@@ -44,7 +44,7 @@ module GitHist
     def generate(site)
       page = site.pages.detect {|page| page.data['git_history']}
 
-      repo = Rugged::Repository.new('../zinc')
+      repo = Rugged::Repository.new('.')
       master = repo.refs.detect {|r| r.name == 'refs/heads/master'}
 
       walker = Rugged::Walker.new(repo)
