@@ -68,6 +68,7 @@ GEM
     kramdown (1.4.0)
     launchy (2.4.2)
       addressable (~> 2.3)
+    libv8 (3.16.14.3)
     liquid (2.5.5)
     listen (2.7.9)
       celluloid (>= 0.15.2)
@@ -116,10 +117,14 @@ GEM
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
     redcarpet (3.1.2)
+    ref (1.0.5)
     rugged (0.21.0)
     safe_yaml (1.0.3)
     sass (3.3.8)
     slop (3.5.0)
+    therubyracer (0.12.1)
+      libv8 (~> 3.16.14.0)
+      ref
     thread_safe (0.3.4)
     timers (1.1.0)
     toml (0.1.1)
@@ -151,4 +156,5 @@ DEPENDENCIES
   pry-stack_explorer
   pry-theme
   rugged
+  therubyracer
   travis
