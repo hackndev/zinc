@@ -62,6 +62,7 @@ class TravisLoader
 
   def collect_build(build, old)
     h = build.to_h
+    h['build_id'] = build.id
     h['commit'] = build.commit.to_h
 
     return h['number'].to_i if old[h['number']]
