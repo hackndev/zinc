@@ -59,6 +59,7 @@ module GitHist
       apps = Set.new
       closed_prs = github.pull_requests.list('hackndev', 'zinc', state: 'closed')
 
+      puts "** history **"
       page.data['commits'] = commits.map do |ci|
         build = latest_build_for_commit(ci.oid)
         if build
@@ -77,6 +78,7 @@ module GitHist
           stats = lpc_job['stats']
           stats.keys.each { |k| apps << k }
 
+          puts "#{ci.oid[0..8]} - #{ci.message.split("\n").first}"
           {
             'oid' => ci.oid[0..8],
             'message' => message,
@@ -84,6 +86,7 @@ module GitHist
             'state' => lpc_job['state'],
           }
         else
+          puts "#{ci.oid[0..8]}!  no builds for commit"
           nil
         end
       end.compact
