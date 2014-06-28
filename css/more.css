@@ -2,3 +2,31 @@
   margin-bottom: 1em;
   font-style: italic;
 }
+
+.left-pane {
+  position: fixed;
+  width: 25%;
+  height: 100%;
+  text-align: center;
+  border-right: 3px solid #DDDDDD;
+  /* background-color: #444; */
+  background-position: center center;
+  background-size: cover;
+}
+
+.left-pane-menu {
+  width: 95%;
+  padding-left: 5%;
+}
+
+.left-pane-footer {
+  position: absolute;
+  bottom: 0;
+  padding: 7% 0 6% 0;
+  width: 100%;
+}
+
+#content {
+  margin-left: 25%;
+  padding: 3% 5%;
+}
