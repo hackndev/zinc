@@ -44,7 +44,7 @@ module GitHist
     def generate(site)
       page = site.pages.detect {|page| page.data['git_history']}
 
-      repo_path = ENV['ZINC_REPO'] || '.'
+      repo_path = ENV['ZINC_REPO'] || '../zinc'
       repo = Rugged::Repository.new(repo_path)
       master = repo.refs.detect {|r| r.name == 'refs/heads/master'}
 
@@ -78,7 +78,6 @@ module GitHist
           stats = lpc_job['stats']
           stats.keys.each { |k| apps << k }
 
-          puts "#{ci.oid[0..8]} - #{ci.message.split("\n").first}"
           {
             'oid' => ci.oid[0..8],
             'message' => message,
@@ -86,7 +85,6 @@ module GitHist
             'state' => lpc_job['state'],
           }
         else
-          puts "#{ci.oid[0..8]}!  no builds for commit"
           nil
         end
       end.compact
