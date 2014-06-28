@@ -2,25 +2,31 @@
 Zinc, the bare metal stack for rust
 ===================================
 
-Zinc is an experimental attempt to write an ARM stack, that would be similar to
-CMSIS in capabilities but would show rust's best safety features applied to
-embedded development.
+## About zinc.rs
 
-Zinc is mostly assembly-free and completely C-free at the moment. One of the
-goals of zinc is to figure out, how much of the usual RTOS stack is it possible
-to write in rust in a safe manner, while keeping the resource usage profile low
-enough (comparable to C/C++ code).
+Zinc is an experimental attempt to write an ARM stack that would be similar to CMSIS or mbed in capabilities but would show rust's best safety features applied to embedded development.
+
+Zinc is mostly assembly-free and completely C-free at the moment. One of the goals of zinc is to figure out, how much of the usual RTOS stack is it possible to write in rust in a safe manner, while keeping the resource usage profile low enough (comparable to C/C++ code).
+
+Useful links:
+
+ * [blog](http://zinc.rs/blog)
+ * [build stats](http://zinc.rs/stats) (output binary size change over time)
+ * [api docs](http://zinc.rs/apidocs/zinc)
+
+## Main features
+
+Zinc provides you with *safe* code in terms of rust code safety; accessing hardware directly is *unsafe*, but you can do that as well if you want.
+
+In addition to *software safety*, zinc provides *hardware safety* with Platform Tree specification; you define the hardware configuration right in the code in simple key-value DSL and compiler verifies that all hardware is configured properly; that also allows to optimize the code to much bigger extent than with conventional RTOSes.
 
 ## Supported hardware
 
-Zinc supports *only* ARM at the moment, but any architecture supported by LLVM
-should work. There might be some plans to port zin over to other architectures
-some time in the future.
+Zinc supports only ARM at the moment. The primary development is focused on two test boards with NXP LPC1768 and ST STM32F407. Other MCUs will follow when core API is stabilized.
 
-Currently supported ARM MCUs:
+## License
 
- * NXP LPC1768 based on mbed board — good support;
- * ST STM32F407 based on STM32F4Discovery board — draft support.
+Zinc is distributed under Apache-2.0, see LICENSE for more details.
 
 ## Usage
 
@@ -33,7 +39,3 @@ To build an application from apps/ use the following rake command:
 ```
 rake PLATFORM=<platform> build_all  # or build_<appname>
 ```
-
-## License
-
-Zinc is distributed under Apache-2.0, see LICENSE for more details.
