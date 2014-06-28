@@ -13,6 +13,7 @@
 
     <link href="{{ "/css/bootstrap.css" | prepend: site.baseurl }}" rel="stylesheet">
     <link href="{{ "/css/octicons.css" | prepend: site.baseurl }}" rel="stylesheet">
+    <link href="{{ "/css/pygments.css" | prepend: site.baseurl }}" rel="stylesheet">
     <link href="{{ "/css/more.css" | prepend: site.baseurl }}" rel="stylesheet">
 
     <!-- <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script> -->
@@ -38,6 +39,9 @@
         <a href="/" class="list-group-item {% if page.menuidx == 'index' %}active{% endif %}"> about </a>
         <a href="/blog" class="list-group-item {% if page.menuidx == 'blog' %}active{% endif %}"> blog </a>
         <a href="/stats" class="list-group-item {% if page.menuidx == 'stats' %}active{% endif %}"> build stats </a>
+      </div>
+      <div class="list-group" style="width: 95%; padding-left: 5%;">
+        <a href="/apidocs/zinc/" class="list-group-item"> api docs </a>
         <a href="https://github.com/hackndev/zinc" class="list-group-item"> fork us at github </a>
       </div>
 
