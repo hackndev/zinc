@@ -41,7 +41,7 @@ class TravisLoader
         sz_text = $1.to_i
         log[i+2] =~ /(\d+)/
         sz_data = $1.to_i
-        log[i+2] =~ /(\d+)/
+        log[i+3] =~ /(\d+)/
         sz_bss  = $1.to_i
 
         stats[app] = {
