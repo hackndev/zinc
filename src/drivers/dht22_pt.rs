@@ -13,20 +13,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Platform tree operations crate
+use std::gc::Gc;
+use syntax::ext::base::ExtCtxt;
+use syntax::ext::build::AstBuilder;
 
-#![feature(quote)]
-#![crate_name="platformtree"]
-#![crate_type="rlib"]
+use builder::{Builder, TokenString};
+use node;
 
-extern crate syntax;
+pub fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
+  if !node.expect_no_subnodes(cx) {
+    return;
+  }
 
-pub mod node;
-pub mod parser;
-pub mod builder;
+  if !node.expect_attributes(cx,
+      [("pin", node::RefAttribute), ("timer", node::RefAttribute)]) {
+    return;
+  }
 
-#[path="../src/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
-#[path="../src/drivers/drivers_pt.rs"] mod drivers_pt;
-
-#[cfg(test)] mod test_helpers;
-#[cfg(test)] mod parser_test;
+  let pin_node_name = node.get_ref_attr("pin").unwrap();
+  let timer_node_name = node.get_ref_attr("timer").unwrap();
+}

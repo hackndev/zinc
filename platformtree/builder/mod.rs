@@ -142,8 +142,13 @@ impl ToTokens for TokenString {
 pub fn build_platformtree(cx: &mut ExtCtxt, pt: &Gc<node::PlatformTree>) -> Builder {
   let mut builder = Builder::new(pt);
 
-  if !pt.expect_subnodes(cx, ["mcu", "os"]) {
+  if !pt.expect_subnodes(cx, ["mcu", "os", "drivers"]) {
     return builder;  // TODO(farcaller): report error?
+  }
+
+  match pt.get_by_path("drivers") {
+    Some(node) => ::drivers_pt::build_drivers(&mut builder, cx, node),
+    None => (),  // TODO(farcaller): should it actaully fail?
   }
 
   match pt.get_by_path("mcu") {
