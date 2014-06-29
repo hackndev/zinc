@@ -19,9 +19,10 @@ use syntax::ext::base::ExtCtxt;
 use builder::{Builder, TokenString};
 use node;
 
-mod pinmap;
 mod system_clock_pt;
 mod timer_pt;
+mod pin_pt;
+mod pinmap;
 
 pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
     node: &Gc<node::Node>) {
@@ -45,123 +46,9 @@ pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
   });
 
   node.get_by_path("gpio").and_then(|sub| -> Option<bool> {
-    build_gpio(builder, cx, sub);
+    pin_pt::build_pin(builder, cx, sub);
     None
   });
-}
-
-pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
-  if !node.expect_no_attributes(cx) { return }
-
-  for (port_path, port_node) in node.subnodes.iter() {
-    if !port_node.expect_no_attributes(cx) { continue }
-
-    let port_str = format!("pin::Port{}", match from_str::<uint>(port_path.as_slice()).unwrap() {
-      0..4 => port_path,
-      other => {
-        cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
-            format!("unknown port `{}`, allowed values: 0..4",
-                other).as_slice());
-        continue;
-      }
-    });
-    let port = TokenString(port_str);
-
-    for (pin_path, pin_node) in port_node.subnodes.iter() {
-      if pin_node.name.is_none() {
-        cx.parse_sess().span_diagnostic.span_err(pin_node.name_span,
-            "pin node must have a name");
-        continue;
-      }
-
-      let direction_str = match pin_node.get_string_attr("direction")
-          .unwrap().as_slice() {
-        "out" => "hal::gpio::Out",
-        "in"  => "hal::gpio::In",
-        other => {
-          let attr = pin_node.get_attr("direction");
-          cx.parse_sess().span_diagnostic.span_err(attr.value_span,
-              format!("unknown direction `{}`, allowed values: `in`, `out`",
-                  other).as_slice());
-          continue;
-        }
-      };
-      let direction = TokenString(direction_str.to_str());
-
-      let pin_str = match from_str::<uint>(pin_path.as_slice()).unwrap() {
-        0..31 => pin_path,
-        other => {
-          cx.parse_sess().span_diagnostic.span_err(pin_node.path_span,
-              format!("unknown pin `{}`, allowed values: 0..31",
-                  other).as_slice());
-          continue;
-        }
-      };
-
-      let port_def = pinmap::port_def();
-      let function_str = match pin_node.get_string_attr("function") {
-        None => "GPIO".to_str(),
-        Some(fun) => {
-          let pins = port_def.get(port_path);
-          let maybe_pin = pins.get(from_str(pin_path.as_slice()).unwrap());
-          match maybe_pin {
-            &None => {
-              cx.parse_sess().span_diagnostic.span_err(
-                  pin_node.get_attr("function").value_span,
-                  format!("unknown pin function `{}`, only GPIO avaliable on this pin",
-                      fun).as_slice());
-              continue;
-            }
-            &Some(ref pin_funcs) => {
-              let maybe_func = pin_funcs.find(&fun);
-              match maybe_func {
-                None => {
-                  let avaliable: Vec<String> = pin_funcs.keys().map(|k|{k.to_str()}).collect();
-                  cx.parse_sess().span_diagnostic.span_err(
-                      pin_node.get_attr("function").value_span,
-                      format!("unknown pin function `{}`, allowed functions: {}",
-                          fun, avaliable.connect(", ")).as_slice());
-                  continue;
-                },
-                Some(func_idx) => {
-                  format!("AltFunction{}", func_idx)
-                }
-              }
-            }
-          }
-        }
-      };
-
-      let function = TokenString(function_str);
-      let pin = TokenString(format!("{}u8", pin_str));
-      let pin_name = TokenString(pin_node.name.clone().unwrap());
-      let pin_name_conf = TokenString(format!(
-          "{}_conf", pin_node.name.clone().unwrap()));
-
-      pin_node.type_name.set(Some("zinc::hal::lpc17xx::gpio::GPIO"));
-
-      let st_conf = quote_stmt!(&*cx,
-          let $pin_name_conf = {
-            use zinc::hal;
-            use zinc::hal::lpc17xx::{pin, gpio};
-            let conf = gpio::GPIOConf {
-              pin: pin::PinConf {
-                port: $port,
-                pin: $pin,
-                function: pin::$function,
-              },
-              direction: $direction,
-            };
-            conf.pin.setup();
-            conf
-          }
-      );
-      let st = quote_stmt!(&*cx, let $pin_name = $pin_name_conf.setup() );
-      builder.add_main_statement(st_conf);
-      builder.add_main_statement(st);
-    }
-  }
 }
 
 pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
