@@ -22,7 +22,7 @@ extern {
 
 /// Returns the address of main stack base (end of ram).
 pub fn stack_base() -> u32 {
-  (&__STACK_BASE as *u32) as u32
+  (&__STACK_BASE as *const u32) as u32
 }
 
 /// Returns the current stack limit.

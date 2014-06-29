@@ -31,7 +31,7 @@ pub static STATIC_LOCK: Lock = Lock { locked: Unsafe { value: 0, marker1: Invari
 
 #[cfg(not(test))]
 #[inline(always)]
-unsafe fn exclusive_load(addr: *u32) -> u32 {
+unsafe fn exclusive_load(addr: *const u32) -> u32 {
   let mut value: u32;
   asm!("ldrex $0, [$1]"
        : "=r"(value)
@@ -43,7 +43,7 @@ unsafe fn exclusive_load(addr: *u32) -> u32 {
 }
 
 #[cfg(test)]
-unsafe fn exclusive_load(addr: *u32) -> u32 { unimplemented!() }
+unsafe fn exclusive_load(addr: *const u32) -> u32 { unimplemented!() }
 
 #[cfg(not(test))]
 #[inline(always)]
