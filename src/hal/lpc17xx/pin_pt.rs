@@ -27,7 +27,7 @@ pub fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt,
   for (port_path, port_node) in node.subnodes.iter() {
     if !port_node.expect_no_attributes(cx) { continue }
 
-    let port_str = format!("pin::Port{}", match from_str::<uint>(port_path.as_slice()).unwrap() {
+    let port_str = format!("Port{}", match from_str::<uint>(port_path.as_slice()).unwrap() {
       0..4 => port_path,
       other => {
         cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
@@ -45,16 +45,19 @@ pub fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt,
         continue;
       }
 
-      let direction_str = match pin_node.get_string_attr("direction")
-          .unwrap().as_slice() {
-        "out" => "hal::gpio::Out",
-        "in"  => "hal::gpio::In",
-        other => {
-          let attr = pin_node.get_attr("direction");
-          cx.parse_sess().span_diagnostic.span_err(attr.value_span,
-              format!("unknown direction `{}`, allowed values: `in`, `out`",
-                  other).as_slice());
-          continue;
+      let direction_str = if pin_node.get_string_attr("function").is_some() {
+        "core::option::None"
+      } else {
+        match pin_node.get_string_attr("direction").unwrap().as_slice() {
+          "out" => "core::option::Some(zinc::hal::pin::Out)",
+          "in"  => "core::option::Some(zinc::hal::pin::In)",
+          other => {
+            let attr = pin_node.get_attr("direction");
+            cx.parse_sess().span_diagnostic.span_err(attr.value_span,
+                format!("unknown direction `{}`, allowed values: `in`, `out`",
+                    other).as_slice());
+            continue;
+          }
         }
       };
       let direction = TokenString(direction_str.to_str());
@@ -106,29 +109,16 @@ pub fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt,
       let function = TokenString(function_str);
       let pin = TokenString(format!("{}u8", pin_str));
       let pin_name = TokenString(pin_node.name.clone().unwrap());
-      let pin_name_conf = TokenString(format!(
-          "{}_conf", pin_node.name.clone().unwrap()));
 
-      pin_node.type_name.set(Some("zinc::hal::lpc17xx::gpio::GPIO"));
+      pin_node.type_name.set(Some("zinc::hal::lpc17xx::pin::Pin"));
 
-      let st_conf = quote_stmt!(&*cx,
-          let $pin_name_conf = {
-            use zinc::hal;
-            use zinc::hal::lpc17xx::{pin, gpio};
-            let conf = gpio::GPIOConf {
-              pin: pin::PinConf {
-                port: $port,
-                pin: $pin,
-                function: pin::$function,
-              },
-              direction: $direction,
-            };
-            conf.pin.setup();
-            conf
-          }
+      let st = quote_stmt!(&*cx,
+          let $pin_name = zinc::hal::lpc17xx::pin::Pin::new(
+              zinc::hal::lpc17xx::pin::$port,
+              $pin,
+              zinc::hal::lpc17xx::pin::$function,
+              $direction);
       );
-      let st = quote_stmt!(&*cx, let $pin_name = $pin_name_conf.setup() );
-      builder.add_main_statement(st_conf);
       builder.add_main_statement(st);
     }
   }
@@ -150,25 +140,14 @@ mod test {
       let mut builder = Builder::new(pt);
       super::build_pin(&mut builder, cx, pt.get_by_path("gpio").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 2);
+      assert!(builder.main_stmts.len() == 1);
 
       assert_equal_source(builder.main_stmts.get(0),
-          "let p1_conf = {
-            use zinc::hal;
-            use zinc::hal::lpc17xx::{pin, gpio};
-            let conf = gpio::GPIOConf {
-              pin: pin::PinConf {
-                port: pin::Port0,
-                pin: 1u8,
-                function: pin::GPIO,
-              },
-              direction: hal::gpio::In,
-            };
-            conf.pin.setup();
-            conf
-          };");
-      assert_equal_source(builder.main_stmts.get(1),
-          "let p1 = p1_conf.setup();");
+          "let p1 = zinc::hal::lpc17xx::pin::Pin::new(
+               zinc::hal::lpc17xx::pin::Port0,
+               1u8,
+               zinc::hal::lpc17xx::pin::GPIO,
+               core::option::Some(zinc::hal::pin::In));");
     });
   }
 
@@ -183,25 +162,14 @@ mod test {
       let mut builder = Builder::new(pt);
       super::build_pin(&mut builder, cx, pt.get_by_path("gpio").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 2);
+      assert!(builder.main_stmts.len() == 1);
 
       assert_equal_source(builder.main_stmts.get(0),
-          "let p2_conf = {
-            use zinc::hal;
-            use zinc::hal::lpc17xx::{pin, gpio};
-            let conf = gpio::GPIOConf {
-              pin: pin::PinConf {
-                port: pin::Port0,
-                pin: 2u8,
-                function: pin::GPIO,
-              },
-              direction: hal::gpio::Out,
-            };
-            conf.pin.setup();
-            conf
-          };");
-      assert_equal_source(builder.main_stmts.get(1),
-          "let p2 = p2_conf.setup();");
+          "let p2 = zinc::hal::lpc17xx::pin::Pin::new(
+               zinc::hal::lpc17xx::pin::Port0,
+               2u8,
+               zinc::hal::lpc17xx::pin::GPIO,
+               core::option::Some(zinc::hal::pin::Out));");
     });
   }
 
@@ -216,25 +184,14 @@ mod test {
       let mut builder = Builder::new(pt);
       super::build_pin(&mut builder, cx, pt.get_by_path("gpio").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 2);
+      assert!(builder.main_stmts.len() == 1);
 
       assert_equal_source(builder.main_stmts.get(0),
-          "let p3_conf = {
-            use zinc::hal;
-            use zinc::hal::lpc17xx::{pin, gpio};
-            let conf = gpio::GPIOConf {
-              pin: pin::PinConf {
-                port: pin::Port0,
-                pin: 3u8,
-                function: pin::AltFunction2,
-              },
-              direction: hal::gpio::Out,
-            };
-            conf.pin.setup();
-            conf
-          };");
-      assert_equal_source(builder.main_stmts.get(1),
-          "let p3 = p3_conf.setup();");
+          "let p3 = zinc::hal::lpc17xx::pin::Pin::new(
+               zinc::hal::lpc17xx::pin::Port0,
+               3u8,
+               zinc::hal::lpc17xx::pin::AltFunction2,
+               core::option::None);");
     });
   }
 }

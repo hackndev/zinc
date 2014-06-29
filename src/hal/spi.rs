@@ -23,8 +23,6 @@ As SPI performs read and write as one operation, special care should be taken if
 peripheral. The best way is to always use `transfer()`.
 */
 
-#[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::ssp::SPIConf;
-
 /// SPI trait.
 pub trait SPI {
   /// Writes a byte over SPI.

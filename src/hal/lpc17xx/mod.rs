@@ -15,10 +15,9 @@
 
 //! HAL for NXP LPC17xx.
 
-pub mod gpio;
 pub mod system_clock;
 pub mod peripheral_clock;
 pub mod pin;
-pub mod ssp;
+// pub mod ssp;
 pub mod timer;
-pub mod uart;
+// pub mod uart;

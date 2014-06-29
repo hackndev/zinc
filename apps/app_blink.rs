@@ -47,11 +47,14 @@ platformtree!(
 
 #[no_split_stack]
 fn run(args: &pt::run_args) {
+  use zinc::hal::pin::GPIO;
+  use zinc::hal::timer::Timer;
+
   args.led1.set_high();
   args.led2.set_low();
-  (args.timer as &zinc::hal::timer::Timer).wait(1);
+  args.timer.wait(1);
 
   args.led1.set_low();
   args.led2.set_high();
-  (args.timer as &zinc::hal::timer::Timer).wait(1);
+  args.timer.wait(1);
 }
