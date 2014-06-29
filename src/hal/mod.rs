@@ -29,7 +29,6 @@ and each such struct has a `setup()` method that configures the hardware
 
 pub mod mem_init;
 pub mod gpio;
-pub mod init;
 pub mod pin;
 pub mod spi;
 pub mod stack;

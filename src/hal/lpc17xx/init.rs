@@ -20,15 +20,8 @@ This module includes code for setting up the clock, flash, access time and
 performing initial peripheral configuration.
 */
 
-use hal::mem_init::init_data;
-use hal::stack;
-
 #[path="../../lib/ioreg.rs"] mod ioreg;
 #[path="../../lib/wait_for.rs"] mod wait_for;
-
-extern {
-  static _eglobals: u32;
-}
 
 /// PLL clock source.
 pub enum ClockSource {
@@ -67,12 +60,6 @@ pub struct Clock {
   pub pll: PLL0,
 }
 
-/// MCU configuration.
-pub struct SysConf {
-  /// Clock configuration.
-  pub clock: Clock,
-}
-
 // TODO(farcaller): move to peripheral_clock?
 static mut SystemClock: u32 = 0;
 
@@ -80,20 +67,6 @@ static mut SystemClock: u32 = 0;
 #[inline(always)]
 pub fn system_clock() -> u32 {
   unsafe { SystemClock }
-}
-
-/// Performs the MCU initialization.
-impl SysConf {
-  pub fn setup(&self) {
-    init_stack();
-    init_data();
-    init_clock(&self.clock);
-  }
-}
-
-#[inline(always)]
-fn init_stack() {
-  stack::set_stack_limit((&_eglobals as *u32) as u32);
 }
 
 #[inline(always)]
