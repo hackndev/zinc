@@ -21,6 +21,7 @@ use node;
 
 mod pinmap;
 mod system_clock_pt;
+mod timer_pt;
 
 pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
     node: &Gc<node::Node>) {
@@ -34,7 +35,7 @@ pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
   });
 
   node.get_by_path("timer").and_then(|sub| -> Option<bool> {
-    build_timer(builder, cx, sub);
+    timer_pt::build_timer(builder, cx, sub);
     None
   });
 
@@ -47,57 +48,6 @@ pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
     build_gpio(builder, cx, sub);
     None
   });
-}
-
-pub fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
-  if !node.expect_no_attributes(cx) {
-    return;
-  }
-
-  for (path, sub) in node.subnodes.iter() {
-    if !sub.expect_attributes(cx, [
-        ("counter", node::IntAttribute),
-        ("divisor", node::IntAttribute)]) {
-      continue;
-    }
-
-    if sub.name.is_none() {
-      cx.parse_sess().span_diagnostic.span_err(sub.name_span,
-          "timer node must have a name");
-      continue;
-    }
-
-    let name = TokenString(sub.name.clone().unwrap());
-    let timer_index: uint = from_str(path.as_slice()).unwrap();
-    let counter: u32 = sub.get_int_attr("counter").unwrap() as u32;
-    let divisor: u8 = sub.get_int_attr("divisor").unwrap() as u8;
-
-    let timer_name = match timer_index {
-      0..3 => TokenString(format!("timer::Timer{}", timer_index)),
-      other => {
-        cx.parse_sess().span_diagnostic.span_err(sub.path_span,
-            format!("unknown timer index `{}`, allowed indexes: 0, 1, 2, 3",
-                other).as_slice());
-        continue;
-      }
-    };
-
-    sub.type_name.set(Some("zinc::hal::lpc17xx::timer::Timer"));
-
-    let st = quote_stmt!(&*cx,
-        let $name = {
-          use zinc::hal::lpc17xx::timer;
-          let conf = timer::TimerConf {
-            timer: $timer_name,
-            counter: $counter,
-            divisor: $divisor,
-          };
-          conf.setup()
-        }
-    );
-    builder.add_main_statement(st);
-  }
 }
 
 pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,

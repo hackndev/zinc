@@ -23,33 +23,6 @@ fn fails_to_parse_garbage_attrs() {
 }
 
 #[test]
-fn builds_timer() {
-  with_parsed("
-    timer {
-      tim@1 {
-        counter = 25;
-        divisor = 4;
-      }
-    }", |cx, failed, pt| {
-    let mut builder = Builder::new(pt);
-    lpc17xx_pt::build_timer(&mut builder, cx, pt.get_by_path("timer").unwrap());
-    assert!(unsafe{*failed} == false);
-    assert!(builder.main_stmts.len() == 1);
-
-    assert_equal_source(builder.main_stmts.get(0),
-        "let tim = {
-          use zinc::hal::lpc17xx::timer;
-          let conf = timer::TimerConf {
-            timer: timer::Timer1,
-            counter: 25u32,
-            divisor: 4u8,
-          };
-          conf.setup()
-        };");
-  });
-}
-
-#[test]
 fn builds_input_gpio() {
   with_parsed("
     gpio {
