@@ -25,36 +25,9 @@ use core::intrinsics::abort;
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, UART0Clock, UART2Clock, UART3Clock};
 use drivers::chario::CharIO;
 use hal::uart;
-use hal::pin::PinConf;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 #[path="../../lib/wait_for.rs"] mod wait_for;
-
-mod reg {
-  use lib::volatile_cell::VolatileCell;
-
-  ioreg!(UART: RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
-  reg_r!( UART, RBR,          RBR_THR_DLL)
-  reg_w!( UART,      set_THR, RBR_THR_DLL)
-  reg_rw!(UART, DLL, set_DLL, RBR_THR_DLL)
-  reg_rw!(UART, DLM, set_DLM, DLM_IER)
-  reg_rw!(UART, IER, set_IER, DLM_IER)
-  reg_r!( UART, IIR,          IIR_FCR)
-  reg_w!( UART,      set_FCR, IIR_FCR)
-  reg_rw!(UART, LCR, set_LCR, LCR)
-  reg_r!( UART, LSR,          LSR)
-  reg_rw!(UART, SCR, set_SCR, SCR)
-  reg_rw!(UART, ACR, set_ACR, ACR)
-  reg_rw!(UART, ICR, set_ICR, ICR)
-  reg_rw!(UART, FDR, set_FDR, FDR)
-  reg_rw!(UART, TER, set_TER, TER)
-
-  extern {
-    #[link_name="iomem_UART0"] pub static UART0: UART;
-    #[link_name="iomem_UART2"] pub static UART2: UART;
-    #[link_name="iomem_UART3"] pub static UART3: UART;
-  }
-}
 
 /// Available UART peripherals.
 pub enum UARTPeripheral {
@@ -141,25 +114,6 @@ static LCRModeMask: u8 = 0b1_11_1_1_11;
 
 static LSRTHREmpty: u8 = 0x20;
 
-/// UART configuration.
-pub struct UARTConf {
-  /// Peripheral to use.
-  pub peripheral: UARTPeripheral,
-  /// Baud rate.
-  pub baudrate: u32,
-  /// Word length, must be 5, 6, 7 or 8. Commonly 8.
-  pub word_len: u8,
-  /// Parity mode. Commonly None.
-  pub parity: uart::Parity,
-  /// Stop bits, must be 1 or 2. Commonly 1.
-  pub stop_bits: u8,
-
-  /// RX pin to use.
-  pub rx: PinConf,
-  /// TX pin to use.
-  pub tx: PinConf,
-}
-
 pub struct UART {
   reg: &'static reg::UART,
   clock: PeripheralClock,
@@ -183,28 +137,23 @@ impl UARTPeripheral {
   }
 }
 
-impl UARTConf {
-  /// Returns platform-specific UART object that implements CharIO trait.
-  pub fn setup(&self) -> UART {
+impl UART {
+  pub fn new(peripheral: UARTPeripheral, baudrate: u32, word_len: u8,
+      parity: uart::Parity, stop_bits: u8) -> UART {
     let uart = UART {
-      reg: self.peripheral.reg(),
-      clock: self.peripheral.peripheral_clock(),
+      reg: peripheral.reg(),
+      clock: peripheral.peripheral_clock(),
     };
 
     uart.clock.enable();
-    uart.set_baud_rate(self.baudrate);
-    uart.set_mode(WordLen::from_u8(self.word_len), self.parity,
-        StopBit::from_u8(self.stop_bits));
+    uart.set_baud_rate(baudrate);
+    uart.set_mode(WordLen::from_u8(word_len), parity,
+        StopBit::from_u8(stop_bits));
     uart.set_fifo_enabled(true, true);
-
-    self.rx.setup();
-    self.tx.setup();
 
     uart
   }
-}
 
-impl UART {
   #[no_split_stack]
   fn uart_clock(&self) -> u32 {
     self.clock.frequency()
@@ -318,5 +267,31 @@ impl CharIO for UART {
   fn putc(&self, value: char) {
     wait_for!(self.reg.LSR() as u8 & LSRTHREmpty == LSRTHREmpty);
     self.reg.set_THR(value as u32);
+  }
+}
+
+mod reg {
+  use lib::volatile_cell::VolatileCell;
+
+  ioreg!(UART: RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
+  reg_r!( UART, RBR,          RBR_THR_DLL)
+  reg_w!( UART,      set_THR, RBR_THR_DLL)
+  reg_rw!(UART, DLL, set_DLL, RBR_THR_DLL)
+  reg_rw!(UART, DLM, set_DLM, DLM_IER)
+  reg_rw!(UART, IER, set_IER, DLM_IER)
+  reg_r!( UART, IIR,          IIR_FCR)
+  reg_w!( UART,      set_FCR, IIR_FCR)
+  reg_rw!(UART, LCR, set_LCR, LCR)
+  reg_r!( UART, LSR,          LSR)
+  reg_rw!(UART, SCR, set_SCR, SCR)
+  reg_rw!(UART, ACR, set_ACR, ACR)
+  reg_rw!(UART, ICR, set_ICR, ICR)
+  reg_rw!(UART, FDR, set_FDR, FDR)
+  reg_rw!(UART, TER, set_TER, TER)
+
+  extern {
+    #[link_name="iomem_UART0"] pub static UART0: UART;
+    #[link_name="iomem_UART2"] pub static UART2: UART;
+    #[link_name="iomem_UART3"] pub static UART3: UART;
   }
 }

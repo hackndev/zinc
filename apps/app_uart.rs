@@ -6,7 +6,7 @@ extern crate core;
 extern crate zinc;
 #[phase(plugin)] extern crate macro_platformtree;
 
-platformtree_verbose!(
+platformtree!(
   lpc17xx@mcu {
     clock {
       source = "main-oscillator";
@@ -59,21 +59,22 @@ platformtree_verbose!(
 
 #[no_split_stack]
 fn run(args: &pt::run_args) {
-  let uart = args.uart as &zinc::drivers::chario::CharIO;
-  let timer = args.timer as &zinc::hal::timer::Timer;
+  use zinc::drivers::chario::CharIO;
+  use zinc::hal::timer::Timer;
+  use zinc::hal::pin::GPIO;
 
-  uart.puts("Hello, world\n");
+  args.uart.puts("Hello, world\n");
 
   let mut i = 0;
   loop {
     args.txled.set_high();
-    uart.puts("Waiting for ");
-    uart.puti(i);
-    uart.puts(" seconds...\n");
+    args.uart.puts("Waiting for ");
+    args.uart.puti(i);
+    args.uart.puts(" seconds...\n");
 
     i += 1;
     args.txled.set_low();
 
-    timer.wait(1);
+    args.timer.wait(1);
   }
 }

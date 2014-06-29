@@ -66,10 +66,16 @@ impl Builder {
     let mut stmts = vec!(init_stack_stmt, init_data_stmt);
     stmts = stmts.append(self.main_stmts.as_slice());
 
-    let empty_span = DUMMY_SP; // TODO(farcaller): fix span
-    let body = cx.block(empty_span, stmts, None);
+    let body = cx.block(DUMMY_SP, stmts, None);
 
-    self.item_fn(cx, empty_span, "main", body)
+    let unused_variable = cx.meta_word(DUMMY_SP,
+        InternedString::new("unused_variable"));
+    let allow = cx.meta_list(
+        DUMMY_SP,
+        InternedString::new("allow"), vec!(unused_variable));
+    let allow_noncamel = cx.attribute(DUMMY_SP, allow);
+
+    self.item_fn(cx, DUMMY_SP, "main", [allow_noncamel], body)
   }
 
   fn emit_morestack(&self, cx: &ExtCtxt) -> Gc<ast::Item> {
@@ -80,7 +86,7 @@ impl Builder {
     ));
     let empty_span = DUMMY_SP;
     let body = cx.block(empty_span, vec!(stmt), None);
-    self.item_fn(cx, empty_span, "__morestack", body)
+    self.item_fn(cx, empty_span, "__morestack", [], body)
   }
 
   pub fn emit_items(&self, cx: &ExtCtxt) -> Vec<Gc<ast::Item>> {
@@ -99,15 +105,18 @@ impl Builder {
   }
 
   fn item_fn(&self, cx: &ExtCtxt, span: Span, name: &str,
-      body: ast::P<ast::Block>) -> Gc<ast::Item> {
+      local_attrs: &[ast::Attribute], body: ast::P<ast::Block>)
+      -> Gc<ast::Item> {
     let attr_no_mangle = cx.attribute(span, cx.meta_word(
         span, InternedString::new("no_mangle")));
     let attr_no_split_stack = cx.attribute(span, cx.meta_word(
         span, InternedString::new("no_split_stack")));
+    let mut attrs = vec!(attr_no_mangle, attr_no_split_stack);
+    attrs = attrs.append(local_attrs);
 
     box(GC) ast::Item {
       ident: cx.ident_of(name),
-      attrs: vec!(attr_no_mangle, attr_no_split_stack),
+      attrs: attrs,
       id: ast::DUMMY_NODE_ID,
       node: ast::ItemFn(
           cx.fn_decl(Vec::new(), cx.ty_nil()),

@@ -26,8 +26,6 @@ pub mod parser;
 pub mod builder;
 
 #[path="../src/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
-#[cfg(test)]
-#[path="../src/hal/lpc17xx/platformtree_test.rs"] mod lpc17xx_pt_test;
 
 #[cfg(test)] mod test_helpers;
 #[cfg(test)] mod parser_test;
