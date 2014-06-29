@@ -31,7 +31,7 @@ use syntax::print::pprust;
 use syntax::util::small_vector::SmallVector;
 
 use platformtree::parser::Parser;
-use platformtree::builder::build_platformtree;
+use platformtree::builder::Builder;
 
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
@@ -42,7 +42,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     -> Box<MacResult> {
   let pt = Parser::new(cx, tts).parse_platformtree();
-  let builder = build_platformtree(cx, &pt.unwrap());
+  let builder = Builder::build(cx, pt.unwrap());
 
   let items = builder.emit_items(cx);
   MacItems::new(items)

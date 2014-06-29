@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::rc::Rc;
 use std::gc::{Gc, GC};
 use syntax::ast;
 use syntax::codemap::{respan, DUMMY_SP};
@@ -26,7 +27,7 @@ use node;
 
 use super::{Builder, TokenString};
 
-pub fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
+pub fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   if !node.expect_no_attributes(cx) ||
      !node.expect_subnodes(cx, ["single_task"]) {
     return;
@@ -45,7 +46,7 @@ pub fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) 
 }
 
 fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
+    node: Rc<node::Node>) {
   let some_loop_fn = node.get_required_string_attr(cx, "loop");
   match some_loop_fn {
     Some(loop_fn) => {
@@ -69,7 +70,7 @@ fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
 }
 
 fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
-    struct_name: &String, node: &Gc<node::Node>) -> Gc<ast::Expr> {
+    struct_name: &String, node: Rc<node::Node>) -> Gc<ast::Expr> {
   let mut fields = Vec::new();
   let mut expr_fields = Vec::new();
   let node_attr = node.attributes.borrow();
@@ -167,8 +168,8 @@ mod test {
           loop = \"run\";
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
-      build_os(&mut builder, cx, pt.get_by_path("os").unwrap());
+      let mut builder = Builder::new(pt.clone());
+      build_os(&mut builder, cx, pt.get_by_path("os").unwrap().clone());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
 
@@ -194,10 +195,10 @@ mod test {
 
       named@ref;
       ", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
+      let mut builder = Builder::new(pt.clone());
       pt.get_by_path("ref").unwrap().type_name.set(Some("hello::world::Struct"));
 
-      build_os(&mut builder, cx, pt.get_by_path("os").unwrap());
+      build_os(&mut builder, cx, pt.get_by_path("os").unwrap().clone());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
       assert!(builder.type_items.len() == 1);

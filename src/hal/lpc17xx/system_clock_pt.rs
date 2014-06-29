@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 
@@ -21,7 +21,7 @@ use builder::{Builder, TokenString};
 use node;
 
 pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
+    node: Rc<node::Node>) {
   if !node.expect_attributes(cx, [("source", node::StrAttribute)]) {
     return;
   }
@@ -85,7 +85,7 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   let sysfreq = source_freq * 2 * pll_m as uint / pll_n as uint
       / pll_divisor as uint;
   node.attributes.borrow_mut().insert("system_frequency".to_str(),
-      node::Attribute::new_nosp(node::IntValue(sysfreq)));
+      Rc::new(node::Attribute::new_nosp(node::IntValue(sysfreq))));
 
   let ex = quote_expr!(&*cx,
       {
@@ -122,7 +122,7 @@ mod test {
           divisor = 4;
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
+      let mut builder = Builder::new(pt.clone());
       super::build_clock(&mut builder, cx, pt.get_by_path("clock").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
@@ -156,9 +156,9 @@ mod test {
           divisor = 4;
         }
       }", |cx, _, pt| {
-      let mut builder = Builder::new(pt);
+      let mut builder = Builder::new(pt.clone());
       let node = pt.get_by_path("clock").unwrap();
-      super::build_clock(&mut builder, cx, node);
+      super::build_clock(&mut builder, cx, node.clone());
 
       let out_freq = node.get_int_attr("system_frequency");
       assert!(out_freq.is_some());

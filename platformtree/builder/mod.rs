@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::rc::Rc;
 use std::gc::{Gc, GC};
 use syntax::abi;
 use syntax::ast::TokenTree;
@@ -32,15 +33,39 @@ mod os;
 pub struct Builder {
   pub main_stmts: Vec<Gc<ast::Stmt>>,
   pub type_items: Vec<Gc<ast::Item>>,
-  pub pt: Gc<node::PlatformTree>,
+  pub pt: Rc<node::PlatformTree>,
 }
 
 impl Builder {
-  pub fn new(pt: &Gc<node::PlatformTree>) -> Builder {
+  pub fn build(cx: &mut ExtCtxt, pt: Rc<node::PlatformTree>) -> Builder {
+    let mut builder = Builder::new(pt.clone());
+
+    if !pt.expect_subnodes(cx, ["mcu", "os", "drivers"]) {
+      return builder;  // TODO(farcaller): report error?
+    }
+
+    match pt.get_by_path("mcu") {
+      Some(node) => mcu::build_mcu(&mut builder, cx, node),
+      None => (),  // TODO(farcaller): should it actaully fail?
+    }
+
+    match pt.get_by_path("os") {
+      Some(node) => os::build_os(&mut builder, cx, node),
+      None => {
+        // TODO(farcaller): provide span for whole PT?
+        cx.parse_sess().span_diagnostic.span_err(DUMMY_SP,
+            "root node `os` must be present");
+      }
+    }
+
+    builder
+  }
+
+  pub fn new(pt: Rc<node::PlatformTree>) -> Builder {
     Builder {
       main_stmts: Vec::new(),
       type_items: Vec::new(),
-      pt: *pt,
+      pt: pt,
     }
   }
 
@@ -137,35 +162,6 @@ impl ToTokens for TokenString {
     let &TokenString(ref s) = self;
     (cx as &ExtParseUtils).parse_tts(s.clone())
   }
-}
-
-pub fn build_platformtree(cx: &mut ExtCtxt, pt: &Gc<node::PlatformTree>) -> Builder {
-  let mut builder = Builder::new(pt);
-
-  if !pt.expect_subnodes(cx, ["mcu", "os", "drivers"]) {
-    return builder;  // TODO(farcaller): report error?
-  }
-
-  match pt.get_by_path("drivers") {
-    Some(node) => ::drivers_pt::build_drivers(&mut builder, cx, node),
-    None => (),  // TODO(farcaller): should it actaully fail?
-  }
-
-  match pt.get_by_path("mcu") {
-    Some(node) => mcu::build_mcu(&mut builder, cx, node),
-    None => (),  // TODO(farcaller): should it actaully fail?
-  }
-
-  match pt.get_by_path("os") {
-    Some(node) => os::build_os(&mut builder, cx, node),
-    None => {
-      // TODO(farcaller): provide span for whole PT?
-      cx.parse_sess().span_diagnostic.span_err(DUMMY_SP,
-          "root node `os` must be present");
-    }
-  }
-
-  builder
 }
 
 #[cfg(test)]

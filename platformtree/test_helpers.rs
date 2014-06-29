@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::rc::Rc;
 use std::gc::Gc;
 use syntax::ast;
 use syntax::codemap::MacroBang;
@@ -25,7 +26,7 @@ use syntax::ext::quote::rt::ExtParseUtils;
 use syntax::parse::new_parse_sess_special_handler;
 use syntax::print::pprust;
 
-use builder::build_platformtree;
+use builder::Builder;
 use node;
 use parser::Parser;
 
@@ -38,25 +39,25 @@ pub fn fails_to_parse(src: &str) {
 
 pub fn fails_to_build(src: &str) {
   with_parsed(src, |cx, failed, pt| {
-    build_platformtree(cx, pt);
+    Builder::build(cx, pt);
     assert!(unsafe{*failed} == true);
   });
 }
 
-pub fn with_parsed(src: &str, block: |&mut ExtCtxt, *mut bool, &Gc<node::PlatformTree>|) {
+pub fn with_parsed(src: &str, block: |&mut ExtCtxt, *mut bool, Rc<node::PlatformTree>|) {
   with_parsed_tts(src, |cx, failed, pt| {
     assert!(unsafe{*failed} == false);
-    block(cx, failed, &pt.unwrap());
+    block(cx, failed, pt.unwrap());
   });
 }
 
-pub fn with_parsed_node(name: &str, src: &str, block: |&Gc<node::Node>|) {
+pub fn with_parsed_node(name: &str, src: &str, block: |Rc<node::Node>|) {
   with_parsed(src, |_, _, pt| {
     block(pt.get_by_path(name).unwrap());
   });
 }
 
-pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<Gc<node::PlatformTree>>|) {
+pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<Rc<node::PlatformTree>>|) {
   let mut failed = false;
   let failptr = &mut failed as *mut bool;
   let ce = box CustomEmmiter::new(failptr);

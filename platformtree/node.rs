@@ -15,7 +15,7 @@
 
 use std::cell::{Cell, RefCell};
 use std::collections::hashmap::HashMap;
-use std::gc::Gc;
+use std::rc::{Rc, Weak};
 use syntax::codemap::{Span, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 
@@ -82,8 +82,8 @@ pub struct Node {
   pub path: String,
   pub path_span: Span,
 
-  pub attributes: RefCell<HashMap<String, Attribute>>,
-  pub subnodes: HashMap<String, Gc<Node>>,
+  pub attributes: RefCell<HashMap<String, Rc<Attribute>>>,
+  pub subnodes: HashMap<String, Rc<Node>>,
 
   pub type_name: Cell<Option<&'static str>>,
 }
@@ -103,7 +103,7 @@ impl Node {
   }
 
   /// Returns attribute by name or fail!()s.
-  pub fn get_attr(&self, key: &str) -> Attribute {
+  pub fn get_attr(&self, key: &str) -> Rc<Attribute> {
     self.attributes.borrow().get(&key.to_str()).clone()
   }
 
@@ -243,8 +243,8 @@ impl Node {
   }
 
   /// Returns a subnode by path or None, if not found.
-  pub fn get_by_path<'a>(&'a self, path: &str) -> Option<&'a Gc<Node>> {
-    self.subnodes.find(&path.to_str())
+  pub fn get_by_path(&self, path: &str) -> Option<Rc<Node>> {
+    self.subnodes.find(&path.to_str()).and_then(|node| { Some(node.clone()) })
   }
 }
 
@@ -253,13 +253,13 @@ impl Node {
 /// Root nodes are stored by path in `nodes`, All the nmaed nodes are also
 /// stored by name in `named`.
 pub struct PlatformTree {
-  nodes: HashMap<String, Gc<Node>>,
-  named: HashMap<String, Gc<Node>>,
+  nodes: HashMap<String, Rc<Node>>,
+  named: HashMap<String, Weak<Node>>,
 }
 
 impl PlatformTree {
-  pub fn new(nodes: HashMap<String, Gc<Node>>, named: HashMap<String, Gc<Node>>)
-      -> PlatformTree {
+  pub fn new(nodes: HashMap<String, Rc<Node>>,
+      named: HashMap<String, Weak<Node>>) -> PlatformTree {
     PlatformTree {
       nodes: nodes,
       named: named,
@@ -267,13 +267,13 @@ impl PlatformTree {
   }
 
   /// Returns a node by name or None, if not found.
-  pub fn get_by_name<'a>(&'a self, name: &str) -> Option<&'a Gc<Node>> {
-    self.named.find(&name.to_str())
+  pub fn get_by_name(&self, name: &str) -> Option<Rc<Node>> {
+    self.named.find(&name.to_str()).and_then(|node| { Some(node.upgrade().unwrap().clone()) })
   }
 
   /// Returns a root node by path or None, if not found.
-  pub fn get_by_path<'a>(&'a self, name: &str) -> Option<&'a Gc<Node>> {
-    self.nodes.find(&name.to_str())
+  pub fn get_by_path(&self, name: &str) -> Option<Rc<Node>> {
+    self.nodes.find(&name.to_str()).and_then(|node| { Some(node.clone()) })
   }
 
   /// Returns true if PT has all of the requested root odes matched by path.

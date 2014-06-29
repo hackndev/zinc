@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 
 use builder::{Builder, TokenString};
 use node;
 
 pub fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
+    node: Rc<node::Node>) {
   if !node.expect_no_attributes(cx) {
     return;
   }
@@ -78,7 +78,7 @@ mod test {
           divisor = 4;
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
+      let mut builder = Builder::new(pt.clone());
       super::build_timer(&mut builder, cx, pt.get_by_path("timer").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);

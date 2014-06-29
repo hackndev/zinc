@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 
 use builder::{Builder, TokenString};
@@ -21,7 +21,7 @@ use node;
 use super::pinmap;
 
 pub fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
+    node: Rc<node::Node>) {
   if !node.expect_no_attributes(cx) { return }
 
   for (port_path, port_node) in node.subnodes.iter() {
@@ -137,7 +137,7 @@ mod test {
           p1@1 { direction = \"in\"; }
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
+      let mut builder = Builder::new(pt.clone());
       super::build_pin(&mut builder, cx, pt.get_by_path("gpio").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
@@ -159,7 +159,7 @@ mod test {
           p2@2 { direction = \"out\"; }
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
+      let mut builder = Builder::new(pt.clone());
       super::build_pin(&mut builder, cx, pt.get_by_path("gpio").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
@@ -181,7 +181,7 @@ mod test {
           p3@3 { direction = \"out\"; function = \"ad0_6\"; }
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
+      let mut builder = Builder::new(pt.clone());
       super::build_pin(&mut builder, cx, pt.get_by_path("gpio").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);

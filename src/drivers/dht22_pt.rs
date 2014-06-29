@@ -13,14 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
-use syntax::ext::build::AstBuilder;
 
-use builder::{Builder, TokenString};
+use builder::Builder;
 use node;
 
-pub fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
+pub fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   if !node.expect_no_subnodes(cx) {
     return;
   }

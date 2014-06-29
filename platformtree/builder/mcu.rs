@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 
 use lpc17xx_pt;
@@ -21,11 +21,11 @@ use node;
 
 use super::Builder;
 
-pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
+pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   match node.name {
     Some(ref name) => {
       match name.as_slice() {
-        "lpc17xx" => lpc17xx_pt::build_mcu(builder, cx, node),
+        "lpc17xx" => lpc17xx_pt::build_mcu(builder, cx, node.clone()),
         other => {
           cx.parse_sess().span_diagnostic.span_err(node.name_span,
               format!("unknown mcu `{}`", other).as_slice());

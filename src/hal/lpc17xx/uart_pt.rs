@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 
 use builder::{Builder, TokenString};
 use node;
 
 pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
+    node: Rc<node::Node>) {
   if !node.expect_no_attributes(cx) { return }
 
   for (path, sub) in node.subnodes.iter() {
@@ -92,9 +92,9 @@ pub fn build_uart_gpio(builder: &Builder, uart_idx: uint, name: &str,
   let direction = (if istx {"out"} else {"in"}).to_str();
   let function = format!("{}{}", if istx {"txd"} else {"rxd"}, uart_idx);
   node.attributes.borrow_mut().insert("direction".to_str(),
-        node::Attribute::new_nosp(node::StrValue(direction)));
+        Rc::new(node::Attribute::new_nosp(node::StrValue(direction))));
   node.attributes.borrow_mut().insert("function".to_str(),
-        node::Attribute::new_nosp(node::StrValue(function)));
+        Rc::new(node::Attribute::new_nosp(node::StrValue(function))));
 }
 
 #[cfg(test)]
@@ -123,7 +123,7 @@ mod test {
         uart_rx@1;
       }
       ", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
+      let mut builder = Builder::new(pt.clone());
       super::build_uart(&mut builder, cx, pt.get_by_path("uart").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
