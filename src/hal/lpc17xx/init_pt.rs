@@ -93,12 +93,11 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
         init::init_clock(
             &init::Clock {
               source: $clock_source,
-              pll: init::PLL0 {
-                enabled: true,
+              pll: core::option::Some(init::PLL0 {
                 m: $pll_m,
                 n: $pll_n,
                 divisor: $pll_divisor,
-              }
+              })
             }
         );
       }
@@ -134,12 +133,11 @@ mod test {
             init::init_clock(
                 &init::Clock {
                   source: init::Main(12000000),
-                  pll: init::PLL0 {
-                    enabled: true,
+                  pll: core::option::Some(init::PLL0 {
                     m: 50u8,
                     n: 3u8,
                     divisor: 4u8,
-                  },
+                  }),
                 }
             );
           };");

@@ -20,6 +20,8 @@ This module includes code for setting up the clock, flash, access time and
 performing initial peripheral configuration.
 */
 
+use core::option::{Option, Some, None};
+
 #[path="../../lib/ioreg.rs"] mod ioreg;
 #[path="../../lib/wait_for.rs"] mod wait_for;
 
@@ -42,8 +44,6 @@ pub enum ClockSource {
 /// Fcpu = Fcco / divisor
 /// ```
 pub struct PLL0 {
-  /// Specifies if PLL0 should be connected on boot.
-  pub enabled: bool,
   /// PLL multiplier.
   pub m: u8,
   /// PLL divisor.
@@ -57,7 +57,7 @@ pub struct Clock {
   /// Clocking source.
   pub source: ClockSource,
   /// PLL configuration.
-  pub pll: PLL0,
+  pub pll: Option<PLL0>,
 }
 
 // TODO(farcaller): move to peripheral_clock?
@@ -78,16 +78,17 @@ pub fn init_clock(clock: &Clock) {
   };
   let dst_clock: u32;
 
-  if clock.pll.enabled {
-    match clock.source {
-      Main(freq) => init_main_oscillator(freq),
-      _ => (),
-    }
-    dst_clock = (src_clock * clock.pll.m as u32 * 2) / clock.pll.n as u32 / clock.pll.divisor as u32;
-    init_flash_access(dst_clock);
-    init_pll(&clock.pll, clock.source);
-  } else {
-    dst_clock = src_clock;
+  match clock.pll {
+    Some(ref pll) => {
+      match clock.source {
+        Main(freq) => init_main_oscillator(freq),
+        _ => (),
+      }
+      dst_clock = (src_clock * pll.m as u32 * 2) / pll.n as u32 / pll.divisor as u32;
+      init_flash_access(dst_clock);
+      init_pll(pll, clock.source);
+    },
+    None => { dst_clock = src_clock; },
   }
 
   unsafe { SystemClock = dst_clock };
