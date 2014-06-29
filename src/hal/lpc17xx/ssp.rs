@@ -76,8 +76,9 @@ impl SPIConf {
 }
 
 /// Opaque object that manages the configured peripheral.
+#[allow(dead_code)]
 pub struct SSP {
-  peripheral: SSPPeripheral,
+  peripheral: SSPPeripheral, // TODO(farcaller): clean up the warning
   reg: &'static reg::SSP,
 }
 
