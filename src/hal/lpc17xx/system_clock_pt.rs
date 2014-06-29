@@ -31,11 +31,11 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   let clock_source = TokenString(match source.as_slice() {
     "internal-oscillator" => {
       source_freq = 4_000_000;
-      "init::Internal".to_str()
+      "system_clock::Internal".to_str()
     },
     "rtc-oscillator"      => {
       source_freq = 32_000;
-      "init::RTC".to_str()
+      "system_clock::RTC".to_str()
     },
     "main-oscillator"     => {
       let some_source_frequency =
@@ -45,7 +45,7 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
         "BAD".to_str()
       } else {
         source_freq = some_source_frequency.unwrap();
-        format!("init::Main({})", source_freq)
+        format!("system_clock::Main({})", source_freq)
       }
     },
     other => {
@@ -89,11 +89,11 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let ex = quote_expr!(&*cx,
       {
-        use zinc::hal::lpc17xx::init;
-        init::init_clock(
-            &init::Clock {
+        use zinc::hal::lpc17xx::system_clock;
+        system_clock::init_clock(
+            &system_clock::Clock {
               source: $clock_source,
-              pll: core::option::Some(init::PLL0 {
+              pll: core::option::Some(system_clock::PLL0 {
                 m: $pll_m,
                 n: $pll_n,
                 divisor: $pll_divisor,
@@ -129,11 +129,11 @@ mod test {
 
       assert_equal_source(builder.main_stmts.get(0),
           "{
-            use zinc::hal::lpc17xx::init;
-            init::init_clock(
-                &init::Clock {
-                  source: init::Main(12000000),
-                  pll: core::option::Some(init::PLL0 {
+            use zinc::hal::lpc17xx::system_clock;
+            system_clock::init_clock(
+                &system_clock::Clock {
+                  source: system_clock::Main(12000000),
+                  pll: core::option::Some(system_clock::PLL0 {
                     m: 50u8,
                     n: 3u8,
                     divisor: 4u8,

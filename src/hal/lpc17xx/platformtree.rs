@@ -20,7 +20,7 @@ use builder::{Builder, TokenString};
 use node;
 
 mod pinmap;
-mod init_pt;
+mod system_clock_pt;
 
 pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
     node: &Gc<node::Node>) {
@@ -29,7 +29,7 @@ pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
   }
 
   node.get_by_path("clock").and_then(|sub| -> Option<bool> {
-    init_pt::build_clock(builder, cx, sub);
+    system_clock_pt::build_clock(builder, cx, sub);
     None
   });
 
