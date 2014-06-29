@@ -48,7 +48,6 @@ extern crate core;
 #[cfg(test)] #[phase(syntax,link)] extern crate std;
 #[cfg(test)] extern crate native;
 
-pub mod boards;
 pub mod drivers;
 pub mod hal;
 pub mod lib;

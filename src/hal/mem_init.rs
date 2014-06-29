@@ -27,19 +27,19 @@ extern {
 
 #[inline(always)]
 pub fn init_stack() {
-  set_stack_limit((&_eglobals as *u32) as u32);
+  set_stack_limit((&_eglobals as *const u32) as u32);
 }
 
 /// Helper function to copy over .data from rom to ram and zero out .bss
 #[inline(always)]
 pub fn init_data() {
   unsafe {
-    let mut load_addr: *u32 = &_data_load;
+    let mut load_addr: *const u32 = &_data_load;
     let mut mem_addr: *mut u32 = &mut _data;
     while mem_addr < &mut _edata as *mut u32 {
       *mem_addr = *load_addr;
       mem_addr = ((mem_addr as u32) + 4) as *mut u32;
-      load_addr = ((load_addr as u32) + 4) as *u32;
+      load_addr = ((load_addr as u32) + 4) as *const u32;
     }
 
     mem_addr = &mut _bss as *mut u32;

@@ -43,7 +43,7 @@ impl<T> VolatileCell<T> {
   #[inline]
   pub fn set(&self, value: T) {
     unsafe {
-      volatile_store(&self.value as *T as *mut T, value)
+      volatile_store(&self.value as *const T as *mut T, value)
     }
   }
 }

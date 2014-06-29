@@ -46,10 +46,9 @@ pub struct Timer {
   reg: &'static reg::TIMER,
 }
 
-impl TimerConf {
-  /// Returns a platform-specific timer object that implements Timer trait.
-  pub fn setup(&self) -> Timer {
-    let (clock, reg) = match self.timer {
+impl Timer {
+  pub fn new(peripheral: TimerPeripheral, counter: u32, divisor: u8) -> Timer {
+    let (clock, reg) = match peripheral {
       Timer0 => (peripheral_clock::TIM0Clock, &reg::TIMER0),
       Timer1 => (peripheral_clock::TIM1Clock, &reg::TIMER1),
       Timer2 => (peripheral_clock::TIM2Clock, &reg::TIMER2),
@@ -57,11 +56,11 @@ impl TimerConf {
     };
 
     clock.enable();
-    clock.set_divisor(self.divisor);
+    clock.set_divisor(divisor);
 
     reg.set_CTCR(0);
     reg.set_TCR(2);
-    reg.set_PR(self.counter - 1);
+    reg.set_PR(counter - 1);
     reg.set_TCR(1);
 
     Timer {

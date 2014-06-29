@@ -20,7 +20,7 @@ fn parse_anonymous_node() {
   with_parsed_node("node", "node {}", |node| {
     assert!(node.name == None);
     assert!(node.path == "node".to_str());
-    assert!(node.attributes.len() == 0);
+    assert!(node.attributes.borrow().len() == 0);
     assert!(node.subnodes.len() == 0);
   });
 }
@@ -30,7 +30,7 @@ fn parse_node_with_name() {
   with_parsed_node("root", "test@root {}", |node| {
     assert!(node.name == Some("test".to_str()));
     assert!(node.path == "root".to_str());
-    assert!(node.attributes.len() == 0);
+    assert!(node.attributes.borrow().len() == 0);
     assert!(node.subnodes.len() == 0);
   });
 }
@@ -76,16 +76,16 @@ fn parse_node_with_numeric_path() {
 #[test]
 fn parse_attributes() {
   with_parsed_node("root", "test@root { a = \"value\"; b = 1; c = &ref; }", |node| {
-    assert!(node.get_string_attr("a") == Some(&"value".to_str()));
+    assert!(node.get_string_attr("a") == Some("value".to_str()));
     assert!(node.get_int_attr("b")    == Some(1));
-    assert!(node.get_ref_attr("c")    == Some(&"ref".to_str()));
+    assert!(node.get_ref_attr("c")    == Some("ref".to_str()));
   });
 }
 
 #[test]
 fn parse_string_attribute() {
   with_parsed_node("root", "test@root { key = \"value\"; }", |node| {
-    assert!(node.get_string_attr("key") == Some(&"value".to_str()));
+    assert!(node.get_string_attr("key") == Some("value".to_str()));
   });
 }
 
@@ -99,7 +99,7 @@ fn parse_integer_attribute() {
 #[test]
 fn parse_ref_attribute() {
   with_parsed_node("root", "test@root { key = &ref; }", |node| {
-    assert!(node.get_ref_attr("key") == Some(&"ref".to_str()));
+    assert!(node.get_ref_attr("key") == Some("ref".to_str()));
   });
 }
 

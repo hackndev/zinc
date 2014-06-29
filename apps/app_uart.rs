@@ -1,68 +1,80 @@
-#![crate_id="app"]
-#![crate_type="rlib"]
+#![feature(phase)]
+#![crate_type="staticlib"]
 #![no_std]
 
+extern crate core;
 extern crate zinc;
+#[phase(plugin)] extern crate macro_platformtree;
 
-use zinc::boards::mbed_lpc1768;
-use zinc::drivers::chario::CharIO;
-use zinc::hal::timer::{TimerConf, Timer};
-use zinc::hal::uart::{UARTConf, Disabled};
-use zinc::hal::pin::map;
-use zinc::hal::gpio::GPIOConf;
+platformtree!(
+  lpc17xx@mcu {
+    clock {
+      source = "main-oscillator";
+      source_frequency = 12_000_000;
+      pll {
+        m = 50;
+        n = 3;
+        divisor = 4;
+      }
+    }
 
-#[cfg(mcu_lpc17xx)] use zinc::hal::lpc17xx::init::SysConf;
-#[cfg(mcu_lpc17xx)] use zinc::hal::lpc17xx;
+    timer {
+      timer@1 {
+        counter = 25;
+        divisor = 4;
+      }
+    }
 
-struct Platform {
-  configuration: SysConf,
-  timer: TimerConf,
-  uart: UARTConf,
-  txled: GPIOConf,
-}
+    uart {
+      uart@0 {
+        baud_rate = 115200;
+        mode = "8N1";
+        tx = &uart_tx;
+        rx = &uart_rx;
+      }
+    }
 
-#[cfg(mcu_lpc17xx)]
-#[address_insignificant]
-static platform: Platform = Platform {
-  configuration: mbed_lpc1768::configuration,
-  timer: TimerConf {
-    timer: lpc17xx::timer::Timer1,
-    counter: 25,
-    divisor: 4,
-  },
-  uart: UARTConf {
-    peripheral: lpc17xx::uart::UART0,
-    baudrate: 115200,
-    word_len: 8,
-    parity: Disabled,
-    stop_bits: 1,
+    gpio {
+      0 {
+        uart_tx@2;
+        uart_rx@3;
+      }
+      1 {
+        led4@23 { direction = "out"; }
+      }
+    }
+  }
 
-    tx: map::port0::pin2::TXD0,
-    rx: map::port0::pin3::RXD0,
-  },
-  txled: mbed_lpc1768::led4,
-};
+  os {
+    single_task {
+      loop = "run";
+      args {
+        timer = &timer;
+        txled = &led4;
+        uart = &uart;
+      }
+    }
+  }
+)
 
 #[no_split_stack]
-pub fn main() {
-  platform.configuration.setup();
+fn run(args: &pt::run_args) {
+  use zinc::drivers::chario::CharIO;
+  use zinc::hal::timer::Timer;
+  use zinc::hal::pin::GPIO;
 
-  let uart = &platform.uart.setup() as &CharIO;
-  let timer = &platform.timer.setup() as &Timer;
-  let txled = platform.txled.setup();
-
-  uart.puts("Hello, world\n");
+  args.uart.puts("Hello, world\n");
 
   let mut i = 0;
   loop {
-    txled.set_high();
-    uart.puts("Waiting for ");
-    uart.puti(i);
-    uart.puts(" seconds...\n");
+    args.txled.set_high();
+    args.uart.puts("Waiting for ");
+    args.uart.puti(i);
+    args.uart.puts(" seconds...\n");
 
     i += 1;
-    txled.set_low();
+    args.txled.set_low();
 
-    timer.wait(1);
+    args.timer.wait(1);
   }
 }

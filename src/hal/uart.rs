@@ -21,8 +21,6 @@ UARTConf is a MCU-specific struct.
 UART objects implement CharIO trait to perform actual data transmission.
 */
 
-#[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::uart::{UART, UARTConf};
-
 /// UART parity mode.
 pub enum Parity {
   Disabled,

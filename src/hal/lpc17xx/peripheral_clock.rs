@@ -21,7 +21,7 @@ This module should be considered private until further notice.
 
 use core::intrinsics::abort;
 
-use super::init::system_clock;
+use super::system_clock::system_clock;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 

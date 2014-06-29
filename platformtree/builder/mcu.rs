@@ -13,24 +13,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-GPIO interface.
+use std::gc::Gc;
+use syntax::ext::base::ExtCtxt;
 
-GPIOConf is a MCU-specific struct, that requires a `PinConf` for a pin
-and a direction.
-*/
+use lpc17xx_pt;
+use node;
 
-#[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::gpio::{GPIOConf, GPIO};
-#[cfg(mcu_stm32f4)] pub use hal::stm32f4::gpio::GPIOConf;
+use super::Builder;
 
-/// GPIO direction.
-pub enum Direction {
-  In,
-  Out,
-}
-
-#[deriving(PartialEq)]
-pub enum Level {
-  Low,
-  High,
+pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
+  match node.name {
+    Some(ref name) => {
+      match name.as_slice() {
+        "lpc17xx" => lpc17xx_pt::build_mcu(builder, cx, node),
+        other => {
+          cx.parse_sess().span_diagnostic.span_err(node.name_span,
+              format!("unknown mcu `{}`", other).as_slice());
+        },
+      }
+    },
+    None => {
+      cx.parse_sess().span_diagnostic.span_err(node.name_span,
+          "`mcu` node must have a name");
+    },
+  }
 }

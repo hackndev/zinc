@@ -23,7 +23,7 @@ it's currently not supported at all.
 use core::intrinsics::abort;
 
 use hal::lpc17xx::peripheral_clock::{PeripheralClock, SSP0Clock, SSP1Clock};
-use hal::lpc17xx::init::system_clock;
+use hal::lpc17xx::system_clock::system_clock;
 use hal::pin::PinConf_;
 use hal::spi;
 
@@ -76,8 +76,9 @@ impl SPIConf {
 }
 
 /// Opaque object that manages the configured peripheral.
+#[allow(dead_code)]
 pub struct SSP {
-  peripheral: SSPPeripheral,
+  peripheral: SSPPeripheral, // TODO(farcaller): clean up the warning
   reg: &'static reg::SSP,
 }
 

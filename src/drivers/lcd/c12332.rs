@@ -31,16 +31,16 @@ use super::font_small_7;
 use super::LCD;
 use drivers::chario::CharIO;
 use hal::timer::Timer;
-use hal::gpio::{GPIO, GPIOConf};
+use hal::pin::GPIO;
 use hal::spi::SPI;
 
-pub struct C12332<'a, S, T> {
+pub struct C12332<'a, S, T, P> {
   spi: &'a S,
   timer: &'a T,
 
-  dc:    GPIO,
-  cs:    GPIO,
-  reset: GPIO,
+  dc:    &'a P,
+  cs:    &'a P,
+  reset: &'a P,
 
   videobuf: [cell::Cell<u8>, ..512],
 
@@ -49,15 +49,15 @@ pub struct C12332<'a, S, T> {
   char_y: cell::Cell<u32>,
 }
 
-impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
-  pub fn new(spi: &'a S, timer: &'a T, dc: &'a GPIOConf, cs: &'a GPIOConf,
-      reset: &'a GPIOConf) -> C12332<'a, S, T> {
+impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
+  pub fn new(spi: &'a S, timer: &'a T, dc: &'a P, cs: &'a P,
+      reset: &'a P) -> C12332<'a, S, T, P> {
     let lcd = C12332 {
       spi:   spi,
       timer: timer,
-      dc:    dc.setup(),
-      cs:    cs.setup(),
-      reset: reset.setup(),
+      dc:    dc,
+      cs:    cs,
+      reset: reset,
 
       videobuf: unsafe { zeroed() },
 
@@ -192,7 +192,7 @@ impl<'a, S: SPI, T: Timer> C12332<'a, S, T> {
   }
 }
 
-impl<'a, S: SPI, T: Timer> LCD for C12332<'a, S, T> {
+impl<'a, S: SPI, T: Timer, P: GPIO> LCD for C12332<'a, S, T, P> {
   fn flush(&self) {
     let mut i: uint = 0;
 
@@ -250,7 +250,7 @@ impl<'a, S: SPI, T: Timer> LCD for C12332<'a, S, T> {
   }
 }
 
-impl<'a, S: SPI, T: Timer> CharIO for C12332<'a, S, T> {
+impl<'a, S: SPI, T: Timer, P: GPIO> CharIO for C12332<'a, S, T, P> {
   fn putc(&self, value: char) {
     let height: u32 = 32;
     if value == '\n' {
