@@ -21,9 +21,6 @@ TimerConf is a MCU-specific struct.
 Timers porvide a simple way to delay program executon for some time.
 */
 
-#[cfg(mcu_lpc17xx)] pub use hal::lpc17xx::timer::TimerConf;
-#[cfg(mcu_stm32f4)] pub use hal::stm32f4::timer::TimerConf;
-
 #[path="../lib/wait_for.rs"] mod wait_for;
 
 /// Timer implementation.
