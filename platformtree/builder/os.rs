@@ -99,7 +99,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       node::RefValue(ref rname)  => {
         let refnode = builder.pt.get_by_name(rname.as_slice()).unwrap();
         let reftype = refnode.type_name.get().unwrap();
-        let val_slice = TokenString::new(rname.clone());
+        let val_slice = TokenString(rname.clone());
         let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
         (cx.ty_rptr(
           DUMMY_SP,

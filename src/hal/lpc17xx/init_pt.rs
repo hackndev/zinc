@@ -28,7 +28,7 @@ pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let source = node.get_string_attr("source").unwrap();
   let source_freq: uint;
-  let clock_source = TokenString::new(match source.as_slice() {
+  let clock_source = TokenString(match source.as_slice() {
     "internal-oscillator" => {
       source_freq = 4_000_000;
       "init::Internal".to_str()

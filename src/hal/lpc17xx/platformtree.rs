@@ -68,13 +68,13 @@ pub fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt,
       continue;
     }
 
-    let name = TokenString::new(sub.name.clone().unwrap());
+    let name = TokenString(sub.name.clone().unwrap());
     let timer_index: uint = from_str(path.as_slice()).unwrap();
     let counter: u32 = sub.get_int_attr("counter").unwrap() as u32;
     let divisor: u8 = sub.get_int_attr("divisor").unwrap() as u8;
 
     let timer_name = match timer_index {
-      0..3 => TokenString::new(format!("timer::Timer{}", timer_index)),
+      0..3 => TokenString(format!("timer::Timer{}", timer_index)),
       other => {
         cx.parse_sess().span_diagnostic.span_err(sub.path_span,
             format!("unknown timer index `{}`, allowed indexes: 0, 1, 2, 3",
@@ -116,7 +116,7 @@ pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
         continue;
       }
     });
-    let port = TokenString::new(port_str);
+    let port = TokenString(port_str);
 
     for (pin_path, pin_node) in port_node.subnodes.iter() {
       if pin_node.name.is_none() {
@@ -137,7 +137,7 @@ pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
           continue;
         }
       };
-      let direction = TokenString::new(direction_str.to_str());
+      let direction = TokenString(direction_str.to_str());
 
       let pin_str = match from_str::<uint>(pin_path.as_slice()).unwrap() {
         0..31 => pin_path,
@@ -183,10 +183,10 @@ pub fn build_gpio(builder: &mut Builder, cx: &mut ExtCtxt,
         }
       };
 
-      let function = TokenString::new(function_str);
-      let pin = TokenString::new(format!("{}u8", pin_str));
-      let pin_name = TokenString::new(pin_node.name.clone().unwrap());
-      let pin_name_conf = TokenString::new(format!(
+      let function = TokenString(function_str);
+      let pin = TokenString(format!("{}u8", pin_str));
+      let pin_name = TokenString(pin_node.name.clone().unwrap());
+      let pin_name_conf = TokenString(format!(
           "{}_conf", pin_node.name.clone().unwrap()));
 
       pin_node.type_name.set(Some("zinc::hal::lpc17xx::gpio::GPIO"));
@@ -229,7 +229,7 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
             continue;
           }
         });
-    let uart_peripheral = TokenString::new(uart_peripheral_str);
+    let uart_peripheral = TokenString(uart_peripheral_str);
 
     if sub.name.is_none() {
       cx.parse_sess().span_diagnostic.span_err(sub.name_span,
@@ -251,7 +251,7 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
     let rx_node_name = sub.get_ref_attr("rx").unwrap();
 
     let word_len = mode.as_slice().char_at(0).to_digit(10).unwrap() as u8;
-    let parity = TokenString::new(
+    let parity = TokenString(
         match mode.as_slice().char_at(1) {
           'N' => "Disabled",
           'O' => "Odd",
@@ -267,8 +267,8 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
         rx_node_name.as_slice(), false);
 
     sub.type_name.set(Some("zinc::hal::lpc17xx::uart::UART"));
-    let uart_name = TokenString::new(sub.name.clone().unwrap());
-    let uart_name_conf = TokenString::new(format!("{}_conf", sub.name.clone().unwrap()));
+    let uart_name = TokenString(sub.name.clone().unwrap());
+    let uart_name_conf = TokenString(format!("{}_conf", sub.name.clone().unwrap()));
 
     let st_conf = quote_stmt!(&*cx,
         let $uart_name_conf = {

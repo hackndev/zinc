@@ -121,21 +121,12 @@ impl Builder {
   }
 }
 
-pub struct TokenString {
-  pub s: String,
-}
-
-impl TokenString {
-  pub fn new(s: String) -> TokenString {
-    TokenString {
-      s: s,
-    }
-  }
-}
+pub struct TokenString(pub String);
 
 impl ToTokens for TokenString {
   fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
-    (cx as &ExtParseUtils).parse_tts(self.s.clone())
+    let &TokenString(ref s) = self;
+    (cx as &ExtParseUtils).parse_tts(s.clone())
   }
 }
 
