@@ -117,3 +117,14 @@ pub fn assert_equal_source(stmt: &Gc<ast::Stmt>, src: &str) {
 
   assert!(stripped_gen_src == stripped_src);
 }
+
+pub fn assert_equal_items(stmt: &Gc<ast::Item>, src: &str) {
+  let gen_src = pprust::item_to_str(stmt.deref());
+  println!("generated: {}", gen_src);
+  println!("expected:  {}", src);
+
+  let stripped_gen_src = gen_src.replace(" ", "").replace("\n", "");
+  let stripped_src = src.replace(" ", "").replace("\n", "");
+
+  assert!(stripped_gen_src == stripped_src);
+}
