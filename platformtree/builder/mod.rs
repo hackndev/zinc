@@ -126,7 +126,11 @@ impl Builder {
     let pt_mod_item = cx.item_mod(DUMMY_SP, DUMMY_SP, cx.ident_of("pt"),
         vec!(allow_noncamel), vec!(use_zinc), self.type_items.clone());
 
-    vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx))
+    if self.type_items.len() > 0 {
+      vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx))
+    } else {
+      vec!(self.emit_main(cx), self.emit_morestack(cx))
+    }
   }
 
   fn item_fn(&self, cx: &ExtCtxt, span: Span, name: &str,
