@@ -21,20 +21,23 @@ use node;
 
 use super::Builder;
 
-pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   match node.name {
     Some(ref name) => {
       match name.as_slice() {
-        "lpc17xx" => lpc17xx_pt::build_mcu(builder, cx, node.clone()),
-        other => {
-          cx.parse_sess().span_diagnostic.span_err(node.name_span,
-              format!("unknown mcu `{}`", other).as_slice());
-        },
+        "lpc17xx" => lpc17xx_pt::attach(builder, cx, node.clone()),
+        other => node.materializer.set(Some(fail_build_mcu)),
       }
     },
-    None => {
-      cx.parse_sess().span_diagnostic.span_err(node.name_span,
-          "`mcu` node must have a name");
-    },
+    None => node.materializer.set(Some(fail_build_mcu)),
+  }
+}
+
+pub fn fail_build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  match node.name {
+    Some(ref name) => cx.parse_sess().span_diagnostic.span_err(
+        node.name_span, format!("unknown mcu `{}`", name).as_slice()),
+    None => cx.parse_sess().span_diagnostic.span_err(
+        node.name_span, "`mcu` node must have a name"),
   }
 }

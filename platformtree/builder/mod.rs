@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use std::gc::{Gc, GC};
 use syntax::abi;
 use syntax::ast::TokenTree;
@@ -45,20 +45,74 @@ impl Builder {
     }
 
     match pt.get_by_path("mcu") {
-      Some(node) => mcu::build_mcu(&mut builder, cx, node),
+      Some(node) => mcu::attach(&mut builder, cx, node),
       None => (),  // TODO(farcaller): should it actaully fail?
     }
 
     match pt.get_by_path("os") {
-      Some(node) => os::build_os(&mut builder, cx, node),
+      Some(node) => os::attach(&mut builder, cx, node),
+      None => (),  // TODO(farcaller): this should fail.
+    }
+
+    for sub in pt.nodes().iter() {
+      Builder::walk_mutate(&mut builder, cx, sub);
+    }
+
+    let base_node = pt.get_by_path("mcu").and_then(|mcu|{mcu.get_by_path("clock")});
+    match base_node {
+      Some(node) => Builder::walk_materialize(&mut builder, cx, node),
       None => {
-        // TODO(farcaller): provide span for whole PT?
         cx.parse_sess().span_diagnostic.span_err(DUMMY_SP,
-            "root node `os` must be present");
+            "root node `mcu::clock` must be present");
       }
     }
 
     builder
+  }
+
+  fn walk_mutate(builder: &mut Builder, cx: &mut ExtCtxt, node: &Rc<node::Node>) {
+    let maybe_mut = node.mutator.get();
+    if maybe_mut.is_some() {
+      maybe_mut.unwrap()(builder, cx, node.clone());
+    }
+    for sub in node.subnodes().iter() {
+      Builder::walk_mutate(builder, cx, sub);
+    }
+  }
+
+  fn walk_materialize(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+    let maybe_mat = node.materializer.get();
+    if maybe_mat.is_some() {
+      maybe_mat.unwrap()(builder, cx, node.clone());
+    }
+    let rev_depends = node.rev_depends_on.borrow();
+    let d: Vec<String> = rev_depends.iter().map(|n|n.upgrade().unwrap().full_path()).collect();
+    for weak_sub in rev_depends.iter() {
+      let sub = weak_sub.upgrade().unwrap();
+      let mut sub_deps = sub.depends_on.borrow_mut();
+      let mut deps = sub_deps.deref_mut();
+      let mut index = None;
+      let mut i = 0u;
+      // FIXME: iter().position()
+      for dep in deps.iter() {
+        let strong_dep = dep.upgrade().unwrap();
+        if node == strong_dep {
+          index = Some(i);
+          break;
+        }
+        i = i + 1;
+      }
+      if index.is_none() {
+        fail!("no index found");
+      } else {
+        deps.remove(index.unwrap());
+        if deps.len() > 0 {
+          let d: Vec<String> = deps.iter().map(|n|n.upgrade().unwrap().full_path()).collect();
+        } else {
+          Builder::walk_materialize(builder, cx, sub.clone());
+        }
+      }
+    }
   }
 
   pub fn new(pt: Rc<node::PlatformTree>) -> Builder {
@@ -166,6 +220,14 @@ impl ToTokens for TokenString {
     let &TokenString(ref s) = self;
     (cx as &ExtParseUtils).parse_tts(s.clone())
   }
+}
+
+pub fn add_node_dependency(node: &Rc<node::Node>, dep: &Rc<node::Node>) {
+  let mut depends_on = node.depends_on.borrow_mut();
+  depends_on.deref_mut().push(dep.downgrade());
+
+  let mut rev_depends_on = dep.rev_depends_on.borrow_mut();
+  rev_depends_on.push(node.downgrade());
 }
 
 #[cfg(test)]

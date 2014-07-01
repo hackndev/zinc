@@ -20,3 +20,5 @@ cont
 end
 
 set mem inaccessible-by-default off
+
+set environment RUST_BACKTRACE = 1

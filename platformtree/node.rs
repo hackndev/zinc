@@ -13,11 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::cell::{Cell, RefCell};
+use std::cell::{Cell, Ref, RefCell};
 use std::collections::hashmap::HashMap;
+use std::fmt;
 use std::rc::{Rc, Weak};
 use syntax::codemap::{Span, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
+
+use builder::Builder;
 
 /// Holds a value for an attribute.
 ///
@@ -69,6 +72,41 @@ impl Attribute {
   }
 }
 
+type NodeBuilderFn = fn(&mut Builder, &mut ExtCtxt, Rc<Node>);
+
+pub struct Subnodes {
+  by_index: Vec<Rc<Node>>,
+  by_path: HashMap<String, Weak<Node>>,
+}
+
+impl Subnodes {
+  pub fn new() -> Subnodes {
+    Subnodes {
+      by_index: vec!(),
+      by_path: HashMap::new(),
+    }
+  }
+
+  pub fn push(&mut self, node: Rc<Node>) {
+    let weak = node.downgrade();
+    self.by_path.insert(node.path.clone(), weak);
+    self.by_index.push(node);
+  }
+
+  pub fn as_vec<'a>(&'a self) -> &'a Vec<Rc<Node>> {
+    &self.by_index
+  }
+
+  pub fn as_map<'a>(&'a self) -> &'a HashMap<String, Weak<Node>> {
+    &self.by_path
+  }
+
+  pub fn clone_from(&mut self, other: Subnodes) {
+    self.by_index = other.by_index;
+    self.by_path = other.by_path;
+  }
+}
+
 /// PlatformTree node.
 ///
 /// Might have an optional name, is the name is missing, name_span is equal to
@@ -83,23 +121,66 @@ pub struct Node {
   pub path_span: Span,
 
   pub attributes: RefCell<HashMap<String, Rc<Attribute>>>,
-  pub subnodes: HashMap<String, Rc<Node>>,
+  subnodes: RefCell<Subnodes>,
+  pub parent: Option<Weak<Node>>,
 
   pub type_name: Cell<Option<&'static str>>,
+
+  /// A function that materializes this node.
+  pub materializer: Cell<Option<NodeBuilderFn>>,
+
+  /// Present iff this node will modify state of any other nodes.
+  pub mutator: Cell<Option<NodeBuilderFn>>,
+
+  /// List of nodes that must be materialized before this node.
+  pub depends_on: RefCell<Vec<Weak<Node>>>,
+
+  /// List of nodes that may be materialized before this node.
+  pub rev_depends_on: RefCell<Vec<Weak<Node>>>,
 }
 
 impl Node {
   pub fn new(name: Option<String>, name_span: Span, path: String,
-      path_span: Span) -> Node {
+      path_span: Span, parent: Option<Weak<Node>>) -> Node {
     Node {
       name: name,
       name_span: name_span,
       path: path,
       path_span: path_span,
       attributes: RefCell::new(HashMap::new()),
-      subnodes: HashMap::new(),
+      subnodes: RefCell::new(Subnodes::new()),
+      parent: parent,
       type_name: Cell::new(None),
+      materializer: Cell::new(None),
+      mutator: Cell::new(None),
+      depends_on: RefCell::new(Vec::new()),
+      rev_depends_on: RefCell::new(Vec::new()),
     }
+  }
+
+  pub fn subnodes(&self) -> Vec<Rc<Node>> {
+    self.subnodes.borrow().as_vec().clone()
+  }
+
+  pub fn with_subnodes_map(&self, f: |&HashMap<String, Weak<Node>>|) {
+    let borrow = self.subnodes.borrow();
+    f(borrow.as_map());
+  }
+
+  pub fn set_subnodes(&self, new: Subnodes) {
+    self.subnodes.borrow_mut().clone_from(new);
+  }
+
+  pub fn path(&self) -> String {
+    self.path.clone()
+  }
+
+  pub fn full_path(&self) -> String {
+    let pp = match self.parent {
+      Some(ref parent) => parent.clone().upgrade().unwrap().full_path() + "::",
+      None => "".to_str(),
+    };
+    pp + self.path
   }
 
   /// Returns attribute by name or fail!()s.
@@ -198,7 +279,7 @@ impl Node {
   /// error for each found subnode otherwise.
   pub fn expect_no_subnodes(&self, cx: &ExtCtxt) -> bool {
     let mut ok = true;
-    for (_, sub) in self.subnodes.iter() {
+    for sub in self.subnodes().iter() {
       ok = false;
       cx.parse_sess().span_diagnostic.span_err(sub.name_span,
           "no subnodes expected");
@@ -231,12 +312,12 @@ impl Node {
   /// Reports parser errors and returns false otherwise.
   pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
     let mut ok = true;
-    for (path, sub) in self.subnodes.iter() {
-      if !expectations.contains(&path.as_slice()) {
+    for sub in self.subnodes().iter() {
+      if !expectations.contains(&sub.path.as_slice()) {
         ok = false;
         cx.parse_sess().span_diagnostic.span_err(sub.path_span,
             format!("unknown subnode `{}` in node `{}`",
-                path, self.path).as_slice());
+                sub.path, self.path).as_slice());
       }
     }
     ok
@@ -244,7 +325,26 @@ impl Node {
 
   /// Returns a subnode by path or None, if not found.
   pub fn get_by_path(&self, path: &str) -> Option<Rc<Node>> {
-    self.subnodes.find(&path.to_str()).and_then(|node| { Some(node.clone()) })
+    self.subnodes.borrow().as_map().find(&path.to_str()).and_then(|node| {
+      Some(node.clone().upgrade().unwrap())
+    })
+  }
+}
+
+impl PartialEq for Node {
+  fn eq(&self, other: &Node) -> bool {
+    self.full_path() == other.full_path()
+  }
+
+  fn ne(&self, other: &Node) -> bool {
+    self.full_path() != other.full_path()
+  }
+}
+
+impl fmt::Show for Node {
+  fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::FormatError> {
+    fmt.write_str(format!("<Node {}>", self.full_path()).as_slice());
+    Ok(())
   }
 }
 
@@ -264,6 +364,14 @@ impl PlatformTree {
       nodes: nodes,
       named: named,
     }
+  }
+
+  pub fn nodes(&self) -> Vec<Rc<Node>> {
+    let mut v = vec!();
+    for (_, sub) in self.nodes.iter() {
+      v.push(sub.clone())
+    }
+    v
   }
 
   /// Returns a node by name or None, if not found.

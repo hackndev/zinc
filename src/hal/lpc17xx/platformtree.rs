@@ -16,7 +16,7 @@
 use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 
-use builder::Builder;
+use builder::{Builder, add_node_dependency};
 use node;
 
 mod system_clock_pt;
@@ -26,31 +26,32 @@ mod uart_pt;
 
 mod pinmap;
 
-pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: Rc<node::Node>) {
-  if !node.expect_no_attributes(cx) {
-    return;
+pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.materializer.set(Some(verify));
+  for sub in node.subnodes().iter() {
+    add_node_dependency(&node, sub);
+
+    match sub.path.as_slice() {
+      "clock" => system_clock_pt::attach(builder, cx, sub.clone()),
+      "timer" => timer_pt::attach(builder, cx, sub.clone()),
+      "uart"  => uart_pt::attach(builder, cx, sub.clone()),
+      "gpio"  => pin_pt::attach(builder, cx, sub.clone()),
+      _ => (),
+    }
   }
+}
 
-  node.get_by_path("clock").and_then(|sub| -> Option<bool> {
-    system_clock_pt::build_clock(builder, cx, sub);
-    None
-  });
+fn verify(builder: &mut Builder, cx: &mut ExtCtxt,
+    node: Rc<node::Node>) {
+  node.expect_no_attributes(cx);
+  node.expect_subnodes(cx, ["clock", "timer", "uart", "gpio"]);
+}
 
-  node.get_by_path("timer").and_then(|sub| -> Option<bool> {
-    timer_pt::build_timer(builder, cx, sub);
-    None
-  });
-
-  node.get_by_path("uart").and_then(|sub| -> Option<bool> {
-    uart_pt::build_uart(builder, cx, sub);
-    None
-  });
-
-  node.get_by_path("gpio").and_then(|sub| -> Option<bool> {
-    pin_pt::build_pin(builder, cx, sub);
-    None
-  });
+pub fn add_node_dependency_on_clock(builder: &mut Builder,
+    node: &Rc<node::Node>) {
+  let mcu_node = builder.pt.get_by_path("mcu").unwrap();
+  let clock_node = mcu_node.get_by_path("clock").unwrap();
+  add_node_dependency(node, &clock_node);
 }
 
 #[cfg(test)]
@@ -141,6 +142,16 @@ mod test {
             };
             let timer = zinc::hal::lpc17xx::timer::Timer::new(
                 zinc::hal::lpc17xx::timer::Timer1, 25u32, 4u8);
+            let uart_tx = zinc::hal::lpc17xx::pin::Pin::new(
+                zinc::hal::lpc17xx::pin::Port0,
+                2u8,
+                zinc::hal::lpc17xx::pin::AltFunction1,
+                core::option::None);
+            let uart_rx = zinc::hal::lpc17xx::pin::Pin::new(
+                zinc::hal::lpc17xx::pin::Port0,
+                3u8,
+                zinc::hal::lpc17xx::pin::AltFunction1,
+                core::option::None);
             let uart = zinc::hal::lpc17xx::uart::UART::new(
                 zinc::hal::lpc17xx::uart::UART0,
                 115200u32,
@@ -152,16 +163,6 @@ mod test {
                 23u8,
                 zinc::hal::lpc17xx::pin::GPIO,
                 core::option::Some(zinc::hal::pin::Out));
-            let uart_tx = zinc::hal::lpc17xx::pin::Pin::new(
-                zinc::hal::lpc17xx::pin::Port0,
-                2u8,
-                zinc::hal::lpc17xx::pin::AltFunction1,
-                core::option::None);
-            let uart_rx = zinc::hal::lpc17xx::pin::Pin::new(
-                zinc::hal::lpc17xx::pin::Port0,
-                3u8,
-                zinc::hal::lpc17xx::pin::AltFunction1,
-                core::option::None);
             loop {
               run(&pt::run_args{
                 timer: &timer,

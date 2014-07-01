@@ -21,7 +21,7 @@ fn parse_anonymous_node() {
     assert!(node.name == None);
     assert!(node.path == "node".to_str());
     assert!(node.attributes.borrow().len() == 0);
-    assert!(node.subnodes.len() == 0);
+    assert!(node.subnodes().len() == 0);
   });
 }
 
@@ -31,7 +31,7 @@ fn parse_node_with_name() {
     assert!(node.name == Some("test".to_str()));
     assert!(node.path == "root".to_str());
     assert!(node.attributes.borrow().len() == 0);
-    assert!(node.subnodes.len() == 0);
+    assert!(node.subnodes().len() == 0);
   });
 }
 
@@ -123,20 +123,20 @@ fn fails_to_parse_malformed_attibute() {
 #[test]
 fn parse_anonymous_subnode() {
   with_parsed_node("root", "test@root { child; }", |node| {
-    assert!(node.subnodes.len() == 1);
+    assert!(node.subnodes().len() == 1);
   });
   with_parsed_node("root", "test@root { child {} }", |node| {
-    assert!(node.subnodes.len() == 1);
+    assert!(node.subnodes().len() == 1);
   });
 }
 
 #[test]
 fn parse_named_subnode() {
   with_parsed_node("root", "test@root { sub@child; }", |node| {
-    assert!(node.subnodes.len() == 1);
+    assert!(node.subnodes().len() == 1);
   });
   with_parsed_node("root", "test@root { sub@child {} }", |node| {
-    assert!(node.subnodes.len() == 1);
+    assert!(node.subnodes().len() == 1);
   });
 }
 

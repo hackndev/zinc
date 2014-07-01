@@ -20,7 +20,11 @@ use syntax::ext::build::AstBuilder;
 use builder::{Builder, TokenString};
 use node;
 
-pub fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
+pub fn attach(_: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.materializer.set(Some(build_clock));
+}
+
+fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
     node: Rc<node::Node>) {
   if !node.expect_attributes(cx, [("source", node::StrAttribute)]) {
     return;

@@ -26,8 +26,8 @@ pub fn build_drivers(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Nod
     return;
   }
 
-  for (path, sub) in node.subnodes.iter() {
-    match path.as_slice() {
+  for sub in node.subnodes().iter() {
+    match sub.path.as_slice() {
       "dht22" => dht22_pt::build_dht22(builder, cx, sub.clone()),
       other => {
         cx.span_err(

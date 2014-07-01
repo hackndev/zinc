@@ -25,23 +25,41 @@ use syntax::parse::token::intern;
 
 use node;
 
-use super::{Builder, TokenString};
+use super::{Builder, TokenString, add_node_dependency};
 
-pub fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
-  if !node.expect_no_attributes(cx) ||
-     !node.expect_subnodes(cx, ["single_task"]) {
-    return;
-  }
+pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.materializer.set(Some(verify));
+  let mcu_node = builder.pt.get_by_path("mcu").unwrap();
 
-  let some_single_task = node.get_by_path("single_task");
-  match some_single_task {
-    Some(single_task) => {
-      build_single_task(builder, cx, single_task);
-    },
-    None => {
-      cx.parse_sess().span_diagnostic.span_err(node.name_span,
-          "subnode `single_task` must be present");
+  let maybe_task_node = node.get_by_path("single_task");
+  if maybe_task_node.is_some() {
+    let task_node = maybe_task_node.unwrap();
+    task_node.materializer.set(Some(build_single_task));
+    add_node_dependency(&node, &task_node);
+    add_node_dependency(&task_node, &mcu_node);
+
+    let maybe_args_node = task_node.get_by_path("args");
+    if maybe_args_node.is_some() {
+      let args_node = maybe_args_node.unwrap();
+      for (_, ref attr) in args_node.attributes.borrow().iter() {
+        match attr.value {
+          node::RefValue(ref refname) => {
+            let refnode = builder.pt.get_by_name(refname.as_slice()).unwrap();
+            add_node_dependency(&task_node, &refnode);
+          },
+          _ => (),
+        }
+      }
     }
+  }
+}
+
+pub fn verify(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.expect_no_attributes(cx);
+  node.expect_subnodes(cx, ["single_task"]);
+  if node.get_by_path("single_task").is_none() {
+    cx.parse_sess().span_diagnostic.span_err(node.name_span,
+        "subnode `single_task` must be present");
   }
 }
 
@@ -158,18 +176,17 @@ mod test {
   use syntax::ext::build::AstBuilder;
 
   use builder::Builder;
-  use super::build_os;
+  use super::build_single_task;
   use test_helpers::{assert_equal_source, with_parsed};
 
   #[test]
   fn builds_single_task_os_loop() {
-    with_parsed("os {
-        single_task {
-          loop = \"run\";
-        }
+    with_parsed("
+      single_task {
+        loop = \"run\";
       }", |cx, failed, pt| {
       let mut builder = Builder::new(pt.clone());
-      build_os(&mut builder, cx, pt.get_by_path("os").unwrap().clone());
+      build_single_task(&mut builder, cx, pt.get_by_path("single_task").unwrap().clone());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
 
@@ -182,14 +199,13 @@ mod test {
 
   #[test]
   fn builds_single_task_with_args() {
-    with_parsed("os {
-        single_task {
-          loop = \"run\";
-          args {
-            a = 1;
-            b = \"a\";
-            c = &named;
-          }
+    with_parsed("
+      single_task {
+        loop = \"run\";
+        args {
+          a = 1;
+          b = \"a\";
+          c = &named;
         }
       }
 
@@ -198,7 +214,7 @@ mod test {
       let mut builder = Builder::new(pt.clone());
       pt.get_by_path("ref").unwrap().type_name.set(Some("hello::world::Struct"));
 
-      build_os(&mut builder, cx, pt.get_by_path("os").unwrap().clone());
+      build_single_task(&mut builder, cx, pt.get_by_path("single_task").unwrap().clone());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
       assert!(builder.type_items.len() == 1);
