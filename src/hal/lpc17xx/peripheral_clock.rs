@@ -101,14 +101,14 @@ pub enum PeripheralDivisor {
 impl PeripheralClock {
   /// Enables the given peripheral clock.
   pub fn enable(self) {
-    let bit: u32 = (1 << (self as uint)) as u32;
+    let bit: u32 = (1u32 << (self as uint)) as u32;
     let val: u32 = reg::PCONP.value();
     reg::PCONP.set_value(val | bit);
   }
 
   /// Disables the given peripheral clock.
   pub fn disable(self) {
-    let bit: u32 = !((1 << (self as uint)) as u32);
+    let bit: u32 = !((1u32 << (self as uint)) as u32);
     let val: u32 = reg::PCONP.value();
     reg::PCONP.set_value(val & bit);
   }
@@ -138,7 +138,7 @@ impl PeripheralClock {
   pub fn set_divisor(self, divisor: u8) {
     self.verify_divisor(divisor);
     let (reg, offset) = self.divisor_reg_and_offset();
-    let divisor_value = match divisor {
+    let divisor_value: u8 = match divisor {
       1   => 1,
       2   => 2,
       4   => 0,
@@ -147,7 +147,7 @@ impl PeripheralClock {
     };
 
     let bits: u32 = divisor_value as u32 << (offset as uint);
-    let mask: u32 = !((3 << (offset as uint)) as u32);
+    let mask: u32 = !((3u32 << (offset as uint)) as u32);
     let val: u32 = reg.value();
     reg.set_value(val & mask | bits);
   }
