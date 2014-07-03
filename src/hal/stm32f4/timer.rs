@@ -22,6 +22,40 @@ use hal::timer;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
+/// Available timer peripherals.
+pub enum TimerPeripheral {
+  Timer2,
+}
+
+pub struct Timer {
+  reg: &'static reg::TIM2To5,
+}
+
+impl Timer {
+  pub fn new(peripheral: TimerPeripheral, counter: u32) -> Timer {
+    let (clock, reg) = match peripheral {
+      Timer2 => (peripheral_clock::TIM2Clock, &reg::TIM2),
+    };
+
+    clock.enable();
+
+    reg.set_PSC(counter - 1);
+    reg.set_CR1(1);
+    reg.set_EGR(1);
+
+    Timer {
+      reg: reg,
+    }
+  }
+}
+
+impl timer::Timer for Timer {
+  #[inline(always)]
+  fn get_counter(&self) -> u32 {
+    self.reg.CNT()
+  }
+}
+
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
@@ -50,48 +84,5 @@ mod reg {
 
   extern {
     #[link_name="iomem_TIM2"] pub static TIM2: TIM2To5;
-  }
-}
-
-/// Available timer peripherals.
-pub enum TimerPeripheral {
-  Timer2,
-}
-
-/// Configuration for timer.
-pub struct TimerConf {
-  /// Peripheral to use.
-  pub timer: TimerPeripheral,
-  /// Number of clock ticks to increment the counter.
-  pub counter: u32,
-}
-
-pub struct Timer {
-  reg: &'static reg::TIM2To5,
-}
-
-impl TimerConf {
-  /// Returns a platform-specific timer object that implements Timer trait.
-  pub fn setup(&self) -> Timer {
-    let (clock, reg) = match self.timer {
-      Timer2 => (peripheral_clock::TIM2Clock, &reg::TIM2),
-    };
-
-    clock.enable();
-
-    reg.set_PSC(self.counter - 1);
-    reg.set_CR1(1);
-    reg.set_EGR(1);
-
-    Timer {
-      reg: reg,
-    }
-  }
-}
-
-impl timer::Timer for Timer {
-  #[inline(always)]
-  fn get_counter(&self) -> u32 {
-    self.reg.CNT()
   }
 }
