@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 use std::gc::{Gc, GC};
 use syntax::abi;
 use syntax::ast::TokenTree;
@@ -54,6 +54,11 @@ impl Builder {
       None => (),  // TODO(farcaller): this should fail.
     }
 
+    match pt.get_by_path("drivers") {
+      Some(node) => ::drivers_pt::attach(&mut builder, cx, node),
+      None => (),
+    }
+
     for sub in pt.nodes().iter() {
       Builder::walk_mutate(&mut builder, cx, sub);
     }
@@ -80,17 +85,17 @@ impl Builder {
     }
   }
 
+  // FIXME(farcaller): verify that all nodes have been materialized
   fn walk_materialize(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     let maybe_mat = node.materializer.get();
     if maybe_mat.is_some() {
       maybe_mat.unwrap()(builder, cx, node.clone());
     }
     let rev_depends = node.rev_depends_on.borrow();
-    let d: Vec<String> = rev_depends.iter().map(|n|n.upgrade().unwrap().full_path()).collect();
     for weak_sub in rev_depends.iter() {
       let sub = weak_sub.upgrade().unwrap();
       let mut sub_deps = sub.depends_on.borrow_mut();
-      let mut deps = sub_deps.deref_mut();
+      let deps = sub_deps.deref_mut();
       let mut index = None;
       let mut i = 0u;
       // FIXME: iter().position()
@@ -106,9 +111,7 @@ impl Builder {
         fail!("no index found");
       } else {
         deps.remove(index.unwrap());
-        if deps.len() > 0 {
-          let d: Vec<String> = deps.iter().map(|n|n.upgrade().unwrap().full_path()).collect();
-        } else {
+        if deps.len() == 0 {
           Builder::walk_materialize(builder, cx, sub.clone());
         }
       }

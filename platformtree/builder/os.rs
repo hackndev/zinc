@@ -54,7 +54,7 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 }
 
-pub fn verify(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   node.expect_no_attributes(cx);
   node.expect_subnodes(cx, ["single_task"]);
   if node.get_by_path("single_task").is_none() {
@@ -117,12 +117,12 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       },
       node::RefValue(ref rname)  => {
         let refnode = builder.pt.get_by_name(rname.as_slice()).unwrap();
-        let reftype = refnode.type_name.get().unwrap();
+        let reftype = refnode.type_name().unwrap();
         let val_slice = TokenString(rname.clone());
         let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
         (cx.ty_rptr(
           DUMMY_SP,
-          cx.ty_path(type_name_as_path(cx, reftype), None),
+          cx.ty_path(type_name_as_path(cx, reftype.as_slice()), None),
           Some(a_lifetime),
           ast::MutImmutable), quote_expr!(&*cx, &$val_slice))
       },
@@ -212,7 +212,7 @@ mod test {
       named@ref;
       ", |cx, failed, pt| {
       let mut builder = Builder::new(pt.clone());
-      pt.get_by_path("ref").unwrap().type_name.set(Some("hello::world::Struct"));
+      pt.get_by_path("ref").unwrap().type_name.set(Some("hello::world::Struct".to_str()));
 
       build_single_task(&mut builder, cx, pt.get_by_path("single_task").unwrap().clone());
       assert!(unsafe{*failed} == false);

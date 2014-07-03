@@ -26,14 +26,14 @@ pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     Some(ref name) => {
       match name.as_slice() {
         "lpc17xx" => lpc17xx_pt::attach(builder, cx, node.clone()),
-        other => node.materializer.set(Some(fail_build_mcu)),
+        _ => node.materializer.set(Some(fail_build_mcu)),
       }
     },
     None => node.materializer.set(Some(fail_build_mcu)),
   }
 }
 
-pub fn fail_build_mcu(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+pub fn fail_build_mcu(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   match node.name {
     Some(ref name) => cx.parse_sess().span_diagnostic.span_err(
         node.name_span, format!("unknown mcu `{}`", name).as_slice()),

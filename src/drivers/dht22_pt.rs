@@ -16,19 +16,83 @@
 use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 
-use builder::Builder;
+use builder::{Builder, TokenString, add_node_dependency};
 use node;
 
-pub fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
-  if !node.expect_no_subnodes(cx) {
-    return;
-  }
+pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.materializer.set(Some(build_dht22));
+  node.mutator.set(Some(mutate_pin));
+
+  let pin_node_name = node.get_ref_attr("pin").unwrap();
+  let pin_node = builder.pt.get_by_name(pin_node_name.as_slice()).unwrap();
+  add_node_dependency(&node, &pin_node);
+
+  let timer_node_name = node.get_ref_attr("timer").unwrap();
+  let timer_node = builder.pt.get_by_name(timer_node_name.as_slice()).unwrap();
+  add_node_dependency(&node, &timer_node);
+}
+
+fn mutate_pin(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
+  let pin_node_name = node.get_ref_attr("pin").unwrap();
+  let pin_node = builder.pt.get_by_name(pin_node_name.as_slice()).unwrap();
+  pin_node.attributes.borrow_mut().insert("direction".to_str(),
+        Rc::new(node::Attribute::new_nosp(node::StrValue("out".to_str()))));
+}
+
+fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  if !node.expect_no_subnodes(cx) {return}
 
   if !node.expect_attributes(cx,
       [("pin", node::RefAttribute), ("timer", node::RefAttribute)]) {
-    return;
+    return
   }
 
   let pin_node_name = node.get_ref_attr("pin").unwrap();
   let timer_node_name = node.get_ref_attr("timer").unwrap();
+  let pin_node = builder.pt.get_by_name(pin_node_name.as_slice()).unwrap();
+  let timer_node = builder.pt.get_by_name(timer_node_name.as_slice()).unwrap();
+
+  let pin = TokenString(pin_node_name);
+  let timer = TokenString(timer_node_name);
+  let name = TokenString(node.name.clone().unwrap());
+
+  let typename = format!(
+      "zinc::drivers::dht22::DHT22<'a, {}, {}>",
+      timer_node.type_name().unwrap(),
+      pin_node.type_name().unwrap());
+  node.set_type_name(typename);
+
+  let st = quote_stmt!(&*cx,
+      let $name = zinc::drivers::dht22::DHT22::new(&$timer, &$pin);
+  );
+  builder.add_main_statement(st);
+}
+
+#[cfg(test)]
+mod test {
+  use builder::Builder;
+  use test_helpers::{assert_equal_source, with_parsed};
+
+  #[test]
+  fn builds_lpc17xx_pt() {
+    with_parsed("
+      timer@timer;
+      pin@pin;
+      dht@dht22 {
+        pin = &pin;
+        timer = &timer;
+      }", |cx, failed, pt| {
+      let mut builder = Builder::new(pt.clone());
+      super::mutate_pin(&mut builder, cx, pt.get_by_name("dht").unwrap());
+      super::build_dht22(&mut builder, cx, pt.get_by_name("dht").unwrap());
+      assert!(unsafe{*failed} == false);
+      assert!(builder.main_stmts.len() == 1);
+
+      assert_equal_source(builder.main_stmts.get(0),
+          "let dht = zinc::drivers::dht22::DHT22::new(&timer, &pin);");
+
+      let pin_node = pt.get_by_name("pin").unwrap();
+      assert!(pin_node.get_string_attr("direction").unwrap() == "out".to_str());
+    });
+  }
 }

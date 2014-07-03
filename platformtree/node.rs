@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::cell::{Cell, Ref, RefCell};
+use std::cell::{Cell, RefCell};
 use std::collections::hashmap::HashMap;
 use std::fmt;
 use std::rc::{Rc, Weak};
@@ -72,7 +72,7 @@ impl Attribute {
   }
 }
 
-type NodeBuilderFn = fn(&mut Builder, &mut ExtCtxt, Rc<Node>);
+pub type NodeBuilderFn = fn(&mut Builder, &mut ExtCtxt, Rc<Node>);
 
 pub struct Subnodes {
   by_index: Vec<Rc<Node>>,
@@ -124,7 +124,7 @@ pub struct Node {
   subnodes: RefCell<Subnodes>,
   pub parent: Option<Weak<Node>>,
 
-  pub type_name: Cell<Option<&'static str>>,
+  type_name: RefCell<Option<String>>,
 
   /// A function that materializes this node.
   pub materializer: Cell<Option<NodeBuilderFn>>,
@@ -150,12 +150,21 @@ impl Node {
       attributes: RefCell::new(HashMap::new()),
       subnodes: RefCell::new(Subnodes::new()),
       parent: parent,
-      type_name: Cell::new(None),
+      type_name: RefCell::new(None),
       materializer: Cell::new(None),
       mutator: Cell::new(None),
       depends_on: RefCell::new(Vec::new()),
       rev_depends_on: RefCell::new(Vec::new()),
     }
+  }
+
+  pub fn set_type_name(&self, tn: String) {
+    let mut borrow = self.type_name.borrow_mut();
+    borrow.deref_mut().clone_from(&Some(tn));
+  }
+
+  pub fn type_name(&self) -> Option<String> {
+    self.type_name.borrow().clone()
   }
 
   pub fn subnodes(&self) -> Vec<Rc<Node>> {
@@ -343,8 +352,8 @@ impl PartialEq for Node {
 
 impl fmt::Show for Node {
   fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::FormatError> {
-    fmt.write_str(format!("<Node {}>", self.full_path()).as_slice());
-    Ok(())
+    fmt.write_str(format!("<Node {}>", self.full_path()).as_slice())
+        .or_else(|_| { fail!() })
   }
 }
 

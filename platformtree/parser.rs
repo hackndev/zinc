@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::cell::RefCell;
 use std::collections::hashmap::HashMap;
 use std::rc::{Rc, Weak};
 use syntax::ast::TokenTree;

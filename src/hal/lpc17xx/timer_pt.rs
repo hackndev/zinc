@@ -28,7 +28,7 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 }
 
-pub fn verify(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   node.expect_no_attributes(cx);
 }
 
@@ -61,7 +61,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     }
   };
 
-  node.type_name.set(Some("zinc::hal::lpc17xx::timer::Timer"));
+  node.set_type_name("zinc::hal::lpc17xx::timer::Timer".to_str());
 
   let st = quote_stmt!(&*cx,
       let $name = zinc::hal::lpc17xx::timer::Timer::new(

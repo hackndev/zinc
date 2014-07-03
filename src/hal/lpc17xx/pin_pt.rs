@@ -33,7 +33,7 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 }
 
-pub fn verify(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   node.expect_no_attributes(cx);
 }
 
@@ -122,7 +122,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let pin = TokenString(format!("{}u8", pin_str));
   let pin_name = TokenString(node.name.clone().unwrap());
 
-  node.type_name.set(Some("zinc::hal::lpc17xx::pin::Pin"));
+  node.set_type_name("zinc::hal::lpc17xx::pin::Pin".to_str());
 
   let st = quote_stmt!(&*cx,
       let $pin_name = zinc::hal::lpc17xx::pin::Pin::new(

@@ -41,8 +41,7 @@ pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 }
 
-fn verify(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: Rc<node::Node>) {
+fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   node.expect_no_attributes(cx);
   node.expect_subnodes(cx, ["clock", "timer", "uart", "gpio"]);
 }
@@ -118,8 +117,6 @@ mod test {
       let builder = Builder::build(cx, pt);
       let items = builder.emit_items(cx);
       assert!(unsafe{*failed} == false);
-
-      let items = builder.emit_items(cx);
       assert!(items.len() == 3);
 
       assert_equal_items(items.get(1), "

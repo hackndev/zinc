@@ -38,13 +38,11 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 }
 
-pub fn verify(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: Rc<node::Node>) {
+pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   node.expect_no_attributes(cx);
 }
 
-pub fn mutate_pins(builder: &mut Builder, cx: &mut ExtCtxt,
-    sub: Rc<node::Node>) {
+pub fn mutate_pins(builder: &mut Builder, _: &mut ExtCtxt, sub: Rc<node::Node>) {
   let tx_node_name = sub.get_ref_attr("tx").unwrap();
   let rx_node_name = sub.get_ref_attr("rx").unwrap();
 
@@ -97,7 +95,7 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
       }.to_str());
   let stop_bits = mode.as_slice().char_at(2).to_digit(10).unwrap() as u8;
 
-  sub.type_name.set(Some("zinc::hal::lpc17xx::uart::UART"));
+  sub.set_type_name("zinc::hal::lpc17xx::uart::UART".to_str());
   let uart_name = TokenString(sub.name.clone().unwrap());
 
   let st = quote_stmt!(&*cx,

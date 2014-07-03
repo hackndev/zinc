@@ -16,24 +16,24 @@
 use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 
-use builder::Builder;
+use builder::{Builder, add_node_dependency};
 use node;
 
 mod dht22_pt;
 
-pub fn build_drivers(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
-  if !node.expect_no_attributes(cx) {
-    return;
-  }
-
+pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.materializer.set(Some(verify));
   for sub in node.subnodes().iter() {
+    add_node_dependency(&node, sub);
+
     match sub.path.as_slice() {
-      "dht22" => dht22_pt::build_dht22(builder, cx, sub.clone()),
-      other => {
-        cx.span_err(
-            sub.path_span,
-            format!("unknown driver `{}`", other).as_slice());
-      }
+      "dht22" => dht22_pt::attach(builder, cx, sub.clone()),
+      _ => (),
     }
   }
+}
+
+fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.expect_no_attributes(cx);
+  node.expect_subnodes(cx, ["dht22"]);
 }

@@ -6,7 +6,9 @@ extern crate core;
 extern crate zinc;
 #[phase(plugin)] extern crate macro_platformtree;
 
-platformtree!(
+use core::option::{Some, None};
+
+platformtree_verbose!(
   lpc17xx@mcu {
     clock {
       source = "main-oscillator";
@@ -56,6 +58,7 @@ platformtree!(
       args {
         timer = &timer;
         uart = &uart;
+        dht = &dht;
       }
     }
   }
