@@ -108,7 +108,6 @@ impl PinConf {
   /// Returns input GPIO level.
   pub fn level(&self) -> ::hal::pin::GPIOLevel {
     let bit: u32 = 1 << (self.pin as uint);
-    // TODO: check from here on
     let reg = self.get_reg();
 
     match reg.IDR() & bit {
