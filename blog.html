@@ -5,11 +5,13 @@ title: zinc.rs blog
 ---
 
 {% for post in site.posts %}
-  <h2>{{ post.title }}</h2>
+  <h2 id="{{ post.url }}">
+    <a class="post-link" href="#{{ post.url }}">
+      {{ post.title }}
+    </a>
+  </h2>
   <div class="post-date">Published on {{ post.date | date: "%b %-d, %Y" }}</div>
-
   {{ post.content }}
-  <!-- <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a> -->
   <hr />
 {% endfor %}
 
