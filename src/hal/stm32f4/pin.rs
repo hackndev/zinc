@@ -19,7 +19,7 @@
 //! depending on the package.
 
 use super::peripheral_clock;
-use core::fail::abort;
+use core::intrinsics::abort;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
@@ -85,7 +85,7 @@ impl PinConf {
     let bits: u32 = match self.function {
       GPIOOut => 0b01 << offset,
       GPIOIn  => 0b00 << offset,
-      _       => abort(),  // FIXME(farcaller): not implemented
+      _       => unsafe { abort() },  // FIXME(farcaller): not implemented
     };
     let mask: u32 = !(0b11 << offset);
     let val: u32 = gpreg.MODER();
