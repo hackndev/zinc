@@ -23,19 +23,6 @@ use core::intrinsics::abort;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
-/// Pin configuration.
-///
-/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
-/// has all possible pin configurations.
-pub struct PinConf {
-  /// Pin port, mcu-specific.
-  pub port: Port,
-  /// Pin number.
-  pub pin: u8,
-  /// Pin function, mcu-specific.
-  pub function: Function,
-}
-
 /// Available port names.
 pub enum Port {
   PortA,
@@ -55,6 +42,19 @@ pub enum Function {
   GPIOOut     = 1,
   AltFunction = 2,
   Analog      = 3,
+}
+
+/// Pin configuration.
+///
+/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
+/// has all possible pin configurations.
+pub struct PinConf {
+  /// Pin port, mcu-specific.
+  pub port: Port,
+  /// Pin number.
+  pub pin: u8,
+  /// Pin function, mcu-specific.
+  pub function: Function,
 }
 
 impl Port {
@@ -79,7 +79,7 @@ impl PinConf {
   pub fn setup(&self) {
     self.port.clock().enable();  // TODO(farcaller): should be done once per port
 
-    let offset: u32 = self.pin as u32 * 2;
+    let offset: uint = self.pin as uint * 2;
     let gpreg = self.get_reg();
 
     let bits: u32 = match self.function {
@@ -95,13 +95,13 @@ impl PinConf {
 
   /// Sets output GPIO value to high.
   pub fn set_high(&self) {
-    let bit: u32 = 1 << self.pin;
+    let bit: u32 = 1 << self.pin as uint;
     self.get_reg().set_BSRR(bit);
   }
 
   /// Sets output GPIO value to low.
   pub fn set_low(&self) {
-    let bit: u32 = 1 << (self.pin + 16);
+    let bit: u32 = 1 << (self.pin as uint + 16);
     self.get_reg().set_BSRR(bit);
   }
 
