@@ -105,6 +105,18 @@ impl PinConf {
     self.get_reg().set_BSRR(bit);
   }
 
+  /// Returns input GPIO level.
+  pub fn level(&self) -> ::hal::pin::GPIOLevel {
+    let bit: u32 = 1 << (self.pin as uint);
+    // TODO: check from here on
+    let reg = self.get_reg();
+
+    match reg.IDR() & bit {
+      0 => ::hal::pin::Low,
+      _ => ::hal::pin::High,
+    }
+  }
+
   fn get_reg(&self) -> &reg::GPIO {
     match self.port {
       PortA => &reg::GPIOA,
