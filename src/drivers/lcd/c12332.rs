@@ -121,7 +121,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
     let index = x + (y/8) * 128;
     if color == 0 {
       self.videobuf[index as uint].set(
-        self.videobuf[index as uint].get() & !(1 << (y%8) as uint) as u8);
+        self.videobuf[index as uint].get() & !(1i32 << (y%8i32) as uint) as u8);
     } else {
       self.videobuf[index as uint].set(
         self.videobuf[index as uint].get() | (1 << ((y%8) as uint)));
