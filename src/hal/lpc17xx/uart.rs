@@ -107,13 +107,6 @@ enum FIFOTriggerLevel {
   FT14chars = 0b11_00_0_0_0_0,
 }
 
-static FIFOResetRx: u8 = 0b1_0;
-static FIFOResetTx: u8 = 0b1_0_0;
-
-static LCRModeMask: u8 = 0b1_11_1_1_11;
-
-static LSRTHREmpty: u8 = 0x20;
-
 pub struct UART {
   reg: &'static reg::UART,
   clock: PeripheralClock,
@@ -269,6 +262,13 @@ impl CharIO for UART {
     self.reg.set_THR(value as u32);
   }
 }
+
+static FIFOResetRx: u8 = 0b1_0;
+static FIFOResetTx: u8 = 0b1_0_0;
+
+static LCRModeMask: u8 = 0b1_11_1_1_11;
+
+static LSRTHREmpty: u8 = 0x20;
 
 mod reg {
   use lib::volatile_cell::VolatileCell;
