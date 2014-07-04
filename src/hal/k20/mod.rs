@@ -14,3 +14,5 @@
 // limitations under the License.
 
 //! HAL for Freescale Kinetis K20
+
+pub mod sim;
