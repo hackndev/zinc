@@ -18,6 +18,7 @@
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 /// A constant that requests to use hardware calibration value.
+/// Note that not all core implementations support this.
 pub static CALIBRATED: u32 = 0xffffffff;
 
 /// Initializes systick timer.
