@@ -20,7 +20,7 @@ This module also provides `isr.rs`, that is not compiled as a part of this
 crate. `isr.rs` provides ISR vector table.
 */
 
-pub mod systick;
+pub use super::cortex_common::systick;
 pub mod scb;
 pub mod nvic;
 pub mod mpu;

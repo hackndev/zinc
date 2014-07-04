@@ -14,4 +14,3 @@
 // limitations under the License.
 
 pub use super::cortex_common::systick;
-pub mod lock;
