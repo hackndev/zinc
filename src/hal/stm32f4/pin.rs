@@ -19,22 +19,9 @@
 //! depending on the package.
 
 use super::peripheral_clock;
-use core::fail::abort;
+use core::intrinsics::abort;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
-
-/// Pin configuration.
-///
-/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
-/// has all possible pin configurations.
-pub struct PinConf {
-  /// Pin port, mcu-specific.
-  pub port: Port,
-  /// Pin number.
-  pub pin: u8,
-  /// Pin function, mcu-specific.
-  pub function: Function,
-}
 
 /// Available port names.
 pub enum Port {
@@ -55,6 +42,19 @@ pub enum Function {
   GPIOOut     = 1,
   AltFunction = 2,
   Analog      = 3,
+}
+
+/// Pin configuration.
+///
+/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
+/// has all possible pin configurations.
+pub struct PinConf {
+  /// Pin port, mcu-specific.
+  pub port: Port,
+  /// Pin number.
+  pub pin: u8,
+  /// Pin function, mcu-specific.
+  pub function: Function,
 }
 
 impl Port {
@@ -79,13 +79,13 @@ impl PinConf {
   pub fn setup(&self) {
     self.port.clock().enable();  // TODO(farcaller): should be done once per port
 
-    let offset: u32 = self.pin as u32 * 2;
+    let offset: uint = self.pin as uint * 2;
     let gpreg = self.get_reg();
 
     let bits: u32 = match self.function {
       GPIOOut => 0b01 << offset,
       GPIOIn  => 0b00 << offset,
-      _       => abort(),  // FIXME(farcaller): not implemented
+      _       => unsafe { abort() },  // FIXME(farcaller): not implemented
     };
     let mask: u32 = !(0b11 << offset);
     let val: u32 = gpreg.MODER();
@@ -95,14 +95,25 @@ impl PinConf {
 
   /// Sets output GPIO value to high.
   pub fn set_high(&self) {
-    let bit: u32 = 1 << self.pin;
+    let bit: u32 = 1 << self.pin as uint;
     self.get_reg().set_BSRR(bit);
   }
 
   /// Sets output GPIO value to low.
   pub fn set_low(&self) {
-    let bit: u32 = 1 << (self.pin + 16);
+    let bit: u32 = 1 << (self.pin as uint + 16);
     self.get_reg().set_BSRR(bit);
+  }
+
+  /// Returns input GPIO level.
+  pub fn level(&self) -> ::hal::pin::GPIOLevel {
+    let bit: u32 = 1 << (self.pin as uint);
+    let reg = self.get_reg();
+
+    match reg.IDR() & bit {
+      0 => ::hal::pin::Low,
+      _ => ::hal::pin::High,
+    }
   }
 
   fn get_reg(&self) -> &reg::GPIO {
