@@ -16,3 +16,5 @@
 //! HAL for Freescale Kinetis K20
 
 pub mod sim;
+pub mod pin;
+
