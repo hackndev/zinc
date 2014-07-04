@@ -21,7 +21,7 @@ crate. `isr.rs` provides ISR vector table.
 */
 
 pub use super::cortex_common::systick;
-pub mod scb;
+pub use super::cortex_common::scb;
 pub use super::cortex_common::nvic;
 pub use super::cortex_common::mpu;
 #[cfg(cfg_multitasking)] pub mod sched;

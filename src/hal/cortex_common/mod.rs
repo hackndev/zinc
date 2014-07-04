@@ -20,3 +20,4 @@ Common definitions to all ARM Cortex M* family members
 pub mod systick;
 pub mod mpu;
 pub mod nvic;
+pub mod scb;
