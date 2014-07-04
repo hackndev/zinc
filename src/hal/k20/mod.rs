@@ -17,4 +17,4 @@
 
 pub mod sim;
 pub mod pin;
-
+pub mod uart;
