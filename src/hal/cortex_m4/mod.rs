@@ -13,4 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/*!
+Generic routines for ARM Cortex-M4 cores.
+
+This module also provides `isr.rs`, that is not compiled as a part of this
+crate. `isr.rs` provides ISR vector table.
+*/
+
 pub use super::cortex_common::systick;
