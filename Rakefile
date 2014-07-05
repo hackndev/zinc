@@ -129,5 +129,5 @@ case ENV['PLATFORM']
 when 'k20'
   task :build_all => [:build_blink_k20]
 else
-  task :build_all => [:build_empty, :build_blink, :build_uart]
+  task :build_all => [:build_empty, :build_blink, :build_uart, :build_dht22]
 end
