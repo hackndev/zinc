@@ -83,11 +83,11 @@ impl PinConf {
     let gpreg = self.get_reg();
 
     let bits: u32 = match self.function {
-      GPIOOut => 0b01 << offset,
-      GPIOIn  => 0b00 << offset,
+      GPIOOut => 0b01 << offset as uint,
+      GPIOIn  => 0b00 << offset as uint,
       _       => abort(),  // FIXME(farcaller): not implemented
     };
-    let mask: u32 = !(0b11 << offset);
+    let mask: u32 = !(0b11 << offset as uint);
     let val: u32 = gpreg.MODER();
 
     gpreg.set_MODER(val & mask | bits);
@@ -95,13 +95,13 @@ impl PinConf {
 
   /// Sets output GPIO value to high.
   pub fn set_high(&self) {
-    let bit: u32 = 1 << self.pin;
+    let bit: u32 = 1 << self.pin as uint;
     self.get_reg().set_BSRR(bit);
   }
 
   /// Sets output GPIO value to low.
   pub fn set_low(&self) {
-    let bit: u32 = 1 << (self.pin + 16);
+    let bit: u32 = 1 << (self.pin as uint + 16);
     self.get_reg().set_BSRR(bit);
   }
 
