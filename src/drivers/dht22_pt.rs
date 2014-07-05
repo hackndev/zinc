@@ -24,17 +24,17 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   node.mutator.set(Some(mutate_pin));
 
   let pin_node_name = node.get_ref_attr("pin").unwrap();
-  let pin_node = builder.pt.get_by_name(pin_node_name.as_slice()).unwrap();
+  let pin_node = builder.pt().get_by_name(pin_node_name.as_slice()).unwrap();
   add_node_dependency(&node, &pin_node);
 
   let timer_node_name = node.get_ref_attr("timer").unwrap();
-  let timer_node = builder.pt.get_by_name(timer_node_name.as_slice()).unwrap();
+  let timer_node = builder.pt().get_by_name(timer_node_name.as_slice()).unwrap();
   add_node_dependency(&node, &timer_node);
 }
 
 fn mutate_pin(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   let pin_node_name = node.get_ref_attr("pin").unwrap();
-  let pin_node = builder.pt.get_by_name(pin_node_name.as_slice()).unwrap();
+  let pin_node = builder.pt().get_by_name(pin_node_name.as_slice()).unwrap();
   pin_node.attributes.borrow_mut().insert("direction".to_str(),
         Rc::new(node::Attribute::new_nosp(node::StrValue("out".to_str()))));
 }
@@ -49,8 +49,8 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let pin_node_name = node.get_ref_attr("pin").unwrap();
   let timer_node_name = node.get_ref_attr("timer").unwrap();
-  let pin_node = builder.pt.get_by_name(pin_node_name.as_slice()).unwrap();
-  let timer_node = builder.pt.get_by_name(timer_node_name.as_slice()).unwrap();
+  let pin_node = builder.pt().get_by_name(pin_node_name.as_slice()).unwrap();
+  let timer_node = builder.pt().get_by_name(timer_node_name.as_slice()).unwrap();
 
   let pin = TokenString(pin_node_name);
   let timer = TokenString(timer_node_name);
@@ -89,9 +89,9 @@ mod test {
       super::mutate_pin(&mut builder, cx, pt.get_by_name("dht").unwrap());
       super::build_dht22(&mut builder, cx, pt.get_by_name("dht").unwrap());
       assert_that(unsafe{*failed}, is(equal_to(false)));
-      assert_that(builder.main_stmts.len(), is(equal_to(1u)));
+      assert_that(builder.main_stmts().len(), is(equal_to(1u)));
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts().get(0),
           "let dht = zinc::drivers::dht22::DHT22::new(&timer, &pin);");
 
       let pin_node = pt.get_by_name("pin").unwrap();

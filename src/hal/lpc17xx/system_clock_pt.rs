@@ -129,9 +129,9 @@ mod test {
       let mut builder = Builder::new(pt.clone());
       super::build_clock(&mut builder, cx, pt.get_by_path("clock").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 1);
+      assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts().get(0),
           "{
             use zinc::hal::lpc17xx::system_clock;
             system_clock::init_clock(

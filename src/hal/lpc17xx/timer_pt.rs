@@ -87,9 +87,9 @@ mod test {
       let mut builder = Builder::new(pt.clone());
       super::build_timer(&mut builder, cx, pt.get_by_name("tim").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 1);
+      assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts().get(0),
           "let tim = zinc::hal::lpc17xx::timer::Timer::new(
               zinc::hal::lpc17xx::timer::Timer1, 25u32, 4u8);");
     });

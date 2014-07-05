@@ -27,8 +27,8 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
     add_node_dependency(&node, sub);
     let tx_node_name = sub.get_ref_attr("tx").unwrap();
     let rx_node_name = sub.get_ref_attr("rx").unwrap();
-    let tx_node = builder.pt.get_by_name(tx_node_name.as_slice()).unwrap();
-    let rx_node = builder.pt.get_by_name(rx_node_name.as_slice()).unwrap();
+    let tx_node = builder.pt().get_by_name(tx_node_name.as_slice()).unwrap();
+    let rx_node = builder.pt().get_by_name(rx_node_name.as_slice()).unwrap();
     add_node_dependency(sub, &tx_node);
     add_node_dependency(sub, &rx_node);
     super::add_node_dependency_on_clock(builder, sub);
@@ -111,7 +111,7 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
 
 pub fn build_uart_gpio(builder: &Builder, uart_idx: uint, name: &str,
     istx: bool) {
-  let node = builder.pt.get_by_name(name).unwrap();
+  let node = builder.pt().get_by_name(name).unwrap();
   let direction = (if istx {"out"} else {"in"}).to_str();
   let function = format!("{}{}", if istx {"txd"} else {"rxd"}, uart_idx);
   node.attributes.borrow_mut().insert("direction".to_str(),
@@ -150,9 +150,9 @@ mod test {
       super::mutate_pins(&mut builder, cx, pt.get_by_name("uart").unwrap());
       super::build_uart(&mut builder, cx, pt.get_by_name("uart").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 1);
+      assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts().get(0),
           "let uart = zinc::hal::lpc17xx::uart::UART::new(
                zinc::hal::lpc17xx::uart::UART0,
                9600u32,

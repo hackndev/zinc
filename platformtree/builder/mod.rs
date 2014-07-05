@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::rc::Rc;
 use std::gc::{Gc, GC};
+use std::rc::Rc;
 use syntax::abi;
 use syntax::ast::TokenTree;
 use syntax::ast;
@@ -31,9 +31,9 @@ mod mcu;
 mod os;
 
 pub struct Builder {
-  pub main_stmts: Vec<Gc<ast::Stmt>>,
-  pub type_items: Vec<Gc<ast::Item>>,
-  pub pt: Rc<node::PlatformTree>,
+  main_stmts: Vec<Gc<ast::Stmt>>,
+  type_items: Vec<Gc<ast::Item>>,
+  pt: Rc<node::PlatformTree>,
 }
 
 impl Builder {
@@ -124,6 +124,14 @@ impl Builder {
       type_items: Vec::new(),
       pt: pt,
     }
+  }
+
+  pub fn main_stmts(&self) -> Vec<Gc<ast::Stmt>> {
+    self.main_stmts.clone()
+  }
+
+  pub fn pt(&self) -> Rc<node::PlatformTree> {
+    self.pt.clone()
   }
 
   pub fn add_main_statement(&mut self, stmt: Gc<ast::Stmt>) {

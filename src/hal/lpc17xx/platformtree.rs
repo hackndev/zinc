@@ -48,7 +48,7 @@ fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
 pub fn add_node_dependency_on_clock(builder: &mut Builder,
     node: &Rc<node::Node>) {
-  let mcu_node = builder.pt.get_by_path("mcu").unwrap();
+  let mcu_node = builder.pt().get_by_path("mcu").unwrap();
   let clock_node = mcu_node.get_by_path("clock").unwrap();
   add_node_dependency(node, &clock_node);
 }

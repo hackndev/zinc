@@ -150,9 +150,9 @@ mod test {
       let mut builder = Builder::new(pt.clone());
       super::build_pin(&mut builder, cx, pt.get_by_name("p1").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 1);
+      assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts().get(0),
           "let p1 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                1u8,
@@ -172,9 +172,9 @@ mod test {
       let mut builder = Builder::new(pt.clone());
       super::build_pin(&mut builder, cx, pt.get_by_name("p2").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 1);
+      assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts().get(0),
           "let p2 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                2u8,
@@ -194,9 +194,9 @@ mod test {
       let mut builder = Builder::new(pt.clone());
       super::build_pin(&mut builder, cx, pt.get_by_name("p3").unwrap());
       assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 1);
+      assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts().get(0),
           "let p3 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                3u8,
