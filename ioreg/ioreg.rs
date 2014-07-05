@@ -22,5 +22,6 @@
 extern crate syntax;
 
 pub mod node;
+pub mod memory_map;
 pub mod parser;
 pub mod builder;
