@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use hal::stm32f4::pin;
-use hal::gpio::{Direction};
+use hal::pin::{GPIODirection};
 
 #[path="../../lib/ioreg.rs"]
 mod ioreg;
@@ -24,7 +24,7 @@ pub struct GPIOConf {
   pub pin: pin::PinConf,
 
   /// Direction for GPIO, either `In` or `Out`.
-  pub direction: Direction,
+  pub direction: GPIODirection,
 }
 
 impl GPIOConf {
