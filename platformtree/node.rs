@@ -169,11 +169,6 @@ impl Node {
     self.type_name.borrow().clone()
   }
 
-  pub fn hashed_type_name(&self) -> String {
-    let hash = ::std::hash::hash(&self.type_name().unwrap());
-    format!("Ty{:X}", hash)
-  }
-
   pub fn type_params(&self) -> Vec<String> {
     self.type_params.borrow().clone()
   }

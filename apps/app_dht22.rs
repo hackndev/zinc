@@ -8,7 +8,7 @@ extern crate zinc;
 
 use core::option::{Some, None};
 
-platformtree_verbose!(
+platformtree!(
   lpc17xx@mcu {
     clock {
       source = "main-oscillator";
@@ -69,7 +69,6 @@ platformtree_verbose!(
 fn run(args: &pt::run_args) {
   use zinc::drivers::chario::CharIO;
   use zinc::hal::timer::Timer;
-  use zinc::hal::pin::GPIO;
 
   args.timer.wait(3);
 

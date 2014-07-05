@@ -49,8 +49,6 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let pin_node_name = node.get_ref_attr("pin").unwrap();
   let timer_node_name = node.get_ref_attr("timer").unwrap();
-  let pin_node = builder.pt().get_by_name(pin_node_name.as_slice()).unwrap();
-  let timer_node = builder.pt().get_by_name(timer_node_name.as_slice()).unwrap();
 
   let pin = TokenString(pin_node_name);
   let timer = TokenString(timer_node_name);
@@ -60,8 +58,8 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   node.set_type_name(typename);
   let ty_params = vec!(
       "'a".to_str(),
-      timer_node.type_name().unwrap(),
-      pin_node.type_name().unwrap());
+      "zinc::hal::timer::Timer".to_str(),
+      "zinc::hal::pin::GPIO".to_str());
   node.set_type_params(ty_params);
 
   let st = quote_stmt!(&*cx,

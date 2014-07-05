@@ -22,6 +22,16 @@ use syntax::parse::token::{InternedString, intern_and_get_ident};
 
 static TAG: &'static str = "__zinc_task_ty_params";
 
+pub trait ToTyHash {
+  fn to_tyhash(&self) -> String;
+}
+
+impl ToTyHash for String {
+  fn to_tyhash(&self) -> String {
+    format!("Ty{:X}", ::std::hash::hash(self))
+  }
+}
+
 /// Sets ty_params for named task.
 ///
 /// Arguments:

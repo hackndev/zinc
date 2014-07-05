@@ -37,6 +37,7 @@ use syntax::util::small_vector::SmallVector;
 
 use platformtree::parser::Parser;
 use platformtree::builder::Builder;
+use platformtree::builder::meta_args::ToTyHash;
 
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
@@ -77,8 +78,13 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
       let ty_params = platformtree::builder::meta_args::get_ty_params_for_task(cx, fn_name);
 
       let params = ty_params.iter().map(|ty| {
-        cx.typaram(DUMMY_SP, cx.ident_of(ty.as_slice()), ast::StaticSize,
-            OwnedSlice::empty(), None)
+        cx.typaram(
+            DUMMY_SP,
+            cx.ident_of(ty.to_tyhash().as_slice()),
+            ast::StaticSize,
+            OwnedSlice::from_vec(vec!(cx.typarambound(
+                cx.path(DUMMY_SP, ty.as_slice().split_str("::").map(|t| cx.ident_of(t)).collect())))),
+            None)
       }).collect();
 
       let new_arg = cx.arg(DUMMY_SP, cx.ident_of("args"), cx.ty_rptr(
@@ -90,7 +96,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
                   ["pt".to_str(), fn_name.to_str() + "_args"].iter().map(|t| cx.ident_of(t.as_slice())).collect(),
                   vec!(),
                   ty_params.iter().map(|ty| {
-                    cx.ty_path(cx.path_ident(DUMMY_SP, cx.ident_of(ty.as_slice())), None)
+                    cx.ty_path(cx.path_ident(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice())), None)
                   }).collect()),
               None),
           None,

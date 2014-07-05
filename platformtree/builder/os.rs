@@ -24,8 +24,8 @@ use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 use syntax::owned_slice::OwnedSlice;
 use syntax::parse::token::intern;
 
+use builder::meta_args::{ToTyHash, set_ty_params_for_task};
 use node;
-
 use super::{Builder, TokenString, add_node_dependency};
 
 pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
@@ -150,16 +150,15 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
   let name_ident = cx.ident_of(format!("{}_args", struct_name).as_slice());
   let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
   let mut collected_params = vec!();
-  let mut collected_hashes = vec!();
+  let mut ty_params_vec = vec!();
   for ty in ty_params.iter() {
-    let hash = ::std::hash::hash(ty);
-    let tyhash = format!("Ty{:X}", hash);
-    let typaram = cx.typaram(DUMMY_SP, cx.ident_of(tyhash.as_slice()), ast::StaticSize,
+    let typaram = cx.typaram(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice()), ast::StaticSize,
         OwnedSlice::empty(), None);
-    collected_hashes.push(tyhash);
     collected_params.push(typaram);
+    ty_params_vec.push(ty.clone());
   }
-  ::builder::meta_args::set_ty_params_for_task(cx, struct_name.as_slice(), collected_hashes);
+
+  set_ty_params_for_task(cx, struct_name.as_slice(), ty_params_vec);
   let struct_item = box(GC) ast::Item {
     ident: name_ident,
     attrs: vec!(),
@@ -194,9 +193,7 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
       let lifetime = cx.lifetime(DUMMY_SP, intern(slice));
       lifetimes.push(lifetime);
     } else {
-      let hash = ::std::hash::hash(p);
-      let tyhash = format!("Ty{:X}", hash);
-      let path = cx.ty_path(type_name_as_path(cx, tyhash.as_slice(), vec!()), None);
+      let path = cx.ty_path(type_name_as_path(cx, p.to_tyhash().as_slice(), vec!()), None);
       types.push(path);
     }
   }
