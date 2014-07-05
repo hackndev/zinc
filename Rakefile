@@ -68,6 +68,14 @@ rust_tests :platformtree_test, {
   produce: 'platformtree_test'.in_build,
 }
 
+rust_tests :zinc_test, {
+  source:  'main.rs'.in_source,
+  deps:    [:core_crate],
+  produce: 'zinc_test'.in_build,
+  recompile_on: [:triple, :platform, :features],
+  build_for: :host,
+}
+
 # macros
 compile_rust :macro_platformtree, {
   source:    'macro/platformtree.rs'.in_root,
