@@ -29,6 +29,7 @@ use node;
 
 mod mcu;
 mod os;
+pub mod meta_args;
 
 pub struct Builder {
   main_stmts: Vec<Gc<ast::Stmt>>,

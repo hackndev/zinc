@@ -58,8 +58,10 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let typename = format!("zinc::drivers::dht22::DHT22");
   node.set_type_name(typename);
-  let ty_params = vec!("'a".to_str(), timer_node.hashed_type_name(),
-      pin_node.hashed_type_name());
+  let ty_params = vec!(
+      "'a".to_str(),
+      timer_node.type_name().unwrap(),
+      pin_node.type_name().unwrap());
   node.set_type_params(ty_params);
 
   let st = quote_stmt!(&*cx,

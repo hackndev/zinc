@@ -22,9 +22,9 @@
 extern crate syntax;
 #[cfg(test)] extern crate hamcrest;
 
+pub mod builder;
 pub mod node;
 pub mod parser;
-pub mod builder;
 
 #[path="../src/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
 #[path="../src/drivers/drivers_pt.rs"] mod drivers_pt;

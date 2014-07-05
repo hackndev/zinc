@@ -64,6 +64,7 @@ platformtree_verbose!(
   }
 )
 
+#[zinc_task]
 #[no_split_stack]
 fn run(args: &pt::run_args) {
   use zinc::drivers::chario::CharIO;
