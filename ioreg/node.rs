@@ -38,9 +38,6 @@ pub struct Field {
   pub read_only: bool,
   pub ty: FieldType,
 
-  pub width: uint,
-  pub width_span: Span,
-
   pub count: uint,
   pub count_span: Span,
 }
