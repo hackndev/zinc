@@ -18,7 +18,6 @@
 
 #![feature(plugin_registrar, quote, managed_boxes)]
 
-extern crate debug;
 extern crate platformtree;
 extern crate rustc;
 extern crate serialize;
@@ -112,9 +111,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
       };
       let new_node = ast::ItemFn(new_decl, style, abi, new_generics, block);
 
-      let i = box(GC) ast::Item {node: new_node, ..it.deref().clone() };
-      println!("{}", pprust::item_to_str(i.deref()));
-      i
+      box(GC) ast::Item {node: new_node, ..it.deref().clone() }
     },
     _ => fail!(),
   }
