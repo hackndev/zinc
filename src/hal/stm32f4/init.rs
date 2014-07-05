@@ -19,7 +19,7 @@
 //! performing initial peripheral configuration.
 
 use hal::mem_init::init_data;
-use core::fail::abort;
+use core::intrinsics::abort;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 #[path="../../lib/wait_for.rs"] mod wait_for;
@@ -118,7 +118,7 @@ impl ClockConf {
         // Switch to HSE
         if freq > 30_000_000 {
           // this code doesn't support wait states configuration for HSE
-          abort();
+          unsafe { abort() };
         } else {
           self.enable_hse();
           self.set_system_clock(reg::SystemClockHSE);
@@ -170,7 +170,7 @@ impl ClockConf {
         90..120  => 3,
         121..150 => 4,
         151..168 => 5,
-        _        => abort(),
+        _        => unsafe { abort() },
       }
     );
   }
@@ -205,21 +205,21 @@ impl ClockConf {
       128 => 0b1101,
       256 => 0b1110,
       512 => 0b1111,
-      _   => abort(),
+      _   => unsafe { abort() },
     } << 4) | (match apb_low_speed {
       1   => 0b000,
       2   => 0b100,
       4   => 0b101,
       8   => 0b110,
       16  => 0b111,
-      _   => abort(),
+      _   => unsafe { abort() },
     } << 10) | (match apb_hi_speed {
       1   => 0b000,
       2   => 0b100,
       4   => 0b101,
       8   => 0b110,
       16  => 0b111,
-      _   => abort(),
+      _   => unsafe { abort() },
     } << 13);
 
     reg::RCC.set_CFGR((val & mask) | bits);
@@ -239,7 +239,7 @@ impl PLLConf {
         4 => 0b01u32,
         6 => 0b10u32,
         8 => 0b11u32,
-        _ => abort(),
+        _ => unsafe { abort() },
       } << 16) |
       (match self.source {
         PLLClockHSI    => 0u32,
