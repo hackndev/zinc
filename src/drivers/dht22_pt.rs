@@ -71,7 +71,8 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 #[cfg(test)]
 mod test {
   use builder::Builder;
-  use test_helpers::{assert_equal_source, with_parsed};
+  use test_helpers::{assert_equal_source, with_parsed, equal_to, equal_to_s};
+  use hamcrest::{assert_that,is};
 
   #[test]
   fn builds_lpc17xx_pt() {
@@ -83,16 +84,22 @@ mod test {
         timer = &timer;
       }", |cx, failed, pt| {
       let mut builder = Builder::new(pt.clone());
+      pt.get_by_name("timer").unwrap().set_type_name("T".to_str());
+      pt.get_by_name("pin").unwrap().set_type_name("P".to_str());
       super::mutate_pin(&mut builder, cx, pt.get_by_name("dht").unwrap());
       super::build_dht22(&mut builder, cx, pt.get_by_name("dht").unwrap());
-      assert!(unsafe{*failed} == false);
-      assert!(builder.main_stmts.len() == 1);
+      assert_that(unsafe{*failed}, is(equal_to(false)));
+      assert_that(builder.main_stmts.len(), is(equal_to(1u)));
 
       assert_equal_source(builder.main_stmts.get(0),
           "let dht = zinc::drivers::dht22::DHT22::new(&timer, &pin);");
 
       let pin_node = pt.get_by_name("pin").unwrap();
-      assert!(pin_node.get_string_attr("direction").unwrap() == "out".to_str());
+      assert_that(pin_node.get_string_attr("direction").unwrap(),
+          is(equal_to_s("out")));
+
+      assert_that(pt.get_by_name("dht").unwrap().type_name().unwrap(),
+          is(equal_to_s("zinc::drivers::dht22::DHT22<'a, T, P>")));
     });
   }
 }
