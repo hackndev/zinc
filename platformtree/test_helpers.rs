@@ -30,6 +30,38 @@ use builder::Builder;
 use node;
 use parser::Parser;
 
+use hamcrest::{success,Matcher,MatchResult,SelfDescribing};
+use std::fmt::Show;
+
+pub struct EqualToString<T> {
+  expected: T
+}
+
+impl<T: Show> SelfDescribing for EqualToString<T> {
+  fn describe(&self) -> String {
+    format!("{}", self.expected)
+  }
+}
+
+impl<T : PartialEq+Show> Matcher<T> for EqualToString<T> {
+  fn matches(&self, actual: T) -> MatchResult {
+    if self.expected.eq(&actual) {
+      success()
+    }
+    else {
+      Err(format!("was {}", actual))
+    }
+  }
+}
+
+pub fn equal_to<T : PartialEq+Show>(expected: T) -> Box<EqualToString<T>> {
+  box EqualToString { expected: expected }
+}
+
+pub fn equal_to_s(expected: &str) -> Box<EqualToString<String>> {
+  equal_to(expected.to_str())
+}
+
 pub fn fails_to_parse(src: &str) {
   with_parsed_tts(src, |_, failed, pt| {
     assert!(unsafe{*failed} == true);

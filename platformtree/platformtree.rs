@@ -20,6 +20,7 @@
 #![crate_type="rlib"]
 
 extern crate syntax;
+#[cfg(test)] extern crate hamcrest;
 
 pub mod node;
 pub mod parser;
