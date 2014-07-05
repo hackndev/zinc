@@ -13,8 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::rc::Rc;
+use std::collections::hashmap::HashSet;
 use std::gc::{Gc, GC};
+use std::rc::Rc;
 use syntax::ast;
 use syntax::codemap::{respan, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
@@ -89,9 +90,10 @@ fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
 
 fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     struct_name: &String, node: Rc<node::Node>) -> Gc<ast::Expr> {
-  let mut fields = Vec::new();
-  let mut expr_fields = Vec::new();
+  let mut fields = vec!();
+  let mut expr_fields = vec!();
   let node_attr = node.attributes.borrow();
+  let mut ty_params = HashSet::new();
 
   // this is a bit slower than for (k, v) in node.attributes.iter(), but we need
   // to preserve sort order to make reasonably simple test code
@@ -118,11 +120,15 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       node::RefValue(ref rname)  => {
         let refnode = builder.pt.get_by_name(rname.as_slice()).unwrap();
         let reftype = refnode.type_name().unwrap();
+        let refparams = refnode.type_params();
+        for param in refparams.iter() {
+          ty_params.insert(param.clone());
+        }
         let val_slice = TokenString(rname.clone());
         let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
         (cx.ty_rptr(
           DUMMY_SP,
-          cx.ty_path(type_name_as_path(cx, reftype.as_slice()), None),
+          cx.ty_path(type_name_as_path(cx, reftype.as_slice(), refparams), None),
           Some(a_lifetime),
           ast::MutImmutable), quote_expr!(&*cx, &$val_slice))
       },
@@ -141,6 +147,15 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let name_ident = cx.ident_of(format!("{}_args", struct_name).as_slice());
   let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
+  let mut collected_params = vec!();
+  for ty in ty_params.iter() {
+    let slice = ty.as_slice();
+    if !slice.starts_with("'") {
+      let typaram = cx.typaram(DUMMY_SP, cx.ident_of(slice), ast::StaticSize,
+          OwnedSlice::empty(), None);
+      collected_params.push(typaram);
+    }
+  }
   let struct_item = box(GC) ast::Item {
     ident: name_ident,
     attrs: vec!(),
@@ -152,7 +167,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       is_virtual: false,
     }, ast::Generics {
       lifetimes: vec!(a_lifetime),
-      ty_params: OwnedSlice::from_vec(vec!()),
+      ty_params: OwnedSlice::from_vec(collected_params),
     }),
     vis: ast::Public,
     span: DUMMY_SP,
@@ -166,8 +181,23 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           expr_fields))
 }
 
-fn type_name_as_path(cx: &ExtCtxt, ty: &str) -> ast::Path {
-  cx.path(DUMMY_SP, ty.split_str("::").map(|t| cx.ident_of(t)).collect())
+fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
+  let mut lifetimes = vec!();
+  let mut types = vec!();
+  for p in params.iter() {
+    let slice = p.as_slice();
+    if slice.starts_with("'") {
+      let lifetime = cx.lifetime(DUMMY_SP, intern(slice));
+      lifetimes.push(lifetime);
+    } else {
+      let path = cx.ty_path(type_name_as_path(cx, slice, vec!()), None);
+      types.push(path);
+    }
+  }
+  cx.path_all(DUMMY_SP, false,
+      ty.split_str("::").map(|t| cx.ident_of(t)).collect(),
+      lifetimes,
+      types)
 }
 
 #[cfg(test)]

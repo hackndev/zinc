@@ -56,11 +56,11 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let timer = TokenString(timer_node_name);
   let name = TokenString(node.name.clone().unwrap());
 
-  let typename = format!(
-      "zinc::drivers::dht22::DHT22<'a, {}, {}>",
-      timer_node.type_name().unwrap(),
-      pin_node.type_name().unwrap());
+  let typename = format!("zinc::drivers::dht22::DHT22");
   node.set_type_name(typename);
+  let ty_params = vec!("'a".to_str(), timer_node.hashed_type_name(),
+      pin_node.hashed_type_name());
+  node.set_type_params(ty_params);
 
   let st = quote_stmt!(&*cx,
       let $name = zinc::drivers::dht22::DHT22::new(&$timer, &$pin);
@@ -97,9 +97,6 @@ mod test {
       let pin_node = pt.get_by_name("pin").unwrap();
       assert_that(pin_node.get_string_attr("direction").unwrap(),
           is(equal_to_s("out")));
-
-      assert_that(pt.get_by_name("dht").unwrap().type_name().unwrap(),
-          is(equal_to_s("zinc::drivers::dht22::DHT22<'a, T, P>")));
     });
   }
 }

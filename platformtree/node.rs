@@ -125,6 +125,7 @@ pub struct Node {
   pub parent: Option<Weak<Node>>,
 
   type_name: RefCell<Option<String>>,
+  type_params: RefCell<Vec<String>>,
 
   /// A function that materializes this node.
   pub materializer: Cell<Option<NodeBuilderFn>>,
@@ -151,6 +152,7 @@ impl Node {
       subnodes: RefCell::new(Subnodes::new()),
       parent: parent,
       type_name: RefCell::new(None),
+      type_params: RefCell::new(vec!()),
       materializer: Cell::new(None),
       mutator: Cell::new(None),
       depends_on: RefCell::new(Vec::new()),
@@ -165,6 +167,20 @@ impl Node {
 
   pub fn type_name(&self) -> Option<String> {
     self.type_name.borrow().clone()
+  }
+
+  pub fn hashed_type_name(&self) -> String {
+    let hash = ::std::hash::hash(&self.type_name().unwrap());
+    format!("Ty{:X}", hash)
+  }
+
+  pub fn type_params(&self) -> Vec<String> {
+    self.type_params.borrow().clone()
+  }
+
+  pub fn set_type_params(&self, params: Vec<String>) {
+    let mut borrow = self.type_params.borrow_mut();
+    borrow.deref_mut().clone_from(&params);
   }
 
   pub fn subnodes(&self) -> Vec<Rc<Node>> {
