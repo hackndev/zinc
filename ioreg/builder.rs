@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use std::gc::{Gc, GC};
+use std::collections::hashmap::HashMap;
 use syntax::abi;
 use syntax::ast::TokenTree;
 use syntax::ast;
@@ -22,15 +23,17 @@ use syntax::codemap::{Span, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
+use syntax::owned_slice;
 use syntax::parse::token::InternedString;
 
 use node;
 
 pub struct Builder {
   pub type_items: Vec<Gc<ast::Item>>,
-  pub ioreg: Gc<node::IoReg>,
+  pub groups: HashMap<String, Gc<node::RegGroup>>,
 }
 
+/// Generate an `#[allow(...)]` attribute of the given type
 fn allow_attribute(cx: &mut ExtCtxt, allow: &'static str) -> ast::Attribute {
   let word = cx.meta_word(DUMMY_SP, InternedString::new(allow));
   let allow = cx.meta_list(DUMMY_SP, InternedString::new("allow"), vec!(word));
@@ -38,10 +41,10 @@ fn allow_attribute(cx: &mut ExtCtxt, allow: &'static str) -> ast::Attribute {
 }
 
 impl Builder {
-  pub fn new(ioreg: &Gc<node::IoReg>) -> Builder {
+  pub fn new(groups: HashMap<String, Gc<node::RegGroup>>) -> Builder {
     Builder {
       type_items: Vec::new(),
-      ioreg: *ioreg,
+      groups: groups,
     }
   }
 
@@ -54,10 +57,33 @@ impl Builder {
     Vec::new()
   }
 
-  //fn emit_type(&self, cx: &mut ExtCtxt) -> ast::Item {}
+  /*
+  fn emit_type(&self, cx: &mut ExtCtxt) -> ast::Item {
+    let span: Span = undefined;
+    let width: uint = self.ioreg.width();
+    if width % 8 != 0 {
+      println!("Not multiple of byte size\n");
+    }
+    let prim_ty: ast::Path = undefined;
+    let ty: Gc<ast::Ty> = box(GC) ast::Ty {
+      id: ast::DUMMY_NODE_ID,
+      node: ast::TyPath(prim_ty, None, ast::DUMMY_NODE_ID),
+      span: span
+    };
+    ast::Item {
+      ident: cx.ident_of(self.ioreg.name),
+      attrs: vec!(allow_attribute(cx, "uppercase_variables")),
+      id: ast::DUMMY_NODE_ID,
+      node: ast::ItemTy(ty, ast::Generics { lifetimes: Vec::new(),
+                                            ty_params: owned_slice::OwnedSlice::empty() }),
+      vis: ast::Public,
+      span: span,
+    }
+  }
+  */
 }
 
-pub fn build_ioreg(cx: &mut ExtCtxt, ioreg: &Gc<node::IoReg>) -> Builder {
-  let builder = Builder::new(ioreg);
+pub fn build_ioregs(cx: &mut ExtCtxt, groups: HashMap<String, Gc<node::RegGroup>>) -> Builder {
+  let builder = Builder::new(groups);
   builder
 }

@@ -14,8 +14,9 @@
 // limitations under the License.
 
 use std::gc::{Gc, GC};
+use std::collections::hashmap::HashMap;
 use syntax::ast::TokenTree;
-use syntax::codemap::{Span, DUMMY_SP};
+use syntax::codemap::{Span, Spanned, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer};
 
@@ -55,169 +56,244 @@ impl<'a> Parser<'a> {
   }
 
   /// Parse the ioregs from passed in tokens.
-  pub fn parse_ioregs(&mut self) -> Option<Gc<node::IoReg>> {
-    let mut fields: Vec<node::FieldOrPadding> = Vec::new();
-    let mut failed = false;
-
-    // First take the register set name
-    let name_span = self.span;
-    let name = match self.expect_ident() {
-      Some(name) => name,
-      None => return None,
-    };
-
-    if !self.expect(&token::COMMA){
-      return None;
-    }
+  pub fn parse_ioregs(&mut self, cx: &ExtCtxt) -> Option<HashMap<String, Gc<node::RegGroup>>> {
+    let mut groups: HashMap<String, Gc<node::RegGroup>> = HashMap::new();
+    let mut failed: bool = false;
 
     loop {
       if self.token == token::EOF {
         break
       }
-
-      let field = match self.parse_field_or_padding() {
-        Some(field) => field,
+      match self.parse_reg_group(cx) {
+        Some(group) => {
+          groups.insert(group.name.clone(), box(GC) group);
+        },
         None => {
-          failed = true;
           self.bump();
-          continue
-        }
-      };
-      fields.push(field);
-
-      if self.expect(&token::COMMA) {
-        break;
+          failed = true;
+          continue;
+        },
       }
     }
 
     if failed {
       None
     } else {
-      Some(box(GC) node::IoReg {name: name, name_span: name_span, fields: fields})
+      Some(groups)
     }
   }
 
-  fn parse_field_or_padding(&mut self) -> Option<node::FieldOrPadding> {
+  fn parse_reg_group(&mut self, cx: &ExtCtxt) -> Option<node::RegGroup> {
+    // sitting at `group` token
     match self.expect_ident() {
-      // parse padding
-      Some(ref s) if s.equiv(&("pad")) => {
-        if !self.expect(&token::LPAREN) {
-          return None;
-        }
-        match self.bump() {
-          token::LIT_INT_UNSUFFIXED(width) => {
-            if !self.expect(&token::RPAREN) {
-              return None;
-            }
-            Some(node::Padding(width as uint))
-          },
-          _ => None,
-        }
+      Some(ref s) if s.equiv(&"group") => {},
+      _ => {
+        self.error(String::from_str("Expected token `group`"));
+        return None;
       },
-      Some(name) => match self.parse_field(name) {
-        Some(field) => Some(node::Field(field)),
-        None => None,
-      },
-     None => None,
     }
-  }
 
-  fn parse_field(&mut self, name: String) -> Option<node::Field> {
-    let name_span = self.last_span;
-
-    // We've already parsed the name
-    if !self.expect(&token::COLON) {
+    let name_span = self.span;
+    let name = match self.expect_ident() {
+      Some(name) => name,
+      None => return None,
+    };
+    if !self.expect(&token::LBRACE) {
       return None;
     }
 
+    let mut regs: Vec<node::Reg> = Vec::new();
+    let mut cur_reg: Option<node::Reg> = None;
+    loop {
+      match self.token.clone() {
+        // Beginning of register
+        token::AT => {
+          match cur_reg {
+            None => {},
+            Some(reg) => regs.push(reg),
+          };
+          match self.parse_reg() {
+            None => return None,
+            Some(reg) => cur_reg = Some(reg),
+          }
+        },
+
+        // Field
+        token::LPAREN =>  {
+          match cur_reg {
+            None => self.error(String::from_str("Found field without register")),
+            Some(ref mut reg) => {
+              match self.parse_field() {
+                Some(field) => reg.fields.push(field),
+                None => return None,
+              }
+            },
+          }
+        },
+
+        // End of group
+        token::RBRACE => {
+          self.bump();
+          break;
+        },
+
+        // Beginning of new group
+        ref t@token::IDENT(_,_) if token::to_str(t).equiv(&"group") => {
+          // Flush current register
+          match cur_reg {
+            None => {},
+            Some(reg) => regs.push(reg),
+          };
+          cur_reg = None;
+
+          match self.parse_reg_group(cx) {
+            Some(group) => {}, //TODO groups.push(group),
+            None => return None,
+          };
+        },
+
+        // Error
+        _ => {
+          self.error(format!("fail: {}", token::to_str(&self.token)));
+          self.bump();
+        }
+      }
+    }
+
+    let group = node::RegGroup {
+      name: name,
+      name_span: name_span,
+      regs: regs,
+    };
+    Some(group)
+  }
+
+  /// Parse the introduction of a register
+  fn parse_reg(&mut self) -> Option<node::Reg> {
+    // we are still sitting at `@`
+    println!("parse_reg: at={}", token::to_str(&self.token));
+    self.bump();
+    let offset = match self.expect_uint() {
+      Some(offset) => offset,
+      None => return None,
+    };
+    let (name, name_span) = match self.expect_ident() {
+      Some(name) => (name, self.span),
+      None => return None,
+    };
+    if !self.expect(&token::COLON) {
+      return None;
+    }
+    println!("parse_reg: ty {}", token::to_str(&self.token));
+    let ty = match self.token.clone() {
+      ref t@token::IDENT(s,_) => {
+        let ty = match token::to_str(t) {
+          ref s if s.equiv(&"u32") => node::UIntReg(32),
+          ref s if s.equiv(&"u16") => node::UIntReg(16),
+          ref s if s.equiv(&"u8")  => node::UIntReg(8),
+          s                    => node::GroupReg(s),
+        };
+        self.bump();
+        ty
+      },
+      ref t => {
+        self.error(format!("Expected register type, found `{}`", token::to_str(t)));
+        return None;
+      },
+    };
+    let count = match self.parse_count() {
+      None => return None,
+      Some(count) => count,
+    };
+
+    let docstring = match self.token {
+      token::LIT_STR(docstring) => {
+        self.bump();
+        Some(Spanned {node: docstring.to_str(), span: self.last_span})
+      },
+      _ => None,
+    };
+    Some(node::Reg {
+      name: name,
+      name_span: name_span,
+      ty: ty,
+      count: count,
+      fields: Vec::new(),
+      docstring: docstring,
+    })
+  }
+
+  /// Parse a field
+  fn parse_field(&mut self) -> Option<node::Field> {
+    // sitting at ( token of bit range
+    if !self.expect(&token::LPAREN) {
+      return None;
+    }
+    let start_bit = match self.expect_uint() {
+      Some(bit) => bit,
+      None => return None,
+    };
+    println!("parse_field: {}", token::to_str(&self.token));
+    let bits_span = self.span;
+    let end_bit = match self.token {
+      token::DOTDOT => {
+        self.bump();
+        match self.expect_uint() {
+          Some(bit) => bit as uint,
+          None => return None,
+        }
+      },
+      _ => start_bit as uint,
+    };
+    if !self.expect(&token::RPAREN) {
+      return None;
+    }
+
+    let name = match self.expect_ident() {
+      Some(name) => Spanned {node: name, span: self.last_span},
+      None => return None,
+    };
+    if !self.expect(&token::COLON) {
+      return None;
+    }
     let read_only = match self.token {
       token::NOT => {
         self.bump();
         true
       },
-      ref t => false,
+      _ => false,
     };
-
-    let field_type = match self.parse_field_type() {
-      Some(ty) => ty,
+    let ty = match self.parse_field_type() {
+      Some(ty) => Spanned {node: ty, span: self.last_span},
       None => return None,
     };
-
-    let (width, width_span) = match self.token {
-      token::LPAREN => {
-        self.bump();
-        match self.bump() {
-          token::LIT_INT_UNSUFFIXED(width) => {
-            if !self.expect(&token::RPAREN) {
-              return None;
-            }
-            (width as uint, self.span)
-          },
-          _ => { return None; }
-        }
-      },
-      _ => (1, DUMMY_SP), // default width
+    let count = match self.parse_count() {
+      Some(count) => count,
+      None => return None,
     };
-
-    let (count, count_span) = match self.token {
-      token::LBRACKET => {
+    let docstring = match self.token {
+      token::LIT_STR(docstring) => {
         self.bump();
-        match self.bump() {
-          token::LIT_INT_UNSUFFIXED(count) => {
-            if !self.expect(&token::RBRACKET) {
-              return None;
-            }
-            (count as uint, self.span)
-          },
-          _ => { return None; }
-        }
+        Some(Spanned {node: docstring.to_str(), span: self.last_span})
       },
-      _ => (1, DUMMY_SP), // default repeat
+      _ => None,
     };
-
-    let field: node::Field = node::Field { name: name, name_span: name_span,
-                                           read_only: read_only,
-                                           ty: field_type,
-                                           width: width, width_span: width_span,
-                                           count: count, count_span: count_span };
+    let field = node::Field {
+      name: name,
+      bits: Spanned {node: (start_bit, end_bit), span: bits_span},
+      read_only: read_only,
+      ty: ty,
+      count: count,
+      docstring: docstring,
+    };
     Some(field)
   }
 
   fn parse_field_type(&mut self) -> Option<node::FieldType> {
+    println!("parse_field_type: {}", token::to_str(&self.token));
     match self.expect_ident() {
-      Some(ref s) if s.equiv(&("struct")) => {
-        let mut fields: Vec<node::FieldOrPadding> = Vec::new();
-        let ty_name = match self.token {
-          ref mut t@token::IDENT(_, _) => Some(token::to_str(t)),
-          _ => None
-        };
-
-        if !self.expect(&token::LBRACE) {
-          return None;
-        }
-        loop {
-          if self.token == token::RBRACE {
-            self.bump();
-            break;
-          }
-          match self.parse_field_or_padding() {
-            Some(field) => fields.push(field),
-            None => return None,
-          }
-          // FIXME: trailing comma
-          if !self.expect(&token::COMMA) {
-            return None;
-          }
-        }
-        Some(node::StructType(ty_name, fields))
-      },
-
       Some(ref s) if s.equiv(&("enum")) => {
         let mut values: Vec<node::EnumValue> = Vec::new();
-        let (width, _) = match self.expect_width() {
-          Some(width) => width,
-          None => return None,
-        };
 
         let ty_name = match self.token {
           ref mut t@token::IDENT(_,_) => Some(token::to_str(t)),
@@ -256,43 +332,52 @@ impl<'a> Parser<'a> {
             return None;
           }
         }
-        Some(node::EnumType(ty_name, values, width))
+        Some(node::EnumType(ty_name, values))
       },
-      Some(ref s) if s.equiv(&("uint")) => {
-        match self.expect_width() {
-          Some((width,_)) => Some(node::UIntType(width)),
-          _ => return None,
-        }
-      },
-      Some(ref s) if s.equiv(&("u8"))  => Some(node::UIntType(8)),
-      Some(ref s) if s.equiv(&("u16")) => Some(node::UIntType(16)),
-      Some(ref s) if s.equiv(&("u32")) => Some(node::UIntType(32)),
-      Some(ref s) if s.equiv(&("bool")) => Some(node::UIntType(1)),
-      Some(ref s) => {
-        self.error(format!("unsupported field type `{}`", s));
-        return None;
-      },
+      Some(ref s) if s.equiv(&("uint")) => Some(node::UIntType),
+      Some(ref s) if s.equiv(&("bool")) => Some(node::BoolType),
+      Some(ref s) => Some(node::GroupType(s.clone())),
       None => return None,
     }
   }
 
-  fn expect_width(&mut self) -> Option<(uint, Span)> {
-    if !self.expect(&token::LPAREN) {
-      return None;
-    }
-    let ret = match self.token {
-      token::LIT_INT_UNSUFFIXED(width) => {
+  fn parse_uint(&mut self) -> Option<uint> {
+    match self.token {
+      token::LIT_INT_UNSUFFIXED(n) => {
         self.bump();
-        (width as uint, self.span)
+        Some(n as uint)
       },
-      _ => return None,
-    };
-    if !self.expect(&token::RPAREN) {
-      return None;
+      _ => None,
     }
-    Some(ret)
   }
 
+  fn expect_uint(&mut self) -> Option<uint> {
+    match self.parse_uint() {
+      Some(n) => Some(n),
+      None => {
+        let this_token_str = token::to_str(&self.token);
+        self.error(format!("expected integer but found `{}`", this_token_str));
+        None
+      },
+    }
+  }
+
+  fn parse_count(&mut self) -> Option<Spanned<uint>> {
+    match self.token {
+      token::LBRACKET => {
+        self.bump();
+        let ret = match self.expect_uint() {
+          Some(count) => Spanned {node: count, span: self.last_span},
+          None => return None,
+        };
+        if !self.expect(&token::RBRACKET) {
+          return None;
+        }
+        Some(ret)
+      },
+      _ => Some(Spanned {node: 1, span: DUMMY_SP}),
+    }
+  }
 
   fn error(&self, m: String) {
     self.sess.span_diagnostic.span_err(self.span, m.as_slice());

@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax::codemap::Span;
+use syntax::codemap::{Span, Spanned};
+use std::gc::Gc;
 
 pub struct EnumValue {
   pub name: String,
@@ -24,31 +25,42 @@ pub struct EnumValue {
 
 pub enum FieldType {
   /// A unsigned integer with given bit-width
-  UIntType(uint),
-  /// A enum with given width
-  EnumType(Option<String>, Vec<EnumValue>, uint),
-  /// A struct
-  StructType(Option<String>, Vec<FieldOrPadding>),
+  UIntType,
+  /// A boolean flag
+  BoolType,
+  /// A enum
+  EnumType(Option<String>, Vec<EnumValue>),
+  /// A group specified by name
+  GroupType(String),
 }
 
 pub struct Field {
-  pub name: String,
-  pub name_span: Span,
-
+  pub name: Spanned<String>,
+  pub bits: Spanned<(uint, uint)>,
   pub read_only: bool,
-  pub ty: FieldType,
-
-  pub count: uint,
-  pub count_span: Span,
+  pub ty: Spanned<FieldType>,
+  pub count: Spanned<uint>,
+  pub docstring: Option<Spanned<String>>,
 }
 
-pub enum FieldOrPadding {
-  Field(Field),
-  Padding(uint),
+pub enum RegType {
+  /// A unsigned integer with given bit-width
+  UIntReg(uint),
+  /// A group specified by name
+  GroupReg(String),
 }
 
-pub struct IoReg {
+pub struct Reg {
   pub name: String,
   pub name_span: Span,
-  pub fields: Vec<FieldOrPadding>,
+  pub ty: RegType,
+  pub count: Spanned<uint>,
+  pub fields: Vec<Field>,
+  pub docstring: Option<Spanned<String>>,
+}
+
+pub struct RegGroup {
+  pub name: String,
+  pub name_span: Span,
+  pub regs: Vec<Reg>,
 }
