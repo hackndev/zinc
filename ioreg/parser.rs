@@ -104,6 +104,7 @@ impl<'a> Parser<'a> {
 
     let mut regs: Vec<node::Reg> = Vec::new();
     let mut cur_reg: Option<node::Reg> = None;
+    let mut groups: HashMap<String, node::RegGroup> = HashMap::new();
     loop {
       match self.token.clone() {
         // Beginning of register
@@ -147,7 +148,7 @@ impl<'a> Parser<'a> {
           cur_reg = None;
 
           match self.parse_reg_group(cx) {
-            Some(group) => {}, //TODO groups.push(group),
+            Some(group) => groups.insert(group.name.clone(), group),
             None => return None,
           };
         },
@@ -164,6 +165,7 @@ impl<'a> Parser<'a> {
       name: name,
       name_span: name_span,
       regs: regs,
+      groups: groups,
     };
     Some(group)
   }
@@ -323,7 +325,7 @@ impl<'a> Parser<'a> {
                                                          value: value, value_span: value_span };
           values.push(value);
 
-          // FIXME
+          // FIXME: trailing comma
           if !self.expect(&token::COMMA) {
             return None;
           }

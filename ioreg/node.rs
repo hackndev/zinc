@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use syntax::codemap::{Span, Spanned};
+use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 
 pub struct EnumValue {
@@ -63,4 +64,5 @@ pub struct RegGroup {
   pub name: String,
   pub name_span: Span,
   pub regs: Vec<Reg>,
+  pub groups: HashMap<String, RegGroup>,
 }
