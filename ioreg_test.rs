@@ -52,5 +52,9 @@ ioregs!(
         {
             0..7 => CHF:      bool[8]
         }
+        0x60 =>      TEST: u32            "This is only a test"
+        {
+            0..7 => TEST:     bool[8]
+        }
     }
 )

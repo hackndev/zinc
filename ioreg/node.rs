@@ -18,11 +18,13 @@ use syntax::ast;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 
+#[deriving(Clone)]
 pub struct EnumValue {
   pub name: Spanned<String>,
   pub value: Spanned<uint>,
 }
 
+#[deriving(Clone)]
 pub enum FieldType {
   /// A unsigned integer with given bit-width
   UIntField,
@@ -32,12 +34,14 @@ pub enum FieldType {
   EnumField(Option<String>, Vec<EnumValue>),
 }
 
+#[deriving(Clone)]
 pub enum Access {
   ReadWrite,
   ReadOnly,
   WriteOnly,
 }
 
+#[deriving(Clone)]
 pub struct Field {
   pub name: Spanned<String>,
   pub bits: Spanned<(uint, uint)>,
@@ -47,6 +51,7 @@ pub struct Field {
   pub docstring: Option<Spanned<ast::Ident>>,
 }
 
+#[deriving(Clone)]
 pub enum RegType {
   /// A 32-bit wide register
   U32Reg,
@@ -70,6 +75,7 @@ impl RegType {
   }
 }
 
+#[deriving(Clone)]
 pub struct Reg {
   pub offset: uint,
   pub name: Spanned<String>,
@@ -77,6 +83,13 @@ pub struct Reg {
   pub count: Spanned<uint>,
   pub fields: Vec<Field>,
   pub docstring: Option<Spanned<ast::Ident>>,
+}
+
+impl Reg {
+  /// Size of a register in bytes
+  pub fn size(&self) -> uint {
+    self.count.node * self.ty.size()
+  }
 }
 
 pub struct RegGroup {

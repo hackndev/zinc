@@ -15,6 +15,7 @@
 
 use std::gc::{Gc, GC};
 use std::collections::hashmap::HashMap;
+use std::slice::Items;
 use std::iter::FromIterator;
 use syntax::abi;
 use syntax::ast::TokenTree;
@@ -35,6 +36,50 @@ pub struct Builder<'a, 'b> {
   cx: &'a mut ExtCtxt<'b>
 }
 
+enum RegOrPadding<'a> {
+  /// A register
+  Reg(&'a node::Reg),
+  /// A given number of bytes of padding
+  Pad(uint)
+}
+
+/// An iterator which takes a potentially unsorted list of registers,
+/// sorts them, and adds padding to make offsets correct
+struct PaddedRegsIterator<'a> {
+  sorted_regs: &'a Vec<node::Reg>,
+  index: uint,
+  last_offset: uint,
+}
+
+impl<'a> PaddedRegsIterator<'a> {
+  fn new(regs: &'a mut Vec<node::Reg>) -> PaddedRegsIterator<'a> {
+    regs.sort_by(|r1,r2| r1.offset.cmp(&r2.offset));
+    PaddedRegsIterator {
+      sorted_regs: regs,
+      index: 0,
+      last_offset: 0,
+    }
+  }
+}
+
+impl<'a> Iterator<RegOrPadding<'a>> for PaddedRegsIterator<'a> {
+  fn next(&mut self) -> Option<RegOrPadding<'a>> {
+    if self.index >= self.sorted_regs.len() {
+      None
+    } else {
+      let reg = self.sorted_regs.get(self.index);
+      if reg.offset > self.last_offset {
+        let pad_length = reg.offset - self.last_offset;
+        self.last_offset = reg.offset + reg.size();
+        Some(Pad(pad_length))
+      } else {
+        self.index += 1;
+        self.last_offset += reg.size();
+        Some(Reg(reg))
+      }
+    }
+  }
+}
 
 impl<'a, 'b> Builder<'a, 'b> {
   pub fn new<'a, 'b>(cx: &'a mut ExtCtxt<'b>, groups: HashMap<String, Gc<node::RegGroup>>) -> Builder<'a, 'b> {
@@ -155,10 +200,38 @@ impl<'a, 'b> Builder<'a, 'b> {
     }
   }
 
+  /// Emit field for padding or a register
+  fn emit_pad_or_reg<'a>(&self, group: P<node::RegGroup>, regOrPad: RegOrPadding<'a>) -> ast::StructField {
+    match regOrPad {
+      Reg(reg) => self.emit_reg_group_field(group, reg),
+      Pad(length) => {
+        let u8_path = self.cx.path(DUMMY_SP, vec!(self.cx.ident_of("core"),
+                                                  self.cx.ident_of("u8")));
+        let u8_ty: P<ast::Ty> = self.cx.ty_path(u8_path, None);
+        let ty: P<ast::Ty> =
+          self.cx.ty(DUMMY_SP,
+                     ast::TyFixedLengthVec(u8_ty, self.cx.expr_uint(DUMMY_SP, length)));
+        println!("padding {}", length);
+        Spanned {
+          span: DUMMY_SP,
+          node: ast::StructField_ {
+            kind: ast::NamedField(self.cx.ident_of("padding"), ast::Inherited),
+            id: ast::DUMMY_NODE_ID,
+            ty: ty,
+            attrs: Vec::new(),
+          },
+        }
+      },
+    }
+  }
+
   /// Emit the types associated with a register group
   fn emit_group_types(&self, group: P<node::RegGroup>) -> Vec<P<ast::Item>> {
+    let mut sorted_regs = group.regs.clone();
+    let padded_regs = PaddedRegsIterator::new(&mut sorted_regs);
+    let fields = padded_regs.map(|r| self.emit_pad_or_reg(group, r));
     let struct_def = ast::StructDef {
-      fields: FromIterator::from_iter(group.regs.iter().map(|r| self.emit_reg_group_field(group, r))),
+      fields: FromIterator::from_iter(fields),
       ctor_id: None,
       super_struct: None,
       is_virtual: false,
