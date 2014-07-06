@@ -18,10 +18,8 @@ use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 
 pub struct EnumValue {
-  pub name: String,
-  pub name_span: Span,
-  pub value: uint,
-  pub value_span: Span,
+  pub name: Spanned<String>,
+  pub value: Spanned<uint>,
 }
 
 pub enum FieldType {

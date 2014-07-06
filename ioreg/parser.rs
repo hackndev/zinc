@@ -307,8 +307,8 @@ impl<'a> Parser<'a> {
             break;
           }
 
-          let (name, name_span) = match self.expect_ident() {
-            Some(name) => (name, self.span),
+          let name = match self.expect_ident() {
+            Some(name) => Spanned {node: name, span: self.span },
             None => return None,
           };
 
@@ -316,13 +316,13 @@ impl<'a> Parser<'a> {
             return None;
           }
 
-          let (value, value_span) = match self.bump() {
-            token::LIT_INT_UNSUFFIXED(v) => (v as uint, self.span),
+          let value = match self.bump() {
+            token::LIT_INT_UNSUFFIXED(v) => Spanned { node: v as uint, span: self.span },
             _ => return None,
           };
 
-          let value: node::EnumValue = node::EnumValue { name: name, name_span: name_span,
-                                                         value: value, value_span: value_span };
+          let value: node::EnumValue = node::EnumValue { name: name,
+                                                         value: value };
           values.push(value);
 
           // FIXME: trailing comma
