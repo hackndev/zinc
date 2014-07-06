@@ -59,16 +59,16 @@ impl<'a, 'b> Builder<'a, 'b> {
   }
 
   pub fn emit_items(&self) -> Vec<Gc<ast::Item>> {
-    let iter = self.groups.values().flat_map(|&g| self.emit_group(g).move_iter());
+    let iter = self.groups.values().flat_map(|&g| self.emit_group_types(g).move_iter());
     FromIterator::from_iter(iter)
   }
 
   /// Returns the primitive type of the given width
-  fn primitive_type(&self, width: uint) -> Option<P<ast::Ty>> {
-    let name = match width {
-      8  => "u8",
-      16 => "u16",
-      32 => "u32",
+  fn primitive_type(&self, reg_ty: node::RegType) -> Option<P<ast::Ty>> {
+    let name = match reg_ty {
+      node::U8Reg  => "u8",
+      node::U16Reg => "u16",
+      node::U32Reg => "u32",
       _  => return None
     };
     let path = self.cx.path(DUMMY_SP, vec!(self.cx.ident_of("core"),
@@ -83,8 +83,8 @@ impl<'a, 'b> Builder<'a, 'b> {
   fn emit_reg_struct(&self, group: P<node::RegGroup>, reg: &node::Reg) -> Option<P<ast::Item>> {
     match reg.ty {
       node::GroupReg(_) => None,
-      node::UIntReg(width) => {
-        let ty = match self.primitive_type(width) {
+      _ => {
+        let ty = match self.primitive_type(reg.ty) {
           Some(ty) => ty,
           None => return None,
         };
@@ -123,14 +123,8 @@ impl<'a, 'b> Builder<'a, 'b> {
   /// The name of the structure representing a register
   fn reg_base_type(&self, group: P<node::RegGroup>, reg: &node::Reg) -> ast::Ident {
     match reg.ty {
-      node::UIntReg(_) => self.cx.ident_of(format!("{}_{}", group.name.node, reg.name.node).as_slice()),
-      node::GroupReg(ref g) => {
-        if !group.groups.contains_key(g) {
-          self.error(reg.name.span, format!("Undefined register group `{}`", g));
-          // FIXME: Abort and fix span above
-        }
-        self.cx.ident_of(g.as_slice())
-      }
+      node::GroupReg(ref g) => self.cx.ident_of(g.name.node.as_slice()),
+      _ => self.cx.ident_of(format!("{}_{}", group.name.node, reg.name.node).as_slice()),
     }
   }
 
@@ -161,20 +155,32 @@ impl<'a, 'b> Builder<'a, 'b> {
     }
   }
 
-  fn emit_group(&self, group: P<node::RegGroup>) -> Vec<P<ast::Item>> {
-    let reg_structs = group.regs.iter().flat_map(|r| self.emit_reg_struct(group, r).move_iter());
+  /// Emit the types associated with a register group
+  fn emit_group_types(&self, group: P<node::RegGroup>) -> Vec<P<ast::Item>> {
     let struct_def = ast::StructDef {
       fields: FromIterator::from_iter(group.regs.iter().map(|r| self.emit_reg_group_field(group, r))),
       ctor_id: None,
       super_struct: None,
       is_virtual: false,
     };
+    // FIXME: Account for padding
     let span = DUMMY_SP; // FIXME
     let struct_item = self.cx.item_struct(span, self.cx.ident_of(group.name.node.as_slice()), struct_def);
-    let subgroups = group.groups.values().flat_map(|&g| self.emit_group(g).move_iter());
+    let reg_structs = group.regs.iter().flat_map(|r| self.emit_reg_struct(group, r).move_iter());
+    let subgroups = group.groups.values().flat_map(|&g| self.emit_group_types(g).move_iter());
     let hi: Vec<P<ast::Item>> = FromIterator::from_iter(subgroups.chain(reg_structs));
     hi.append_one(struct_item)
   }
+
+  /*
+  fn emit_group_accessors(&self, group: P<node::RegGroup>) -> Vec<P<ast::Item>> {
+    //let accessors: Vec<P<ast::Item>> = Vec::new();
+    let subgroups = group.groups.values().flat_map(|&g| self.emit_group_accessors(g).move_iter());
+    //let hi: Vec<P<ast::Item>> = FromIterator::from_iter(subgroups.chain(accessors.iter()));
+    //hi
+    subgroups
+  }
+  */
 
   fn error(&self, span: Span, m: String) {
     self.cx.parse_sess().span_diagnostic.span_err(span, m.as_slice());

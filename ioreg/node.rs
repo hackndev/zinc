@@ -48,13 +48,30 @@ pub struct Field {
 }
 
 pub enum RegType {
-  /// A unsigned integer with given bit-width
-  UIntReg(uint),
-  /// A group specified by name
-  GroupReg(String),
+  /// A 32-bit wide register
+  U32Reg,
+  /// A 16-bit wide register
+  U16Reg,
+  /// An 8-bit wide register
+  U8Reg,
+  /// A group
+  GroupReg(Gc<RegGroup>),
+}
+
+impl RegType {
+  /// Size of register type in bytes
+  pub fn size(&self) -> uint {
+    match *self {
+      U32Reg => 4,
+      U16Reg => 2,
+      U8Reg  => 8,
+      GroupReg(group) => group.size(),
+    }
+  }
 }
 
 pub struct Reg {
+  pub offset: uint,
   pub name: Spanned<String>,
   pub ty: RegType,
   pub count: Spanned<uint>,
@@ -66,4 +83,14 @@ pub struct RegGroup {
   pub name: Spanned<String>,
   pub regs: Vec<Reg>,
   pub groups: HashMap<String, Gc<RegGroup>>,
+}
+
+impl RegGroup {
+  /// Size of registers of register group in bytes
+  pub fn size(&self) -> uint {
+    match self.regs.iter().max_by(|r| r.offset) {
+      Some(last) => last.offset + last.ty.size(),
+      None => 0,
+    }
+  }
 }

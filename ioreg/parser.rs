@@ -122,7 +122,7 @@ impl<'a> Parser<'a> {
 
         // Presumably a register
         _ => {
-          match self.parse_reg() {
+          match self.parse_reg(&groups) {
             None => return None,
             Some(reg) => regs.push(reg)
           }
@@ -139,7 +139,7 @@ impl<'a> Parser<'a> {
   }
 
   /// Parse the introduction of a register
-  fn parse_reg(&mut self) -> Option<node::Reg> {
+  fn parse_reg(&mut self, known_groups: &HashMap<String, Gc<node::RegGroup>>) -> Option<node::Reg> {
     // we are still sitting at the offset
     let offset = match self.expect_uint() {
       Some(offset) => offset,
@@ -158,10 +158,18 @@ impl<'a> Parser<'a> {
     let ty = match self.token.clone() {
       ref t@token::IDENT(_,_) => {
         let ty = match token::to_str(t) {
-          ref s if s.equiv(&"u32") => node::UIntReg(32),
-          ref s if s.equiv(&"u16") => node::UIntReg(16),
-          ref s if s.equiv(&"u8")  => node::UIntReg(8),
-          s                    => node::GroupReg(s),
+          ref s if s.equiv(&"u32") => node::U32Reg,
+          ref s if s.equiv(&"u16") => node::U16Reg,
+          ref s if s.equiv(&"u8")  => node::U8Reg,
+          s                        => {
+            match known_groups.find(&s) {
+              Some(&group) => node::GroupReg(group),
+              None => {
+                self.error(format!("Undefined register group `{}`", s));
+                return None;
+              }
+            }
+          }
         };
         self.bump();
         ty
@@ -206,6 +214,7 @@ impl<'a> Parser<'a> {
     };
 
     Some(node::Reg {
+      offset: offset,
       name: name,
       ty: ty,
       count: count,
