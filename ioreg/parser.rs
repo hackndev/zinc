@@ -171,7 +171,6 @@ impl<'a> Parser<'a> {
   /// Parse the introduction of a register
   fn parse_reg(&mut self) -> Option<node::Reg> {
     // we are still sitting at `@`
-    println!("parse_reg: at={}", token::to_str(&self.token));
     self.bump();
     let offset = match self.expect_uint() {
       Some(offset) => offset,
@@ -184,7 +183,6 @@ impl<'a> Parser<'a> {
     if !self.expect(&token::COLON) {
       return None;
     }
-    println!("parse_reg: ty {}", token::to_str(&self.token));
     let ty = match self.token.clone() {
       ref t@token::IDENT(s,_) => {
         let ty = match token::to_str(t) {
@@ -233,7 +231,6 @@ impl<'a> Parser<'a> {
       Some(bit) => bit,
       None => return None,
     };
-    println!("parse_field: {}", token::to_str(&self.token));
     let bits_span = self.span;
     let end_bit = match self.token {
       token::DOTDOT => {
@@ -290,7 +287,6 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_field_type(&mut self) -> Option<node::FieldType> {
-    println!("parse_field_type: {}", token::to_str(&self.token));
     match self.expect_ident() {
       Some(ref s) if s.equiv(&("enum")) => {
         let mut values: Vec<node::EnumValue> = Vec::new();
