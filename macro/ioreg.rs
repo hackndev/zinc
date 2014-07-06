@@ -42,8 +42,7 @@ pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     -> Box<MacResult> {
   let ioreg = Parser::new(cx, tts).parse_ioregs(cx);
   let builder = build_ioregs(cx, ioreg.unwrap());
-
-  let items = builder.emit_items(cx);
+  let items = builder.emit_items();
   MacItems::new(items)
 }
 

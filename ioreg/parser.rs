@@ -66,7 +66,7 @@ impl<'a> Parser<'a> {
       }
       match self.parse_reg_group(cx) {
         Some(group) => {
-          groups.insert(group.name.clone(), box(GC) group);
+          groups.insert(group.name.node.clone(), box(GC) group);
         },
         None => {
           self.bump();
@@ -148,7 +148,7 @@ impl<'a> Parser<'a> {
           cur_reg = None;
 
           match self.parse_reg_group(cx) {
-            Some(group) => groups.insert(group.name.clone(), group),
+            Some(group) => groups.insert(group.name.node.clone(), group),
             None => return None,
           };
         },
@@ -162,8 +162,7 @@ impl<'a> Parser<'a> {
     }
 
     let group = node::RegGroup {
-      name: name,
-      name_span: name_span,
+      name: Spanned {node: name, span: name_span},
       regs: regs,
       groups: groups,
     };
@@ -178,8 +177,8 @@ impl<'a> Parser<'a> {
       Some(offset) => offset,
       None => return None,
     };
-    let (name, name_span) = match self.expect_ident() {
-      Some(name) => (name, self.span),
+    let name = match self.expect_ident() {
+      Some(name) => Spanned {node: name, span: self.span},
       None => return None,
     };
     if !self.expect(&token::COLON) {
@@ -209,13 +208,12 @@ impl<'a> Parser<'a> {
     let docstring = match self.token {
       token::LIT_STR(docstring) => {
         self.bump();
-        Some(Spanned {node: docstring.to_str(), span: self.last_span})
+        Some(Spanned {node: docstring, span: self.last_span})
       },
       _ => None,
     };
     Some(node::Reg {
       name: name,
-      name_span: name_span,
       ty: ty,
       count: count,
       fields: Vec::new(),
@@ -273,7 +271,7 @@ impl<'a> Parser<'a> {
     let docstring = match self.token {
       token::LIT_STR(docstring) => {
         self.bump();
-        Some(Spanned {node: docstring.to_str(), span: self.last_span})
+        Some(Spanned {node: docstring, span: self.last_span})
       },
       _ => None,
     };

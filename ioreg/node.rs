@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use syntax::codemap::{Span, Spanned};
+use syntax::ast;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 
@@ -37,7 +38,7 @@ pub struct Field {
   pub read_only: bool,
   pub ty: Spanned<FieldType>,
   pub count: Spanned<uint>,
-  pub docstring: Option<Spanned<String>>,
+  pub docstring: Option<Spanned<ast::Ident>>,
 }
 
 pub enum RegType {
@@ -48,17 +49,15 @@ pub enum RegType {
 }
 
 pub struct Reg {
-  pub name: String,
-  pub name_span: Span,
+  pub name: Spanned<String>,
   pub ty: RegType,
   pub count: Spanned<uint>,
   pub fields: Vec<Field>,
-  pub docstring: Option<Spanned<String>>,
+  pub docstring: Option<Spanned<ast::Ident>>,
 }
 
 pub struct RegGroup {
-  pub name: String,
-  pub name_span: Span,
+  pub name: Spanned<String>,
   pub regs: Vec<Reg>,
   pub groups: HashMap<String, RegGroup>,
 }
