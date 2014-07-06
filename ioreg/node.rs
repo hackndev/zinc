@@ -32,10 +32,16 @@ pub enum FieldType {
   EnumField(Option<String>, Vec<EnumValue>),
 }
 
+pub enum Access {
+  ReadWrite,
+  ReadOnly,
+  WriteOnly,
+}
+
 pub struct Field {
   pub name: Spanned<String>,
   pub bits: Spanned<(uint, uint)>,
-  pub read_only: bool,
+  pub access: Access,
   pub ty: Spanned<FieldType>,
   pub count: Spanned<uint>,
   pub docstring: Option<Spanned<ast::Ident>>,

@@ -147,7 +147,7 @@ impl<'a, 'b> Builder<'a, 'b> {
   /// Produce a field for the given register in a `RegGroup` struct
   fn emit_reg_group_field(&self, group: P<node::RegGroup>, reg: &node::Reg) -> ast::StructField {
     let attrs = match reg.docstring {
-      Some(doc) => vec!(),
+      Some(doc) => vec!(self.doc_attribute(token::get_ident(doc.node))),
       None => Vec::new(),
     };
     Spanned {

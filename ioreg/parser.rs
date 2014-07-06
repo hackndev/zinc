@@ -185,7 +185,7 @@ impl<'a> Parser<'a> {
       return None;
     }
     let ty = match self.token.clone() {
-      ref t@token::IDENT(s,_) => {
+      ref t@token::IDENT(_,_) => {
         let ty = match token::to_str(t) {
           ref s if s.equiv(&"u32") => node::UIntReg(32),
           ref s if s.equiv(&"u16") => node::UIntReg(16),
@@ -253,12 +253,16 @@ impl<'a> Parser<'a> {
     if !self.expect(&token::COLON) {
       return None;
     }
-    let read_only = match self.token {
-      token::NOT => {
-        self.bump();
-        true
+    let access = match self.token.clone() {
+      ref t@token::IDENT(s,_) => {
+        match token::to_str(t) {
+          ref s if s.equiv(&"rw") => { self.bump(); node::ReadWrite },
+          ref s if s.equiv(&"ro") => { self.bump(); node::ReadOnly  },
+          ref s if s.equiv(&"wo") => { self.bump(); node::WriteOnly },
+          _ => node::ReadWrite,
+        }
       },
-      _ => false,
+      _ => node::ReadWrite,
     };
     let ty = match self.parse_field_type() {
       Some(ty) => Spanned {node: ty, span: self.last_span},
@@ -278,7 +282,7 @@ impl<'a> Parser<'a> {
     let field = node::Field {
       name: name,
       bits: Spanned {node: (start_bit, end_bit), span: bits_span},
-      read_only: read_only,
+      access: access,
       ty: ty,
       count: count,
       docstring: docstring,

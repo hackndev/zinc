@@ -27,7 +27,6 @@ use std::gc::Gc;
 use syntax::ast;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult};
-use syntax::print::pprust;
 use syntax::util::small_vector::SmallVector;
 
 use ioreg::parser::Parser;
