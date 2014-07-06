@@ -45,7 +45,7 @@ STM32F403/407).
 
 extern crate core;
 
-#[cfg(test)] #[phase(syntax,link)] extern crate std;
+#[cfg(test)] #[phase(plugin,link)] extern crate std;
 #[cfg(test)] extern crate native;
 
 pub mod drivers;
