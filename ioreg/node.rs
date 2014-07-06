@@ -26,13 +26,11 @@ pub struct EnumValue {
 
 pub enum FieldType {
   /// A unsigned integer with given bit-width
-  UIntType,
+  UIntField,
   /// A boolean flag
-  BoolType,
+  BoolField,
   /// A enum
-  EnumType(Option<String>, Vec<EnumValue>),
-  /// A group specified by name
-  GroupType(String),
+  EnumField(Option<String>, Vec<EnumValue>),
 }
 
 pub struct Field {

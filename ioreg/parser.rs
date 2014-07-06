@@ -330,11 +330,14 @@ impl<'a> Parser<'a> {
             return None;
           }
         }
-        Some(node::EnumType(ty_name, values))
+        Some(node::EnumField(ty_name, values))
       },
-      Some(ref s) if s.equiv(&("uint")) => Some(node::UIntType),
-      Some(ref s) if s.equiv(&("bool")) => Some(node::BoolType),
-      Some(ref s) => Some(node::GroupType(s.clone())),
+      Some(ref s) if s.equiv(&("uint")) => Some(node::UIntField),
+      Some(ref s) if s.equiv(&("bool")) => Some(node::BoolField),
+      Some(s) => {
+        self.error(format!("Unsupported register field type `{}`", s));
+        return None;
+      },
       None => return None,
     }
   }
