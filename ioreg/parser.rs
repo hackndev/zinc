@@ -103,35 +103,9 @@ impl<'a> Parser<'a> {
     }
 
     let mut regs: Vec<node::Reg> = Vec::new();
-    let mut cur_reg: Option<node::Reg> = None;
     let mut groups: HashMap<String, Gc<node::RegGroup>> = HashMap::new();
     loop {
       match self.token.clone() {
-        // Beginning of register
-        token::AT => {
-          match cur_reg {
-            None => {},
-            Some(reg) => regs.push(reg),
-          };
-          match self.parse_reg() {
-            None => return None,
-            Some(reg) => cur_reg = Some(reg),
-          }
-        },
-
-        // Field
-        token::LPAREN =>  {
-          match cur_reg {
-            None => self.error(String::from_str("Found field without register")),
-            Some(ref mut reg) => {
-              match self.parse_field() {
-                Some(field) => reg.fields.push(field),
-                None => return None,
-              }
-            },
-          }
-        },
-
         // End of group
         token::RBRACE => {
           self.bump();
@@ -140,24 +114,19 @@ impl<'a> Parser<'a> {
 
         // Beginning of new group
         ref t@token::IDENT(_,_) if token::to_str(t).equiv(&"group") => {
-          // Flush current register
-          match cur_reg {
-            None => {},
-            Some(reg) => regs.push(reg),
-          };
-          cur_reg = None;
-
           match self.parse_reg_group(cx) {
             Some(group) => groups.insert(group.name.node.clone(), box(GC) group),
             None => return None,
           };
         },
 
-        // Error
+        // Presumably a register
         _ => {
-          self.error(format!("fail: {}", token::to_str(&self.token)));
-          self.bump();
-        }
+          match self.parse_reg() {
+            None => return None,
+            Some(reg) => regs.push(reg)
+          }
+        },
       }
     }
 
@@ -171,12 +140,14 @@ impl<'a> Parser<'a> {
 
   /// Parse the introduction of a register
   fn parse_reg(&mut self) -> Option<node::Reg> {
-    // we are still sitting at `@`
-    self.bump();
+    // we are still sitting at the offset
     let offset = match self.expect_uint() {
       Some(offset) => offset,
       None => return None,
     };
+    if !self.expect(&token::FAT_ARROW) {
+      return None;
+    }
     let name = match self.expect_ident() {
       Some(name) => Spanned {node: name, span: self.span},
       None => return None,
@@ -212,21 +183,40 @@ impl<'a> Parser<'a> {
       },
       _ => None,
     };
+
+    let fields = match self.token {
+      // Field list
+      token::LBRACE => {
+        self.bump();
+        let mut fields: Vec<node::Field> = Vec::new();
+        loop {
+          if self.token == token::RBRACE {
+            self.bump();
+            break;
+          }
+          
+          match self.parse_field() {
+            None => return None,
+            Some(field) => fields.push(field),
+          }
+        }
+        fields
+      },
+      _ => Vec::new(),
+    };
+
     Some(node::Reg {
       name: name,
       ty: ty,
       count: count,
-      fields: Vec::new(),
+      fields: fields,
       docstring: docstring,
     })
   }
 
   /// Parse a field
   fn parse_field(&mut self) -> Option<node::Field> {
-    // sitting at ( token of bit range
-    if !self.expect(&token::LPAREN) {
-      return None;
-    }
+    // sitting at starting bit number
     let start_bit = match self.expect_uint() {
       Some(bit) => bit,
       None => return None,
@@ -242,7 +232,7 @@ impl<'a> Parser<'a> {
       },
       _ => start_bit as uint,
     };
-    if !self.expect(&token::RPAREN) {
+    if !self.expect(&token::FAT_ARROW) {
       return None;
     }
 
