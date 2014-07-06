@@ -30,14 +30,14 @@ use syntax::parse::token;
 
 use node;
 
-pub struct Builder<'a> {
+pub struct Builder<'a, 'b> {
   groups: HashMap<String, Gc<node::RegGroup>>,
-  cx: &'a mut ExtCtxt<'a>
+  cx: &'a mut ExtCtxt<'b>
 }
 
 
-impl<'a> Builder<'a> {
-  pub fn new<'a>(cx: &'a mut ExtCtxt<'a>, groups: HashMap<String, Gc<node::RegGroup>>) -> Builder<'a> {
+impl<'a, 'b> Builder<'a, 'b> {
+  pub fn new<'a, 'b>(cx: &'a mut ExtCtxt<'b>, groups: HashMap<String, Gc<node::RegGroup>>) -> Builder<'a, 'b> {
     Builder {
       groups: groups,
       cx: cx,
@@ -93,7 +93,7 @@ impl<'a> Builder<'a> {
             Spanned {
               span: DUMMY_SP,
               node: ast::StructField_ {
-                kind: ast::NamedField(self.cx.ident_of(reg.name.node.as_slice()), ast::Inherited),
+                kind: ast::NamedField(self.cx.ident_of("_value"), ast::Inherited),
                 id: ast::DUMMY_NODE_ID,
                 ty: ty,
                 attrs: Vec::new(),
@@ -171,7 +171,8 @@ impl<'a> Builder<'a> {
     };
     let span = DUMMY_SP; // FIXME
     let struct_item = self.cx.item_struct(span, self.cx.ident_of(group.name.node.as_slice()), struct_def);
-    let hi: Vec<P<ast::Item>> = FromIterator::from_iter(reg_structs);
+    let subgroups = group.groups.values().flat_map(|&g| self.emit_group(g).move_iter());
+    let hi: Vec<P<ast::Item>> = FromIterator::from_iter(subgroups.chain(reg_structs));
     hi.append_one(struct_item)
   }
 
@@ -180,7 +181,7 @@ impl<'a> Builder<'a> {
   }
 }
 
-pub fn build_ioregs<'a>(cx: &'a mut ExtCtxt<'a>, groups: HashMap<String, Gc<node::RegGroup>>) -> Builder<'a> {
+pub fn build_ioregs<'a, 'b>(cx: &'a mut ExtCtxt<'b>, groups: HashMap<String, Gc<node::RegGroup>>) -> Builder<'a, 'b> {
   let builder = Builder::new(cx, groups);
   builder
 }

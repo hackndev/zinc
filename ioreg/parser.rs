@@ -104,7 +104,7 @@ impl<'a> Parser<'a> {
 
     let mut regs: Vec<node::Reg> = Vec::new();
     let mut cur_reg: Option<node::Reg> = None;
-    let mut groups: HashMap<String, node::RegGroup> = HashMap::new();
+    let mut groups: HashMap<String, Gc<node::RegGroup>> = HashMap::new();
     loop {
       match self.token.clone() {
         // Beginning of register
@@ -148,7 +148,7 @@ impl<'a> Parser<'a> {
           cur_reg = None;
 
           match self.parse_reg_group(cx) {
-            Some(group) => groups.insert(group.name.node.clone(), group),
+            Some(group) => groups.insert(group.name.node.clone(), box(GC) group),
             None => return None,
           };
         },

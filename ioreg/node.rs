@@ -59,5 +59,5 @@ pub struct Reg {
 pub struct RegGroup {
   pub name: Spanned<String>,
   pub regs: Vec<Reg>,
-  pub groups: HashMap<String, RegGroup>,
+  pub groups: HashMap<String, Gc<RegGroup>>,
 }
