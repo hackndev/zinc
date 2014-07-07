@@ -128,16 +128,22 @@ impl<'a, 'b> Builder<'a, 'b> {
     FromIterator::from_iter(structs.chain(enums).chain(accessors))
   }
 
-  /// Returns the primitive type of the given width
-  fn primitive_type(&self, reg_ty: node::RegType) -> Option<P<ast::Ty>> {
+  fn primitive_type_path(&self, reg_ty: node::RegType) -> Option<ast::Path> {
     let name = match reg_ty {
       node::U8Reg  => "u8",
       node::U16Reg => "u16",
       node::U32Reg => "u32",
       _  => return None
     };
-    let path = self.cx.path_ident(DUMMY_SP, self.cx.ident_of(name));
-    Some(self.cx.ty_path(path, None))
+    Some(self.cx.path_ident(DUMMY_SP, self.cx.ident_of(name)))
+  }
+  
+  /// Returns the primitive type of the given width
+  fn primitive_type(&self, reg_ty: node::RegType) -> Option<P<ast::Ty>> {
+    match self.primitive_type_path(reg_ty) {
+      Some(path) => Some(self.cx.ty_path(path, None)),
+      None => None,
+    }
   }
 
   /// Produce a register struct if necessary (in the case of primitive typed registers).
@@ -272,7 +278,7 @@ impl<'a, 'b> Builder<'a, 'b> {
                      -> ast::Path {
     let span = field.ty.span;
     match field.ty.node {
-      node::UIntField => self.cx.path_ident(span, self.cx.ident_of("uint")),
+      node::UIntField => self.primitive_type_path(reg.ty).unwrap(),
       node::BoolField => self.cx.path_ident(span, self.cx.ident_of("bool")),
       node::EnumField { opt_name: ref opt_name, ..} => {
         match opt_name {
