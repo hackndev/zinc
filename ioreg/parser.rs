@@ -72,10 +72,28 @@ impl<'a, 'b> Parser<'a, 'b> {
           groups.insert(group.name.node.clone(), box(GC) group);
         },
         None => {
-          self.bump();
           failed = true;
-          continue;
+          self.bump();
         },
+      }
+
+      // if we have previously failed, give up on the parent group and try to parse
+      // the next child. This allows us to produce more error messages while
+      // not flooding the user with garbage
+      if failed {
+        loop {
+          match self.token {
+            ref t@token::IDENT(_,_) if token::to_str(t).equiv(&"group") => {
+              break;
+            },
+            token::EOF => {
+              break;
+            },
+            _ => {
+              self.bump();
+            }
+          }
+        }
       }
     }
 
@@ -205,7 +223,7 @@ impl<'a, 'b> Parser<'a, 'b> {
             self.bump();
             break;
           }
-          
+
           match self.parse_field() {
             None => return None,
             Some(field) => fields.push(field),
