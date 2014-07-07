@@ -313,12 +313,13 @@ impl<'a, 'b> Builder<'a, 'b> {
   fn emit_field_setter(&self, parent: P<node::RegGroup>, reg: &node::Reg, field: &node::Field)
                        -> P<ast::Method> {
     let ty: P<ast::Ty> = self.cx.ty_path(self.field_type_path(parent, reg, field), None);
+    let self_arg: ast::Arg = ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
     let new_value: ast::Arg = self.cx.arg(DUMMY_SP, self.cx.ident_of("new_value"), ty);
     let inputs: Vec<ast::Arg> =
       if field.count.node == 1 {
-        vec!(new_value)
+        vec!(self_arg, new_value)
       } else {
-        vec!(new_value) // FIXME
+        vec!(self_arg, new_value) // FIXME
       };
     let decl: P<ast::FnDecl> = self.cx.fn_decl(inputs, self.cx.ty_nil());
     let stmts: Vec<Gc<ast::Stmt>> = vec!(); // TODO
@@ -340,17 +341,30 @@ impl<'a, 'b> Builder<'a, 'b> {
   fn emit_field_getter(&self, parent: P<node::RegGroup>, reg: &node::Reg, field: &node::Field)
                        -> P<ast::Method> {
     let ty: P<ast::Ty> = self.cx.ty_path(self.field_type_path(parent, reg, field), None);
+    let self_arg: ast::Arg = ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
     let inputs: Vec<ast::Arg> =
       if field.count.node == 1 {
-        vec!()
+        vec!(self_arg)
       } else {
-        vec!() // FIXME
+        vec!(self_arg) // FIXME
       };
     let decl: P<ast::FnDecl> = self.cx.fn_decl(inputs, ty);
-    let stmts: Vec<Gc<ast::Stmt>> = vec!(); // TODO
-    let body: P<ast::Block> = self.cx.block(DUMMY_SP, stmts, None);
+
+    let (lo,hi) = field.bits.node;
+    let mask: P<ast::Expr> = self.cx.expr_uint(DUMMY_SP, (1<<(hi-lo+1)) - 1);
+    let value: P<ast::Expr> =
+      self.cx.expr_method_call(
+        DUMMY_SP,
+        self.cx.expr_field_access(DUMMY_SP, self.cx.expr_self(DUMMY_SP), self.cx.ident_of("_value")),
+        self.cx.ident_of("get"),
+        Vec::new()
+      );
+    let shifted: P<ast::Expr> =
+      self.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.cx.expr_uint(DUMMY_SP, lo));
+    let expr: P<ast::Expr> = self.cx.expr_binary(DUMMY_SP, ast::BiBitAnd, shifted, mask);
+    let body: P<ast::Block> = self.cx.block(DUMMY_SP, Vec::new(), Some(expr));
     box(GC) ast::Method {
-      ident: self.cx.ident_of((String::from_str("set_")+field.name.node).as_slice()),
+      ident: self.cx.ident_of(field.name.node.as_slice()),
       attrs: Vec::new(), // TODO: docstring
       generics: no_generics(),
       explicit_self: Spanned {span: DUMMY_SP, node: ast::SelfRegion(None, ast::MutImmutable)},
@@ -380,7 +394,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     let impl_ = ast::ItemImpl(
       no_generics(),
       None,
-      self.reg_struct_type(parent, reg),
+      self.cx.ty_path(self.cx.path_ident(DUMMY_SP, self.reg_base_type(parent, reg)), None),
       accessors);
     vec!(self.cx.item(DUMMY_SP, self.cx.ident_of(reg.name.node.as_slice()), Vec::new(), impl_))
   }
