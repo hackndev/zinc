@@ -19,6 +19,7 @@ use std::vec;
 use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ast::{P};
+use syntax::abi;
 use syntax::codemap::{Spanned, mk_sp, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
@@ -114,7 +115,11 @@ impl<'a, 'b> Builder<'a, 'b> {
 
   pub fn emit_items(&self) -> Vec<Gc<ast::Item>> {
     let items = self.groups.values().flat_map(|&g| self.emit_group_items(g).move_iter());
-    FromIterator::from_iter(items)
+    // FIXME: implement real instance generation
+    let instances: Vec<(P<node::RegGroup>, String)> =
+      FromIterator::from_iter(self.groups.values().map(|&g| (g, g.name.node.clone()+"0")));
+    let instances = vec!(self.emit_instances(instances)).move_iter();
+    FromIterator::from_iter(items.chain(instances))
   }
 
   pub fn emit_group_items(&self, group: P<node::RegGroup>) -> Vec<Gc<ast::Item>> {
@@ -529,6 +534,28 @@ impl<'a, 'b> Builder<'a, 'b> {
     let subgroups = group.groups.values().flat_map(|&g| self.emit_group_accessors(g).move_iter());
     let hi: Vec<P<ast::Item>> = FromIterator::from_iter(subgroups.chain(accessors));
     hi
+  }
+
+  fn emit_instance(&self, group: P<node::RegGroup>, name: String) -> P<ast::ForeignItem> {
+    let ident = self.cx.ident_of(group.name.node.as_slice());
+    let ty: P<ast::Ty> = self.cx.ty_ident(DUMMY_SP, ident);
+    box(GC) ast::ForeignItem {
+      ident: self.cx.ident_of(name.as_slice()),
+      attrs: Vec::new(),
+      node: ast::ForeignItemStatic(ty, false),
+      id: ast::DUMMY_NODE_ID,
+      span: DUMMY_SP,
+      vis: ast::Public,
+    }
+  }
+
+  fn emit_instances(&self, instances: Vec<(P<node::RegGroup>, String)>) -> P<ast::Item> {
+    let fmod = ast::ForeignMod {
+      abi: abi::C,
+      view_items: Vec::new(),
+      items: FromIterator::from_iter(instances.move_iter().map(|(group,name)| self.emit_instance(group, name))),
+    };
+    self.cx.item(DUMMY_SP, token::special_idents::invalid, Vec::new(), ast::ItemForeignMod(fmod))
   }
 }
 
