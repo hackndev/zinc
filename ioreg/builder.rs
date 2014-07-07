@@ -273,7 +273,6 @@ impl<'a, 'b> Builder<'a, 'b> {
       super_struct: None,
       is_virtual: false,
     };
-    let span = DUMMY_SP; // FIXME
     let mut attrs: Vec<ast::Attribute> = vec!(
       self.list_attribute("allow", vec!("non_camel_case_types", "uppercase_variables", "dead_code")),
     );
@@ -287,7 +286,7 @@ impl<'a, 'b> Builder<'a, 'b> {
       id: ast::DUMMY_NODE_ID,
       node: ast::ItemStruct(box(GC) struct_def, no_generics()),
       vis: ast::Public,
-      span: span
+      span: group.name.span,
     };
 
     let reg_structs = group.regs.iter().flat_map(|r| self.emit_reg_struct(group, r).move_iter());
