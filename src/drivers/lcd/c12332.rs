@@ -113,22 +113,22 @@ impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
     self.cs.set_high();
   }
 
-  pub fn set_pixel(&self, x: i32, y: i32, color: u16) {
-    if x > 127 || y > 31 || x < 0 || y < 0 {
+  pub fn set_pixel(&self, x: u32, y: u32, color: u16) {
+    if x > 127 || y > 31 {
       return
     }
 
-    let index = x + (y/8) * 128;
+    let index = (x + (y/8) * 128) as uint;
     if color == 0 {
-      self.videobuf[index as uint].set(
-        self.videobuf[index as uint].get() & !(1i32 << (y%8i32) as uint) as u8);
+      self.videobuf[index].set(
+        self.videobuf[index].get() & !(1u8 << (y%8u32) as uint) as u8);
     } else {
-      self.videobuf[index as uint].set(
-        self.videobuf[index as uint].get() | (1 << ((y%8) as uint)));
+      self.videobuf[index].set(
+        self.videobuf[index].get() | (1 << ((y%8) as uint)));
     }
   }
 
-  pub fn character(&self, x: i32, y: i32, c: u8) {
+  pub fn character(&self, x: u32, y: u32, c: u8) {
     let hor: u8;
     let vert: u8;
     let offset: u8;
@@ -176,9 +176,9 @@ impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
         z =  zeichen[(bpl * i + ((j & 0xF8) >> 3)+1) as uint];
         b = 1 << ((j & 0x07) as uint);
         if ( z & b ) == 0x00 {
-          self.set_pixel(x+i as i32, y+j as i32, 0);
+          self.set_pixel(x+i as u32, y+j as u32, 0);
         } else {
-          self.set_pixel(x+i as i32, y+j as i32, 1);
+          self.set_pixel(x+i as u32, y+j as u32, 1);
         }
         i += 1;
       }
@@ -245,7 +245,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> LCD for C12332<'a, S, T, P> {
     }
   }
 
-  fn pixel(&self, x: i32, y: i32, color: u16) {
+  fn pixel(&self, x: u32, y: u32, color: u16) {
     self.set_pixel(x, y, color);
   }
 }
@@ -260,7 +260,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> CharIO for C12332<'a, S, T, P> {
           self.char_y.set(0);
       }
     } else {
-      self.character(self.char_x.get() as i32, self.char_y.get() as i32, value as u8);
+      self.character(self.char_x.get(), self.char_y.get(), value as u8);
     }
   }
 }

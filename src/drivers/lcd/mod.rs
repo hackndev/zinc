@@ -15,6 +15,9 @@
 
 //! Drivers for TFT LCDs.
 
+use core::option::{Some, None};
+use core::iter::{Iterator, range};
+
 use drivers::chario::CharIO;
 
 #[cfg(cfg_mcu_has_spi)] pub mod c12332;
@@ -36,18 +39,18 @@ pub trait LCD : CharIO {
   fn flush(&self);
 
   /// Sets one pixel color. The actual color bits are driver-specific.
-  fn pixel(&self, x: i32, y: i32, color: u16);
+  fn pixel(&self, x: u32, y: u32, color: u16);
 
   /// Draws a line from xy0 to xy1.
-  fn line(&self, x0_b: i32, y0_b: i32, x1: i32, y1: i32, color: u16) {
-    let mut x0: i32 = x0_b;
-    let mut y0: i32 = y0_b;
-    let mut dx: i32;
-    let mut dy: i32;
-    let mut dx_sym: i32;
-    let mut dy_sym: i32;
-    let mut dx_x2: i32;
-    let mut dy_x2: i32;
+  fn line(&self, x0_b: u32, y0_b: u32, x1: u32, y1: u32, color: u16) {
+    let mut x0: u32 = x0_b;
+    let mut y0: u32 = y0_b;
+    let mut dx: u32;
+    let mut dy: u32;
+    let mut dx_sym: u32;
+    let mut dy_sym: u32;
+    let mut dx_x2: u32;
+    let mut dy_x2: u32;
     let mut di: i32;
 
     dx = x1-x0;
@@ -72,27 +75,27 @@ pub trait LCD : CharIO {
     dy_x2 = dy*2;
 
     if dx >= dy {
-      di = dy_x2 - dx;
+      di = (dy_x2 - dx) as i32;
       while x0 != x1 {
         self.pixel(x0, y0, color);
         x0 += dx_sym;
         if di < 0 {
-          di += dy_x2;
+          di += dy_x2 as i32;
         } else {
-          di += dy_x2 - dx_x2;
+          di += (dy_x2 - dx_x2) as i32;
           y0 += dy_sym;
         }
       }
       self.pixel(x0, y0, color);
     } else {
-      di = dx_x2 - dy;
+      di = (dx_x2 - dy) as i32;
       while y0 != y1 {
         self.pixel(x0, y0, color);
         y0 += dy_sym;
         if di < 0 {
-          di += dx_x2;
+          di += dx_x2 as i32;
         } else {
-          di += dx_x2 - dy_x2;
+          di += (dx_x2 - dy_x2) as i32;
           x0 += dx_sym;
         }
       }
@@ -101,7 +104,7 @@ pub trait LCD : CharIO {
   }
 
   /// Draws a rectangle.
-  fn rect(&self, x0: i32, y0: i32, x1: i32, y1: i32, color: u16) {
+  fn rect(&self, x0: u32, y0: u32, x1: u32, y1: u32, color: u16) {
     if x1 > x0 {
       self.line(x0,y0,x1,y0,color);
     } else {
@@ -128,14 +131,14 @@ pub trait LCD : CharIO {
   }
 
   /// Draws a filled rectangle.
-  fn fillrect(&self, x0_b: i32, y0_b: i32, x1_b: i32, y1_b: i32, color: u16) {
-    let mut l: i32;
-    let mut c: i32;
-    let mut i: i32;
-    let mut x0: i32 = x0_b;
-    let mut y0: i32 = y0_b;
-    let mut x1: i32 = x1_b;
-    let mut y1: i32 = y1_b;
+  fn fillrect(&self, x0_b: u32, y0_b: u32, x1_b: u32, y1_b: u32, color: u16) {
+    let mut l: u32;
+    let mut c: u32;
+    let mut i: u32;
+    let mut x0: u32 = x0_b;
+    let mut y0: u32 = y0_b;
+    let mut x1: u32 = x1_b;
+    let mut y1: u32 = y1_b;
     if x0 > x1 {
       i = x0;
       x0 = x1;
@@ -161,16 +164,10 @@ pub trait LCD : CharIO {
 
   /// Draws an image from a buffer.
   fn image(&self, width: u32, height: u32, data: &[u16]) {
-    let mut x: u32 = 0;
-    let mut y: u32;
-
-    while x < width {
-      y = 0;
-      while y < height {
-        self.pixel(x as i32, y as i32, data[(x+y*width) as uint]);
-        y += 1;
+    for x in range(0, width) {
+      for y in range(0, height) {
+        self.pixel(x, y, data[(x+y*width) as uint]);
       }
-      x += 1;
     }
   }
 }

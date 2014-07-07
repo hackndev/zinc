@@ -297,8 +297,8 @@ impl<'a> lcd::LCD for ILI9341<'a> {
     self.do_clear();
   }
   fn flush(&self) {}
-  fn pixel(&self, x: i32, y: i32, color: u16) {
-    self.do_pixel(x as u32, y as u32, color);
+  fn pixel(&self, x: u32, y: u32, color: u16) {
+    self.do_pixel(x, y, color);
   }
 }
 
