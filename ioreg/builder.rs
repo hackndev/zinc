@@ -269,8 +269,13 @@ impl<'a, 'b> Builder<'a, 'b> {
       is_virtual: false,
     };
     let span = DUMMY_SP; // FIXME
-    let attrs: Vec<ast::Attribute> =
-      vec!(self.list_attribute("allow", vec!("non_camel_case_types", "uppercase_variables", "dead_code")));
+    let mut attrs: Vec<ast::Attribute> = vec!(
+      self.list_attribute("allow", vec!("non_camel_case_types", "uppercase_variables", "dead_code")),
+    );
+    match group.docstring {
+      Some(doc) => attrs.push(self.doc_attribute(token::get_ident(doc.node))),
+      None => (),
+    }
     let struct_item = box(GC) ast::Item {
       ident: self.cx.ident_of(group.name.node.as_slice()),
       attrs: attrs,

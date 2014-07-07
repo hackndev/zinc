@@ -101,6 +101,7 @@ pub struct RegGroup {
   pub name: Spanned<String>,
   pub regs: Vec<Reg>,
   pub groups: HashMap<String, Gc<RegGroup>>,
+  pub docstring: Option<Spanned<ast::Ident>>,
 }
 
 impl RegGroup {

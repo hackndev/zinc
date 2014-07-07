@@ -137,6 +137,7 @@ impl<'a, 'b> Parser<'a, 'b> {
       name: Spanned {node: name, span: name_span},
       regs: regs,
       groups: groups,
+      docstring: None,
     };
     Some(group)
   }
