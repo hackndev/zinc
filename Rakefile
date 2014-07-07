@@ -117,7 +117,7 @@ end
 desc "Build all applications"
 case ENV['PLATFORM']
 when 'k20'
-  task :build_all => [:build_empty, :build_blink_k20]
+  task :build_all => [:build_blink_k20]
 else
   task :build_all => [:build_empty, :build_blink, :build_uart]
 end
