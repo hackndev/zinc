@@ -98,9 +98,10 @@ impl<'a, 'b> Builder<'a, 'b> {
   }
 
   /// Generate a `#[name(...)]` attribute of the given type
-  fn list_attribute(&self, name: &'static str, allow: &'static str) -> ast::Attribute {
-    let word = self.cx.meta_word(DUMMY_SP, token::InternedString::new(allow));
-    let allow = self.cx.meta_list(DUMMY_SP, token::InternedString::new(name), vec!(word));
+  fn list_attribute(&self, name: &'static str, list: Vec<&'static str>) -> ast::Attribute {
+    let words = list.move_iter().map(|word| self.cx.meta_word(DUMMY_SP, token::InternedString::new(word)));
+    let allow = self.cx.meta_list(DUMMY_SP, token::InternedString::new(name),
+                                  FromIterator::from_iter(words));
     self.cx.attribute(DUMMY_SP, allow)
   }
 
@@ -191,7 +192,7 @@ impl<'a, 'b> Builder<'a, 'b> {
           Some(docstring) => vec!(self.doc_attribute(token::get_ident(docstring.node))),
           None => Vec::new(),
         };
-        attrs.push(self.list_attribute("allow", "non_camel_case_types"));
+        attrs.push(self.list_attribute("allow", vec!("non_camel_case_types")));
         Some(self.cx.item(reg.name.span, name, attrs, item_))
       },
     }
@@ -242,7 +243,6 @@ impl<'a, 'b> Builder<'a, 'b> {
         let ty: P<ast::Ty> =
           self.cx.ty(DUMMY_SP,
                      ast::TyFixedLengthVec(u8_ty, self.cx.expr_uint(DUMMY_SP, length)));
-        println!("padding {}", length);
         Spanned {
           span: DUMMY_SP,
           node: ast::StructField_ {
@@ -268,9 +268,8 @@ impl<'a, 'b> Builder<'a, 'b> {
       is_virtual: false,
     };
     let span = DUMMY_SP; // FIXME
-    let attrs: Vec<ast::Attribute> = vec!(self.list_attribute("allow", "non_camel_case_types"),
-                                          self.list_attribute("allow", "uppercase_variables"),
-                                          self.list_attribute("allow", "dead_code"));
+    let attrs: Vec<ast::Attribute> =
+      vec!(self.list_attribute("allow", vec!("non_camel_case_types", "uppercase_variables", "dead_code")));
     let struct_item = self.cx.item(span, self.cx.ident_of(group.name.node.as_slice()), attrs,
                                    ast::ItemStruct(box(GC) struct_def, no_generics()));
 
@@ -327,10 +326,8 @@ impl<'a, 'b> Builder<'a, 'b> {
           variants: FromIterator::from_iter(variants.iter().map(|v| box(GC) self.emit_enum_variant(v))),
         };
         let attrs: Vec<ast::Attribute> = vec!(
-          self.list_attribute("deriving", "FromPrimitive"),
-          self.list_attribute("allow", "dead_code"),
-          self.list_attribute("allow", "uppercase_variables"),
-          self.list_attribute("allow", "non_camel_case_types"));
+          self.list_attribute("deriving", vec!("FromPrimitive")),
+          self.list_attribute("allow", vec!("uppercase_variables", "dead_code", "non_camel_case_types")));
         Some(self.cx.item(field.ty.span, name, attrs, ast::ItemEnum(enum_def, no_generics())))
       },
       _ => None,
@@ -495,8 +492,8 @@ impl<'a, 'b> Builder<'a, 'b> {
       None,
       self.cx.ty_path(self.cx.path_ident(DUMMY_SP, self.reg_base_type(parent, reg)), None),
       accessors);
-    let attrs: Vec<ast::Attribute> = vec!(self.list_attribute("allow", "non_snake_case_functions"),
-                                          self.list_attribute("allow", "dead_code"));
+    let attrs: Vec<ast::Attribute> = vec!(
+      self.list_attribute("allow", vec!("non_snake_case_functions", "dead_code")));
     vec!(self.cx.item(DUMMY_SP, self.cx.ident_of(reg.name.node.as_slice()), attrs, impl_))
   }
 
