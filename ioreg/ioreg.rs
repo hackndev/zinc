@@ -20,6 +20,7 @@
 #![crate_type="rlib"]
 
 extern crate syntax;
+extern crate serialize;
 
 pub mod node;
 pub mod memory_map;

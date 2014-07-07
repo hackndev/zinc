@@ -17,9 +17,10 @@ use syntax::codemap::{Spanned};
 use syntax::ast;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
+use serialize::{Encodable, Decodable};
 
 /// A variant of an enum field type
-#[deriving(Clone)]
+#[deriving(Clone, Decodable, Encodable)]
 pub struct Variant {
   pub name: Spanned<String>,
   pub value: Spanned<uint>,
@@ -27,7 +28,7 @@ pub struct Variant {
 }
 
 /// A bit field type
-#[deriving(Clone)]
+#[deriving(Clone, Decodable, Encodable)]
 pub enum FieldType {
   /// A unsigned integer with given bit-width
   UIntField,
@@ -40,14 +41,14 @@ pub enum FieldType {
   },
 }
 
-#[deriving(Clone)]
+#[deriving(Clone, Decodable, Encodable)]
 pub enum Access {
   ReadWrite,
   ReadOnly,
   WriteOnly,
 }
 
-#[deriving(Clone)]
+#[deriving(Clone, Decodable, Encodable)]
 pub struct Field {
   pub name: Spanned<String>,
   pub bits: Spanned<(uint, uint)>,
@@ -57,7 +58,7 @@ pub struct Field {
   pub docstring: Option<Spanned<ast::Ident>>,
 }
 
-#[deriving(Clone)]
+#[deriving(Clone, Decodable, Encodable)]
 pub enum RegType {
   /// A 32-bit wide register
   U32Reg,
@@ -81,7 +82,7 @@ impl RegType {
   }
 }
 
-#[deriving(Clone)]
+#[deriving(Clone, Decodable, Encodable)]
 pub struct Reg {
   pub offset: uint,
   pub name: Spanned<String>,
@@ -98,6 +99,7 @@ impl Reg {
   }
 }
 
+#[deriving(Clone, Decodable, Encodable)]
 pub struct RegGroup {
   pub name: Spanned<String>,
   pub regs: Vec<Reg>,
