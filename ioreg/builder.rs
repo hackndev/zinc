@@ -402,11 +402,17 @@ impl<'a, 'b> Builder<'a, 'b> {
       node::UIntField => prim,
       node::BoolField => self.cx.expr_binary(DUMMY_SP, ast::BiNe, prim, self.expr_int(0)),
       node::EnumField {..} => {
+        let from = match reg.ty {
+          node::U32Reg => "from_u32",
+          node::U16Reg => "from_u16",
+          node::U8Reg  => "from_u8",
+          _            => fail!("Can't convert group register to primitive type"),
+        };
         self.cx.expr_method_call(
           DUMMY_SP,
           self.cx.expr_call_global(
             DUMMY_SP,
-            vec!(self.cx.ident_of("core"), self.cx.ident_of("num"), self.cx.ident_of("from_uint")),
+            vec!(self.cx.ident_of("core"), self.cx.ident_of("num"), self.cx.ident_of(from)),
             vec!(prim)
           ),
           self.cx.ident_of("unwrap"),
