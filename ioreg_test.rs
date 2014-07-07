@@ -47,7 +47,11 @@ ioregs!(
         0x0  => reg SC: u32  /// Status and control register
         {
              0..2 => PS:     uint       /// Prescale
-             3..4 => CLKS:   enum { NO_CLOCK=0x0, SYSTEM_CLOCK=0x1, FIXED_FREQ=0x2, EXTERNAL=0x3, }
+             3..4 => CLKS:   enum { NO_CLOCK=0x0,     /// no clock selected
+                                    SYSTEM_CLOCK=0x1, /// use system clock
+                                    FIXED_FREQ=0x2,   /// use fixed frequency clock
+                                    EXTERNAL=0x3,     /// use external clock
+                                  }
              5    => CPWMS:  bool
              6    => TOIE:   bool
              7    => TOF:    ro bool

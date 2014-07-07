@@ -338,13 +338,15 @@ impl<'a, 'b> Parser<'a, 'b> {
             _ => return None,
           };
 
-          let value: node::Variant = node::Variant { name: name, value: value, docstring: None };
-          variants.push(value);
-
           // FIXME: trailing comma
           if !self.expect(&token::COMMA) {
             return None;
           }
+
+          let docstring = self.parse_docstring();
+
+          let value: node::Variant = node::Variant { name: name, value: value, docstring: docstring };
+          variants.push(value);
         }
         Some(node::EnumField {opt_name: ty_name, variants: variants})
       },
