@@ -64,6 +64,7 @@ ioregs!(
         }
     
         group Channel {
+            /// A compare/capture channel
             0x0 => reg CSC:    u32         /// Compare/capture channel status and control register
             {
                 0 => DMA:    bool
@@ -75,7 +76,7 @@ ioregs!(
                 7 => CHF:    bool
             }
     
-            0x4 => reg CV:     u32
+            0x4 => reg CV:     u32          /// Channel counter value
             {
                 0..15 => VAL:    uint
             }
