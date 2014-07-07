@@ -97,10 +97,10 @@ impl<'a, 'b> Builder<'a, 'b> {
     }
   }
 
-  /// Generate a `#[allow(...)]` attribute of the given type
-  fn allow_attribute(&self, allow: &'static str) -> ast::Attribute {
+  /// Generate a `#[name(...)]` attribute of the given type
+  fn list_attribute(&self, name: &'static str, allow: &'static str) -> ast::Attribute {
     let word = self.cx.meta_word(DUMMY_SP, token::InternedString::new(allow));
-    let allow = self.cx.meta_list(DUMMY_SP, token::InternedString::new("allow"), vec!(word));
+    let allow = self.cx.meta_list(DUMMY_SP, token::InternedString::new(name), vec!(word));
     self.cx.attribute(DUMMY_SP, allow)
   }
 
@@ -279,7 +279,10 @@ impl<'a, 'b> Builder<'a, 'b> {
         attrs: Vec::new(),
         kind: ast::TupleVariantKind(Vec::new()),
         id: ast::DUMMY_NODE_ID,
-        disr_expr: Some(self.cx.expr_uint(variant.value.span, variant.value.node)),
+        disr_expr: Some(self.cx.expr_lit(
+          variant.value.span,
+          ast::LitIntUnsuffixed(variant.value.node as i64)
+        )),
         vis: ast::Public,
       }
     }
@@ -290,12 +293,13 @@ impl<'a, 'b> Builder<'a, 'b> {
                      -> Option<P<ast::Item>> {
     match field.ty.node {
       node::EnumField { variants: ref variants, .. } => {
-        // FIXME: We construct a path, then only take the last segment
+        // FIXME: We construct a path, then only take the last segment, this could be more efficient
         let name: ast::Ident = self.field_type_path(parent, reg, field).segments.last().unwrap().identifier;
         let enum_def: ast::EnumDef = ast::EnumDef {
           variants: FromIterator::from_iter(variants.iter().map(|v| box(GC) self.emit_enum_variant(v))),
         };
-        Some(self.cx.item_enum(field.ty.span, name, enum_def))
+        let attrs: Vec<ast::Attribute> = vec!(self.list_attribute("deriving", "FromPrimitive"));
+        Some(self.cx.item(field.ty.span, name, attrs, ast::ItemEnum(enum_def, no_generics())))
       },
       _ => None,
     }
@@ -342,7 +346,11 @@ impl<'a, 'b> Builder<'a, 'b> {
         DUMMY_SP,
         ast::BiShl,
         self.cx.expr_binary(DUMMY_SP, ast::BiBitAnd, old, self.cx.expr_uint(DUMMY_SP, mask)),
-        self.cx.expr_ident(DUMMY_SP, self.cx.ident_of("new_value"))
+        self.cx.expr_cast(
+          DUMMY_SP,
+          self.cx.expr_ident(DUMMY_SP, self.cx.ident_of("new_value")),
+          self.primitive_type(reg.ty).unwrap()
+        )
       );
     let expr: Gc<ast::Expr> =
       self.cx.expr_binary(DUMMY_SP, ast::BiBitOr, old_masked, new_masked_shifted);
@@ -359,6 +367,26 @@ impl<'a, 'b> Builder<'a, 'b> {
       id: ast::DUMMY_NODE_ID,
       span: DUMMY_SP,
       vis: ast::Public,
+    }
+  }
+
+  /// Given an `Expr` of the given register's primitive type, return an `Expr` of the field type
+  fn from_primitive(&self, reg: &node::Reg, field: &node::Field, prim: P<ast::Expr>) -> P<ast::Expr> {
+    match field.ty.node {
+      node::UIntField => prim,
+      node::BoolField => self.cx.expr_binary(DUMMY_SP, ast::BiNe, prim, self.cx.expr_uint(DUMMY_SP, 0)),
+      node::EnumField {..} => {
+        self.cx.expr_method_call(
+          DUMMY_SP,
+          self.cx.expr_call_global(
+            DUMMY_SP,
+            vec!(self.cx.ident_of("core"), self.cx.ident_of("num"), self.cx.ident_of("from_uint")),
+            vec!(prim)
+          ),
+          self.cx.ident_of("unwrap"),
+          Vec::new()
+        )
+      },
     }
   }
 
@@ -383,9 +411,13 @@ impl<'a, 'b> Builder<'a, 'b> {
         self.cx.ident_of("get"),
         Vec::new()
       );
-    let shifted: P<ast::Expr> =
-      self.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.cx.expr_uint(DUMMY_SP, lo));
-    let expr: P<ast::Expr> = self.cx.expr_binary(DUMMY_SP, ast::BiBitAnd, shifted, mask);
+    let shifted_masked: P<ast::Expr> =
+      self.cx.expr_binary(
+        DUMMY_SP,
+        ast::BiBitAnd,
+        self.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.cx.expr_uint(DUMMY_SP, lo)),
+        mask);
+    let expr: P<ast::Expr> = self.from_primitive(reg, field, shifted_masked);
 
     let body: P<ast::Block> = self.cx.block(DUMMY_SP, Vec::new(), Some(expr));
     box(GC) ast::Method {

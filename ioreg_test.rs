@@ -1,6 +1,6 @@
 #![feature(phase)]
-#[phase(plugin)] extern crate macro_ioreg;
 extern crate core;
+#[phase(plugin)] extern crate macro_ioreg;
 
 ioregs!(
     group FTM {
@@ -58,3 +58,5 @@ ioregs!(
         }
     }
 )
+
+pub fn main() { }
