@@ -181,14 +181,20 @@ impl<'a, 'b> Builder<'a, 'b> {
           super_struct: None,
           is_virtual: false,
         };
-        let name = self.reg_base_type(group, reg);
-        let item_ = ast::ItemStruct(box(GC) struct_def, no_generics());
         let mut attrs = match reg.docstring {
           Some(docstring) => vec!(self.doc_attribute(token::get_ident(docstring.node))),
           None => Vec::new(),
         };
         attrs.push(self.list_attribute("allow", vec!("non_camel_case_types")));
-        Some(self.cx.item(reg.name.span, name, attrs, item_))
+        let item: P<ast::Item> = box(GC) ast::Item {
+          ident: self.reg_base_type(group, reg),
+          attrs: attrs,
+          id: ast::DUMMY_NODE_ID,
+          node: ast::ItemStruct(box(GC) struct_def, no_generics()),
+          vis: ast::Public,
+          span: reg.name.span
+        };
+        Some(item)
       },
     }
   }
@@ -220,7 +226,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     Spanned {
       span: DUMMY_SP,
       node: ast::StructField_ {
-        kind: ast::NamedField(self.cx.ident_of(reg.name.node.as_slice()), ast::Inherited),
+        kind: ast::NamedField(self.cx.ident_of(reg.name.node.as_slice()), ast::Public),
         id: ast::DUMMY_NODE_ID,
         ty: self.reg_struct_type(group, reg),
         attrs: attrs,
@@ -265,8 +271,14 @@ impl<'a, 'b> Builder<'a, 'b> {
     let span = DUMMY_SP; // FIXME
     let attrs: Vec<ast::Attribute> =
       vec!(self.list_attribute("allow", vec!("non_camel_case_types", "uppercase_variables", "dead_code")));
-    let struct_item = self.cx.item(span, self.cx.ident_of(group.name.node.as_slice()), attrs,
-                                   ast::ItemStruct(box(GC) struct_def, no_generics()));
+    let struct_item = box(GC) ast::Item {
+      ident: self.cx.ident_of(group.name.node.as_slice()),
+      attrs: attrs,
+      id: ast::DUMMY_NODE_ID,
+      node: ast::ItemStruct(box(GC) struct_def, no_generics()),
+      vis: ast::Public,
+      span: span
+    };
 
     let reg_structs = group.regs.iter().flat_map(|r| self.emit_reg_struct(group, r).move_iter());
     let subgroups = group.groups.values().flat_map(|&g| self.emit_group_types(g).move_iter());
@@ -305,7 +317,7 @@ impl<'a, 'b> Builder<'a, 'b> {
           variant.value.span,
           ast::LitIntUnsuffixed(variant.value.node as i64)
         )),
-        vis: ast::Public,
+        vis: ast::Inherited,
       }
     }
   }
@@ -323,7 +335,15 @@ impl<'a, 'b> Builder<'a, 'b> {
         let attrs: Vec<ast::Attribute> = vec!(
           self.list_attribute("deriving", vec!("FromPrimitive")),
           self.list_attribute("allow", vec!("uppercase_variables", "dead_code", "non_camel_case_types")));
-        Some(self.cx.item(field.ty.span, name, attrs, ast::ItemEnum(enum_def, no_generics())))
+        let item: P<ast::Item> = box(GC) ast::Item {
+          ident: name,
+          id: ast::DUMMY_NODE_ID,
+          node: ast::ItemEnum(enum_def, no_generics()),
+          vis: ast::Public,
+          attrs: attrs,
+          span: field.ty.span,
+        };
+        Some(item)
       },
       _ => None,
     }
