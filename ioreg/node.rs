@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax::codemap::{Span, Spanned};
+use syntax::codemap::{Spanned};
 use syntax::ast;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;

@@ -253,7 +253,7 @@ impl<'a> Parser<'a> {
       return None;
     }
     let access = match self.token.clone() {
-      ref t@token::IDENT(s,_) => {
+      ref t@token::IDENT(_,_) => {
         match token::to_str(t) {
           ref s if s.equiv(&"rw") => { self.bump(); node::ReadWrite },
           ref s if s.equiv(&"ro") => { self.bump(); node::ReadOnly  },

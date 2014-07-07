@@ -15,18 +15,13 @@
 
 use std::gc::{Gc, GC};
 use std::collections::hashmap::HashMap;
-use std::slice::Items;
 use std::vec;
 use std::iter::FromIterator;
-use syntax::abi;
-use syntax::ast::TokenTree;
 use syntax::ast;
 use syntax::ast::{P};
-use syntax::ast_util::empty_generics;
-use syntax::codemap::{Span, Spanned, mk_sp, DUMMY_SP};
+use syntax::codemap::{Spanned, mk_sp, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
-use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 use syntax::owned_slice;
 use syntax::parse::token;
 
@@ -503,10 +498,6 @@ impl<'a, 'b> Builder<'a, 'b> {
     let subgroups = group.groups.values().flat_map(|&g| self.emit_group_accessors(g).move_iter());
     let hi: Vec<P<ast::Item>> = FromIterator::from_iter(subgroups.chain(accessors));
     hi
-  }
-
-  fn error(&self, span: Span, m: String) {
-    self.cx.parse_sess().span_diagnostic.span_err(span, m.as_slice());
   }
 }
 
