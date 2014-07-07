@@ -27,4 +27,3 @@ env:
 matrix:
   allow_failures:
     - env: PLATFORM=stm32f4
-    - env: PLATFORM=k20
