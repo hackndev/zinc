@@ -351,10 +351,12 @@ impl<'a, 'b> Builder<'a, 'b> {
 
     let (lo,hi) = field.bits.node;
     let mask: uint = (1 << (hi-lo+1)) - 1;
+    let cell: P<ast::Expr> = 
+        self.cx.expr_field_access(DUMMY_SP, self.cx.expr_self(DUMMY_SP), self.cx.ident_of("_value"));
     let old: P<ast::Expr> =
       self.cx.expr_method_call(
         DUMMY_SP,
-        self.cx.expr_field_access(DUMMY_SP, self.cx.expr_self(DUMMY_SP), self.cx.ident_of("_value")),
+        cell,
         self.cx.ident_of("get"),
         Vec::new()
       );
@@ -381,7 +383,11 @@ impl<'a, 'b> Builder<'a, 'b> {
         self.expr_int(lo as i64)
       );
     let expr: Gc<ast::Expr> =
-      self.cx.expr_binary(DUMMY_SP, ast::BiBitOr, old_masked, new_masked_shifted);
+      self.cx.expr_method_call(
+        DUMMY_SP,
+        cell,
+        self.cx.ident_of("set"),
+        vec!(self.cx.expr_binary(DUMMY_SP, ast::BiBitOr, old_masked, new_masked_shifted)));
 
     let body: P<ast::Block> = self.cx.block(DUMMY_SP, vec!(self.cx.stmt_expr(expr)), None);
     box(GC) ast::Method {
