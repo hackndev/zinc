@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![crate_id="macro_platformtree"]
+#![crate_name="macro_platformtree"]
 #![crate_type="dylib"]
 
 #![feature(plugin_registrar, quote, managed_boxes)]

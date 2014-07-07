@@ -17,7 +17,7 @@
 //! ISRs for the platform.
 
 #![feature(asm, globs, lang_items)]
-#![crate_id="isr"]
+#![crate_name="isr"]
 #![crate_type="staticlib"]
 #![no_std]
 

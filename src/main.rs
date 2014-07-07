@@ -14,7 +14,7 @@
 // limitations under the License.
 
 #![feature(globs, macro_rules, asm, phase, unsafe_destructor, lang_items)]
-#![crate_id="zinc"]
+#![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(ctypes)]
 #![no_std]

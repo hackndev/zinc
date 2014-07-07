@@ -65,7 +65,7 @@ pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<Gc<nod
   let cfg = Vec::new();
   let ecfg = ExpansionConfig {
     deriving_hash_type_parameter: false,
-    crate_id: from_str("test").unwrap(),
+    crate_name: from_str("test").unwrap(),
   };
   let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
   cx.bt_push(ExpnInfo {
