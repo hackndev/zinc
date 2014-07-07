@@ -16,7 +16,7 @@
 //! ioreg crate
 
 #![feature(quote, struct_variant)]
-#![crate_id="ioreg"]
+#![crate_name="ioreg"]
 #![crate_type="rlib"]
 
 extern crate syntax;
