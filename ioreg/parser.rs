@@ -104,6 +104,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     if !self.expect(&token::LBRACE) {
       return None;
     }
+    let docstring = self.parse_docstring();
 
     let mut regs: Vec<node::Reg> = Vec::new();
     let mut groups: HashMap<String, Gc<node::RegGroup>> = HashMap::new();
@@ -137,7 +138,7 @@ impl<'a, 'b> Parser<'a, 'b> {
       name: Spanned {node: name, span: name_span},
       regs: regs,
       groups: groups,
-      docstring: None,
+      docstring: docstring,
     };
     Some(group)
   }

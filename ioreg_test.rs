@@ -41,6 +41,7 @@ impl<T> VolatileCell<T> {
 
 ioregs!(
     group FTM {
+        /// FlexTimer module
         0x0  => reg SC: u32  /// Status and control register
         {
              0..2 => PS:     uint       /// Prescale
