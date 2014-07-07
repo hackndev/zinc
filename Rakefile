@@ -78,11 +78,27 @@ rust_tests :platformtree_test, {
   produce: 'platformtree_test'.in_build,
 }
 
+# ioreg
+compile_rust :ioreg_crate, {
+  source:    'ioreg/ioreg.rs'.in_root,
+  produce:   'ioreg/ioreg.rs'.in_root.as_rlib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
+
 # macros
 compile_rust :macro_platformtree, {
   source:    'macro/platformtree.rs'.in_root,
   deps:      [:platformtree_crate],
   produce:   'macro/platformtree.rs'.in_root.as_dylib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
+
+compile_rust :macro_ioreg, {
+  source:    'macro/ioreg.rs'.in_root,
+  deps:      [:ioreg_crate],
+  produce:   'macro/ioreg.rs'.in_root.as_dylib.in_build,
   out_dir:   true,
   build_for: :host,
 }
@@ -94,6 +110,7 @@ app_tasks = Context.instance.applications.map do |a|
       :zinc_crate,
       :core_crate,
       :macro_platformtree,
+      :macro_ioreg,
     ],
     produce: "app_#{a}.o".in_intermediate(a),
     recompile_on: [:triple, :platform, :features],
