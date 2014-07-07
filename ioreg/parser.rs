@@ -15,6 +15,7 @@
 
 use std::gc::{Gc, GC};
 use std::collections::hashmap::HashMap;
+use syntax::ast::Ident;
 use syntax::ast::TokenTree;
 use syntax::codemap::{Span, Spanned, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
@@ -22,8 +23,9 @@ use syntax::parse::{token, ParseSess, lexer};
 
 use node;
 
-pub struct Parser<'a> {
-  pub sess: &'a ParseSess,
+pub struct Parser<'a,'b> {
+  cx: &'a ExtCtxt<'b>,
+  sess: &'a ParseSess,
   reader: Box<lexer::Reader>,
   token: token::Token,
   span: Span,
@@ -32,8 +34,8 @@ pub struct Parser<'a> {
   last_span: Span,
 }
 
-impl<'a> Parser<'a> {
-  pub fn new<'a>(cx: &'a ExtCtxt, tts: &[TokenTree]) -> Parser<'a> {
+impl<'a, 'b> Parser<'a, 'b> {
+  pub fn new<'a, 'b>(cx: &'a ExtCtxt<'b>, tts: &[TokenTree]) -> Parser<'a, 'b> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
     let mut reader = box lexer::new_tt_reader(
@@ -44,6 +46,7 @@ impl<'a> Parser<'a> {
     let span = tok0.sp;
 
     Parser {
+      cx: cx,
       sess: sess,
       reader: reader,
 
@@ -56,7 +59,7 @@ impl<'a> Parser<'a> {
   }
 
   /// Parse the ioregs from passed in tokens.
-  pub fn parse_ioregs(&mut self, cx: &ExtCtxt) -> Option<HashMap<String, Gc<node::RegGroup>>> {
+  pub fn parse_ioregs(&mut self) -> Option<HashMap<String, Gc<node::RegGroup>>> {
     let mut groups: HashMap<String, Gc<node::RegGroup>> = HashMap::new();
     let mut failed: bool = false;
 
@@ -64,7 +67,7 @@ impl<'a> Parser<'a> {
       if self.token == token::EOF {
         break
       }
-      match self.parse_reg_group(cx) {
+      match self.parse_reg_group() {
         Some(group) => {
           groups.insert(group.name.node.clone(), box(GC) group);
         },
@@ -83,7 +86,7 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn parse_reg_group(&mut self, cx: &ExtCtxt) -> Option<node::RegGroup> {
+  fn parse_reg_group(&mut self) -> Option<node::RegGroup> {
     // sitting at `group` token
     match self.expect_ident() {
       Some(ref s) if s.equiv(&"group") => {},
@@ -114,7 +117,7 @@ impl<'a> Parser<'a> {
 
         // Beginning of new group
         ref t@token::IDENT(_,_) if token::to_str(t).equiv(&"group") => {
-          match self.parse_reg_group(cx) {
+          match self.parse_reg_group() {
             Some(group) => groups.insert(group.name.node.clone(), box(GC) group),
             None => return None,
           };
@@ -188,13 +191,7 @@ impl<'a> Parser<'a> {
       Some(count) => count,
     };
 
-    let docstring = match self.token {
-      token::DOC_COMMENT(docstring) => {
-        self.bump();
-        Some(Spanned {node: docstring, span: self.last_span})
-      },
-      _ => None,
-    };
+    let docstring = self.parse_docstring();
 
     let fields = match self.token {
       // Field list
@@ -275,13 +272,7 @@ impl<'a> Parser<'a> {
       Some(count) => count,
       None => return None,
     };
-    let docstring = match self.token {
-      token::DOC_COMMENT(docstring) => {
-        self.bump();
-        Some(Spanned {node: docstring, span: self.last_span})
-      },
-      _ => None,
-    };
+    let docstring = self.parse_docstring();
     let field = node::Field {
       name: name,
       bits: Spanned {node: (start_bit, end_bit), span: bits_span},
@@ -344,6 +335,19 @@ impl<'a> Parser<'a> {
         return None;
       },
       None => return None,
+    }
+  }
+
+  fn parse_docstring(&mut self) -> Option<Spanned<Ident>> {
+    match self.token {
+      token::DOC_COMMENT(docstring) => {
+        self.bump();
+        // for some reason ident begins with '/// '
+        let s = token::get_ident(docstring);
+        let mut stripped = s.get().trim_left_chars(&['/',' ']);
+        Some(Spanned {node: self.cx.ident_of(stripped), span: self.last_span})
+      },
+      _ => None,
     }
   }
 
