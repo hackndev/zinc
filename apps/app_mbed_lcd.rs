@@ -1,4 +1,3 @@
-#![crate_id="app"]
 #![crate_type="rlib"]
 #![no_std]
 

@@ -16,7 +16,7 @@
 //! Platform tree operations crate
 
 #![feature(quote)]
-#![crate_id="platformtree"]
+#![crate_name="platformtree"]
 #![crate_type="rlib"]
 
 extern crate syntax;

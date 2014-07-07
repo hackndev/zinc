@@ -14,7 +14,7 @@
 // limitations under the License.
 
 #![feature(globs, macro_rules, asm, phase, unsafe_destructor, lang_items)]
-#![crate_id="zinc"]
+#![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(ctypes)]
 #![no_std]
@@ -45,7 +45,7 @@ STM32F403/407).
 
 extern crate core;
 
-#[cfg(test)] #[phase(syntax,link)] extern crate std;
+#[cfg(test)] #[phase(plugin,link)] extern crate std;
 #[cfg(test)] extern crate native;
 
 pub mod drivers;
