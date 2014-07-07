@@ -185,7 +185,7 @@ impl<'a> Parser<'a> {
     };
 
     let docstring = match self.token {
-      token::LIT_STR(docstring) => {
+      token::DOC_COMMENT(docstring) => {
         self.bump();
         Some(Spanned {node: docstring, span: self.last_span})
       },
@@ -272,7 +272,7 @@ impl<'a> Parser<'a> {
       None => return None,
     };
     let docstring = match self.token {
-      token::LIT_STR(docstring) => {
+      token::DOC_COMMENT(docstring) => {
         self.bump();
         Some(Spanned {node: docstring, span: self.last_span})
       },
@@ -291,6 +291,7 @@ impl<'a> Parser<'a> {
 
   fn parse_field_type(&mut self) -> Option<node::FieldType> {
     match self.expect_ident() {
+      /// an enum
       Some(ref s) if s.equiv(&("enum")) => {
         let mut variants: Vec<node::Variant> = Vec::new();
 
