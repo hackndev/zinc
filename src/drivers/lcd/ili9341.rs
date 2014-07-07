@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use core::option::{Some, None};
+use core::iter::{Iterator, range};
+
 use interfaces::lcd;
 use interfaces::chario;
 use hal::timer;
@@ -71,20 +74,17 @@ impl<'a> ILI9341<'a> {
   }
 
   fn verify_id(&self) -> bool {
-    let mut i: uint = 0;
     let mut data: [u8, ..3] = [0, 0, 0];
     let id: [u8, ..3] = [0x00, 0x93, 0x41];
-    let mut id_matched = true;
 
-    while i < 3 {
+    for i in range(0, 3) {
       data[i] = self.read_register(0xd3, (i+1) as u8);
       if data[i] != id[i] {
-        id_matched = false;
+        return false;
       }
-      i += 1;
     }
 
-    id_matched
+    true
   }
 
   fn set_power_control_a(&self) {
@@ -272,13 +272,11 @@ impl<'a> ILI9341<'a> {
 
     self.dc.set_high();
     self.cs.set_low();
-    let mut i = 0;
-    while i < 38400 {
+    for i in range(0, 38400) {
       self.spi.transfer(0);
       self.spi.transfer(0);
       self.spi.transfer(0);
       self.spi.transfer(0);
-      i += 1;
     }
     self.cs.set_high();
   }
