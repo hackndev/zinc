@@ -5,6 +5,10 @@ extern crate core;
 use core::kinds::marker;
 use core::intrinsics::{volatile_load, volatile_store};
 
+use std::io::File;
+use std::mem;
+use std::c_vec::CVec;
+
 // TODO(bharrisau) I don't know enough about markers - is it better
 // to just use an Unsafe<T> here instead?
 pub struct VolatileCell<T> {
@@ -92,4 +96,19 @@ ioregs!(
     }
 )
 
-pub fn main() { }
+pub fn main() {
+  unsafe {
+    let len = 0x60;
+    let ftm: FTM = std::mem::zeroed();
+    ftm.MOD.set_MOD(0xdead);
+    ftm.CHANNELS[0].CSC.set_DMA(true);
+
+    let vec: CVec<u8> = CVec::new(mem::transmute(&ftm), len);
+    let path = Path::new("reg");
+    let mut f = File::create(&path);
+    match f.write(vec.as_slice()) {
+      Ok(_) => {},
+      Err(e) => println!("Error: {}", e),
+    }
+  }
+}
