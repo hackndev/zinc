@@ -338,7 +338,7 @@ impl<'a, 'b> Parser<'a, 'b> {
             _ => return None,
           };
 
-          let value: node::Variant = node::Variant { name: name, value: value };
+          let value: node::Variant = node::Variant { name: name, value: value, docstring: None };
           variants.push(value);
 
           // FIXME: trailing comma

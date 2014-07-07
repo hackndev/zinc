@@ -316,11 +316,16 @@ impl<'a, 'b> Builder<'a, 'b> {
 
   /// Emit a variant of an `EnumField`
   fn emit_enum_variant(&self, variant: &node::Variant) -> ast::Variant {
+    let attrs = match variant.docstring {
+      Some(docstring) => vec!(self.doc_attribute(token::get_ident(docstring.node))),
+      None => Vec::new(),
+    };
+
     Spanned {
       span: mk_sp(variant.name.span.lo, variant.value.span.hi),
       node: ast::Variant_ {
         name: self.cx.ident_of(variant.name.node.as_slice()),
-        attrs: Vec::new(),
+        attrs: attrs,
         kind: ast::TupleVariantKind(Vec::new()),
         id: ast::DUMMY_NODE_ID,
         disr_expr: Some(self.cx.expr_lit(

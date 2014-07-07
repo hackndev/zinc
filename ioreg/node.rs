@@ -23,6 +23,7 @@ use std::gc::Gc;
 pub struct Variant {
   pub name: Spanned<String>,
   pub value: Spanned<uint>,
+  pub docstring: Option<Spanned<ast::Ident>>,
 }
 
 /// A bit field type
