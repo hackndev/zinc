@@ -14,15 +14,10 @@
 // limitations under the License.
 
 /*!
-Generic routines for ARM Cortex-M3 cores.
-
-This module also provides `isr.rs`, that is not compiled as a part of this
-crate. `isr.rs` provides ISR vector table.
+Common definitions to all ARM Cortex M* family members
 */
 
-pub use super::cortex_common::systick;
-pub use super::cortex_common::scb;
-pub use super::cortex_common::nvic;
-pub use super::cortex_common::mpu;
-#[cfg(cfg_multitasking)] pub mod sched;
-#[cfg(cfg_multitasking)] pub mod lock;
+pub mod systick;
+pub mod mpu;
+pub mod nvic;
+pub mod scb;

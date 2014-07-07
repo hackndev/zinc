@@ -1,5 +1,5 @@
 // Zinc, the bare metal stack for rust.
-// Copyright 2014 Vladimir "farcaller" Pouzanov <farcaller@gmail.com>
+// Copyright 2014 Ben Gamari <bgamari@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,6 +23,4 @@ crate. `isr.rs` provides ISR vector table.
 pub use super::cortex_common::systick;
 pub use super::cortex_common::scb;
 pub use super::cortex_common::nvic;
-pub use super::cortex_common::mpu;
-#[cfg(cfg_multitasking)] pub mod sched;
-#[cfg(cfg_multitasking)] pub mod lock;
+pub mod lock;

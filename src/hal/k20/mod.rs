@@ -1,5 +1,5 @@
 // Zinc, the bare metal stack for rust.
-// Copyright 2014 Vladimir "farcaller" Pouzanov <farcaller@gmail.com>
+// Copyright 2014 Ben Gamari <bgamari@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,16 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-Generic routines for ARM Cortex-M3 cores.
+//! HAL for Freescale Kinetis K20
 
-This module also provides `isr.rs`, that is not compiled as a part of this
-crate. `isr.rs` provides ISR vector table.
-*/
-
-pub use super::cortex_common::systick;
-pub use super::cortex_common::scb;
-pub use super::cortex_common::nvic;
-pub use super::cortex_common::mpu;
-#[cfg(cfg_multitasking)] pub mod sched;
-#[cfg(cfg_multitasking)] pub mod lock;
+pub mod sim;
+pub mod pin;
+pub mod uart;

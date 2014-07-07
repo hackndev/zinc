@@ -107,13 +107,6 @@ enum FIFOTriggerLevel {
   FT14chars = 0b11_00_0_0_0_0,
 }
 
-static FIFOResetRx: u8 = 0b1_0;
-static FIFOResetTx: u8 = 0b1_0_0;
-
-static LCRModeMask: u8 = 0b1_11_1_1_11;
-
-static LSRTHREmpty: u8 = 0x20;
-
 pub struct UART {
   reg: &'static reg::UART,
   clock: PeripheralClock,
@@ -270,24 +263,31 @@ impl CharIO for UART {
   }
 }
 
+static FIFOResetRx: u8 = 0b1_0;
+static FIFOResetTx: u8 = 0b1_0_0;
+
+static LCRModeMask: u8 = 0b1_11_1_1_11;
+
+static LSRTHREmpty: u8 = 0x20;
+
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(UART: RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
-  reg_r!( UART, RBR,          RBR_THR_DLL)
-  reg_w!( UART,      set_THR, RBR_THR_DLL)
-  reg_rw!(UART, DLL, set_DLL, RBR_THR_DLL)
-  reg_rw!(UART, DLM, set_DLM, DLM_IER)
-  reg_rw!(UART, IER, set_IER, DLM_IER)
-  reg_r!( UART, IIR,          IIR_FCR)
-  reg_w!( UART,      set_FCR, IIR_FCR)
-  reg_rw!(UART, LCR, set_LCR, LCR)
-  reg_r!( UART, LSR,          LSR)
-  reg_rw!(UART, SCR, set_SCR, SCR)
-  reg_rw!(UART, ACR, set_ACR, ACR)
-  reg_rw!(UART, ICR, set_ICR, ICR)
-  reg_rw!(UART, FDR, set_FDR, FDR)
-  reg_rw!(UART, TER, set_TER, TER)
+  ioreg!(UART: u32, RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
+  reg_r!( UART, u32, RBR,          RBR_THR_DLL)
+  reg_w!( UART, u32,      set_THR, RBR_THR_DLL)
+  reg_rw!(UART, u32, DLL, set_DLL, RBR_THR_DLL)
+  reg_rw!(UART, u32, DLM, set_DLM, DLM_IER)
+  reg_rw!(UART, u32, IER, set_IER, DLM_IER)
+  reg_r!( UART, u32, IIR,          IIR_FCR)
+  reg_w!( UART, u32,      set_FCR, IIR_FCR)
+  reg_rw!(UART, u32, LCR, set_LCR, LCR)
+  reg_r!( UART, u32, LSR,          LSR)
+  reg_rw!(UART, u32, SCR, set_SCR, SCR)
+  reg_rw!(UART, u32, ACR, set_ACR, ACR)
+  reg_rw!(UART, u32, ICR, set_ICR, ICR)
+  reg_rw!(UART, u32, FDR, set_FDR, FDR)
+  reg_rw!(UART, u32, TER, set_TER, TER)
 
   extern {
     #[link_name="iomem_UART0"] pub static UART0: UART;

@@ -23,6 +23,7 @@ env:
   matrix:
     - PLATFORM=lpc17xx
     - PLATFORM=stm32f4
+    - PLATFORM=k20
 matrix:
   allow_failures:
     - env: PLATFORM=stm32f4

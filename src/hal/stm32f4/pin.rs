@@ -124,17 +124,17 @@ impl PinConf {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(GPIO: MODER, OTYPER, OSPEEDER, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH)
-  reg_rw!(GPIO, MODER,    set_MODER,    MODER)
-  reg_rw!(GPIO, OTYPER,   set_OTYPER,   OTYPER)
-  reg_rw!(GPIO, OSPEEDER, set_OSPEEDER, OSPEEDER)
-  reg_rw!(GPIO, PUPDR,    set_PUPDR,    PUPDR)
-  reg_rw!(GPIO, IDR,      set_IDR,      IDR)
-  reg_rw!(GPIO, ODR,      set_ODR,      ODR)
-  reg_rw!(GPIO, BSRR,     set_BSRR,     BSRR)
-  reg_rw!(GPIO, LCKR,     set_LCKR,     LCKR)
-  reg_rw!(GPIO, AFRL,     set_AFRL,     AFRL)
-  reg_rw!(GPIO, AFRH,     set_AFRH,     AFRH)
+  ioreg!(GPIO: u32, MODER, OTYPER, OSPEEDER, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH)
+  reg_rw!(GPIO, u32, MODER,    set_MODER,    MODER)
+  reg_rw!(GPIO, u32, OTYPER,   set_OTYPER,   OTYPER)
+  reg_rw!(GPIO, u32, OSPEEDER, set_OSPEEDER, OSPEEDER)
+  reg_rw!(GPIO, u32, PUPDR,    set_PUPDR,    PUPDR)
+  reg_rw!(GPIO, u32, IDR,      set_IDR,      IDR)
+  reg_rw!(GPIO, u32, ODR,      set_ODR,      ODR)
+  reg_rw!(GPIO, u32, BSRR,     set_BSRR,     BSRR)
+  reg_rw!(GPIO, u32, LCKR,     set_LCKR,     LCKR)
+  reg_rw!(GPIO, u32, AFRL,     set_AFRL,     AFRL)
+  reg_rw!(GPIO, u32, AFRH,     set_AFRH,     AFRH)
 
   extern {
     #[link_name="iomem_GPIOA"] pub static GPIOA: GPIO;

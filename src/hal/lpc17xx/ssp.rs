@@ -226,17 +226,17 @@ impl spi::SPI for SSP {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(SSP: CR0, CR1, DR, SR, CPSR, IMSC, RIS, MIS, ICR, DMACR)
-  reg_rw!(SSP, CR0,   set_CR0,   CR0)
-  reg_rw!(SSP, CR1,   set_CR1,   CR1)
-  reg_rw!(SSP, DR,    set_DR,    DR)
-  reg_r!( SSP, SR,               SR)
-  reg_rw!(SSP, CPSR,  set_CPSR,  CPSR)
-  reg_rw!(SSP, IMSC,  set_IMSC,  IMSC)
-  reg_rw!(SSP, RIS,   set_RIS,   RIS)
-  reg_rw!(SSP, MIS,   set_MIS,   MIS)
-  reg_rw!(SSP, ICR,   set_ICR,   ICR)
-  reg_rw!(SSP, DMACR, set_DMACR, DMACR)
+  ioreg!(SSP: u32, CR0, CR1, DR, SR, CPSR, IMSC, RIS, MIS, ICR, DMACR)
+  reg_rw!(SSP, u32, CR0,   set_CR0,   CR0)
+  reg_rw!(SSP, u32, CR1,   set_CR1,   CR1)
+  reg_rw!(SSP, u32, DR,    set_DR,    DR)
+  reg_r!( SSP, u32, SR,               SR)
+  reg_rw!(SSP, u32, CPSR,  set_CPSR,  CPSR)
+  reg_rw!(SSP, u32, IMSC,  set_IMSC,  IMSC)
+  reg_rw!(SSP, u32, RIS,   set_RIS,   RIS)
+  reg_rw!(SSP, u32, MIS,   set_MIS,   MIS)
+  reg_rw!(SSP, u32, ICR,   set_ICR,   ICR)
+  reg_rw!(SSP, u32, DMACR, set_DMACR, DMACR)
 
   extern {
     #[link_name="iomem_SSP0"] pub static SSP0: SSP;

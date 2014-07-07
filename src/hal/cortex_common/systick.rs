@@ -18,6 +18,7 @@
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 /// A constant that requests to use hardware calibration value.
+/// Note that not all core implementations support this.
 pub static CALIBRATED: u32 = 0xffffffff;
 
 /// Initializes systick timer.
@@ -55,14 +56,14 @@ pub fn disable_irq() {
   reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() & !0b010);
 }
 
-mod reg {
+pub mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(SYSTICKReg: CONTROL, RELOAD, CURRENT, CALIBRATION)
-  reg_rw!(SYSTICKReg, CONTROL,     set_CONTROL, CONTROL)
-  reg_rw!(SYSTICKReg, RELOAD,      set_RELOAD,  RELOAD)
-  reg_rw!(SYSTICKReg, CURRENT,     set_CURRENT, CURRENT)
-  reg_r!( SYSTICKReg, CALIBRATION,              CALIBRATION)
+  ioreg!(SYSTICKReg: u32, CONTROL, RELOAD, CURRENT, CALIBRATION)
+  reg_rw!(SYSTICKReg, u32, CONTROL,     set_CONTROL, CONTROL)
+  reg_rw!(SYSTICKReg, u32, RELOAD,      set_RELOAD,  RELOAD)
+  reg_rw!(SYSTICKReg, u32, CURRENT,     set_CURRENT, CURRENT)
+  reg_r!( SYSTICKReg, u32, CALIBRATION,              CALIBRATION)
 
   extern {
     #[link_name="armmem_SYSTICK"] pub static SYSTICK: SYSTICKReg;
