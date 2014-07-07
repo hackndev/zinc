@@ -131,8 +131,7 @@ impl<'a, 'b> Builder<'a, 'b> {
       node::U32Reg => "u32",
       _  => return None
     };
-    let path = self.cx.path(DUMMY_SP, vec!(self.cx.ident_of("core"),
-                                           self.cx.ident_of(name)));
+    let path = self.cx.path_ident(DUMMY_SP, self.cx.ident_of(name));
     Some(self.cx.ty_path(path, None))
   }
 
@@ -215,8 +214,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     match regOrPad {
       Reg(reg) => self.emit_reg_group_field(group, reg),
       Pad(length) => {
-        let u8_path = self.cx.path(DUMMY_SP, vec!(self.cx.ident_of("core"),
-                                                  self.cx.ident_of("u8")));
+        let u8_path = self.cx.path_ident(DUMMY_SP, self.cx.ident_of("u8"));
         let u8_ty: P<ast::Ty> = self.cx.ty_path(u8_path, None);
         let ty: P<ast::Ty> =
           self.cx.ty(DUMMY_SP,
@@ -258,8 +256,8 @@ impl<'a, 'b> Builder<'a, 'b> {
                      -> ast::Path {
     let span = field.ty.span;
     match field.ty.node {
-      node::UIntField => self.cx.path(span, vec!(self.cx.ident_of("core"), self.cx.ident_of("uint"))),
-      node::BoolField => self.cx.path(span, vec!(self.cx.ident_of("core"), self.cx.ident_of("bool"))),
+      node::UIntField => self.cx.path_ident(span, self.cx.ident_of("uint")),
+      node::BoolField => self.cx.path_ident(span, self.cx.ident_of("bool")),
       node::EnumField { opt_name: ref opt_name, ..} => {
         match opt_name {
           &Some(ref name) => self.cx.path_ident(span, self.cx.ident_of(name.as_slice())),
