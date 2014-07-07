@@ -13,21 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Platform tree operations crate
+use std::rc::Rc;
+use syntax::ext::base::ExtCtxt;
 
-#![feature(quote)]
-#![crate_name="platformtree"]
-#![crate_type="rlib"]
+use builder::{Builder, add_node_dependency};
+use node;
 
-extern crate syntax;
-#[cfg(test)] extern crate hamcrest;
+mod dht22_pt;
 
-pub mod builder;
-pub mod node;
-pub mod parser;
+pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.materializer.set(Some(verify));
+  for sub in node.subnodes().iter() {
+    add_node_dependency(&node, sub);
 
-#[path="../src/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
-#[path="../src/drivers/drivers_pt.rs"] mod drivers_pt;
+    match sub.path.as_slice() {
+      "dht22" => dht22_pt::attach(builder, cx, sub.clone()),
+      _ => (),
+    }
+  }
+}
 
-#[cfg(test)] mod test_helpers;
-#[cfg(test)] mod parser_test;
+fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.expect_no_attributes(cx);
+  node.expect_subnodes(cx, ["dht22"]);
+}

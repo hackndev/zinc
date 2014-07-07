@@ -9,9 +9,18 @@ Context.create(__FILE__, ENV['PLATFORM'], features)
 
 provide_stdlibs
 
+# tests
 desc "Run tests"
 task :test
+compile_rust :hamcrest_crate, {
+  source:  'thirdparty/hamcrest-rust/src/hamcrest/lib.rs'.in_root,
+  produce: 'thirdparty/hamcrest-rust/src/hamcrest/lib.rs'.in_root.as_rlib.in_build,
+  out_dir: true,
+  build_for: :host,
+  do_not_collect_rust_deps: true,
+}
 
+# cross-compiled libcore
 compile_rust :core_crate, {
   source:  'thirdparty/libcore/lib.rs'.in_root,
   produce: 'thirdparty/libcore/lib.rs'.in_root.as_rlib.in_build,
@@ -65,6 +74,7 @@ compile_rust :platformtree_crate, {
 
 rust_tests :platformtree_test, {
   source:  'platformtree/platformtree.rs'.in_root,
+  deps:    :hamcrest_crate,
   produce: 'platformtree_test'.in_build,
 }
 
@@ -119,5 +129,5 @@ case ENV['PLATFORM']
 when 'k20'
   task :build_all => [:build_blink_k20]
 else
-  task :build_all => [:build_empty, :build_blink, :build_uart]
+  task :build_all => [:build_empty, :build_blink, :build_uart, :build_dht22]
 end

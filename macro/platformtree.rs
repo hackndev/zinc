@@ -18,31 +18,38 @@
 
 #![feature(plugin_registrar, quote, managed_boxes)]
 
-extern crate rustc;
-extern crate syntax;
 extern crate platformtree;
+extern crate rustc;
+extern crate serialize;
+extern crate syntax;
 
 use rustc::plugin::Registry;
-use std::gc::Gc;
+use std::gc::{Gc, GC};
 use syntax::ast;
+use syntax::codemap::DUMMY_SP;
 use syntax::codemap::Span;
-use syntax::ext::base::{ExtCtxt, MacResult};
+use syntax::ext::base::{ExtCtxt, MacResult, ItemModifier};
+use syntax::ext::build::AstBuilder;
+use syntax::owned_slice::OwnedSlice;
 use syntax::print::pprust;
 use syntax::util::small_vector::SmallVector;
 
 use platformtree::parser::Parser;
-use platformtree::builder::build_platformtree;
+use platformtree::builder::Builder;
+use platformtree::builder::meta_args::ToTyHash;
 
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("platformtree", macro_platformtree);
   reg.register_macro("platformtree_verbose", macro_platformtree_verbose);
+  reg.register_syntax_extension(syntax::parse::token::intern("zinc_task"),
+      ItemModifier(macro_zinc_task));
 }
 
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     -> Box<MacResult> {
   let pt = Parser::new(cx, tts).parse_platformtree();
-  let builder = build_platformtree(cx, &pt.unwrap());
+  let builder = Builder::build(cx, pt.unwrap());
 
   let items = builder.emit_items(cx);
   MacItems::new(items)
@@ -59,6 +66,55 @@ pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
   }
 
   result
+}
+
+fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
+    it: Gc<ast::Item>) -> Gc<ast::Item> {
+  match it.node {
+    ast::ItemFn(decl, style, abi, _, block) => {
+      let istr = syntax::parse::token::get_ident(it.ident);
+      let fn_name = istr.get();
+      let ty_params = platformtree::builder::meta_args::get_ty_params_for_task(cx, fn_name);
+
+      let params = ty_params.iter().map(|ty| {
+        cx.typaram(
+            DUMMY_SP,
+            cx.ident_of(ty.to_tyhash().as_slice()),
+            ast::StaticSize,
+            OwnedSlice::from_vec(vec!(cx.typarambound(
+                cx.path(DUMMY_SP, ty.as_slice().split_str("::").map(|t| cx.ident_of(t)).collect())))),
+            None)
+      }).collect();
+
+      let new_arg = cx.arg(DUMMY_SP, cx.ident_of("args"), cx.ty_rptr(
+          DUMMY_SP,
+          cx.ty_path(
+              cx.path_all(
+                  DUMMY_SP,
+                  false,
+                  ["pt".to_str(), fn_name.to_str() + "_args"].iter().map(|t| cx.ident_of(t.as_slice())).collect(),
+                  vec!(),
+                  ty_params.iter().map(|ty| {
+                    cx.ty_path(cx.path_ident(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice())), None)
+                  }).collect()),
+              None),
+          None,
+          ast::MutImmutable));
+      let new_decl = box(GC) ast::FnDecl {
+        inputs: vec!(new_arg),
+        ..decl.deref().clone()
+      };
+
+      let new_generics = ast::Generics {
+        lifetimes: vec!(),
+        ty_params: OwnedSlice::from_vec(params),
+      };
+      let new_node = ast::ItemFn(new_decl, style, abi, new_generics, block);
+
+      box(GC) ast::Item {node: new_node, ..it.deref().clone() }
+    },
+    _ => fail!(),
+  }
 }
 
 pub struct MacItems {

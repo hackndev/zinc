@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use std::gc::{Gc, GC};
+use std::rc::Rc;
 use syntax::abi;
 use syntax::ast::TokenTree;
 use syntax::ast;
@@ -28,20 +29,110 @@ use node;
 
 mod mcu;
 mod os;
+pub mod meta_args;
 
 pub struct Builder {
-  pub main_stmts: Vec<Gc<ast::Stmt>>,
-  pub type_items: Vec<Gc<ast::Item>>,
-  pub pt: Gc<node::PlatformTree>,
+  main_stmts: Vec<Gc<ast::Stmt>>,
+  type_items: Vec<Gc<ast::Item>>,
+  pt: Rc<node::PlatformTree>,
 }
 
 impl Builder {
-  pub fn new(pt: &Gc<node::PlatformTree>) -> Builder {
+  pub fn build(cx: &mut ExtCtxt, pt: Rc<node::PlatformTree>) -> Builder {
+    let mut builder = Builder::new(pt.clone());
+
+    if !pt.expect_subnodes(cx, ["mcu", "os", "drivers"]) {
+      return builder;  // TODO(farcaller): report error?
+    }
+
+    match pt.get_by_path("mcu") {
+      Some(node) => mcu::attach(&mut builder, cx, node),
+      None => (),  // TODO(farcaller): should it actaully fail?
+    }
+
+    match pt.get_by_path("os") {
+      Some(node) => os::attach(&mut builder, cx, node),
+      None => (),  // TODO(farcaller): this should fail.
+    }
+
+    match pt.get_by_path("drivers") {
+      Some(node) => ::drivers_pt::attach(&mut builder, cx, node),
+      None => (),
+    }
+
+    for sub in pt.nodes().iter() {
+      Builder::walk_mutate(&mut builder, cx, sub);
+    }
+
+    let base_node = pt.get_by_path("mcu").and_then(|mcu|{mcu.get_by_path("clock")});
+    match base_node {
+      Some(node) => Builder::walk_materialize(&mut builder, cx, node),
+      None => {
+        cx.parse_sess().span_diagnostic.span_err(DUMMY_SP,
+            "root node `mcu::clock` must be present");
+      }
+    }
+
+    builder
+  }
+
+  fn walk_mutate(builder: &mut Builder, cx: &mut ExtCtxt, node: &Rc<node::Node>) {
+    let maybe_mut = node.mutator.get();
+    if maybe_mut.is_some() {
+      maybe_mut.unwrap()(builder, cx, node.clone());
+    }
+    for sub in node.subnodes().iter() {
+      Builder::walk_mutate(builder, cx, sub);
+    }
+  }
+
+  // FIXME(farcaller): verify that all nodes have been materialized
+  fn walk_materialize(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+    let maybe_mat = node.materializer.get();
+    if maybe_mat.is_some() {
+      maybe_mat.unwrap()(builder, cx, node.clone());
+    }
+    let rev_depends = node.rev_depends_on.borrow();
+    for weak_sub in rev_depends.iter() {
+      let sub = weak_sub.upgrade().unwrap();
+      let mut sub_deps = sub.depends_on.borrow_mut();
+      let deps = sub_deps.deref_mut();
+      let mut index = None;
+      let mut i = 0u;
+      // FIXME: iter().position()
+      for dep in deps.iter() {
+        let strong_dep = dep.upgrade().unwrap();
+        if node == strong_dep {
+          index = Some(i);
+          break;
+        }
+        i = i + 1;
+      }
+      if index.is_none() {
+        fail!("no index found");
+      } else {
+        deps.remove(index.unwrap());
+        if deps.len() == 0 {
+          Builder::walk_materialize(builder, cx, sub.clone());
+        }
+      }
+    }
+  }
+
+  pub fn new(pt: Rc<node::PlatformTree>) -> Builder {
     Builder {
       main_stmts: Vec::new(),
       type_items: Vec::new(),
-      pt: *pt,
+      pt: pt,
     }
+  }
+
+  pub fn main_stmts(&self) -> Vec<Gc<ast::Stmt>> {
+    self.main_stmts.clone()
+  }
+
+  pub fn pt(&self) -> Rc<node::PlatformTree> {
+    self.pt.clone()
   }
 
   pub fn add_main_statement(&mut self, stmt: Gc<ast::Stmt>) {
@@ -101,7 +192,11 @@ impl Builder {
     let pt_mod_item = cx.item_mod(DUMMY_SP, DUMMY_SP, cx.ident_of("pt"),
         vec!(allow_noncamel), vec!(use_zinc), self.type_items.clone());
 
-    vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx))
+    if self.type_items.len() > 0 {
+      vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx))
+    } else {
+      vec!(self.emit_main(cx), self.emit_morestack(cx))
+    }
   }
 
   fn item_fn(&self, cx: &ExtCtxt, span: Span, name: &str,
@@ -139,28 +234,12 @@ impl ToTokens for TokenString {
   }
 }
 
-pub fn build_platformtree(cx: &mut ExtCtxt, pt: &Gc<node::PlatformTree>) -> Builder {
-  let mut builder = Builder::new(pt);
+pub fn add_node_dependency(node: &Rc<node::Node>, dep: &Rc<node::Node>) {
+  let mut depends_on = node.depends_on.borrow_mut();
+  depends_on.deref_mut().push(dep.downgrade());
 
-  if !pt.expect_subnodes(cx, ["mcu", "os"]) {
-    return builder;  // TODO(farcaller): report error?
-  }
-
-  match pt.get_by_path("mcu") {
-    Some(node) => mcu::build_mcu(&mut builder, cx, node),
-    None => (),  // TODO(farcaller): should it actaully fail?
-  }
-
-  match pt.get_by_path("os") {
-    Some(node) => os::build_os(&mut builder, cx, node),
-    None => {
-      // TODO(farcaller): provide span for whole PT?
-      cx.parse_sess().span_diagnostic.span_err(DUMMY_SP,
-          "root node `os` must be present");
-    }
-  }
-
-  builder
+  let mut rev_depends_on = dep.rev_depends_on.borrow_mut();
+  rev_depends_on.push(node.downgrade());
 }
 
 #[cfg(test)]

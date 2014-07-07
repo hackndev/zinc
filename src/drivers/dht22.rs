@@ -20,8 +20,6 @@ use hal::pin::{GPIO, Low, High, In, Out, GPIOLevel};
 use hal::timer::Timer;
 
 /// Basic DHT22 driver ported over from arduino example.
-///
-/// TODO(farcaller): this driver doesn't conform to zinc's xxxConf layout.
 pub struct DHT22<'a, T, P> {
   gpio: &'a P,
   timer: &'a T,
@@ -34,7 +32,7 @@ pub struct Measurements {
 
 impl<'a, T: Timer, P: GPIO> DHT22<'a, T, P> {
   /// Creates a new DHT22 driver based on I/O GPIO and a timer with 10us resolution.
-  pub fn new(gpio: &'a P, timer: &'a T) -> DHT22<'a, T, P> {
+  pub fn new(timer: &'a T, gpio: &'a P) -> DHT22<'a, T, P> {
     DHT22 {
       gpio: gpio,
       timer: timer,

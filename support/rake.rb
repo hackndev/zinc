@@ -36,7 +36,7 @@ def compile_rust(n, h)
 
   declared_deps = h[:deps]
   rust_src = h[:source]
-  deps = Deps.collect_dep_srcs(rust_src, '__ROOT__').to_a
+  deps = h[:do_not_collect_rust_deps] ? [] : Deps.collect_dep_srcs(rust_src, '__ROOT__').to_a
   all_deps = [rust_src, declared_deps, deps].flatten.compact
 
   recompile_on = [h[:recompile_on]].flatten.compact
@@ -155,5 +155,9 @@ def provide_stdlibs
 
   Rake::FileTask.define_task 'thirdparty/libcore/lib.rs'.in_root do |t|
     sh "ln -s rust/src/libcore thirdparty/libcore"
+  end.invoke
+
+  Rake::FileTask.define_task 'thirdparty/hamcrest-rust'.in_root do |t|
+    sh "git clone --single-branch --depth 1 https://github.com/carllerche/hamcrest-rust #{t.name}"
   end.invoke
 end

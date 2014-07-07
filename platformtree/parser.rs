@@ -13,9 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::cell::RefCell;
 use std::collections::hashmap::HashMap;
-use std::gc::{Gc, GC};
+use std::rc::{Rc, Weak};
 use syntax::ast::TokenTree;
 use syntax::codemap::{Span, mk_sp};
 use syntax::ext::base::ExtCtxt;
@@ -57,16 +56,16 @@ impl<'a> Parser<'a> {
   }
 
   /// Parse the platform tree from passed in tokens.
-  pub fn parse_platformtree(&mut self) -> Option<Gc<node::PlatformTree>> {
-    let mut nodes: HashMap<String, Gc<node::Node>> = HashMap::new();
+  pub fn parse_platformtree(&mut self) -> Option<Rc<node::PlatformTree>> {
+    let mut nodes: HashMap<String, Rc<node::Node>> = HashMap::new();
     let mut failed = false;
     loop {
       if self.token == token::EOF {
         break
       }
 
-      let node = match self.parse_node() {
-        Some(node) => box(GC) node,
+      let node = match self.parse_node(None) {
+        Some(node) => node,
         None => {
           failed = true;
           self.bump();
@@ -79,7 +78,7 @@ impl<'a> Parser<'a> {
         failed = true;
         self.sess.span_diagnostic.span_err(node.path_span,
             format!("duplicate node definition `{}`", path).as_slice());
-        let old_node: &Gc<node::Node> = nodes.get(&path);
+        let old_node: &Rc<node::Node> = nodes.get(&path);
         self.sess.span_diagnostic.span_err(old_node.path_span,
             "previously defined here");
       } else {
@@ -92,17 +91,25 @@ impl<'a> Parser<'a> {
     } else {
       let mut map = HashMap::new();
       if self.collect_node_names(&mut map, &nodes) {
-        Some(box(GC) node::PlatformTree::new(nodes, map))
+        Some(Rc::new(node::PlatformTree::new(nodes, map)))
       } else {
         None
       }
     }
   }
 
-  fn collect_node_names(&self, map: &mut HashMap<String, Gc<node::Node>>,
-      nodes: &HashMap<String, Gc<node::Node>>) -> bool {
+  fn collect_node_names(&self, map: &mut HashMap<String, Weak<node::Node>>,
+      nodes: &HashMap<String, Rc<node::Node>>) -> bool {
     for (_, n) in nodes.iter() {
-      if !self.collect_node_names(map, &n.subnodes) {
+      let mut strongmap = HashMap::new();
+      n.with_subnodes_map(|sub|{
+        for (k, weak_node) in sub.iter() {
+          let node = weak_node.upgrade().unwrap();
+          strongmap.insert(k.clone(), node);
+        }
+      });
+
+      if !self.collect_node_names(map, &strongmap) {
         return false;
       }
 
@@ -113,11 +120,11 @@ impl<'a> Parser<'a> {
                 "duplicate `{}` definition", name).as_slice());
 
             self.sess.span_diagnostic.span_warn(
-                map.get(name).name_span,
+                map.get(name).upgrade().unwrap().name_span,
                 "previously defined here");
             return false;
           } else {
-            map.insert(name.clone(), *n);
+            map.insert(name.clone(), n.downgrade());
           }
         },
         None => (),
@@ -126,7 +133,8 @@ impl<'a> Parser<'a> {
     true
   }
 
-  fn parse_node(&mut self) -> Option<node::Node> {
+  fn parse_node(&mut self, parent: Option<Weak<node::Node>>)
+      -> Option<Rc<node::Node>> {
     let name_span: Option<Span>;
     let node_name: Option<String>;
 
@@ -151,8 +159,8 @@ impl<'a> Parser<'a> {
 
     let node_span: Span;
     let node_path_span: Span;
-    let attributes: HashMap<String, node::Attribute>;
-    let subnodes: HashMap<String, Gc<node::Node>>;
+    let attributes: HashMap<String, Rc<node::Attribute>>;
+    let subnodes: node::Subnodes;
 
     // NAME is resolved, if it was there anyway.
     //    we're here
@@ -181,6 +189,10 @@ impl<'a> Parser<'a> {
       }
     };
 
+    let node = Rc::new(node::Node::new(
+        node_name, node_span, node_path, node_path_span, parent));
+    let weak_node = node.downgrade();
+
     //    we're here
     //             |
     //             v
@@ -188,7 +200,7 @@ impl<'a> Parser<'a> {
     // it's either a body, or a semicolon (no body)
     match self.bump() {
       token::LBRACE => {
-        let (a, s) = match self.parse_node_body() {
+        let (a, s) = match self.parse_node_body(weak_node) {
           Some((attrs, subnodes)) => (attrs, subnodes),
           // TODO(farcaller): eat everything up to '}' and continue if failed
           // we can still parse further nodes.
@@ -203,7 +215,7 @@ impl<'a> Parser<'a> {
       },
       token::SEMI => {
         attributes = HashMap::new();
-        subnodes = HashMap::new();
+        subnodes = node::Subnodes::new();
       },
       ref other => {
         self.error(format!("expected `{{` or `;` but found `{}`",
@@ -212,18 +224,15 @@ impl<'a> Parser<'a> {
       }
     }
 
-    let mut node = node::Node::new(node_name, node_span, node_path, node_path_span);
-    node.attributes = RefCell::new(attributes);
-    node.subnodes = subnodes;
+    node.attributes.borrow_mut().clone_from(&attributes);
+    node.set_subnodes(subnodes);
     Some(node)
   }
 
-  fn parse_node_body(&mut self)
-      -> Option<(
-          HashMap<String, node::Attribute>,
-          HashMap<String, Gc<node::Node>>)> {
+  fn parse_node_body(&mut self, weak_node: Weak<node::Node>)
+      -> Option<(HashMap<String, Rc<node::Attribute>>, node::Subnodes)> {
     let mut attrs = HashMap::new();
-    let mut subnodes = HashMap::new();
+    let mut subnodes = node::Subnodes::new();
 
     loop {
       // break early if at brace
@@ -275,13 +284,13 @@ impl<'a> Parser<'a> {
           return None;
         }
 
-        attrs.insert(some_name, node::Attribute::new(
-            attr_value, name_span, attr_value_span));
+        attrs.insert(some_name, Rc::new(node::Attribute::new(
+            attr_value, name_span, attr_value_span)));
       } else {
         // this should be a subnode
         let oldsp = self.span;
         let oldtok = self.token.clone();
-        let node = match self.parse_node() {
+        let node = match self.parse_node(Some(weak_node.clone())) {
           Some(node) => node,
           None => {
             self.span = oldsp;
@@ -292,16 +301,16 @@ impl<'a> Parser<'a> {
         };
 
         let path = node.path.clone();
-        if subnodes.contains_key(&path) {
+        if subnodes.as_map().contains_key(&path) {
           self.span = node.path_span;
           self.error(format!("duplicate node definition `{}`",
               path));
-          let old_node: &Gc<node::Node> = subnodes.get(&path);
+          let old_node: Rc<node::Node> = subnodes.as_map().get(&path).upgrade().unwrap();
           self.span = old_node.path_span.clone();
           self.error("previously defined here".to_str());
           return None;
         } else {
-          subnodes.insert(path, box(GC) node);
+          subnodes.push(node);
         }
       }
     }

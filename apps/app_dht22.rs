@@ -1,78 +1,87 @@
-#![crate_type="rlib"]
+#![feature(phase)]
+#![crate_type="staticlib"]
 #![no_std]
 
-extern crate zinc;
 extern crate core;
+extern crate zinc;
+#[phase(plugin)] extern crate macro_platformtree;
 
 use core::option::{Some, None};
 
-use zinc::boards::mbed_lpc1768;
-use zinc::drivers::chario::CharIO;
-use zinc::hal::timer::{TimerConf, Timer};
-use zinc::hal::uart::{UARTConf, Disabled};
-use zinc::hal::pin::map;
-use zinc::hal::gpio::{GPIOConf, Out};
-use zinc::os::debug;
-use zinc::drivers::dht22;
-
-#[cfg(mcu_lpc17xx)] use zinc::hal::lpc17xx::init::SysConf;
-#[cfg(mcu_lpc17xx)] use zinc::hal::lpc17xx;
-
-struct Platform {
-  configuration: SysConf,
-  timer: TimerConf,
-  uart: UARTConf,
-}
-
-#[cfg(mcu_lpc17xx)]
-#[address_insignificant]
-static platform: Platform = Platform {
-  configuration: mbed_lpc1768::configuration,
-  timer: TimerConf {
-    timer: lpc17xx::timer::Timer1,
-    counter: 25,
-    divisor: 4,
-  },
-  uart: UARTConf {
-    peripheral: lpc17xx::uart::UART0,
-    baudrate: 115200,
-    word_len: 8,
-    parity: Disabled,
-    stop_bits: 1,
-
-    tx: map::port0::pin2::TXD0,
-    rx: map::port0::pin3::RXD0,
-  },
-};
-
-#[no_split_stack]
-pub fn main() {
-  platform.configuration.setup();
-  debug::setup(&platform.uart);
-
-  let d = debug::io();
-  d.puts("DHT22 demo\n");
-
-  let gpio = &GPIOConf {
-    pin: map::port0::pin4::GPIO,
-    direction: Out,
-  };
-  let timer = &platform.timer.setup();
-
-  let dht = dht22::DHT22::new(gpio, timer);
-
-  loop {
-    (timer as &Timer).wait(3);
-
-    let ret = dht.read();
-    match ret {
-      Some(v) => {
-        d.puts("temp:     "); d.puti(v.temperature as u32); d.puts("\n");
-        d.puts("humidity: "); d.puti(v.humidity as u32); d.puts("\n");
-      },
-      None => {
-        d.puts("fail\n");
-      },
+platformtree!(
+  lpc17xx@mcu {
+    clock {
+      source = "main-oscillator";
+      source_frequency = 12_000_000;
+      pll {
+        m = 50;
+        n = 3;
+        divisor = 4;
+      }
     }
+
+    timer {
+      timer@1 {
+        counter = 25;
+        divisor = 4;
+      }
+    }
+
+    uart {
+      uart@0 {
+        baud_rate = 115200;
+        mode = "8N1";
+        tx = &uart_tx;
+        rx = &uart_rx;
+      }
+    }
+
+    gpio {
+      0 {
+        uart_tx@2;
+        uart_rx@3;
+        dht_pin@4;
+      }
+    }
+  }
+
+  drivers {
+    dht@dht22 {
+      pin = &dht_pin;
+      timer = &timer;
+    }
+  }
+
+  os {
+    single_task {
+      loop = "run";
+      args {
+        timer = &timer;
+        uart = &uart;
+        dht = &dht;
+      }
+    }
+  }
+)
+
+#[zinc_task]
+#[no_split_stack]
+fn run(args: &pt::run_args) {
+  use zinc::drivers::chario::CharIO;
+  use zinc::hal::timer::Timer;
+
+  args.timer.wait(3);
+
+  let ret = args.dht.read();
+  match ret {
+    Some(v) => {
+      args.uart.puts("temp:     "); args.uart.puti(v.temperature as u32);
+      args.uart.puts("\n");
+      args.uart.puts("humidity: "); args.uart.puti(v.humidity as u32);
+      args.uart.puts("\n");
+    },
+    None => {
+      args.uart.puts("fail\n");
+    },
   }
 }

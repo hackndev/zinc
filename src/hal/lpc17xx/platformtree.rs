@@ -13,10 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
 
-use builder::Builder;
+use builder::{Builder, add_node_dependency};
 use node;
 
 mod system_clock_pt;
@@ -26,39 +26,148 @@ mod uart_pt;
 
 mod pinmap;
 
-pub fn build_mcu(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
-  if !node.expect_no_attributes(cx) {
-    return;
+pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.materializer.set(Some(verify));
+  for sub in node.subnodes().iter() {
+    add_node_dependency(&node, sub);
+
+    match sub.path.as_slice() {
+      "clock" => system_clock_pt::attach(builder, cx, sub.clone()),
+      "timer" => timer_pt::attach(builder, cx, sub.clone()),
+      "uart"  => uart_pt::attach(builder, cx, sub.clone()),
+      "gpio"  => pin_pt::attach(builder, cx, sub.clone()),
+      _ => (),
+    }
   }
+}
 
-  node.get_by_path("clock").and_then(|sub| -> Option<bool> {
-    system_clock_pt::build_clock(builder, cx, sub);
-    None
-  });
+fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.expect_no_attributes(cx);
+  node.expect_subnodes(cx, ["clock", "timer", "uart", "gpio"]);
+}
 
-  node.get_by_path("timer").and_then(|sub| -> Option<bool> {
-    timer_pt::build_timer(builder, cx, sub);
-    None
-  });
-
-  node.get_by_path("uart").and_then(|sub| -> Option<bool> {
-    uart_pt::build_uart(builder, cx, sub);
-    None
-  });
-
-  node.get_by_path("gpio").and_then(|sub| -> Option<bool> {
-    pin_pt::build_pin(builder, cx, sub);
-    None
-  });
+pub fn add_node_dependency_on_clock(builder: &mut Builder,
+    node: &Rc<node::Node>) {
+  let mcu_node = builder.pt().get_by_path("mcu").unwrap();
+  let clock_node = mcu_node.get_by_path("clock").unwrap();
+  add_node_dependency(node, &clock_node);
 }
 
 #[cfg(test)]
 mod test {
-  use test_helpers::fails_to_build;
+  use builder::Builder;
+  use test_helpers::{assert_equal_items, with_parsed, fails_to_build};
 
   #[test]
   fn fails_to_parse_garbage_attrs() {
     fails_to_build("lpc17xx@mcu { key = 1; }");
+  }
+
+  #[test]
+  fn builds_lpc17xx_pt() {
+    with_parsed("
+      lpc17xx@mcu {
+        clock {
+          source = \"main-oscillator\";
+          source_frequency = 12_000_000;
+          pll {
+            m = 50;
+            n = 3;
+            divisor = 4;
+          }
+        }
+
+        timer {
+          timer@1 {
+            counter = 25;
+            divisor = 4;
+          }
+        }
+
+        uart {
+          uart@0 {
+            baud_rate = 115200;
+            mode = \"8N1\";
+            tx = &uart_tx;
+            rx = &uart_rx;
+          }
+        }
+
+        gpio {
+          0 {
+            uart_tx@2;
+            uart_rx@3;
+          }
+          1 {
+            led4@23 { direction = \"out\"; }
+          }
+        }
+      }
+
+      os {
+        single_task {
+          loop = \"run\";
+          args {
+            timer = &timer;
+            txled = &led4;
+            uart = &uart;
+          }
+        }
+      }", |cx, failed, pt| {
+      let builder = Builder::build(cx, pt);
+      let items = builder.emit_items(cx);
+      assert!(unsafe{*failed} == false);
+      assert!(items.len() == 3);
+
+      assert_equal_items(items.get(1), "
+          #[no_mangle]
+          #[no_split_stack]
+          #[allow(unused_variable)]
+          pub unsafe fn main() {
+            zinc::hal::mem_init::init_stack();
+            zinc::hal::mem_init::init_data();
+            {
+                use zinc::hal::lpc17xx::system_clock;
+                system_clock::init_clock(&system_clock::Clock{
+                  source: system_clock::Main(12000000),
+                  pll: core::option::Some(system_clock::PLL0{
+                    m: 50u8,
+                    n: 3u8,
+                    divisor: 4u8,
+                  }),
+                });
+            };
+            let timer = zinc::hal::lpc17xx::timer::Timer::new(
+                zinc::hal::lpc17xx::timer::Timer1, 25u32, 4u8);
+            let uart_tx = zinc::hal::lpc17xx::pin::Pin::new(
+                zinc::hal::lpc17xx::pin::Port0,
+                2u8,
+                zinc::hal::lpc17xx::pin::AltFunction1,
+                core::option::None);
+            let uart_rx = zinc::hal::lpc17xx::pin::Pin::new(
+                zinc::hal::lpc17xx::pin::Port0,
+                3u8,
+                zinc::hal::lpc17xx::pin::AltFunction1,
+                core::option::None);
+            let uart = zinc::hal::lpc17xx::uart::UART::new(
+                zinc::hal::lpc17xx::uart::UART0,
+                115200u32,
+                8u8,
+                zinc::hal::uart::Disabled,
+                1u8);
+            let led4 = zinc::hal::lpc17xx::pin::Pin::new(
+                zinc::hal::lpc17xx::pin::Port1,
+                23u8,
+                zinc::hal::lpc17xx::pin::GPIO,
+                core::option::Some(zinc::hal::pin::Out));
+            loop {
+              run(&pt::run_args{
+                timer: &timer,
+                txled: &led4,
+                uart: &uart,
+              });
+            }
+          }");
+    });
   }
 }

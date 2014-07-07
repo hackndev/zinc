@@ -13,7 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::hashmap::HashSet;
 use std::gc::{Gc, GC};
+use std::rc::Rc;
 use syntax::ast;
 use syntax::codemap::{respan, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
@@ -22,30 +24,48 @@ use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 use syntax::owned_slice::OwnedSlice;
 use syntax::parse::token::intern;
 
+use builder::meta_args::{ToTyHash, set_ty_params_for_task};
 use node;
+use super::{Builder, TokenString, add_node_dependency};
 
-use super::{Builder, TokenString};
+pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.materializer.set(Some(verify));
+  let mcu_node = builder.pt.get_by_path("mcu").unwrap();
 
-pub fn build_os(builder: &mut Builder, cx: &mut ExtCtxt, node: &Gc<node::Node>) {
-  if !node.expect_no_attributes(cx) ||
-     !node.expect_subnodes(cx, ["single_task"]) {
-    return;
-  }
+  let maybe_task_node = node.get_by_path("single_task");
+  if maybe_task_node.is_some() {
+    let task_node = maybe_task_node.unwrap();
+    task_node.materializer.set(Some(build_single_task));
+    add_node_dependency(&node, &task_node);
+    add_node_dependency(&task_node, &mcu_node);
 
-  let some_single_task = node.get_by_path("single_task");
-  match some_single_task {
-    Some(single_task) => {
-      build_single_task(builder, cx, single_task);
-    },
-    None => {
-      cx.parse_sess().span_diagnostic.span_err(node.name_span,
-          "subnode `single_task` must be present");
+    let maybe_args_node = task_node.get_by_path("args");
+    if maybe_args_node.is_some() {
+      let args_node = maybe_args_node.unwrap();
+      for (_, ref attr) in args_node.attributes.borrow().iter() {
+        match attr.value {
+          node::RefValue(ref refname) => {
+            let refnode = builder.pt.get_by_name(refname.as_slice()).unwrap();
+            add_node_dependency(&task_node, &refnode);
+          },
+          _ => (),
+        }
+      }
     }
   }
 }
 
+pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
+  node.expect_no_attributes(cx);
+  node.expect_subnodes(cx, ["single_task"]);
+  if node.get_by_path("single_task").is_none() {
+    cx.parse_sess().span_diagnostic.span_err(node.name_span,
+        "subnode `single_task` must be present");
+  }
+}
+
 fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
-    node: &Gc<node::Node>) {
+    node: Rc<node::Node>) {
   let some_loop_fn = node.get_required_string_attr(cx, "loop");
   match some_loop_fn {
     Some(loop_fn) => {
@@ -69,10 +89,11 @@ fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
 }
 
 fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
-    struct_name: &String, node: &Gc<node::Node>) -> Gc<ast::Expr> {
-  let mut fields = Vec::new();
-  let mut expr_fields = Vec::new();
+    struct_name: &String, node: Rc<node::Node>) -> Gc<ast::Expr> {
+  let mut fields = vec!();
+  let mut expr_fields = vec!();
   let node_attr = node.attributes.borrow();
+  let mut ty_params = HashSet::new();
 
   // this is a bit slower than for (k, v) in node.attributes.iter(), but we need
   // to preserve sort order to make reasonably simple test code
@@ -98,12 +119,18 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       },
       node::RefValue(ref rname)  => {
         let refnode = builder.pt.get_by_name(rname.as_slice()).unwrap();
-        let reftype = refnode.type_name.get().unwrap();
+        let reftype = refnode.type_name().unwrap();
+        let refparams = refnode.type_params();
+        for param in refparams.iter() {
+          if !param.as_slice().starts_with("'") {
+            ty_params.insert(param.clone());
+          }
+        }
         let val_slice = TokenString(rname.clone());
         let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
         (cx.ty_rptr(
           DUMMY_SP,
-          cx.ty_path(type_name_as_path(cx, reftype), None),
+          cx.ty_path(type_name_as_path(cx, reftype.as_slice(), refparams), None),
           Some(a_lifetime),
           ast::MutImmutable), quote_expr!(&*cx, &$val_slice))
       },
@@ -122,6 +149,16 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let name_ident = cx.ident_of(format!("{}_args", struct_name).as_slice());
   let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
+  let mut collected_params = vec!();
+  let mut ty_params_vec = vec!();
+  for ty in ty_params.iter() {
+    let typaram = cx.typaram(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice()), ast::StaticSize,
+        OwnedSlice::empty(), None);
+    collected_params.push(typaram);
+    ty_params_vec.push(ty.clone());
+  }
+
+  set_ty_params_for_task(cx, struct_name.as_slice(), ty_params_vec);
   let struct_item = box(GC) ast::Item {
     ident: name_ident,
     attrs: vec!(),
@@ -133,7 +170,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       is_virtual: false,
     }, ast::Generics {
       lifetimes: vec!(a_lifetime),
-      ty_params: OwnedSlice::from_vec(vec!()),
+      ty_params: OwnedSlice::from_vec(collected_params),
     }),
     vis: ast::Public,
     span: DUMMY_SP,
@@ -147,8 +184,23 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           expr_fields))
 }
 
-fn type_name_as_path(cx: &ExtCtxt, ty: &str) -> ast::Path {
-  cx.path(DUMMY_SP, ty.split_str("::").map(|t| cx.ident_of(t)).collect())
+fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
+  let mut lifetimes = vec!();
+  let mut types = vec!();
+  for p in params.iter() {
+    let slice = p.as_slice();
+    if slice.starts_with("'") {
+      let lifetime = cx.lifetime(DUMMY_SP, intern(slice));
+      lifetimes.push(lifetime);
+    } else {
+      let path = cx.ty_path(type_name_as_path(cx, p.to_tyhash().as_slice(), vec!()), None);
+      types.push(path);
+    }
+  }
+  cx.path_all(DUMMY_SP, false,
+      ty.split_str("::").map(|t| cx.ident_of(t)).collect(),
+      lifetimes,
+      types)
 }
 
 #[cfg(test)]
@@ -157,18 +209,17 @@ mod test {
   use syntax::ext::build::AstBuilder;
 
   use builder::Builder;
-  use super::build_os;
+  use super::build_single_task;
   use test_helpers::{assert_equal_source, with_parsed};
 
   #[test]
   fn builds_single_task_os_loop() {
-    with_parsed("os {
-        single_task {
-          loop = \"run\";
-        }
+    with_parsed("
+      single_task {
+        loop = \"run\";
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
-      build_os(&mut builder, cx, pt.get_by_path("os").unwrap());
+      let mut builder = Builder::new(pt.clone());
+      build_single_task(&mut builder, cx, pt.get_by_path("single_task").unwrap().clone());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
 
@@ -181,23 +232,22 @@ mod test {
 
   #[test]
   fn builds_single_task_with_args() {
-    with_parsed("os {
-        single_task {
-          loop = \"run\";
-          args {
-            a = 1;
-            b = \"a\";
-            c = &named;
-          }
+    with_parsed("
+      single_task {
+        loop = \"run\";
+        args {
+          a = 1;
+          b = \"a\";
+          c = &named;
         }
       }
 
       named@ref;
       ", |cx, failed, pt| {
-      let mut builder = Builder::new(pt);
-      pt.get_by_path("ref").unwrap().type_name.set(Some("hello::world::Struct"));
+      let mut builder = Builder::new(pt.clone());
+      pt.get_by_path("ref").unwrap().set_type_name("hello::world::Struct".to_str());
 
-      build_os(&mut builder, cx, pt.get_by_path("os").unwrap());
+      build_single_task(&mut builder, cx, pt.get_by_path("single_task").unwrap().clone());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
       assert!(builder.type_items.len() == 1);
