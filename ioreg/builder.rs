@@ -322,8 +322,34 @@ impl<'a, 'b> Builder<'a, 'b> {
         vec!(self_arg, new_value) // FIXME
       };
     let decl: P<ast::FnDecl> = self.cx.fn_decl(inputs, self.cx.ty_nil());
-    let stmts: Vec<Gc<ast::Stmt>> = vec!(); // TODO
-    let body: P<ast::Block> = self.cx.block(DUMMY_SP, stmts, None);
+
+    let (lo,hi) = field.bits.node;
+    let mask: uint = (1 << (hi-lo+1)) - 1;
+    let old: P<ast::Expr> =
+      self.cx.expr_method_call(
+        DUMMY_SP,
+        self.cx.expr_field_access(DUMMY_SP, self.cx.expr_self(DUMMY_SP), self.cx.ident_of("_value")),
+        self.cx.ident_of("get"),
+        Vec::new()
+      );
+    let old_masked: P<ast::Expr> =
+      self.cx.expr_binary(
+        DUMMY_SP,
+        ast::BiBitAnd,
+        old,
+        self.cx.expr_unary(DUMMY_SP, ast::UnNot, self.cx.expr_uint(DUMMY_SP, mask << lo))
+      );
+    let new_masked_shifted: P<ast::Expr> =
+      self.cx.expr_binary(
+        DUMMY_SP,
+        ast::BiShl,
+        self.cx.expr_binary(DUMMY_SP, ast::BiBitAnd, old, self.cx.expr_uint(DUMMY_SP, mask)),
+        self.cx.expr_ident(DUMMY_SP, self.cx.ident_of("new_value"))
+      );
+    let expr: Gc<ast::Expr> =
+      self.cx.expr_binary(DUMMY_SP, ast::BiBitOr, old_masked, new_masked_shifted);
+
+    let body: P<ast::Block> = self.cx.block(DUMMY_SP, vec!(self.cx.stmt_expr(expr)), None);
     box(GC) ast::Method {
       ident: self.cx.ident_of((String::from_str("set_")+field.name.node).as_slice()),
       attrs: Vec::new(), // TODO: docstring
@@ -362,6 +388,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     let shifted: P<ast::Expr> =
       self.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.cx.expr_uint(DUMMY_SP, lo));
     let expr: P<ast::Expr> = self.cx.expr_binary(DUMMY_SP, ast::BiBitAnd, shifted, mask);
+
     let body: P<ast::Block> = self.cx.block(DUMMY_SP, Vec::new(), Some(expr));
     box(GC) ast::Method {
       ident: self.cx.ident_of(field.name.node.as_slice()),
