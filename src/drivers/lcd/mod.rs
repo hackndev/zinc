@@ -171,3 +171,317 @@ pub trait LCD : CharIO {
     }
   }
 }
+
+#[cfg(test)]
+mod test {
+  use core::mem::zeroed;
+  use core::option::{Some, None};
+  use core::iter::{Iterator, Range, range};
+  use core::cell::Cell;
+
+  use drivers::chario::CharIO;
+  use drivers::lcd::LCD;
+
+  pub struct TestLCD {
+    pixbuf: [[Cell<u16>, ..16], ..16],
+  }
+
+  impl CharIO for TestLCD {
+    fn putc(&self, _: char) { }
+  }
+
+  impl LCD for TestLCD {
+    fn flush(&self) { }
+
+    fn clear(&self) { self.set_fill(0); }
+
+    fn pixel(&self, x: u32, y: u32, color: u16) {
+      if x >= 16 || y >= 16 {
+        return
+      }
+
+      self.pixbuf[x as uint][y as uint].set(color);
+    }
+  }
+
+  impl TestLCD {
+    fn new() -> TestLCD {
+      TestLCD {
+        pixbuf: unsafe { zeroed() },
+      }
+    }
+
+    fn coords(&self, x: uint, y: uint) -> (u32, u32) { (x as u32, y as u32) }
+
+    fn axis(&self) -> Range<uint> { range(0u, 16) }
+
+    fn for_each(&self, block: |(u32, u32), u16|) {
+      for x in self.axis() {
+        for y in self.axis() {
+          block(self.coords(x, y), self.pixbuf[x][y].get());
+        }
+      }
+    }
+
+    fn map_each(&self, block: |(u32, u32), u16| -> u16) {
+      for x in self.axis() {
+        for y in self.axis() {
+          self.pixbuf[x][y].set(block(self.coords(x, y), self.pixbuf[x][y].get()));
+        }
+      }
+    }
+
+    fn set_fill(&self, color: u16) {
+      self.map_each(|_, _| { color });
+    }
+  }
+
+  /* keep this
+  let blank: [[u16, ..16], ..16] = [
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  ];
+  */
+
+  #[test]
+  fn should_fill_and_clear() {
+    let io = TestLCD::new();
+    io.set_fill(128);
+    io.for_each(|_, x| assert!(x == 128));
+    io.clear();
+    io.for_each(|_, x| assert!(x == 0));
+  }
+
+  #[test]
+  fn should_set_pixels() {
+    let io = TestLCD::new();
+    io.map_each(|(x, y), _| { (x+y) as u16 });
+    io.for_each(|(x, y), v| assert!(v == (x+y) as u16));
+  }
+
+  #[test]
+  fn should_draw_line() {
+    let io = TestLCD::new();
+
+    let diagonal: [[u16, ..16], ..16] = [
+      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    ];
+
+    io.line(0, 0, 15, 15, 1);
+
+    // TODO(errordeveloper): investigate why this hangs the test run in `__psynch_cvwait()`
+    // io.line(15, 15, 0, 0, 1);
+
+    io.for_each(|(x, y), v| {
+      assert!(v == diagonal[y as uint][x as uint]);
+      assert!(v == diagonal[x as uint][y as uint]);
+    });
+
+    io.clear();
+
+    let non_symetric: [[u16, ..16], ..16] = [
+      [2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,3,3,3,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4],
+    ];
+
+    io.line(0, 0, 0, 1, 2);
+    io.line(4, 2, 4, 4, 3);
+    io.line(14, 14, 14, 15, 4);
+    io.line(15, 14, 15, 15, 4);
+    io.line(11, 11, 13, 13, 5);
+
+    io.for_each(|(x, y), v| {
+      assert!(v == non_symetric[x as uint][y as uint]);
+    });
+  }
+
+  #[test]
+  fn should_draw_rect() {
+    let io = TestLCD::new();
+
+    let overlapping: [[u16, ..16], ..16] = [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,6,6,6,6,6,6,0,0,0,0,0,0,0,0],
+      [0,0,6,0,0,0,0,6,0,0,0,0,0,0,0,0],
+      [0,0,6,0,0,0,0,6,0,0,0,0,0,0,0,0],
+      [0,0,6,0,7,7,7,7,7,7,7,0,0,0,0,0],
+      [0,0,6,0,7,0,0,6,0,0,7,0,0,0,0,0],
+      [0,0,6,0,7,0,0,6,0,0,7,0,0,0,0,0],
+      [0,0,6,0,7,7,7,7,7,7,7,0,0,0,0,0],
+      [0,0,6,0,0,0,0,6,0,0,0,0,0,0,0,0],
+      [0,0,6,6,6,6,6,6,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ];
+
+    assert!(overlapping[4][2] == 6);
+    assert!(overlapping[12][7] == 6);
+    assert!(overlapping[7][4] == 7);
+    assert!(overlapping[10][10] == 7);
+
+    io.rect(4, 2, 12, 7, 6);
+    io.rect(7, 4, 10, 10, 7);
+
+    io.for_each(|(x, y), v| {
+      assert!(v == overlapping[x as uint][y as uint]);
+    });
+  }
+
+  #[test]
+  fn should_draw_fillrect() {
+    let io = TestLCD::new();
+
+    let eights: [[u16, ..16], ..16] = [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,8,8,8,8,8,8,8,8,0,0,0,0],
+      [0,0,0,0,8,8,8,8,8,8,8,8,0,0,0,0],
+      [0,0,0,0,8,8,8,8,8,8,8,8,0,0,0,0],
+      [0,0,0,0,8,8,8,8,8,8,8,8,0,0,0,0],
+      [0,0,0,0,8,8,8,8,8,8,8,8,0,0,0,0],
+      [0,0,0,0,8,8,8,8,8,8,8,8,0,0,0,0],
+      [0,0,0,0,8,8,8,8,8,8,8,8,0,0,0,0],
+      [0,0,0,0,8,8,8,8,8,8,8,8,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    ];
+
+    io.fillrect(4, 4, 11, 11, 8);
+
+    io.for_each(|(x, y), v| {
+      assert!(v == eights[x as uint][y as uint]);
+    });
+  }
+
+  #[test]
+  fn should_draw_image() {
+    let io = TestLCD::new();
+
+    let i1 = &[
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+      0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
+    ];
+
+    let i2: [[u16, ..16], ..16] = [
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+      [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
+       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
+    ];
+
+    io.image(16, 16, i1);
+
+    io.for_each(|(y, x), v| {
+      assert!(v == i2[x as uint][y as uint]);
+    });
+  }
+}
