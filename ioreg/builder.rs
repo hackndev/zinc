@@ -367,12 +367,16 @@ impl<'a, 'b> Builder<'a, 'b> {
       self.cx.expr_binary(
         DUMMY_SP,
         ast::BiShl,
-        self.cx.expr_binary(DUMMY_SP, ast::BiBitAnd, old, self.expr_int(mask as i64)),
-        self.cx.expr_cast(
+        self.cx.expr_binary(
           DUMMY_SP,
-          self.cx.expr_ident(DUMMY_SP, self.cx.ident_of("new_value")),
-          self.primitive_type(reg.ty).unwrap()
-        )
+          ast::BiBitAnd,
+          self.cx.expr_cast(
+            DUMMY_SP,
+            self.cx.expr_ident(DUMMY_SP, self.cx.ident_of("new_value")),
+            self.primitive_type(reg.ty).unwrap()),
+          self.expr_int(mask as i64)
+        ),
+        self.expr_int(lo as i64)
       );
     let expr: Gc<ast::Expr> =
       self.cx.expr_binary(DUMMY_SP, ast::BiBitOr, old_masked, new_masked_shifted);
