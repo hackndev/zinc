@@ -341,16 +341,21 @@ impl<'a, 'b> Parser<'a, 'b> {
   }
 
   fn parse_docstring(&mut self) -> Option<Spanned<Ident>> {
-    match self.token {
-      token::DOC_COMMENT(docstring) => {
-        self.bump();
-        // for some reason ident begins with '/// '
-        let s = token::get_ident(docstring);
-        let mut stripped = s.get().trim_left_chars(&['/',' ']);
-        Some(Spanned {node: self.cx.ident_of(stripped), span: self.last_span})
-      },
-      _ => None,
+    let mut docs: Vec<String> = Vec::new();
+    loop {
+      match self.token {
+        token::DOC_COMMENT(docstring) => {
+          self.bump();
+          // for some reason ident begins with '/// '
+          let s = token::get_ident(docstring);
+          let stripped = s.get().trim_left_chars(&['/',' ']);
+          docs.push(String::from_str(stripped));
+        },
+        _ => break,
+      }
     }
+    let docstring = self.cx.ident_of(docs.connect("\n").as_slice());
+    Some(Spanned {node: docstring, span: self.last_span})
   }
 
   fn parse_uint(&mut self) -> Option<uint> {
