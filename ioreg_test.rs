@@ -2,6 +2,39 @@
 extern crate core;
 #[phase(plugin)] extern crate macro_ioreg;
 
+use core::kinds::marker;
+use core::intrinsics::{volatile_load, volatile_store};
+
+// TODO(bharrisau) I don't know enough about markers - is it better
+// to just use an Unsafe<T> here instead?
+pub struct VolatileCell<T> {
+  value: T,
+  invariant: marker::InvariantType<T>,
+}
+
+impl<T> VolatileCell<T> {
+  pub fn new(value: T) -> VolatileCell<T> {
+    VolatileCell {
+      value: value,
+      invariant: marker::InvariantType::<T>,
+    }
+  }
+
+  #[inline]
+  pub fn get(&self) -> T {
+    unsafe {
+      volatile_load(&self.value)
+    }
+  }
+
+  #[inline]
+  pub fn set(&self, value: T) {
+    unsafe {
+      volatile_store(&self.value as *const T as *mut T, value)
+    }
+  }
+}
+
 ioregs!(
     group FTM {
         0x0  => SC: u32 "Status and control register"

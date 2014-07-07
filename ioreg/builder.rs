@@ -111,6 +111,11 @@ impl<'a, 'b> Builder<'a, 'b> {
     self.cx.attribute(DUMMY_SP, attr)
   }
 
+  /// Generate an unsuffixed integer literal expression with a dummy span
+  fn expr_int(&self, n: i64) -> P<ast::Expr> {
+    self.cx.expr_lit(DUMMY_SP, ast::LitIntUnsuffixed(n))
+  }
+
   pub fn emit_items(&self) -> Vec<Gc<ast::Item>> {
     let items = self.groups.values().flat_map(|&g| self.emit_group_items(g).move_iter());
     FromIterator::from_iter(items)
@@ -143,10 +148,21 @@ impl<'a, 'b> Builder<'a, 'b> {
     match reg.ty {
       node::GroupReg(_) => None,
       _ => {
-        let ty = match self.primitive_type(reg.ty) {
+        let prim_ty = match self.primitive_type(reg.ty) {
           Some(ty) => ty,
           None => return None,
         };
+        let cell_ty: P<ast::Ty> =
+          self.cx.ty_path(
+            self.cx.path_all(
+              DUMMY_SP,
+              false,
+              vec!(self.cx.ident_of("VolatileCell")),
+              Vec::new(),
+              vec!(prim_ty)
+            ),
+            None
+          );
         let struct_def = ast::StructDef {
           fields: vec!(
             Spanned {
@@ -154,7 +170,7 @@ impl<'a, 'b> Builder<'a, 'b> {
               node: ast::StructField_ {
                 kind: ast::NamedField(self.cx.ident_of("_value"), ast::Inherited),
                 id: ast::DUMMY_NODE_ID,
-                ty: ty,
+                ty: cell_ty,
                 attrs: Vec::new(),
               },
             },
@@ -339,13 +355,13 @@ impl<'a, 'b> Builder<'a, 'b> {
         DUMMY_SP,
         ast::BiBitAnd,
         old,
-        self.cx.expr_unary(DUMMY_SP, ast::UnNot, self.cx.expr_uint(DUMMY_SP, mask << lo))
+        self.cx.expr_unary(DUMMY_SP, ast::UnNot, self.expr_int((mask << lo) as i64))
       );
     let new_masked_shifted: P<ast::Expr> =
       self.cx.expr_binary(
         DUMMY_SP,
         ast::BiShl,
-        self.cx.expr_binary(DUMMY_SP, ast::BiBitAnd, old, self.cx.expr_uint(DUMMY_SP, mask)),
+        self.cx.expr_binary(DUMMY_SP, ast::BiBitAnd, old, self.expr_int(mask as i64)),
         self.cx.expr_cast(
           DUMMY_SP,
           self.cx.expr_ident(DUMMY_SP, self.cx.ident_of("new_value")),
@@ -374,7 +390,7 @@ impl<'a, 'b> Builder<'a, 'b> {
   fn from_primitive(&self, reg: &node::Reg, field: &node::Field, prim: P<ast::Expr>) -> P<ast::Expr> {
     match field.ty.node {
       node::UIntField => prim,
-      node::BoolField => self.cx.expr_binary(DUMMY_SP, ast::BiNe, prim, self.cx.expr_uint(DUMMY_SP, 0)),
+      node::BoolField => self.cx.expr_binary(DUMMY_SP, ast::BiNe, prim, self.expr_int(0)),
       node::EnumField {..} => {
         self.cx.expr_method_call(
           DUMMY_SP,
@@ -403,7 +419,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     let decl: P<ast::FnDecl> = self.cx.fn_decl(inputs, ty);
 
     let (lo,hi) = field.bits.node;
-    let mask: P<ast::Expr> = self.cx.expr_uint(DUMMY_SP, (1<<(hi-lo+1)) - 1);
+    let mask: P<ast::Expr> = self.expr_int(((1i << (hi-lo+1)) - 1) as i64);
     let value: P<ast::Expr> =
       self.cx.expr_method_call(
         DUMMY_SP,
@@ -415,7 +431,7 @@ impl<'a, 'b> Builder<'a, 'b> {
       self.cx.expr_binary(
         DUMMY_SP,
         ast::BiBitAnd,
-        self.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.cx.expr_uint(DUMMY_SP, lo)),
+        self.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.expr_int(lo as i64)),
         mask);
     let expr: P<ast::Expr> = self.from_primitive(reg, field, shifted_masked);
 
