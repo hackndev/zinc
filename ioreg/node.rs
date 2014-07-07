@@ -18,12 +18,14 @@ use syntax::ast;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
 
+/// A variant of an enum field type
 #[deriving(Clone)]
-pub struct EnumValue {
+pub struct Variant {
   pub name: Spanned<String>,
   pub value: Spanned<uint>,
 }
 
+/// A bit field type
 #[deriving(Clone)]
 pub enum FieldType {
   /// A unsigned integer with given bit-width
@@ -31,7 +33,10 @@ pub enum FieldType {
   /// A boolean flag
   BoolField,
   /// A enum
-  EnumField(Option<String>, Vec<EnumValue>),
+  EnumField {
+    pub opt_name: Option<String>,
+    pub variants: Vec<Variant>,
+  },
 }
 
 #[deriving(Clone)]

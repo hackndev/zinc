@@ -15,7 +15,7 @@
 
 //! ioreg crate
 
-#![feature(quote)]
+#![feature(quote, struct_variant)]
 #![crate_id="ioreg"]
 #![crate_type="rlib"]
 

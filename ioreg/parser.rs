@@ -292,7 +292,7 @@ impl<'a> Parser<'a> {
   fn parse_field_type(&mut self) -> Option<node::FieldType> {
     match self.expect_ident() {
       Some(ref s) if s.equiv(&("enum")) => {
-        let mut values: Vec<node::EnumValue> = Vec::new();
+        let mut variants: Vec<node::Variant> = Vec::new();
 
         let ty_name = match self.token {
           ref mut t@token::IDENT(_,_) => Some(token::to_str(t)),
@@ -322,16 +322,15 @@ impl<'a> Parser<'a> {
             _ => return None,
           };
 
-          let value: node::EnumValue = node::EnumValue { name: name,
-                                                         value: value };
-          values.push(value);
+          let value: node::Variant = node::Variant { name: name, value: value };
+          variants.push(value);
 
           // FIXME: trailing comma
           if !self.expect(&token::COMMA) {
             return None;
           }
         }
-        Some(node::EnumField(ty_name, values))
+        Some(node::EnumField {opt_name: ty_name, variants: variants})
       },
       Some(ref s) if s.equiv(&("uint")) => Some(node::UIntField),
       Some(ref s) if s.equiv(&("bool")) => Some(node::BoolField),

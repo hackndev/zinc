@@ -16,13 +16,14 @@
 use std::gc::{Gc, GC};
 use std::collections::hashmap::HashMap;
 use std::slice::Items;
+use std::vec;
 use std::iter::FromIterator;
 use syntax::abi;
 use syntax::ast::TokenTree;
 use syntax::ast;
 use syntax::ast::{P};
 use syntax::ast_util::empty_generics;
-use syntax::codemap::{Span, Spanned, DUMMY_SP};
+use syntax::codemap::{Span, Spanned, mk_sp, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
@@ -31,9 +32,11 @@ use syntax::parse::token;
 
 use node;
 
-pub struct Builder<'a, 'b> {
-  groups: HashMap<String, Gc<node::RegGroup>>,
-  cx: &'a mut ExtCtxt<'b>
+fn no_generics() -> ast::Generics {
+  ast::Generics {
+    lifetimes: Vec::new(),
+    ty_params: owned_slice::OwnedSlice::empty()
+  }
 }
 
 enum RegOrPadding<'a> {
@@ -81,6 +84,11 @@ impl<'a> Iterator<RegOrPadding<'a>> for PaddedRegsIterator<'a> {
   }
 }
 
+pub struct Builder<'a, 'b> {
+  groups: HashMap<String, Gc<node::RegGroup>>,
+  cx: &'a mut ExtCtxt<'b>
+}
+
 impl<'a, 'b> Builder<'a, 'b> {
   pub fn new<'a, 'b>(cx: &'a mut ExtCtxt<'b>, groups: HashMap<String, Gc<node::RegGroup>>) -> Builder<'a, 'b> {
     Builder {
@@ -104,8 +112,15 @@ impl<'a, 'b> Builder<'a, 'b> {
   }
 
   pub fn emit_items(&self) -> Vec<Gc<ast::Item>> {
-    let iter = self.groups.values().flat_map(|&g| self.emit_group_types(g).move_iter());
-    FromIterator::from_iter(iter)
+    let items = self.groups.values().flat_map(|&g| self.emit_group_items(g).move_iter());
+    FromIterator::from_iter(items)
+  }
+
+  pub fn emit_group_items(&self, group: P<node::RegGroup>) -> Vec<Gc<ast::Item>> {
+    let structs = self.emit_group_types(group).move_iter();
+    let enums = group.regs.iter().flat_map(|r| self.emit_reg_field_types(group, r).move_iter());
+    let accessors: vec::MoveItems<Gc<ast::Item>> = self.emit_group_accessors(group).move_iter();
+    FromIterator::from_iter(structs.chain(enums).chain(accessors))
   }
 
   /// Returns the primitive type of the given width
@@ -150,12 +165,7 @@ impl<'a, 'b> Builder<'a, 'b> {
           is_virtual: false,
         };
         let name = self.reg_base_type(group, reg);
-        let item_ = ast::ItemStruct(
-          box(GC) struct_def,
-          ast::Generics {
-            lifetimes: Vec::new(),
-            ty_params: owned_slice::OwnedSlice::empty(),
-          });
+        let item_ = ast::ItemStruct(box(GC) struct_def, no_generics());
         let attrs = match reg.docstring {
           Some(docstring) => vec!(self.doc_attribute(token::get_ident(docstring.node))),
           None => Vec::new(),
@@ -164,7 +174,7 @@ impl<'a, 'b> Builder<'a, 'b> {
       },
     }
   }
-  
+
   /// The name of the structure representing a register
   fn reg_base_type(&self, group: P<node::RegGroup>, reg: &node::Reg) -> ast::Ident {
     match reg.ty {
@@ -175,7 +185,7 @@ impl<'a, 'b> Builder<'a, 'b> {
 
   /// Returns the type of the field representing the given register in a `RegGroup` struct
   fn reg_struct_type(&self, group: P<node::RegGroup>, reg: &node::Reg) -> P<ast::Ty> {
-    let base_ty_path = self.cx.path(DUMMY_SP, vec!(self.reg_base_type(group, reg)));
+    let base_ty_path = self.cx.path_ident(DUMMY_SP, self.reg_base_type(group, reg));
     let base_ty: P<ast::Ty> = self.cx.ty_path(base_ty_path, None);
     match reg.count.node {
       1 => base_ty,
@@ -236,7 +246,6 @@ impl<'a, 'b> Builder<'a, 'b> {
       super_struct: None,
       is_virtual: false,
     };
-    // FIXME: Account for padding
     let span = DUMMY_SP; // FIXME
     let struct_item = self.cx.item_struct(span, self.cx.ident_of(group.name.node.as_slice()), struct_def);
     let reg_structs = group.regs.iter().flat_map(|r| self.emit_reg_struct(group, r).move_iter());
@@ -245,15 +254,144 @@ impl<'a, 'b> Builder<'a, 'b> {
     hi.append_one(struct_item)
   }
 
-  /*
-  fn emit_group_accessors(&self, group: P<node::RegGroup>) -> Vec<P<ast::Item>> {
-    //let accessors: Vec<P<ast::Item>> = Vec::new();
-    let subgroups = group.groups.values().flat_map(|&g| self.emit_group_accessors(g).move_iter());
-    //let hi: Vec<P<ast::Item>> = FromIterator::from_iter(subgroups.chain(accessors.iter()));
-    //hi
-    subgroups
+  fn field_type_path(&self, parent: P<node::RegGroup>, reg: &node::Reg, field: &node::Field)
+                     -> ast::Path {
+    let span = field.ty.span;
+    match field.ty.node {
+      node::UIntField => self.cx.path(span, vec!(self.cx.ident_of("core"), self.cx.ident_of("uint"))),
+      node::BoolField => self.cx.path(span, vec!(self.cx.ident_of("core"), self.cx.ident_of("bool"))),
+      node::EnumField { opt_name: ref opt_name, ..} => {
+        match opt_name {
+          &Some(ref name) => self.cx.path_ident(span, self.cx.ident_of(name.as_slice())),
+          &None => {
+            let name = parent.name.node + "_" + reg.name.node + "_" + field.name.node;
+            self.cx.path_ident(span, self.cx.ident_of(name.as_slice()))
+          }
+        }
+      },
+    }
   }
-  */
+
+  /// Emit a variant of an `EnumField`
+  fn emit_enum_variant(&self, variant: &node::Variant) -> ast::Variant {
+    Spanned {
+      span: mk_sp(variant.name.span.lo, variant.value.span.hi),
+      node: ast::Variant_ {
+        name: self.cx.ident_of(variant.name.node.as_slice()),
+        attrs: Vec::new(),
+        kind: ast::TupleVariantKind(Vec::new()),
+        id: ast::DUMMY_NODE_ID,
+        disr_expr: Some(self.cx.expr_uint(variant.value.span, variant.value.node)),
+        vis: ast::Public,
+      }
+    }
+  }
+
+  /// Emit a field type if necessary (e.g. in the case of an `EnumField`)
+  fn emit_field_type(&self, parent: P<node::RegGroup>, reg: &node::Reg, field: &node::Field)
+                     -> Option<P<ast::Item>> {
+    match field.ty.node {
+      node::EnumField { variants: ref variants, .. } => {
+        // FIXME: We construct a path, then only take the last segment
+        let name: ast::Ident = self.field_type_path(parent, reg, field).segments.last().unwrap().identifier;
+        let enum_def: ast::EnumDef = ast::EnumDef {
+          variants: FromIterator::from_iter(variants.iter().map(|v| box(GC) self.emit_enum_variant(v))),
+        };
+        Some(self.cx.item_enum(field.ty.span, name, enum_def))
+      },
+      _ => None,
+    }
+  }
+
+  /// Emit types for the fields of a register
+  pub fn emit_reg_field_types(&self, group: P<node::RegGroup>, reg: &node::Reg) -> Vec<Gc<ast::Item>> {
+    let hi = reg.fields.iter().flat_map(|f| self.emit_field_type(group, reg, f).move_iter());
+    FromIterator::from_iter(hi)
+  }
+
+  /// Emit a setter for a field
+  fn emit_field_setter(&self, parent: P<node::RegGroup>, reg: &node::Reg, field: &node::Field)
+                       -> P<ast::Method> {
+    let ty: P<ast::Ty> = self.cx.ty_path(self.field_type_path(parent, reg, field), None);
+    let new_value: ast::Arg = self.cx.arg(DUMMY_SP, self.cx.ident_of("new_value"), ty);
+    let inputs: Vec<ast::Arg> =
+      if field.count.node == 1 {
+        vec!(new_value)
+      } else {
+        vec!(new_value) // FIXME
+      };
+    let decl: P<ast::FnDecl> = self.cx.fn_decl(inputs, self.cx.ty_nil());
+    let stmts: Vec<Gc<ast::Stmt>> = vec!(); // TODO
+    let body: P<ast::Block> = self.cx.block(DUMMY_SP, stmts, None);
+    box(GC) ast::Method {
+      ident: self.cx.ident_of((String::from_str("set_")+field.name.node).as_slice()),
+      attrs: Vec::new(), // TODO: docstring
+      generics: no_generics(),
+      explicit_self: Spanned {span: DUMMY_SP, node: ast::SelfRegion(None, ast::MutImmutable)},
+      fn_style: ast::NormalFn,
+      decl: decl,
+      body: body,
+      id: ast::DUMMY_NODE_ID,
+      span: DUMMY_SP,
+      vis: ast::Public,
+    }
+  }
+
+  fn emit_field_getter(&self, parent: P<node::RegGroup>, reg: &node::Reg, field: &node::Field)
+                       -> P<ast::Method> {
+    let ty: P<ast::Ty> = self.cx.ty_path(self.field_type_path(parent, reg, field), None);
+    let inputs: Vec<ast::Arg> =
+      if field.count.node == 1 {
+        vec!()
+      } else {
+        vec!() // FIXME
+      };
+    let decl: P<ast::FnDecl> = self.cx.fn_decl(inputs, ty);
+    let stmts: Vec<Gc<ast::Stmt>> = vec!(); // TODO
+    let body: P<ast::Block> = self.cx.block(DUMMY_SP, stmts, None);
+    box(GC) ast::Method {
+      ident: self.cx.ident_of((String::from_str("set_")+field.name.node).as_slice()),
+      attrs: Vec::new(), // TODO: docstring
+      generics: no_generics(),
+      explicit_self: Spanned {span: DUMMY_SP, node: ast::SelfRegion(None, ast::MutImmutable)},
+      fn_style: ast::NormalFn,
+      decl: decl,
+      body: body,
+      id: ast::DUMMY_NODE_ID,
+      span: DUMMY_SP,
+      vis: ast::Public,
+    }
+  }
+
+  /// Emit the accessors for a field
+  fn emit_field_accessors(&self, parent: P<node::RegGroup>, reg: &node::Reg, field: &node::Field)
+                          -> Vec<P<ast::Method>> {
+    match field.access {
+      node::ReadWrite => vec!(self.emit_field_setter(parent, reg, field),
+                              self.emit_field_getter(parent, reg, field)),
+      node::WriteOnly => vec!(self.emit_field_setter(parent, reg, field)),
+      node::ReadOnly  => vec!(self.emit_field_getter(parent, reg, field)),
+    }
+  }
+
+  fn emit_register_accessors(&self, parent: P<node::RegGroup>, reg: &node::Reg) -> Vec<P<ast::Item>> {
+    let accessors: Vec<Gc<ast::Method>> =
+      FromIterator::from_iter(reg.fields.iter().flat_map(|f| self.emit_field_accessors(parent, reg, f).move_iter()));
+    let impl_ = ast::ItemImpl(
+      no_generics(),
+      None,
+      self.reg_struct_type(parent, reg),
+      accessors);
+    vec!(self.cx.item(DUMMY_SP, self.cx.ident_of(reg.name.node.as_slice()), Vec::new(), impl_))
+  }
+
+  fn emit_group_accessors(&self, group: P<node::RegGroup>) -> Vec<P<ast::Item>> {
+    let accessors =
+      group.regs.iter().flat_map(|r| self.emit_register_accessors(group, r).move_iter());
+    let subgroups = group.groups.values().flat_map(|&g| self.emit_group_accessors(g).move_iter());
+    let hi: Vec<P<ast::Item>> = FromIterator::from_iter(subgroups.chain(accessors));
+    hi
+  }
 
   fn error(&self, span: Span, m: String) {
     self.cx.parse_sess().span_diagnostic.span_err(span, m.as_slice());
