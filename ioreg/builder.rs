@@ -485,7 +485,8 @@ impl<'a, 'b> Builder<'a, 'b> {
       None,
       self.cx.ty_path(self.cx.path_ident(DUMMY_SP, self.reg_base_type(parent, reg)), None),
       accessors);
-    vec!(self.cx.item(DUMMY_SP, self.cx.ident_of(reg.name.node.as_slice()), Vec::new(), impl_))
+    let attrs: Vec<ast::Attribute> = vec!(self.list_attribute("allow", "non_snake_case_functions"));
+    vec!(self.cx.item(DUMMY_SP, self.cx.ident_of(reg.name.node.as_slice()), attrs, impl_))
   }
 
   fn emit_group_accessors(&self, group: P<node::RegGroup>) -> Vec<P<ast::Item>> {
