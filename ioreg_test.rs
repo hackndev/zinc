@@ -41,7 +41,7 @@ impl<T> VolatileCell<T> {
 
 ioregs!(
     group FTM {
-        0x0  => SC: u32  /// Status and control register
+        0x0  => reg SC: u32  /// Status and control register
         {
              0..2 => PS:     uint       /// Prescale
              3..4 => CLKS:   enum { NO_CLOCK=0x0, SYSTEM_CLOCK=0x1, FIXED_FREQ=0x2, EXTERNAL=0x3, }
@@ -50,18 +50,18 @@ ioregs!(
              7    => TOF:    ro bool
         }
     
-        0x4  => CNT: u32 /// Count register
+        0x4  => reg CNT: u32 /// Count register
         {
             0..15 => COUNT:  uint
         }
     
-        0x8  => MOD: u32 /// Modulo register
+        0x8  => reg MOD: u32 /// Modulo register
         {
             0..15 => MOD:    uint
         }
     
         group Channel {
-            0x0 => CSC:    u32         /// Compare/capture channel status and control register
+            0x0 => reg CSC:    u32         /// Compare/capture channel status and control register
             {
                 0 => DMA:    bool
                 2 => ELSA:   bool
@@ -72,24 +72,24 @@ ioregs!(
                 7 => CHF:    bool
             }
     
-            0x4 => CV:     u32
+            0x4 => reg CV:     u32
             {
                 0..15 => VAL:    uint
             }
         }
     
-        0xc  =>      CHANNELS: Channel[8]   /// Compare/capture channels
+        0xc  => reg  CHANNELS: Channel[8]   /// Compare/capture channels
     
-        0x4c =>      CNTIN: u32             /// Counter initial value register
+        0x4c => reg  CNTIN: u32             /// Counter initial value register
         {
             0..15 => INIT:     uint
         }
     
-        0x50 =>      STATUS: u32            /// Channel status register
+        0x50 => reg  STATUS: u32            /// Channel status register
         {
             0..7 => CHF:      bool[8]
         }
-        0x60 =>      TEST: u32              /// This is only a test
+        0x60 => reg  TEST: u32              /// This is only a test
         {
             0..7 => TEST:     bool[8]
         }

@@ -148,6 +148,10 @@ impl<'a> Parser<'a> {
     if !self.expect(&token::FAT_ARROW) {
       return None;
     }
+    match self.expect_ident() {
+      Some(ref i) if i.equiv(&"reg") => {}
+      _ => return None,
+    }
     let name = match self.expect_ident() {
       Some(name) => Spanned {node: name, span: self.span},
       None => return None,
