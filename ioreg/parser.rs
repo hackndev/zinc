@@ -14,7 +14,6 @@
 // limitations under the License.
 
 use std::gc::{Gc, GC};
-use std::collections::hashmap::HashMap;
 use std::iter::AdditiveIterator;
 use syntax::ast::Ident;
 use syntax::ast::TokenTree;
@@ -129,7 +128,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     if !self.expect(&token::FAT_ARROW) {
       return None;
     }
-    let mut ty = match self.expect_ident() {
+    let ty = match self.expect_ident() {
       Some(ref i) if i.equiv(&"reg32") => node::RegPrim(node::Reg32, Vec::new()),
       Some(ref i) if i.equiv(&"reg16") => node::RegPrim(node::Reg16, Vec::new()),
       Some(ref i) if i.equiv(&"reg8")  => node::RegPrim(node::Reg8, Vec::new()),

@@ -15,12 +15,7 @@
 
 use syntax::codemap::{Spanned, Span};
 use syntax::ast;
-use std::collections::hashmap::HashMap;
-use std::collections::dlist::DList;
-use std::collections::Deque;
-use std::slice::Items;
 use std::gc::Gc;
-use std::iter;
 use serialize::{Encodable};
 
 /// A variant of an enum field type
@@ -133,10 +128,10 @@ pub fn regs_size(regs: &Vec<Reg>) -> uint {
 
 pub trait RegVisitor {
   /// Path includes name of `Reg` being visited
-  fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a Reg,
-                        width: RegWidth, fields: &Vec<Field>) {}
-  fn visit_union_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a Reg,
-                         subregs: Gc<Vec<Reg>>) {}
+  fn visit_prim_reg<'a>(&'a mut self, _path: &Vec<String>, _reg: &'a Reg,
+                        _width: RegWidth, _fields: &Vec<Field>) {}
+  fn visit_union_reg<'a>(&'a mut self, _path: &Vec<String>, _reg: &'a Reg,
+                         _subregs: Gc<Vec<Reg>>) {}
 }
 
 pub fn visit_reg<T: RegVisitor>(reg: &Reg, visitor: &mut T) {

@@ -14,12 +14,9 @@
 // limitations under the License.
 
 use std::gc::{Gc, GC};
-use std::collections::hashmap::HashMap;
-use std::vec;
 use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ast::{P};
-use syntax::abi;
 use syntax::codemap::{Spanned, mk_sp, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
@@ -140,13 +137,13 @@ impl<'a, 'b> Builder<'a, 'b> {
   }
 
   /// The name of the structure representing a register
-  fn reg_base_type(&self, path: &Vec<String>, reg: &node::Reg) -> ast::Ident {
+  fn path_ident(&self, path: &Vec<String>) -> ast::Ident {
     self.cx.ident_of(path.clone().connect("_").as_slice())
   }
 
   /// Returns the type of the field representing the given register within a `RegGroup` struct
   fn reg_struct_type(&self, path: &Vec<String>, reg: &node::Reg) -> P<ast::Ty> {
-    let base_ty_path = self.cx.path_ident(DUMMY_SP, self.reg_base_type(path, reg));
+    let base_ty_path = self.cx.path_ident(DUMMY_SP, self.path_ident(path));
     let base_ty: P<ast::Ty> = self.cx.ty_path(base_ty_path, None);
     match reg.count.node {
       1 => base_ty,
@@ -207,7 +204,7 @@ struct BuildAccessors<'a, 'b, 'c> { builder: &'a mut Builder<'b, 'c> }
 
 impl<'a, 'b, 'c> node::RegVisitor for BuildAccessors<'a, 'b, 'c> {
   fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a node::Reg,
-                        width: node::RegWidth, fields: &Vec<node::Field>) {
+                        _width: node::RegWidth, fields: &Vec<node::Field>) {
     let accessors: Vec<Gc<ast::Method>> =
       FromIterator::from_iter(
         fields.iter().flat_map(|f| self.build_field_accessors(path, reg, f).move_iter()));
@@ -215,7 +212,7 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildAccessors<'a, 'b, 'c> {
       no_generics(),
       None,
       self.builder.cx.ty_path(
-        self.builder.cx.path_ident(DUMMY_SP, self.builder.reg_base_type(path, reg)),
+        self.builder.cx.path_ident(DUMMY_SP, self.builder.path_ident(path)),
         None),
       accessors
     );
@@ -316,7 +313,7 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
         self.mask(field));
     let expr: P<ast::Expr> = self.from_primitive(reg, field, shifted_masked);
 
-    let mut attrs = match field.docstring {
+    let attrs = match field.docstring {
       Some(docstring) if show_docstring =>
         vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
       _ => Vec::new(),
@@ -397,7 +394,7 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
         self.builder.cx.ident_of("set"),
         vec!(self.builder.cx.expr_binary(DUMMY_SP, ast::BiBitOr, old_masked, new_masked_shifted)));
 
-    let mut attrs = match field.docstring {
+    let attrs = match field.docstring {
       Some(docstring) if show_docstring =>
         vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
       _ => Vec::new(),
@@ -506,7 +503,7 @@ impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
     };
     attrs.push(self.builder.list_attribute("allow", vec!("non_camel_case_types")));
     let item: P<ast::Item> = box(GC) ast::Item {
-      ident: self.builder.reg_base_type(path, reg),
+      ident: self.builder.path_ident(path),
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
       node: ast::ItemStruct(box(GC) struct_def, no_generics()),
@@ -596,7 +593,7 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   /// Build the type associated with a register group
   fn build_union_type(&self, path: &Vec<String>, reg: &node::Reg, regs: &Vec<node::Reg>) -> P<ast::Item> {
     let name = Spanned {
-      node: String::from_str(token::get_ident(self.builder.reg_base_type(path, reg)).get()),
+      node: String::from_str(token::get_ident(self.builder.path_ident(path)).get()),
       span: DUMMY_SP
     };
     let mut sorted_regs = regs.clone();
