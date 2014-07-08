@@ -96,7 +96,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     node::visit_reg(reg, &mut BuildUnionTypes {builder: self});
     self.items.clone()
   }
-  
+
   /// Generate a `#[name(...)]` attribute of the given type
   pub fn list_attribute(&self, name: &'static str, list: Vec<&'static str>) -> ast::Attribute {
     let words = list.move_iter().map(|word| self.cx.meta_word(DUMMY_SP, token::InternedString::new(word)));
@@ -129,7 +129,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     };
     self.cx.path_ident(DUMMY_SP, self.cx.ident_of(name))
   }
-  
+
   /// The `Path` to the type corresponding to the primitive type of
   /// the given register
   fn reg_primitive_type_path(&self, reg: &node::Reg) -> Option<ast::Path> {
@@ -137,7 +137,7 @@ impl<'a, 'b> Builder<'a, 'b> {
       node::RegPrim(width, _) => Some(self.primitive_type_path(width)),
       _ => None,
     }
-  }  
+  }
 
   /// The name of the structure representing a register
   fn reg_base_type(&self, path: &Vec<String>, reg: &node::Reg) -> ast::Ident {
@@ -230,11 +230,12 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
   /// Build the accessors for a field
   fn build_field_accessors(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
                            -> Vec<P<ast::Method>> {
+    // only show the docstring for one of the accessors to avoid noise
     match field.access {
-      node::ReadWrite => vec!(self.build_field_setter(path, reg, field),
-                              self.build_field_getter(path, reg, field)),
-      node::WriteOnly => vec!(self.build_field_setter(path, reg, field)),
-      node::ReadOnly  => vec!(self.build_field_getter(path, reg, field)),
+      node::ReadWrite => vec!(self.build_field_setter(path, reg, field, false),
+                              self.build_field_getter(path, reg, field, true)),
+      node::WriteOnly => vec!(self.build_field_setter(path, reg, field, true)),
+      node::ReadOnly  => vec!(self.build_field_getter(path, reg, field, true)),
     }
   }
 
@@ -267,7 +268,8 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
     }
   }
 
-  fn build_field_getter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
+  fn build_field_getter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field,
+                        show_docstring: bool)
                         -> P<ast::Method> {
     let ty: P<ast::Ty> = self.builder.cx.ty_path(self.builder.field_type_path(path, reg, field), None);
     let self_arg: ast::Arg = ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
@@ -296,10 +298,16 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
         mask);
     let expr: P<ast::Expr> = self.from_primitive(reg, field, shifted_masked);
 
+    let mut attrs = match field.docstring {
+      Some(docstring) if show_docstring =>
+        vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
+      _ => Vec::new(),
+    };
+
     let body: P<ast::Block> = self.builder.cx.block(DUMMY_SP, Vec::new(), Some(expr));
     box(GC) ast::Method {
       ident: self.builder.cx.ident_of(field.name.node.as_slice()),
-      attrs: Vec::new(), // TODO: docstring
+      attrs: attrs,
       generics: no_generics(),
       explicit_self: Spanned {span: DUMMY_SP, node: ast::SelfRegion(None, ast::MutImmutable)},
       fn_style: ast::NormalFn,
@@ -312,8 +320,8 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
   }
 
   /// Build a setter for a field
-  fn build_field_setter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
-                        -> P<ast::Method> {
+  fn build_field_setter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field,
+                        show_docstring: bool) -> P<ast::Method> {
     let ty: P<ast::Ty> = self.builder.cx.ty_path(self.builder.field_type_path(path, reg, field), None);
     let self_arg: ast::Arg = ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
     let new_value: ast::Arg = self.builder.cx.arg(DUMMY_SP, self.builder.cx.ident_of("new_value"), ty);
@@ -327,7 +335,7 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
 
     let (lo,hi) = field.bits.node;
     let mask: uint = (1 << (hi-lo+1)) - 1;
-    let cell: P<ast::Expr> = 
+    let cell: P<ast::Expr> =
         self.builder.cx.expr_field_access(DUMMY_SP, self.builder.cx.expr_self(DUMMY_SP), self.builder.cx.ident_of("_value"));
     let old: P<ast::Expr> =
       self.builder.cx.expr_method_call(
@@ -365,10 +373,16 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
         self.builder.cx.ident_of("set"),
         vec!(self.builder.cx.expr_binary(DUMMY_SP, ast::BiBitOr, old_masked, new_masked_shifted)));
 
+    let mut attrs = match field.docstring {
+      Some(docstring) if show_docstring =>
+        vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
+      _ => Vec::new(),
+    };
+
     let body: P<ast::Block> = self.builder.cx.block(DUMMY_SP, vec!(self.builder.cx.stmt_expr(expr)), None);
     box(GC) ast::Method {
       ident: self.builder.cx.ident_of((String::from_str("set_")+field.name.node).as_slice()),
-      attrs: Vec::new(), // TODO: docstring
+      attrs: attrs,
       generics: no_generics(),
       explicit_self: Spanned {span: DUMMY_SP, node: ast::SelfRegion(None, ast::MutImmutable)},
       fn_style: ast::NormalFn,

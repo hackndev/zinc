@@ -95,7 +95,7 @@ ioregs!(
     
         0x50 => reg32 STATUS                /// Channel status register
         {
-            0..7 => CHF[8],
+            0..7 => CHF[8],                 /// Channel flags
         },
     }
 )
