@@ -129,36 +129,30 @@ impl<'a, 'b> Builder<'a, 'b> {
     FromIterator::from_iter(structs.chain(enums).chain(accessors))
   }
 
-  fn primitive_type_path(&self, reg_ty: node::RegType) -> Option<ast::Path> {
+  fn primitive_type_path(&self, reg_ty: node::RegWidth) -> ast::Path {
     let name = match reg_ty {
-      node::U8Reg  => "u8",
-      node::U16Reg => "u16",
-      node::U32Reg => "u32",
-      _  => return None
+      node::Reg8  => "u8",
+      node::Reg16 => "u16",
+      node::Reg32 => "u32",
     };
-    Some(self.cx.path_ident(DUMMY_SP, self.cx.ident_of(name)))
+    self.cx.path_ident(DUMMY_SP, self.cx.ident_of(name))
   }
   
   /// Returns the primitive type of the given width
-  fn primitive_type(&self, reg_ty: node::RegType) -> Option<P<ast::Ty>> {
-    match self.primitive_type_path(reg_ty) {
-      Some(path) => Some(self.cx.ty_path(path, None)),
-      None => None,
-    }
+  fn primitive_type(&self, reg_ty: node::RegWidth) -> P<ast::Ty> {
+      self.cx.ty_path(self.primitive_type_path(reg_ty), None)
   }
 
   /// Produce a register struct if necessary (in the case of primitive typed registers).
+  /// In this case `None` indicates no struct is necessary, not failure.
   /// For instance,
   ///
   ///     pub struct REG {_value: u32}
   fn emit_reg_struct(&self, group: P<node::RegGroup>, reg: &node::Reg) -> Option<P<ast::Item>> {
     match reg.ty {
-      node::GroupReg(_) => None,
-      _ => {
-        let prim_ty = match self.primitive_type(reg.ty) {
-          Some(ty) => ty,
-          None => return None,
-        };
+      node::RegUnion(_) => None,
+      node::RegPrim(width, _) => {
+        let prim_ty = self.primitive_type(width);
         let cell_ty: P<ast::Ty> =
           self.cx.ty_path(
             self.cx.path_all(
@@ -207,7 +201,7 @@ impl<'a, 'b> Builder<'a, 'b> {
   /// The name of the structure representing a register
   fn reg_base_type(&self, group: P<node::RegGroup>, reg: &node::Reg) -> ast::Ident {
     match reg.ty {
-      node::GroupReg(ref g) => self.cx.ident_of(g.name.node.as_slice()),
+      node::RegUnion(ref g) => self.cx.ident_of(g.name.node.as_slice()),
       _ => self.cx.ident_of(format!("{}_{}", group.name.node, reg.name.node).as_slice()),
     }
   }
@@ -445,9 +439,9 @@ impl<'a, 'b> Builder<'a, 'b> {
       node::BoolField => self.cx.expr_binary(DUMMY_SP, ast::BiNe, prim, self.expr_int(0)),
       node::EnumField {..} => {
         let from = match reg.ty {
-          node::U32Reg => "from_u32",
-          node::U16Reg => "from_u16",
-          node::U8Reg  => "from_u8",
+          node::Reg32 => "from_u32",
+          node::Reg16 => "from_u16",
+          node::Reg8  => "from_u8",
           _            => fail!("Can't convert group register to primitive type"),
         };
         self.cx.expr_method_call(

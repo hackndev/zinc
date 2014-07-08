@@ -59,92 +59,53 @@ impl<'a, 'b> Parser<'a, 'b> {
   }
 
   /// Parse the ioregs from passed in tokens.
-  pub fn parse_ioregs(&mut self) -> Option<HashMap<String, Gc<node::RegGroup>>> {
-    let mut groups: HashMap<String, Gc<node::RegGroup>> = HashMap::new();
-    let mut failed: bool = false;
-
-    loop {
-      if self.token == token::EOF {
-        break
-      }
-      match self.parse_reg_group() {
-        Some(group) => {
-          groups.insert(group.name.node.clone(), box(GC) group);
-        },
-        None => {
-          failed = true;
-          self.bump();
-        },
-      }
-
-      // if we have previously failed, give up on the parent group and try to parse
-      // the next child. This allows us to produce more error messages while
-      // not flooding the user with garbage
-      if failed {
-        loop {
-          match self.token {
-            ref t@token::IDENT(_,_) if token::to_str(t).equiv(&"group") => {
-              break;
-            },
-            token::EOF => {
-              break;
-            },
-            _ => {
-              self.bump();
-            }
-          }
-        }
-      }
-    }
-
-    if failed {
-      None
-    } else {
-      Some(groups)
-    }
-  }
-
-  fn parse_reg_group(&mut self) -> Option<node::RegGroup> {
-    // sitting at `group` token
-    match self.expect_ident() {
-      Some(ref s) if s.equiv(&"group") => {},
-      _ => {
-        self.error(String::from_str("Expected token `group`"));
-        return None;
-      },
-    }
-
-    let name_span = self.span;
+  pub fn parse_ioregs(&mut self) -> Option<Gc<node::RegGroup>> {
     let name = match self.expect_ident() {
-      Some(name) => name,
+      Some(name) => Spanned {node: name, span: self.last_span},
       None => return None,
     };
+
+    if !self.expect(&token::EQ) {
+      return None;
+    }
+
     if !self.expect(&token::LBRACE) {
       return None;
     }
+
     let docstring = self.parse_docstring();
 
+    let regs = match self.parse_regs() {
+      Some(regs) => regs,
+      None => return None,
+    };
+
+    let group = node::RegGroup {
+      name: Some(name),
+      regs: regs,
+      docstring: docstring,
+    };
+
+    Some(box(GC) group)
+  }
+
+  /// Parse a block of regs
+  fn parse_regs(&mut self) -> Option<Vec<node::Reg>> {
+    // sitting at start of first register, after LBRACE so that the
+    // owner of this block can catch its docstrings
+    
     let mut regs: Vec<node::Reg> = Vec::new();
-    let mut groups: HashMap<String, Gc<node::RegGroup>> = HashMap::new();
     loop {
       match self.token.clone() {
-        // End of group
+        // End of block
         token::RBRACE => {
           self.bump();
           break;
         },
 
-        // Beginning of new group
-        ref t@token::IDENT(_,_) if token::to_str(t).equiv(&"group") => {
-          match self.parse_reg_group() {
-            Some(group) => groups.insert(group.name.node.clone(), box(GC) group),
-            None => return None,
-          };
-        },
-
         // Presumably a register
         _ => {
-          match self.parse_reg(&groups) {
+          match self.parse_reg() {
             None => return None,
             Some(reg) => regs.push(reg)
           }
@@ -152,17 +113,11 @@ impl<'a, 'b> Parser<'a, 'b> {
       }
     }
 
-    let group = node::RegGroup {
-      name: Spanned {node: name, span: name_span},
-      regs: regs,
-      groups: groups,
-      docstring: docstring,
-    };
-    Some(group)
+    Some(regs)
   }
 
   /// Parse the introduction of a register
-  fn parse_reg(&mut self, known_groups: &HashMap<String, Gc<node::RegGroup>>) -> Option<node::Reg> {
+  fn parse_reg(&mut self) -> Option<node::Reg> {
     // we are still sitting at the offset
     let offset = match self.expect_uint() {
       Some(offset) => offset,
@@ -171,40 +126,25 @@ impl<'a, 'b> Parser<'a, 'b> {
     if !self.expect(&token::FAT_ARROW) {
       return None;
     }
-    match self.expect_ident() {
-      Some(ref i) if i.equiv(&"reg") => {}
+    let mut ty = match self.expect_ident() {
+      Some(ref i) if i.equiv(&"reg32") => node::RegPrim(node::Reg32, Vec::new()),
+      Some(ref i) if i.equiv(&"reg16") => node::RegPrim(node::Reg16, Vec::new()),
+      Some(ref i) if i.equiv(&"reg8")  => node::RegPrim(node::Reg8, Vec::new()),
+      Some(ref i) if i.equiv(&"group") => {
+        // these will get filled in later
+        let group = node::RegGroup {
+          name: None,
+          regs: Vec::new(),
+          docstring: None,
+        };
+        node::RegUnion(box(GC) group)
+      },
       _ => return None,
-    }
+    };
+
     let name = match self.expect_ident() {
       Some(name) => Spanned {node: name, span: self.span},
       None => return None,
-    };
-    if !self.expect(&token::COLON) {
-      return None;
-    }
-    let ty = match self.token.clone() {
-      ref t@token::IDENT(_,_) => {
-        let ty = match token::to_str(t) {
-          ref s if s.equiv(&"u32") => node::U32Reg,
-          ref s if s.equiv(&"u16") => node::U16Reg,
-          ref s if s.equiv(&"u8")  => node::U8Reg,
-          s                        => {
-            match known_groups.find(&s) {
-              Some(&group) => node::GroupReg(group),
-              None => {
-                self.error(format!("Undefined register group `{}`", s));
-                return None;
-              }
-            }
-          }
-        };
-        self.bump();
-        ty
-      },
-      ref t => {
-        self.error(format!("Expected register type, found `{}`", token::to_str(t)));
-        return None;
-      },
     };
     let count = match self.parse_count() {
       None => return None,
@@ -213,35 +153,58 @@ impl<'a, 'b> Parser<'a, 'b> {
 
     let docstring = self.parse_docstring();
 
-    let fields = match self.token {
-      // Field list
-      token::LBRACE => {
-        self.bump();
-        let mut fields: Vec<node::Field> = Vec::new();
-        loop {
-          if self.token == token::RBRACE {
-            self.bump();
-            break;
-          }
-
-          match self.parse_field() {
-            None => return None,
-            Some(field) => fields.push(field),
-          }
+    let ty = match ty {
+      node::RegPrim(width, _) => {
+        if !self.expect(&token::LBRACE) {
+          return None;
         }
-        fields
+        match self.parse_fields() {
+          Some(fields) => node::RegPrim(width, fields),
+          None => return None,
+        }
       },
-      _ => Vec::new(),
+      node::RegUnion(_) => {
+        if !self.expect(&token::LBRACE) {
+          return None;
+        }
+        match self.parse_regs() {
+          Some(regs) => {
+            let group = node::RegGroup {name: None, regs: regs, docstring: docstring};
+            node::RegUnion(box(GC) group)
+          },
+          None => return None,
+        }
+      },
     };
+     
+    if !self.expect(&token::COMMA) {
+      return None;
+    }
 
     Some(node::Reg {
       offset: offset,
       name: name,
       ty: ty,
       count: count,
-      fields: fields,
       docstring: docstring,
     })
+  }
+
+  fn parse_fields(&mut self) -> Option<Vec<node::Field>> {
+    // sitting at starting bit number
+    let mut fields: Vec<node::Field> = Vec::new();
+    loop {
+      if self.token == token::RBRACE {
+        self.bump();
+        break;
+      }
+
+      match self.parse_field() {
+        None => return None,
+        Some(field) => fields.push(field),
+      }
+    }
+    Some(fields)
   }
 
   /// Parse a field
@@ -270,94 +233,107 @@ impl<'a, 'b> Parser<'a, 'b> {
       Some(name) => Spanned {node: name, span: self.last_span},
       None => return None,
     };
-    if !self.expect(&token::COLON) {
-      return None;
-    }
-    let access = match self.token.clone() {
-      ref t@token::IDENT(_,_) => {
-        match token::to_str(t) {
-          ref s if s.equiv(&"rw") => { self.bump(); node::ReadWrite },
-          ref s if s.equiv(&"ro") => { self.bump(); node::ReadOnly  },
-          ref s if s.equiv(&"wo") => { self.bump(); node::WriteOnly },
-          _ => node::ReadWrite,
-        }
-      },
-      _ => node::ReadWrite,
-    };
-    let ty = match self.parse_field_type() {
-      Some(ty) => Spanned {node: ty, span: self.last_span},
-      None => return None,
-    };
+
     let count = match self.parse_count() {
       Some(count) => count,
       None => return None,
     };
+
+    let access = match self.token.clone() {
+      token::COLON => {
+        self.bump();
+        match self.token {
+          ref t@token::IDENT(_,_) => {
+            match token::to_str(t) {
+              ref s if s.equiv(&"rw") => { self.bump(); node::ReadWrite },
+              ref s if s.equiv(&"ro") => { self.bump(); node::ReadOnly  },
+              ref s if s.equiv(&"wo") => { self.bump(); node::WriteOnly },
+              s => {
+                self.error(format!("Expected access type, saw `{}`", s));
+                return None;
+              },
+            }
+          },
+          ref t => {
+            self.error(format!("Expected access type, saw `{}`", token::to_str(t)));
+            return None;
+          },
+        }
+      },
+      _ => node::ReadWrite,
+    };
+
     let docstring = self.parse_docstring();
+
+    let ty = match self.token {
+      // A list of enumeration variants
+      token::LBRACE => {
+        match self.parse_enum_variants() {
+          Some(variants) => node::EnumField {opt_name: None, variants: variants},
+          None => return None,
+        }
+      },
+      _ => {
+        if end_bit == start_bit {
+          node::BoolField
+        } else {
+          node::UIntField
+        }
+      },
+    };
+
+    if !self.expect(&token::COMMA) {
+      return None;
+    }
+
     let field = node::Field {
       name: name,
       bits: Spanned {node: (start_bit, end_bit), span: bits_span},
       access: access,
-      ty: ty,
+      ty: Spanned {span: DUMMY_SP, node: ty},
       count: count,
       docstring: docstring,
     };
     Some(field)
   }
 
-  fn parse_field_type(&mut self) -> Option<node::FieldType> {
-    match self.expect_ident() {
-      /// an enum
-      Some(ref s) if s.equiv(&("enum")) => {
-        let mut variants: Vec<node::Variant> = Vec::new();
+  fn parse_enum_variants(&self) -> Option<Vec<node::Variant>> {
+    // sitting on LBRACE
+    let mut variants: Vec<node::Variant> = Vec::new();
 
-        let ty_name = match self.token {
-          ref mut t@token::IDENT(_,_) => Some(token::to_str(t)),
-          _ => None
-        };
-
-        if !self.expect(&token::LBRACE) {
-          return None;
-        }
-        loop {
-          if self.token == token::RBRACE {
-            self.bump();
-            break;
-          }
-
-          let name = match self.expect_ident() {
-            Some(name) => Spanned {node: name, span: self.span },
-            None => return None,
-          };
-
-          if !self.expect(&token::EQ) {
-            return None;
-          }
-
-          let value = match self.bump() {
-            token::LIT_INT_UNSUFFIXED(v) => Spanned { node: v as uint, span: self.span },
-            _ => return None,
-          };
-
-          // FIXME: trailing comma
-          if !self.expect(&token::COMMA) {
-            return None;
-          }
-
-          let docstring = self.parse_docstring();
-
-          let value: node::Variant = node::Variant { name: name, value: value, docstring: docstring };
-          variants.push(value);
-        }
-        Some(node::EnumField {opt_name: ty_name, variants: variants})
-      },
-      Some(ref s) if s.equiv(&("uint")) => Some(node::UIntField),
-      Some(ref s) if s.equiv(&("bool")) => Some(node::BoolField),
-      Some(s) => {
-        self.error(format!("Unsupported register field type `{}`", s));
-        return None;
-      },
-      None => return None,
+    if !self.expect(&token::LBRACE) {
+      return None;
     }
+    loop {
+      if self.token == token::RBRACE {
+        self.bump();
+        break;
+      }
+      let value = match self.bump() {
+        token::LIT_INT_UNSUFFIXED(v) => Spanned { node: v as uint, span: self.span },
+        _ => return None,
+      };
+
+      if !self.expect(&token::FAT_ARROW) {
+        return None;
+      }
+
+      let name = match self.expect_ident() {
+        Some(name) => Spanned {node: name, span: self.span },
+        None => return None,
+      };
+
+      // FIXME: trailing comma
+      if !self.expect(&token::COMMA) {
+        return None;
+      }
+
+      let docstring = self.parse_docstring();
+
+      let value: node::Variant = node::Variant { name: name, value: value, docstring: docstring };
+      variants.push(value);
+    }
+    Some(variants)
   }
 
   fn parse_docstring(&mut self) -> Option<Spanned<Ident>> {

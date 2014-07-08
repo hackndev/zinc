@@ -65,7 +65,7 @@ ioregs!(
         0x8  => reg32 MOD /// Modulo register
         {
             0..15 => MOD,
-        };
+        },
     
         0xc  => group CHANNELS[8]           /// Compare/capture channels
         {
