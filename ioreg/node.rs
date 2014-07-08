@@ -16,7 +16,11 @@
 use syntax::codemap::{Spanned};
 use syntax::ast;
 use std::collections::hashmap::HashMap;
+use std::collections::dlist::DList;
+use std::collections::Deque;
+use std::slice::Items;
 use std::gc::Gc;
+use std::iter;
 use serialize::{Encodable};
 
 /// A variant of an enum field type
@@ -92,11 +96,12 @@ impl RegType {
   pub fn size(&self) -> uint {
     match *self {
       RegPrim(width, _) => width.size(),
-      RegUnion(group)   => group.size(),
+      RegUnion(regs)    => regs_size(regs),
     }
   }
 }
 
+/// A single register, either a union or primitive
 #[deriving(Clone, Decodable, Encodable)]
 pub struct Reg {
   pub offset: uint,
@@ -113,6 +118,14 @@ impl Reg {
   }
 }
 
+/// Size of registers of register group in bytes
+pub fn regs_size(regs: &Vec<Reg>) -> uint {
+  match regs.iter().max_by(|r| r.offset) {
+    Some(last) => last.offset + last.ty.size(),
+    None => 0,
+  }
+}
+
 #[deriving(Clone, Decodable, Encodable)]
 pub struct RegGroup {
   pub name: Spanned<String>,
@@ -120,12 +133,26 @@ pub struct RegGroup {
   pub regs: Vec<Reg>,
 }
 
-impl Vec<Reg> {
-  /// Size of registers of register group in bytes
-  pub fn size(&self) -> uint {
-    match self.iter().max_by(|r| r.offset) {
-      Some(last) => last.offset + last.ty.size(),
-      None => 0,
+pub trait RegVisitor {
+  pub fn visit_prim_reg<'a>(&'a mut self, path: Vec<String>, reg: &'a Reg,
+                            width: RegWidth, fields: &Vec<Field>) {}
+  pub fn visit_union_reg<'a>(&'a mut self, path: Vec<String>, reg: &'a Reg,
+                             subregs: Gc<Vec<Reg>>) {}
+}
+
+pub fn visit_group<T: RegVisitor>(group: &RegGroup, visitor: &mut T) {
+  visit_regs(&group.regs, visitor, vec!(group.name.node))
+}
+
+fn visit_regs<T: RegVisitor>(regs: &Vec<Reg>, visitor: &mut T, path: Vec<String>) {
+  for r in regs.iter() {
+    match r.ty {
+      RegUnion(ref regs) => {
+        visitor.visit_union_reg(path, r, *regs);
+        visit_regs(*regs, visitor, path.append_one(r.name.node));
+      },
+      RegPrim(width, ref fields) =>
+        visitor.visit_prim_reg(path, r, width, fields)
     }
   }
 }

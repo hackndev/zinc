@@ -81,7 +81,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     };
 
     let group = node::RegGroup {
-      name: Some(name),
+      name: name,
       regs: regs,
       docstring: docstring,
     };
@@ -131,13 +131,8 @@ impl<'a, 'b> Parser<'a, 'b> {
       Some(ref i) if i.equiv(&"reg16") => node::RegPrim(node::Reg16, Vec::new()),
       Some(ref i) if i.equiv(&"reg8")  => node::RegPrim(node::Reg8, Vec::new()),
       Some(ref i) if i.equiv(&"group") => {
-        // these will get filled in later
-        let group = node::RegGroup {
-          name: None,
-          regs: Vec::new(),
-          docstring: None,
-        };
-        node::RegUnion(box(GC) group)
+        // registers will get filled in later
+        node::RegUnion(box(GC) Vec::new())
       },
       _ => return None,
     };
@@ -168,10 +163,7 @@ impl<'a, 'b> Parser<'a, 'b> {
           return None;
         }
         match self.parse_regs() {
-          Some(regs) => {
-            let group = node::RegGroup {name: None, regs: regs, docstring: docstring};
-            node::RegUnion(box(GC) group)
-          },
+          Some(regs) => node::RegUnion(box(GC) regs),
           None => return None,
         }
       },
@@ -242,7 +234,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     let access = match self.token.clone() {
       token::COLON => {
         self.bump();
-        match self.token {
+        match self.token.clone() {
           ref t@token::IDENT(_,_) => {
             match token::to_str(t) {
               ref s if s.equiv(&"rw") => { self.bump(); node::ReadWrite },
@@ -286,6 +278,11 @@ impl<'a, 'b> Parser<'a, 'b> {
       return None;
     }
 
+    let docstring = match docstring {
+      None => self.parse_docstring(),
+      _    => docstring,
+    };
+
     let field = node::Field {
       name: name,
       bits: Spanned {node: (start_bit, end_bit), span: bits_span},
@@ -297,7 +294,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     Some(field)
   }
 
-  fn parse_enum_variants(&self) -> Option<Vec<node::Variant>> {
+  fn parse_enum_variants(&mut self) -> Option<Vec<node::Variant>> {
     // sitting on LBRACE
     let mut variants: Vec<node::Variant> = Vec::new();
 
@@ -309,8 +306,12 @@ impl<'a, 'b> Parser<'a, 'b> {
         self.bump();
         break;
       }
-      let value = match self.bump() {
-        token::LIT_INT_UNSUFFIXED(v) => Spanned { node: v as uint, span: self.span },
+
+      let value = match self.token {
+        token::LIT_INT_UNSUFFIXED(v) => {
+          self.bump();
+          Spanned { node: v as uint, span: self.span }
+        },
         _ => return None,
       };
 
@@ -347,7 +348,7 @@ impl<'a, 'b> Parser<'a, 'b> {
           let stripped = s.get().trim_left_chars(&['/',' ']);
           docs.push(String::from_str(stripped));
         },
-        _ => break,
+        _ => return None,
       }
     }
     let docstring = self.cx.ident_of(docs.connect("\n").as_slice());

@@ -30,7 +30,7 @@ use syntax::ext::base::{ExtCtxt, MacResult};
 use syntax::util::small_vector::SmallVector;
 
 use ioreg::parser::Parser;
-use ioreg::builder::build_ioregs;
+use ioreg::builder::Builder;
 
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
@@ -39,10 +39,16 @@ pub fn plugin_registrar(reg: &mut Registry) {
 
 pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     -> Box<MacResult> {
-  let ioreg = Parser::new(cx, tts).parse_ioregs();
-  let builder = build_ioregs(cx, ioreg.unwrap());
-  let items = builder.emit_items();
-  MacItems::new(items)
+  match Parser::new(cx, tts).parse_ioregs() {
+    Some(group) => {
+      let builder = Builder::new(cx, group);
+      let items = builder.emit_items();
+      MacItems::new(items)
+    },
+    None => {
+      fail!();
+    }
+  }
 }
 
 pub struct MacItems {

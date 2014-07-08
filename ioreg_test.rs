@@ -40,27 +40,29 @@ impl<T> VolatileCell<T> {
 }
 
 ioregs!(
-    group FTM {
+    FTM = {
         /// FlexTimer module.
         ///
         /// This is a timer module
         0x0  => reg32 SC  /// Status and control register
         {
-             0..2 => PS,                   /// Prescale
-             3..4 => CLKS: enum { NO_CLOCK=0x0,     /// no clock selected
-                                  SYSTEM_CLOCK=0x1, /// use system clock
-                                  FIXED_FREQ=0x2,   /// use fixed frequency clock
-                                  EXTERNAL=0x3,     /// use external clock
-                                },
+             0..2 => PS,           /// Prescale
+             3..4 => CLKS
+             {
+                 0x0 => NO_CLOCK,     /// no clock selected
+                 0x1 => SYSTEM_CLOCK, /// use system clock
+                 0x2 => FIXED_FREQ,   /// use fixed frequency clock
+                 0x3 => EXTERNAL,     /// use external clock
+             },
              5    => CPWMS,
              6    => TOIE,
              7    => TOF: ro,
-        };
+        },
     
         0x4  => reg32 CNT /// Count register
         {
             0..15 => COUNT,
-        };
+        },
     
         0x8  => reg32 MOD /// Modulo register
         {
@@ -69,7 +71,6 @@ ioregs!(
     
         0xc  => group CHANNELS[8]           /// Compare/capture channels
         {
-            /// A compare/capture channel
             0x0 => reg32 CSC                /// Compare/capture channel status and control register
             {
                 0 => DMA,
