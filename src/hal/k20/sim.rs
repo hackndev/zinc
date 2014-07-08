@@ -18,7 +18,7 @@
 pub mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioregs!(FTM = {
+  ioregs!(SIM = {
     0x0    => reg32 sopt1 {
       12..15 => ramsize: ro,
       19..18 => osc32ksel,
@@ -157,4 +157,8 @@ pub mod reg {
       0..31  => uid,
     },
   })
+
+  extern {
+    #[link_name="iomem_SIM"] pub static SIM: SIM;
+  }
 }
