@@ -101,14 +101,20 @@ impl<'a, 'b> Parser<'a, 'b> {
         // End of block
         token::RBRACE => {
           self.bump();
+
+          // Eat optional comma after closing brace
+          if self.token == token::COMMA {
+            self.bump();
+          }
+
           break;
         },
 
         // Presumably a register
         _ => {
           match self.parse_reg() {
+            Some(reg) => regs.push(reg),
             None => return None,
-            Some(reg) => regs.push(reg)
           }
         },
       }
@@ -149,6 +155,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     if !self.expect(&token::FAT_ARROW) {
       return None;
     }
+
     let ty = match self.expect_ident() {
       Some(ref i) if i.equiv(&"reg32") => node::RegPrim(node::Reg32, Vec::new()),
       Some(ref i) if i.equiv(&"reg16") => node::RegPrim(node::Reg16, Vec::new()),
@@ -177,6 +184,7 @@ impl<'a, 'b> Parser<'a, 'b> {
           return None;
         }
         match self.parse_fields() {
+          None => return None,
           Some(mut fields) => {
             // Check for overlapping fields
             fields.sort_by(|f1,f2| f1.low_bit.cmp(&f2.low_bit));
@@ -205,7 +213,6 @@ impl<'a, 'b> Parser<'a, 'b> {
 
             node::RegPrim(width, fields)
           },
-          None => return None,
         }
       },
       node::RegUnion(_) => {
@@ -218,10 +225,6 @@ impl<'a, 'b> Parser<'a, 'b> {
         }
       },
     };
-
-    if !self.expect(&token::COMMA) {
-      return None;
-    }
 
     Some(node::Reg {
       offset: offset,
@@ -238,6 +241,12 @@ impl<'a, 'b> Parser<'a, 'b> {
     loop {
       if self.token == token::RBRACE {
         self.bump();
+
+        // Eat optional comma after closing brace
+        if self.token == token::COMMA {
+          self.bump();
+        }
+
         break;
       }
 
@@ -249,8 +258,16 @@ impl<'a, 'b> Parser<'a, 'b> {
     Some(fields)
   }
 
-  /// Parse a field
+  /// Parse a field.
+  ///
+  /// `None` indicates parse failure otherwise we return whether a
+  /// comma is required before the next field (as we might have
+  /// already seen the comma before the docstring) in addition to the
+  /// parsed field.
+  ///
   fn parse_field(&mut self) -> Option<node::Field> {
+    let mut require_comma: bool = true;
+
     // sitting at starting bit number
     let low_bit = match self.expect_uint() {
       Some(bit) => bit,
@@ -325,11 +342,22 @@ impl<'a, 'b> Parser<'a, 'b> {
       _ => node::ReadWrite,
     };
 
+    if self.token == token::COMMA {
+      self.bump();
+      require_comma = false;
+    }
+
     let docstring = self.parse_docstring();
 
     let ty = match self.token {
       // A list of enumeration variants
+      token::LBRACE if !require_comma => {
+        self.error(String::from_str("Unexpected enumeration list after comma"));
+        return None;
+      },
       token::LBRACE => {
+        // we don't require a delimiting comma after a block
+        require_comma = false;
         match self.parse_enum_variants() {
           Some(variants) => node::EnumField {opt_name: None, variants: variants},
           None => return None,
@@ -344,14 +372,19 @@ impl<'a, 'b> Parser<'a, 'b> {
       },
     };
 
-    if !self.expect(&token::COMMA) {
-      return None;
+    // Require a comma unless we are the last element in the block
+    if self.peek() != token::RBRACE {
+      if require_comma {
+        if !self.expect(&token::COMMA) {
+          return None;
+        }
+      } else {
+        match self.token {
+          token::COMMA => {self.bump();},
+          _ => {}
+        }
+      }
     }
-
-    let docstring = match docstring {
-      None => self.parse_docstring(),
-      _    => docstring,
-    };
 
     let field = node::Field {
       name: name,
@@ -373,17 +406,21 @@ impl<'a, 'b> Parser<'a, 'b> {
     if !self.expect(&token::LBRACE) {
       return None;
     }
+
+    let mut require_comma: bool = false;
     loop {
+      if require_comma && !self.expect(&token::COMMA) {
+        return None;
+      }
+      require_comma = true;
+
       if self.token == token::RBRACE {
         self.bump();
         break;
       }
 
-      let value = match self.token {
-        token::LIT_INT_UNSUFFIXED(v) => {
-          self.bump();
-          Spanned { node: v as uint, span: self.span }
-        },
+      let value = match self.expect_uint() {
+        Some(v) => Spanned { node: v, span: self.last_span },
         _ => return None,
       };
 
@@ -396,9 +433,13 @@ impl<'a, 'b> Parser<'a, 'b> {
         None => return None,
       };
 
-      // FIXME: trailing comma
-      if !self.expect(&token::COMMA) {
-        return None;
+      // Catch commas before the docstring
+      match self.token {
+        token::COMMA => {
+          require_comma = false;
+          self.bump();
+        }
+        _ => {}
       }
 
       let docstring = self.parse_docstring();
@@ -453,6 +494,8 @@ impl<'a, 'b> Parser<'a, 'b> {
     }
   }
 
+  /// `None` indicates parse failure.
+  /// If no count is given, a default of 1 is used
   fn parse_count(&mut self) -> Option<Spanned<uint>> {
     match self.token {
       token::LBRACKET => {
@@ -490,6 +533,10 @@ impl<'a, 'b> Parser<'a, 'b> {
     self.token = next.tok;
 
     tok
+  }
+
+  fn peek(&self) -> token::Token {
+    self.reader.peek().tok
   }
 
   /// Expects that the current token is t. Bumps on success.
