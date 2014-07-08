@@ -373,7 +373,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     };
 
     // Require a comma unless we are the last element in the block
-    if self.peek() != token::RBRACE {
+    if self.token != token::RBRACE {
       if require_comma {
         if !self.expect(&token::COMMA) {
           return None;
@@ -533,10 +533,6 @@ impl<'a, 'b> Parser<'a, 'b> {
     self.token = next.tok;
 
     tok
-  }
-
-  fn peek(&self) -> token::Token {
-    self.reader.peek().tok
   }
 
   /// Expects that the current token is t. Bumps on success.

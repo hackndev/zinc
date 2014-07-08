@@ -80,11 +80,11 @@ ioregs!(
                 5 => MSB,
                 6 => CHIE,
                 7 => CHF,
-            },
+            }
     
             0x4 => reg32 CV                 /// Channel counter value
             {
-                0..15 => VAL,
+                0..15 => VAL
             },
         },
     
