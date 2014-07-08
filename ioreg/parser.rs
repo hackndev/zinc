@@ -17,7 +17,7 @@ use std::gc::{Gc, GC};
 use std::collections::hashmap::HashMap;
 use syntax::ast::Ident;
 use syntax::ast::TokenTree;
-use syntax::codemap::{Span, Spanned, DUMMY_SP};
+use syntax::codemap::{Span, Spanned, DUMMY_SP, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer};
 
@@ -95,7 +95,7 @@ impl<'a, 'b> Parser<'a, 'b> {
   fn parse_regs(&mut self) -> Option<Vec<node::Reg>> {
     // sitting at start of first register, after LBRACE so that the
     // owner of this block can catch its docstrings
-    
+
     let mut regs: Vec<node::Reg> = Vec::new();
     loop {
       match self.token.clone() {
@@ -170,7 +170,7 @@ impl<'a, 'b> Parser<'a, 'b> {
         }
       },
     };
-     
+
     if !self.expect(&token::COMMA) {
       return None;
     }
@@ -204,12 +204,12 @@ impl<'a, 'b> Parser<'a, 'b> {
   /// Parse a field
   fn parse_field(&mut self) -> Option<node::Field> {
     // sitting at starting bit number
-    let start_bit = match self.expect_uint() {
+    let low_bit = match self.expect_uint() {
       Some(bit) => bit,
       None => return None,
     };
     let bits_span = self.span;
-    let end_bit = match self.token {
+    let high_bit = match self.token {
       token::DOTDOT => {
         self.bump();
         match self.expect_uint() {
@@ -217,7 +217,7 @@ impl<'a, 'b> Parser<'a, 'b> {
           None => return None,
         }
       },
-      _ => start_bit as uint,
+      _ => low_bit as uint,
     };
     if !self.expect(&token::FAT_ARROW) {
       return None;
@@ -228,10 +228,21 @@ impl<'a, 'b> Parser<'a, 'b> {
       None => return None,
     };
 
-    let count = match self.parse_count() {
-      Some(count) => count,
-      None => return None,
-    };
+    let (count, width): (Spanned<uint>, uint) =
+      match self.parse_count() {
+        Some(count) => {
+          let w = high_bit - low_bit + 1;
+          if w % count.node == 0 {
+            (count, w / count.node)
+          } else {
+            self.sess.span_diagnostic.span_err(
+              mk_sp(bits_span.lo, self.last_span.hi),
+              format!("Bit width ({}) not divisible by count ({})", w, count.node).as_slice());
+            return None;
+          }
+        },
+        None => return None,
+      };
 
     let access = match self.token.clone() {
       token::COLON => {
@@ -268,7 +279,7 @@ impl<'a, 'b> Parser<'a, 'b> {
         }
       },
       _ => {
-        if end_bit == start_bit {
+        if high_bit == low_bit {
           node::BoolField
         } else {
           node::UIntField
@@ -287,10 +298,12 @@ impl<'a, 'b> Parser<'a, 'b> {
 
     let field = node::Field {
       name: name,
-      bits: Spanned {node: (start_bit, end_bit), span: bits_span},
+      low_bit: low_bit,
+      width: width,
+      count: count,
+      bit_range_span: bits_span,
       access: access,
       ty: Spanned {span: DUMMY_SP, node: ty},
-      count: count,
       docstring: docstring,
     };
     Some(field)

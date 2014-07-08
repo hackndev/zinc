@@ -268,6 +268,23 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
     }
   }
 
+  fn mask(&self, field: &node::Field) -> P<ast::Expr> {
+    self.builder.expr_int(((1i << field.width) - 1) as i64)
+  }
+
+  /// An expression for the shift of a field (including the array index if necessary)
+  fn shift(&self, field: &node::Field) -> P<ast::Expr> {
+    let low = self.builder.expr_int(field.low_bit as i64);
+    if field.count.node > 1 {
+      let idx = self.builder.cx.expr_ident(DUMMY_SP, self.builder.cx.ident_of("idx"));
+      let width = self.builder.expr_int(field.width as i64);
+      let idx_offset = self.builder.cx.expr_binary(DUMMY_SP, ast::BiMul, idx, width);
+      self.builder.cx.expr_binary(DUMMY_SP, ast::BiAdd, low, idx_offset)
+    } else {
+      low
+    }
+  }
+
   fn build_field_getter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field,
                         show_docstring: bool)
                         -> P<ast::Method> {
@@ -277,12 +294,13 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
       if field.count.node == 1 {
         vec!(self_arg)
       } else {
-        vec!(self_arg) // FIXME
+        let idx_arg: ast::Arg =
+          self.builder.cx.arg(DUMMY_SP, self.builder.cx.ident_of("idx"),
+                              self.builder.cx.ty_ident(DUMMY_SP, self.builder.cx.ident_of("uint")));
+        vec!(self_arg, idx_arg)
       };
     let decl: P<ast::FnDecl> = self.builder.cx.fn_decl(inputs, ty);
 
-    let (lo,hi) = field.bits.node;
-    let mask: P<ast::Expr> = self.builder.expr_int(((1i << (hi-lo+1)) - 1) as i64);
     let value: P<ast::Expr> =
       self.builder.cx.expr_method_call(
         DUMMY_SP,
@@ -294,8 +312,8 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
       self.builder.cx.expr_binary(
         DUMMY_SP,
         ast::BiBitAnd,
-        self.builder.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.builder.expr_int(lo as i64)),
-        mask);
+        self.builder.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.shift(field)),
+        self.mask(field));
     let expr: P<ast::Expr> = self.from_primitive(reg, field, shifted_masked);
 
     let mut attrs = match field.docstring {
@@ -329,12 +347,19 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
       if field.count.node == 1 {
         vec!(self_arg, new_value)
       } else {
-        vec!(self_arg, new_value) // FIXME
+        let idx_arg: ast::Arg =
+          self.builder.cx.arg(DUMMY_SP, self.builder.cx.ident_of("idx"),
+                              self.builder.cx.ty_ident(DUMMY_SP, self.builder.cx.ident_of("uint")));
+        vec!(self_arg, idx_arg, new_value)
       };
     let decl: P<ast::FnDecl> = self.builder.cx.fn_decl(inputs, self.builder.cx.ty_nil());
 
-    let (lo,hi) = field.bits.node;
-    let mask: uint = (1 << (hi-lo+1)) - 1;
+    let shifted_mask: P<ast::Expr> =
+      self.builder.cx.expr_binary(
+        DUMMY_SP,
+        ast::BiShr,
+        self.mask(field),
+        self.shift(field));
     let cell: P<ast::Expr> =
         self.builder.cx.expr_field_access(DUMMY_SP, self.builder.cx.expr_self(DUMMY_SP), self.builder.cx.ident_of("_value"));
     let old: P<ast::Expr> =
@@ -349,7 +374,7 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
         DUMMY_SP,
         ast::BiBitAnd,
         old,
-        self.builder.cx.expr_unary(DUMMY_SP, ast::UnNot, self.builder.expr_int((mask << lo) as i64))
+        self.builder.cx.expr_unary(DUMMY_SP, ast::UnNot, shifted_mask)
       );
     let new_masked_shifted: P<ast::Expr> =
       self.builder.cx.expr_binary(
@@ -362,10 +387,9 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
             DUMMY_SP,
             self.builder.cx.expr_ident(DUMMY_SP, self.builder.cx.ident_of("new_value")),
             self.builder.cx.ty_path(self.builder.reg_primitive_type_path(reg).unwrap(), None)),
-          self.builder.expr_int(mask as i64)
+          self.mask(field)
         ),
-        self.builder.expr_int(lo as i64)
-      );
+        self.shift(field));
     let expr: Gc<ast::Expr> =
       self.builder.cx.expr_method_call(
         DUMMY_SP,

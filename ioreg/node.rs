@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax::codemap::{Spanned};
+use syntax::codemap::{Spanned, Span};
 use syntax::ast;
 use std::collections::hashmap::HashMap;
 use std::collections::dlist::DList;
@@ -34,7 +34,7 @@ pub struct Variant {
 /// A bit field type
 #[deriving(Clone, Decodable, Encodable)]
 pub enum FieldType {
-  /// A unsigned integer with given bit-width
+  /// A unsigned integer
   UIntField,
   /// A boolean flag
   BoolField,
@@ -55,10 +55,15 @@ pub enum Access {
 #[deriving(Clone, Decodable, Encodable)]
 pub struct Field {
   pub name: Spanned<String>,
-  pub bits: Spanned<(uint, uint)>,
+  /// The index of the first (lowest order) bit of the field
+  pub low_bit: uint,
+  /// The width in bits of a single array element
+  pub width: uint,
+  /// The number of array elements
+  pub count: Spanned<uint>,
+  pub bit_range_span: Span,
   pub access: Access,
   pub ty: Spanned<FieldType>,
-  pub count: Spanned<uint>,
   pub docstring: Option<Spanned<ast::Ident>>,
 }
 
