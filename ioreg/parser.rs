@@ -14,7 +14,6 @@
 // limitations under the License.
 
 use std::gc::{Gc, GC};
-use std::iter::AdditiveIterator;
 use syntax::ast::Ident;
 use syntax::ast::TokenTree;
 use syntax::codemap::{Span, Spanned, DUMMY_SP, mk_sp};
@@ -156,16 +155,33 @@ impl<'a, 'b> Parser<'a, 'b> {
           return None;
         }
         match self.parse_fields() {
-          Some(fields) => {
-            // width of fields in bits
-            let fields_width = fields.iter().map(|f| f.width * f.count.node).sum();
-            if fields_width > 8*width.size() {
-              self.error(format!("Width of fields ({} bits) exceeds access size of register ({} bits)",
-                                 fields_width, 8*width.size()));
-              return None;
-            } else {
-              node::RegPrim(width, fields)
+          Some(mut fields) => {
+            // Check for overlapping fields
+            fields.sort_by(|f1,f2| f1.low_bit.cmp(&f2.low_bit));
+            for (f1,f2) in fields.iter().zip(fields.iter().skip(1)) {
+              if f2.low_bit <= f1.high_bit() {
+                self.sess.span_diagnostic.span_err(
+                  f1.bit_range_span, "The bit range of this field,".as_slice());
+                self.sess.span_diagnostic.span_err(
+                  f2.bit_range_span,
+                  "overlaps with the bit range of this field".as_slice());
+                return None;
+              }
             }
+
+            // Verify fields fit in register
+            match fields.last().map(|f| f.high_bit()) {
+              Some(last_bit) if last_bit >= 8*width.size() => {
+                self.sess.span_diagnostic.span_err(
+                  name.span,
+                  format!("Width of fields ({} bits) exceeds access size of register ({} bits)",
+                           last_bit+1, 8*width.size()).as_slice());
+                return None;
+              },
+              _ => {}
+            }
+
+            node::RegPrim(width, fields)
           },
           None => return None,
         }

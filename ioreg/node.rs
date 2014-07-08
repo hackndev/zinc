@@ -62,6 +62,13 @@ pub struct Field {
   pub docstring: Option<Spanned<ast::Ident>>,
 }
 
+impl Field {
+  /// The index of the highest order bit owned by this field
+  pub fn high_bit(&self) -> uint {
+    self.low_bit + self.width * self.count.node - 1
+  }
+}
+
 #[deriving(Clone, Decodable, Encodable)]
 pub enum RegWidth {
   /// A 32-bit wide register
