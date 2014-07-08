@@ -53,9 +53,9 @@ ioregs!(
                  0x1 => SYSTEM_CLOCK, /// use system clock
                  0x2 => FIXED_FREQ,   /// use fixed frequency clock
                  0x3 => EXTERNAL,     /// use external clock
-             },
+             }
              5    => CPWMS,
-             6    => TOIE,
+             6    => TOIE: rw,
              7    => TOF: ro,
         },
     
@@ -79,7 +79,7 @@ ioregs!(
                 4 => MSA,
                 5 => MSB,
                 6 => CHIE,
-                7 => CHF,
+                7 => CHF
             }
     
             0x4 => reg32 CV                 /// Channel counter value
