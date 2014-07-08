@@ -44,63 +44,58 @@ ioregs!(
         /// FlexTimer module.
         ///
         /// This is a timer module
-        0x0  => reg SC: u32  /// Status and control register
+        0x0  => reg32 SC  /// Status and control register
         {
-             0..2 => PS:     uint       /// Prescale
-             3..4 => CLKS:   enum { NO_CLOCK=0x0,     /// no clock selected
-                                    SYSTEM_CLOCK=0x1, /// use system clock
-                                    FIXED_FREQ=0x2,   /// use fixed frequency clock
-                                    EXTERNAL=0x3,     /// use external clock
-                                  }
-             5    => CPWMS:  bool
-             6    => TOIE:   bool
-             7    => TOF:    ro bool
-        }
+             0..2 => PS,                   /// Prescale
+             3..4 => CLKS: enum { NO_CLOCK=0x0,     /// no clock selected
+                                  SYSTEM_CLOCK=0x1, /// use system clock
+                                  FIXED_FREQ=0x2,   /// use fixed frequency clock
+                                  EXTERNAL=0x3,     /// use external clock
+                                },
+             5    => CPWMS,
+             6    => TOIE,
+             7    => TOF: ro,
+        };
     
-        0x4  => reg CNT: u32 /// Count register
+        0x4  => reg32 CNT /// Count register
         {
-            0..15 => COUNT:  uint
-        }
+            0..15 => COUNT,
+        };
     
-        0x8  => reg MOD: u32 /// Modulo register
+        0x8  => reg32 MOD /// Modulo register
         {
-            0..15 => MOD:    uint
-        }
+            0..15 => MOD,
+        };
     
-        group Channel {
+        0xc  => group CHANNELS[8]           /// Compare/capture channels
+        {
             /// A compare/capture channel
-            0x0 => reg CSC:    u32         /// Compare/capture channel status and control register
+            0x0 => reg32 CSC                /// Compare/capture channel status and control register
             {
-                0 => DMA:    bool
-                2 => ELSA:   bool
-                3 => ELSB:   bool
-                4 => MSA:    bool
-                5 => MSB:    bool
-                6 => CHIE:   bool
-                7 => CHF:    bool
-            }
+                0 => DMA,
+                2 => ELSA,
+                3 => ELSB,
+                4 => MSA,
+                5 => MSB,
+                6 => CHIE,
+                7 => CHF,
+            },
     
-            0x4 => reg CV:     u32          /// Channel counter value
+            0x4 => reg32 CV                 /// Channel counter value
             {
-                0..15 => VAL:    uint
-            }
-        }
+                0..15 => VAL,
+            },
+        },
     
-        0xc  => reg  CHANNELS: Channel[8]   /// Compare/capture channels
+        0x4c => reg32 CNTIN                 /// Counter initial value register
+        {
+            0..15 => INIT,
+        },
     
-        0x4c => reg  CNTIN: u32             /// Counter initial value register
+        0x50 => reg32 STATUS                /// Channel status register
         {
-            0..15 => INIT:     uint
-        }
-    
-        0x50 => reg  STATUS: u32            /// Channel status register
-        {
-            0..7 => CHF:      bool[8]
-        }
-        0x60 => reg  TEST: u32              /// This is only a test
-        {
-            0..7 => TEST:     bool[8]
-        }
+            0..7 => CHF[8],
+        },
     }
 )
 
