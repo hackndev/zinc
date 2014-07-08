@@ -114,7 +114,29 @@ impl<'a, 'b> Parser<'a, 'b> {
       }
     }
 
-    Some(regs)
+    regs.sort_by(|r1,r2| r1.offset.cmp(&r2.offset));
+
+    // Verify that registers don't overlap
+    let mut failed = false;
+    for (r1,r2) in regs.iter().zip(regs.iter().skip(1)) {
+      if r2.offset <= r1.last_byte() {
+        self.sess.span_diagnostic.span_err(
+          r1.name.span,
+          format!("The byte range of register ({} to {})",
+                  r1.offset, r1.last_byte()).as_slice());
+        self.sess.span_diagnostic.span_err(
+          r2.name.span,
+          format!("overlaps with the range of this register ({} to {})",
+                  r2.offset, r2.last_byte()).as_slice());
+        failed = true;
+      }
+    }
+
+    if failed {
+      None
+    } else {
+      Some(regs)
+    }
   }
 
   /// Parse the introduction of a register

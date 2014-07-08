@@ -123,6 +123,10 @@ impl Reg {
   pub fn size(&self) -> uint {
     self.count.node * self.ty.size()
   }
+  /// The offset of the last byte owned by this register
+  pub fn last_byte(&self) -> uint {
+    self.offset + self.size() - 1
+  }
 }
 
 /// Size of registers of register group in bytes

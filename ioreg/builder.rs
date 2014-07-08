@@ -596,8 +596,9 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
       node: String::from_str(token::get_ident(self.builder.path_ident(path)).get()),
       span: DUMMY_SP
     };
-    let mut sorted_regs = regs.clone();
-    let padded_regs = PaddedRegsIterator::new(&mut sorted_regs);
+    // Registers are already sorted by parser
+    let mut regs = regs.clone();
+    let padded_regs = PaddedRegsIterator::new(&mut regs);
     let fields = padded_regs.map(|r| self.build_pad_or_reg(path, r));
     let struct_def = ast::StructDef {
       fields: FromIterator::from_iter(fields),
