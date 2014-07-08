@@ -17,7 +17,7 @@ use syntax::codemap::{Spanned};
 use syntax::ast;
 use std::collections::hashmap::HashMap;
 use std::gc::Gc;
-use serialize::{Encodable, Decodable};
+use serialize::{Encodable};
 
 /// A variant of an enum field type
 #[deriving(Clone, Decodable, Encodable)]
