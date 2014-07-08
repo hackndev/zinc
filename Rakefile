@@ -87,6 +87,14 @@ compile_rust :macro_platformtree, {
   build_for: :host,
 }
 
+task build_docs: [:build_docs_html]
+
+task build_docs_html: [] do |t|
+  ['src/main.rs', 'platformtree/platformtree.rs'].each do |f|
+    sh ("rustdoc -w html -o build/doc " + f + ' ' + :config_flags.in_env.join(' '))
+  end
+end
+
 app_tasks = Context.instance.applications.map do |a|
   compile_rust "app_#{a}".to_sym, {
     source: "apps/app_#{a}.rs".in_root,

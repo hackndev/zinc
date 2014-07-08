@@ -118,6 +118,7 @@ class Context
       '-Z no-landing-pads',
     ] + @config_flags
 
+    @env[:config_flags] = @config_flags
 
     @env[:cflags] = [
       '-mthumb',
