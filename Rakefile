@@ -28,10 +28,26 @@ compile_rust :core_crate, {
   recompile_on: :triple,
 }
 
+# ioreg
+compile_rust :ioreg_crate, {
+  source:    'ioreg/ioreg.rs'.in_root,
+  produce:   'ioreg/ioreg.rs'.in_root.as_rlib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
+
+compile_rust :macro_ioreg, {
+  source:    'macro/ioreg.rs'.in_root,
+  deps:      [:ioreg_crate],
+  produce:   'macro/ioreg.rs'.in_root.as_dylib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
+
 # zinc crate
 compile_rust :zinc_crate, {
   source:  'main.rs'.in_source,
-  deps:    :core_crate,
+  deps:    [:core_crate, :macro_ioreg],
   produce: 'main.rs'.in_source.as_rlib.in_build,
   out_dir: true,
   recompile_on: [:triple, :platform, :features],
@@ -78,27 +94,11 @@ rust_tests :platformtree_test, {
   produce: 'platformtree_test'.in_build,
 }
 
-# ioreg
-compile_rust :ioreg_crate, {
-  source:    'ioreg/ioreg.rs'.in_root,
-  produce:   'ioreg/ioreg.rs'.in_root.as_rlib.in_build,
-  out_dir:   true,
-  build_for: :host,
-}
-
 # macros
 compile_rust :macro_platformtree, {
   source:    'macro/platformtree.rs'.in_root,
   deps:      [:platformtree_crate],
   produce:   'macro/platformtree.rs'.in_root.as_dylib.in_build,
-  out_dir:   true,
-  build_for: :host,
-}
-
-compile_rust :macro_ioreg, {
-  source:    'macro/ioreg.rs'.in_root,
-  deps:      [:ioreg_crate],
-  produce:   'macro/ioreg.rs'.in_root.as_dylib.in_build,
   out_dir:   true,
   build_for: :host,
 }
