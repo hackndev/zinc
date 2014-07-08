@@ -573,10 +573,10 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
     let mut attrs: Vec<ast::Attribute> = vec!(
       self.builder.list_attribute("allow", vec!("non_camel_case_types", "uppercase_variables", "dead_code")),
     );
-    /*match docstring { //FIXME
-      Some(doc) => attrs.push(self.builder.doc_attribute(token::get_ident(doc.node))),
+    match reg.docstring {
+      Some(docstring) => attrs.push(self.builder.doc_attribute(token::get_ident(docstring.node))),
       None => (),
-    }*/
+    }
     box(GC) ast::Item {
       ident: self.builder.cx.ident_of(name.node.as_slice()),
       attrs: attrs,
