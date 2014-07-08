@@ -15,6 +15,7 @@
 
 use std::gc::{Gc, GC};
 use std::collections::hashmap::HashMap;
+use std::iter::AdditiveIterator;
 use syntax::ast::Ident;
 use syntax::ast::TokenTree;
 use syntax::codemap::{Span, Spanned, DUMMY_SP, mk_sp};
@@ -156,7 +157,17 @@ impl<'a, 'b> Parser<'a, 'b> {
           return None;
         }
         match self.parse_fields() {
-          Some(fields) => node::RegPrim(width, fields),
+          Some(fields) => {
+            // width of fields in bits
+            let fields_width = fields.iter().map(|f| f.width * f.count.node).sum();
+            if fields_width > 8*width.size() {
+              self.error(format!("Width of fields ({} bits) exceeds access size of register ({} bits)",
+                                 fields_width, 8*width.size()));
+              return None;
+            } else {
+              node::RegPrim(width, fields)
+            }
+          },
           None => return None,
         }
       },
