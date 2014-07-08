@@ -568,7 +568,8 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   }
 
   /// Build field for padding or a register
-  fn build_pad_or_reg<'a>(&self, path: &Vec<String>, regOrPad: RegOrPadding<'a>) -> ast::StructField {
+  fn build_pad_or_reg<'a>(&self, path: &Vec<String>, regOrPad: RegOrPadding<'a>, index: uint)
+                          -> ast::StructField {
    match regOrPad {
       Reg(reg) => self.build_reg_union_field(path, reg),
       Pad(length) => {
@@ -580,7 +581,8 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
         Spanned {
           span: DUMMY_SP,
           node: ast::StructField_ {
-            kind: ast::NamedField(self.builder.cx.ident_of("padding"), ast::Inherited),
+            kind: ast::NamedField(self.builder.cx.ident_of(format!("_pad{}",index).as_slice()),
+                                  ast::Inherited),
             id: ast::DUMMY_NODE_ID,
             ty: ty,
             attrs: Vec::new(),
@@ -599,7 +601,7 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
     // Registers are already sorted by parser
     let mut regs = regs.clone();
     let padded_regs = PaddedRegsIterator::new(&mut regs);
-    let fields = padded_regs.map(|r| self.build_pad_or_reg(path, r));
+    let fields = padded_regs.enumerate().map(|(n,r)| self.build_pad_or_reg(path, r, n));
     let struct_def = ast::StructDef {
       fields: FromIterator::from_iter(fields),
       ctor_id: None,
