@@ -47,6 +47,7 @@ extern crate core;
 
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
 #[cfg(test)] extern crate native;
+#[phase(plugin)] extern crate macro_ioreg;
 
 pub mod drivers;
 pub mod hal;
