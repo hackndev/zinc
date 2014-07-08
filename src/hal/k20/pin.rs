@@ -20,8 +20,7 @@ Some pins that could be configured here may be missing from actual MCU depending
 on the package.
 */
 
-use core::intrinsics::abort;
-use core::option::{Option, Some, None};
+use core::option::{Option};
 
 use lib::volatile_cell::VolatileCell;
 
@@ -94,7 +93,13 @@ impl Pin {
       pull: PullConf, drive_strength: DriveStrength,
       slew_rate: SlewRate, filter: bool, open_drain: bool) {
     // enable port clock
-    sim::reg::SIM.set_SCGC5(sim::reg::SIM.SCGC5() | (1 << (self.port as uint + 8)));
+    match self.port {
+      PortA => sim::reg::SIM.scgc5.set_porta(true),
+      PortB => sim::reg::SIM.scgc5.set_portb(true),
+      PortC => sim::reg::SIM.scgc5.set_portc(true),
+      PortD => sim::reg::SIM.scgc5.set_portd(true),
+      PortE => sim::reg::SIM.scgc5.set_porte(true),
+    }
 
     let value =
           (pull as u32 << 0)
