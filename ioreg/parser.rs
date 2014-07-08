@@ -331,10 +331,7 @@ impl<'a, 'b> Parser<'a, 'b> {
         return None;
       }
 
-      println!("pre-doc {}", self.token);
       let docstring = self.parse_docstring();
-      println!("post-doc {}", self.token);
-      println!("docstring {}", docstring.map(|x| x.node));
 
       let value: node::Variant = node::Variant { name: name, value: value, docstring: docstring };
       variants.push(value);
