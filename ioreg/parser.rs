@@ -59,7 +59,7 @@ impl<'a, 'b> Parser<'a, 'b> {
   }
 
   /// Parse the ioregs from passed in tokens.
-  pub fn parse_ioregs(&mut self) -> Option<Gc<node::RegGroup>> {
+  pub fn parse_ioregs(&mut self) -> Option<Gc<node::Reg>> {
     let name = match self.expect_ident() {
       Some(name) => Spanned {node: name, span: self.last_span},
       None => return None,
@@ -80,9 +80,11 @@ impl<'a, 'b> Parser<'a, 'b> {
       None => return None,
     };
 
-    let group = node::RegGroup {
+    let group = node::Reg {
+      offset: 0,
       name: name,
-      regs: regs,
+      ty: node::RegUnion(box(GC) regs),
+      count: Spanned {span: DUMMY_SP, node: 1},
       docstring: docstring,
     };
 

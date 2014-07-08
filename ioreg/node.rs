@@ -126,33 +126,27 @@ pub fn regs_size(regs: &Vec<Reg>) -> uint {
   }
 }
 
-#[deriving(Clone, Decodable, Encodable)]
-pub struct RegGroup {
-  pub name: Spanned<String>,
-  pub docstring: Option<Spanned<ast::Ident>>,
-  pub regs: Vec<Reg>,
-}
-
 pub trait RegVisitor {
+  /// Path includes name of `Reg` being visited
   fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a Reg,
                         width: RegWidth, fields: &Vec<Field>) {}
   fn visit_union_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a Reg,
                          subregs: Gc<Vec<Reg>>) {}
 }
 
-pub fn visit_group<T: RegVisitor>(group: &RegGroup, visitor: &mut T) {
-  visit_regs(&group.regs, visitor, vec!(group.name.node.clone()))
+pub fn visit_reg<T: RegVisitor>(reg: &Reg, visitor: &mut T) {
+  visit_reg_(reg, visitor, vec!(reg.name.node.clone()))
 }
 
-fn visit_regs<T: RegVisitor>(regs: &Vec<Reg>, visitor: &mut T, path: Vec<String>) {
-  for r in regs.iter() {
-    match r.ty {
-      RegUnion(ref regs) => {
-        visitor.visit_union_reg(&path, r, *regs);
-        visit_regs(*regs, visitor, path.clone().append_one(r.name.node.clone())); // FIXME  clone
-      },
-      RegPrim(width, ref fields) =>
-        visitor.visit_prim_reg(&path, r, width, fields)
-    }
+fn visit_reg_<T: RegVisitor>(reg: &Reg, visitor: &mut T, path: Vec<String>) {
+  match reg.ty {
+    RegUnion(ref regs) => {
+      visitor.visit_union_reg(&path, reg, *regs);
+      for r in regs.iter() {
+        visit_reg_(r, visitor, path.clone().append_one(r.name.node.clone())); // FIXME  clone
+      }
+    },
+    RegPrim(width, ref fields) =>
+      visitor.visit_prim_reg(&path, reg, width, fields)
   }
 }

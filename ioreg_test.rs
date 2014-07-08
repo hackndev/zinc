@@ -69,7 +69,7 @@ ioregs!(
             0..15 => MOD,
         },
     
-        0xc  => group CHANNELS[8]           /// Compare/capture channels
+        0xc  => group CH[8]                 /// Compare/capture channels
         {
             0x0 => reg32 CSC                /// Compare/capture channel status and control register
             {
@@ -105,7 +105,7 @@ pub fn main() {
     let len = 0x60;
     let ftm: FTM = std::mem::zeroed();
     ftm.MOD.set_MOD(0xdead);
-    ftm.CHANNELS[0].CSC.set_DMA(true);
+    ftm.CH[0].CSC.set_DMA(true);
 
     let vec: CVec<u8> = CVec::new(mem::transmute(&ftm), len);
     let path = Path::new("reg");
