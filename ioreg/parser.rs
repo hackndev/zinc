@@ -245,6 +245,15 @@ impl<'a, 'b> Parser<'a, 'b> {
       },
       _ => low_bit as uint,
     };
+
+    // TODO(bgamari): Do we want to enforce an order here?
+    let (low_bit, high_bit) =
+      if high_bit < low_bit {
+        (high_bit, low_bit)
+      } else {
+        (low_bit, high_bit)
+      };
+
     if !self.expect(&token::FAT_ARROW) {
       return None;
     }
