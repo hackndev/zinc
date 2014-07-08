@@ -331,7 +331,10 @@ impl<'a, 'b> Parser<'a, 'b> {
         return None;
       }
 
+      println!("pre-doc {}", self.token);
       let docstring = self.parse_docstring();
+      println!("post-doc {}", self.token);
+      println!("docstring {}", docstring.map(|x| x.node));
 
       let value: node::Variant = node::Variant { name: name, value: value, docstring: docstring };
       variants.push(value);
@@ -350,11 +353,16 @@ impl<'a, 'b> Parser<'a, 'b> {
           let stripped = s.get().trim_left_chars(&['/',' ']);
           docs.push(String::from_str(stripped));
         },
-        _ => return None,
+        _ => break,
       }
     }
-    let docstring = self.cx.ident_of(docs.connect("\n").as_slice());
-    Some(Spanned {node: docstring, span: self.last_span})
+    let string = docs.connect("\n");
+    let string = string.as_slice().trim();
+    if !string.is_empty() {
+      Some(Spanned {node: self.cx.ident_of(string), span: self.last_span})
+    } else {
+      None
+    }
   }
 
   fn parse_uint(&mut self) -> Option<uint> {
