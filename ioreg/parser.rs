@@ -139,7 +139,7 @@ impl<'a, 'b> Parser<'a, 'b> {
     };
 
     let name = match self.expect_ident() {
-      Some(name) => Spanned {node: name, span: self.span},
+      Some(name) => Spanned {node: name, span: self.last_span},
       None => return None,
     };
     let count = match self.parse_count() {
