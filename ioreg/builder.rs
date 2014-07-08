@@ -81,16 +81,22 @@ impl<'a> Iterator<RegOrPadding<'a>> for PaddedRegsIterator<'a> {
 }
 
 pub struct Builder<'a, 'b> {
-  pub group: Gc<node::RegGroup>,
   pub cx: &'a mut ExtCtxt<'b>,
   items: Vec<Gc<ast::Item>>,
 }
 
 impl<'a, 'b> Builder<'a, 'b> {
-  pub fn new<'a, 'b>(cx: &'a mut ExtCtxt<'b>, group: Gc<node::RegGroup>) -> Builder<'a, 'b> {
-    Builder {group: group, cx: cx, items: Vec::new()}
+  pub fn new<'a, 'b>(cx: &'a mut ExtCtxt<'b>) -> Builder<'a, 'b> {
+    Builder {cx: cx, items: Vec::new()}
   }
 
+  pub fn emit_items(&'a mut self, group: Gc<node::RegGroup>) -> Vec<P<ast::Item>> {
+    node::visit_group(group, &mut BuildAccessors {builder: self});
+    node::visit_group(group, &mut BuildRegStructs {builder: self});
+    node::visit_group(group, &mut BuildUnionTypes {builder: self});
+    self.items.clone()
+  }
+  
   /// Generate a `#[name(...)]` attribute of the given type
   pub fn list_attribute(&self, name: &'static str, list: Vec<&'static str>) -> ast::Attribute {
     let words = list.move_iter().map(|word| self.cx.meta_word(DUMMY_SP, token::InternedString::new(word)));
@@ -111,7 +117,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     self.cx.expr_lit(DUMMY_SP, ast::LitIntUnsuffixed(n))
   }
 
-  pub fn push_item(&self, item: Gc<ast::Item>) {
+  pub fn push_item(&mut self, item: Gc<ast::Item>) {
     self.items.push(item);
   }
 
@@ -134,12 +140,12 @@ impl<'a, 'b> Builder<'a, 'b> {
   }  
 
   /// The name of the structure representing a register
-  fn reg_base_type(&self, path: Vec<String>, reg: &node::Reg) -> ast::Ident {
-    self.cx.ident_of(path.append_one(reg.name.node).connect("_").as_slice())
+  fn reg_base_type(&self, path: &Vec<String>, reg: &node::Reg) -> ast::Ident {
+    self.cx.ident_of(path.clone().append_one(reg.name.node.clone()).connect("_").as_slice())
   }
 
   /// Returns the type of the field representing the given register in a `RegGroup` struct
-  fn reg_struct_type(&self, path: Vec<String>, reg: &node::Reg) -> P<ast::Ty> {
+  fn reg_struct_type(&self, path: &Vec<String>, reg: &node::Reg) -> P<ast::Ty> {
     let base_ty_path = self.cx.path_ident(DUMMY_SP, self.reg_base_type(path, reg));
     let base_ty: P<ast::Ty> = self.cx.ty_path(base_ty_path, None);
     match reg.count.node {
@@ -148,7 +154,7 @@ impl<'a, 'b> Builder<'a, 'b> {
     }
   }
 
-  fn field_type_path(&self, path: Vec<String>, reg: &node::Reg, field: &node::Field)
+  fn field_type_path(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
                      -> ast::Path {
     let span = field.ty.span;
     match field.ty.node {
@@ -163,7 +169,7 @@ impl<'a, 'b> Builder<'a, 'b> {
         match opt_name {
           &Some(ref name) => self.cx.path_ident(span, self.cx.ident_of(name.as_slice())),
           &None => {
-            let name = path.append_one(reg.name.node).append_one(field.name.node).connect("_");
+            let name = path.clone().append_one(reg.name.node.clone()).append_one(field.name.node.clone()).connect("_");
             self.cx.path_ident(span, self.cx.ident_of(name.as_slice()))
           }
         }
@@ -197,10 +203,10 @@ impl<'a, 'b> Builder<'a, 'b> {
 }
 
 /// A visitor to build the field accessors for primitive registers
-struct BuildAccessors<'a, 'b> { builder: &'a mut Builder<'a, 'b> }
+struct BuildAccessors<'a, 'b, 'c> { builder: &'a mut Builder<'b, 'c> }
 
-impl<'a, 'b> node::RegVisitor for BuildAccessors<'a, 'b> {
-  fn visit_prim_reg<'a>(&'a mut self, path: Vec<String>, reg: &'a node::Reg,
+impl<'a, 'b, 'c> node::RegVisitor for BuildAccessors<'a, 'b, 'c> {
+  fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a node::Reg,
                         width: node::RegWidth, fields: &Vec<node::Field>) {
     let accessors: Vec<Gc<ast::Method>> =
       FromIterator::from_iter(
@@ -220,9 +226,9 @@ impl<'a, 'b> node::RegVisitor for BuildAccessors<'a, 'b> {
   }
 }
 
-impl<'a, 'b> BuildAccessors<'a, 'b> {
+impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
   /// Build the accessors for a field
-  fn build_field_accessors(&self, path: Vec<String>, reg: &node::Reg, field: &node::Field)
+  fn build_field_accessors(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
                            -> Vec<P<ast::Method>> {
     match field.access {
       node::ReadWrite => vec!(self.build_field_setter(path, reg, field),
@@ -261,7 +267,7 @@ impl<'a, 'b> BuildAccessors<'a, 'b> {
     }
   }
 
-  fn build_field_getter(&self, path: Vec<String>, reg: &node::Reg, field: &node::Field)
+  fn build_field_getter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
                         -> P<ast::Method> {
     let ty: P<ast::Ty> = self.builder.cx.ty_path(self.builder.field_type_path(path, reg, field), None);
     let self_arg: ast::Arg = ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
@@ -306,7 +312,7 @@ impl<'a, 'b> BuildAccessors<'a, 'b> {
   }
 
   /// Build a setter for a field
-  fn build_field_setter(&self, path: Vec<String>, reg: &node::Reg, field: &node::Field)
+  fn build_field_setter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
                         -> P<ast::Method> {
     let ty: P<ast::Ty> = self.builder.cx.ty_path(self.builder.field_type_path(path, reg, field), None);
     let self_arg: ast::Arg = ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
@@ -376,10 +382,10 @@ impl<'a, 'b> BuildAccessors<'a, 'b> {
 }
 
 /// A visitor to build the struct for each register
-struct BuildRegStructs<'a, 'b> {builder: &'a mut Builder<'a, 'b>}
+struct BuildRegStructs<'a, 'b, 'c> {builder: &'a mut Builder<'b, 'c>}
 
-impl<'a, 'b> node::RegVisitor for BuildRegStructs<'a, 'b> {
-  fn visit_prim_reg(&mut self, path: Vec<String>, reg: &node::Reg,
+impl<'a, 'b, 'c> node::RegVisitor for BuildRegStructs<'a, 'b, 'c> {
+  fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
                     width: node::RegWidth, fields: &Vec<node::Field>) {
     for field in fields.iter() {
       match self.build_field_type(path, reg, field) {
@@ -388,13 +394,14 @@ impl<'a, 'b> node::RegVisitor for BuildRegStructs<'a, 'b> {
       }
     }
 
-    self.builder.push_item(self.build_reg_struct(path, reg, width));
+    let reg_struct = self.build_reg_struct(path, reg, width);
+    self.builder.push_item(reg_struct);
   }
 }
 
-impl<'a, 'b> BuildRegStructs<'a, 'b> {
+impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
   /// Build a field type if necessary (e.g. in the case of an `EnumField`)
-  fn build_field_type(&self, path: Vec<String>, reg: &node::Reg, field: &node::Field)
+  fn build_field_type(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
                       -> Option<P<ast::Item>> {
     match field.ty.node {
       node::EnumField { variants: ref variants, .. } => {
@@ -425,7 +432,7 @@ impl<'a, 'b> BuildRegStructs<'a, 'b> {
   /// For instance,
   ///
   ///     pub struct REG {_value: u32}
-  fn build_reg_struct(&self, path: Vec<String>, reg: &node::Reg, width: node::RegWidth)
+  fn build_reg_struct(&self, path: &Vec<String>, reg: &node::Reg, width: node::RegWidth)
                       -> P<ast::Item> {
     let prim_ty = self.builder.cx.ty_path(self.builder.primitive_type_path(width), None);
     let cell_ty: P<ast::Ty> =
@@ -496,19 +503,19 @@ impl<'a, 'b> BuildRegStructs<'a, 'b> {
 }
 
 /// Build types for `RegUnions`
-struct BuildUnionTypes<'a, 'b> {builder: &'a mut Builder<'a, 'b>}
+struct BuildUnionTypes<'a, 'b, 'c> {builder: &'a mut Builder<'b, 'c>}
 
-impl<'a, 'b> node::RegVisitor for BuildUnionTypes<'a, 'b> {
-  pub fn visit_union_reg<'a>(&'a mut self, path: Vec<String>, reg: &'a node::Reg,
-                             subregs: Gc<Vec<node::Reg>>) {
-    let name = Spanned { node: self.builder.reg_struct_type(path, reg), span: DUMMY_SP };
-    self.builder.push_item(self.build_union_type(path, name, subregs));
+impl<'a, 'b, 'c> node::RegVisitor for BuildUnionTypes<'a, 'b, 'c> {
+  fn visit_union_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a node::Reg,
+                         subregs: Gc<Vec<node::Reg>>) {
+    let union_type = self.build_union_type(path, reg, subregs);
+    self.builder.push_item(union_type);
   }
 }
 
-impl<'a, 'b> BuildUnionTypes<'a, 'b> {
+impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   /// Produce a field for the given register in a `RegGroup` struct
-  fn build_reg_group_field(&self, path: Vec<String>, reg: &node::Reg) -> ast::StructField {
+  fn build_reg_group_field(&self, path: &Vec<String>, reg: &node::Reg) -> ast::StructField {
     let attrs = match reg.docstring {
       Some(doc) => vec!(self.builder.doc_attribute(token::get_ident(doc.node))),
       None => Vec::new(),
@@ -525,7 +532,7 @@ impl<'a, 'b> BuildUnionTypes<'a, 'b> {
   }
 
   /// Build field for padding or a register
-  fn build_pad_or_reg<'a>(&self, path: Vec<String>, regOrPad: RegOrPadding<'a>) -> ast::StructField {
+  fn build_pad_or_reg<'a>(&self, path: &Vec<String>, regOrPad: RegOrPadding<'a>) -> ast::StructField {
    match regOrPad {
       Reg(reg) => self.build_reg_group_field(path, reg),
       Pad(length) => {
@@ -548,10 +555,15 @@ impl<'a, 'b> BuildUnionTypes<'a, 'b> {
   }
 
   /// Build the type associated with a register group
-  fn build_union_type(&self, path: Vec<String>, name: Spanned<String>, regs: Vec<node::Reg>) -> P<ast::Item> {
-    let mut sorted_regs = regs;
+  fn build_union_type(&self, path: &Vec<String>, reg: &node::Reg, regs: &Vec<node::Reg>) -> P<ast::Item> {
+    let name = Spanned {
+      node: String::from_str(token::get_ident(self.builder.reg_base_type(path, reg)).get()),
+      span: DUMMY_SP
+    };
+    let mut sorted_regs = regs.clone();
     let padded_regs = PaddedRegsIterator::new(&mut sorted_regs);
-    let fields = padded_regs.map(|r| self.build_pad_or_reg(path, r));
+    let field_path = path.clone().append_one(reg.name.node.clone());
+    let fields = padded_regs.map(|r| self.build_pad_or_reg(&field_path, r));
     let struct_def = ast::StructDef {
       fields: FromIterator::from_iter(fields),
       ctor_id: None,
@@ -561,10 +573,10 @@ impl<'a, 'b> BuildUnionTypes<'a, 'b> {
     let mut attrs: Vec<ast::Attribute> = vec!(
       self.builder.list_attribute("allow", vec!("non_camel_case_types", "uppercase_variables", "dead_code")),
     );
-    match None { //FIXME
+    /*match docstring { //FIXME
       Some(doc) => attrs.push(self.builder.doc_attribute(token::get_ident(doc.node))),
       None => (),
-    }
+    }*/
     box(GC) ast::Item {
       ident: self.builder.cx.ident_of(name.node.as_slice()),
       attrs: attrs,

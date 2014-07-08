@@ -41,8 +41,8 @@ pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     -> Box<MacResult> {
   match Parser::new(cx, tts).parse_ioregs() {
     Some(group) => {
-      let builder = Builder::new(cx, group);
-      let items = builder.emit_items();
+      let mut builder = Builder::new(cx);
+      let items = builder.emit_items(group);
       MacItems::new(items)
     },
     None => {

@@ -134,25 +134,25 @@ pub struct RegGroup {
 }
 
 pub trait RegVisitor {
-  pub fn visit_prim_reg<'a>(&'a mut self, path: Vec<String>, reg: &'a Reg,
-                            width: RegWidth, fields: &Vec<Field>) {}
-  pub fn visit_union_reg<'a>(&'a mut self, path: Vec<String>, reg: &'a Reg,
-                             subregs: Gc<Vec<Reg>>) {}
+  fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a Reg,
+                        width: RegWidth, fields: &Vec<Field>) {}
+  fn visit_union_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a Reg,
+                         subregs: Gc<Vec<Reg>>) {}
 }
 
 pub fn visit_group<T: RegVisitor>(group: &RegGroup, visitor: &mut T) {
-  visit_regs(&group.regs, visitor, vec!(group.name.node))
+  visit_regs(&group.regs, visitor, vec!(group.name.node.clone()))
 }
 
 fn visit_regs<T: RegVisitor>(regs: &Vec<Reg>, visitor: &mut T, path: Vec<String>) {
   for r in regs.iter() {
     match r.ty {
       RegUnion(ref regs) => {
-        visitor.visit_union_reg(path, r, *regs);
-        visit_regs(*regs, visitor, path.append_one(r.name.node));
+        visitor.visit_union_reg(&path, r, *regs);
+        visit_regs(*regs, visitor, path.clone().append_one(r.name.node.clone())); // FIXME  clone
       },
       RegPrim(width, ref fields) =>
-        visitor.visit_prim_reg(path, r, width, fields)
+        visitor.visit_prim_reg(&path, r, width, fields)
     }
   }
 }
