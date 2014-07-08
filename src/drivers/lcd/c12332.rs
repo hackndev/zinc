@@ -26,6 +26,8 @@ might be an issue for any other peripheral sharing the same SPI bus.
 use core::cell;
 use core::slice::ImmutableVector;
 use core::mem::zeroed;
+use core::option::{Some, None};
+use core::iter::{Iterator, range};
 
 use super::font_small_7;
 use super::LCD;
@@ -113,32 +115,22 @@ impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
     self.cs.set_high();
   }
 
-  pub fn set_pixel(&self, x: i32, y: i32, color: u16) {
-    if x > 127 || y > 31 || x < 0 || y < 0 {
+  pub fn set_pixel(&self, x: u32, y: u32, color: u16) {
+    if x > 127 || y > 31 {
       return
     }
 
-    let index = x + (y/8) * 128;
+    let index = (x + (y/8) * 128) as uint;
     if color == 0 {
-      self.videobuf[index as uint].set(
-        self.videobuf[index as uint].get() & !(1i32 << (y%8i32) as uint) as u8);
+      self.videobuf[index].set(
+        self.videobuf[index].get() & !(1u8 << (y%8u32) as uint) as u8);
     } else {
-      self.videobuf[index as uint].set(
-        self.videobuf[index as uint].get() | (1 << ((y%8) as uint)));
+      self.videobuf[index].set(
+        self.videobuf[index].get() | (1 << ((y%8) as uint)));
     }
   }
 
-  pub fn character(&self, x: i32, y: i32, c: u8) {
-    let hor: u8;
-    let vert: u8;
-    let offset: u8;
-    let bpl: u8;
-    let mut j: u8;
-    let mut i: u8;
-    let mut b: u8;
-    let zeichen: &[u8];
-    let mut z: u8;
-    let w: u8;
+  pub fn character(&self, x: u32, y: u32, c: u8) {
     let width: u32 = 128;
     let height: u32 = 32;
 
@@ -147,10 +139,10 @@ impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
     }
 
     // read font parameter from start of array
-    offset = self.font[0];                    // bytes / char
-    hor = self.font[1];                       // get hor size of font
-    vert = self.font[2];                      // get vert size of font
-    bpl = self.font[3];                       // bytes per line
+    let offset = self.font[0];                    // bytes / char
+    let hor = self.font[1];                       // get hor size of font
+    let vert = self.font[2];                      // get vert size of font
+    let bpl = self.font[3];                       // bytes per line
 
     let mut char_x: u32 = self.char_x.get();
     let mut char_y: u32 = self.char_y.get();
@@ -165,24 +157,20 @@ impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
 
     let start: uint = ((c - 32) as uint * offset as uint) + 4;
     let end: uint = start + offset as uint;
-    zeichen = self.font.slice(start, end);
+    let zeichen = self.font.slice(start, end);
     // zeichen = &self.font[]; // start of char bitmap
-    w = zeichen[0];                          // width of actual char
+    let w = zeichen[0];                          // width of actual char
     // construct the char into the buffer
-    j = 0;
-    while j < vert {
-      i = 0;
-      while i < hor {
-        z =  zeichen[(bpl * i + ((j & 0xF8) >> 3)+1) as uint];
-        b = 1 << ((j & 0x07) as uint);
+    for j in range(0, vert) {
+      for i in range(0, hor) {
+        let z: u8 =  zeichen[(bpl * i + ((j & 0xF8) >> 3)+1) as uint];
+        let b: u8 = 1 << ((j & 0x07) as uint);
         if ( z & b ) == 0x00 {
-          self.set_pixel(x+i as i32, y+j as i32, 0);
+          self.set_pixel(x+i as u32, y+j as u32, 0);
         } else {
-          self.set_pixel(x+i as i32, y+j as i32, 1);
+          self.set_pixel(x+i as u32, y+j as u32, 1);
         }
-        i += 1;
       }
-      j += 1;
     }
 
     char_x += w as u32;
@@ -238,14 +226,12 @@ impl<'a, S: SPI, T: Timer, P: GPIO> LCD for C12332<'a, S, T, P> {
   }
 
   fn clear(&self) {
-    let mut i = 0;
-    while i < 512 {
+    for i in range(0u, 512) {
       self.videobuf[i].set(0);
-      i += 1;
     }
   }
 
-  fn pixel(&self, x: i32, y: i32, color: u16) {
+  fn pixel(&self, x: u32, y: u32, color: u16) {
     self.set_pixel(x, y, color);
   }
 }
@@ -260,7 +246,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> CharIO for C12332<'a, S, T, P> {
           self.char_y.set(0);
       }
     } else {
-      self.character(self.char_x.get() as i32, self.char_y.get() as i32, value as u8);
+      self.character(self.char_x.get(), self.char_y.get(), value as u8);
     }
   }
 }

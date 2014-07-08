@@ -58,7 +58,3 @@ pub mod os;
 mod std {
   pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
 }
-
-#[test]
-fn dummy_test() {
-}
