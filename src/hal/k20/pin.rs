@@ -169,6 +169,8 @@ impl ::hal::pin::GPIO for Pin {
 }
 
 mod reg {
+  use lib::volatile_cell::VolatileCell;
+
   ioregs!(PORT = {
 
     0x0    => reg32 pcr[32]     /// Port control register
