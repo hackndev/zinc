@@ -364,7 +364,7 @@ impl<'a, 'b> Parser<'a, 'b> {
         }
       },
       _ => {
-        if high_bit == low_bit {
+        if width == 1 {
           node::BoolField
         } else {
           node::UIntField
