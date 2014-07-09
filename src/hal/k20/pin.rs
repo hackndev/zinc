@@ -108,7 +108,7 @@ impl Pin {
           | (open_drain as u32 << 5)
           | (drive_strength as u32 << 6)
           | (function as u32 << 8);
-    self.pcr().set(value);
+    //self.pcr().set(value); // FIXME
 
     if function == GPIO {
       (self as &::hal::pin::GPIO).set_direction(gpiodir.unwrap());
@@ -125,11 +125,7 @@ impl Pin {
     }
   }
 
-  fn gpiobit(&self) -> u32 {
-    1 << (self.pin as uint)
-  }
-
-  fn pcr(&self) -> &VolatileCell<u32> {
+  fn pcr(&self) -> &reg::PORT_pcr {
     let port: &reg::PORT = match self.port {
       PortA => &reg::PORTA,
       PortB => &reg::PORTB,
@@ -137,59 +133,72 @@ impl Pin {
       PortD => &reg::PORTD,
       PortE => &reg::PORTE,
     };
-    return &port.PCR[self.pin as uint];
+    return &port.pcr[self.pin as uint];
   }
 }
 
 impl ::hal::pin::GPIO for Pin {
   /// Sets output GPIO value to high.
   fn set_high(&self) {
-    self.gpioreg().set_PSOR(self.gpiobit());
+    self.gpioreg().psor.set_ptso(self.pin as uint, true);
   }
 
   /// Sets output GPIO value to low.
   fn set_low(&self) {
-    self.gpioreg().set_PCOR(self.gpiobit());
+    self.gpioreg().pcor.set_ptco(self.pin as uint, true);
   }
 
   /// Returns input GPIO level.
   fn level(&self) -> ::hal::pin::GPIOLevel {
-    let bit: u32 = self.gpiobit();
     let reg = self.gpioreg();
-
-    match reg.PDIR() & bit {
-      0 => ::hal::pin::Low,
-      _ => ::hal::pin::High,
+    match reg.pdir.pdi(self.pin as uint) {
+      false => ::hal::pin::Low,
+      _     => ::hal::pin::High,
     }
   }
 
   /// Sets output GPIO direction.
   fn set_direction(&self, new_mode: ::hal::pin::GPIODirection) {
-    let bit: u32 = self.gpiobit();
     let reg = self.gpioreg();
-    let val: u32 = reg.PDDR();
-    let new_val: u32 = match new_mode {
-      ::hal::pin::In  => val & !bit,
-      ::hal::pin::Out => val | bit,
+    let val = match new_mode {
+      ::hal::pin::In  => reg::INPUT,
+      ::hal::pin::Out => reg::OUTPUT,
     };
-
-    reg.set_PDDR(new_val);
+    reg.pddr.set_pdd(self.pin as uint, val);
   }
 }
 
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  #[allow(uppercase_variables)]
-  pub struct PORT {
-    pub PCR: [VolatileCell<u32>, ..32],
-    pub GPCLR: VolatileCell<u32>,
-    pub GPCHR: VolatileCell<u32>,
-    pub ISFR: VolatileCell<u32>,
-    pub DFER: VolatileCell<u32>,
-    pub DFCR: VolatileCell<u32>,
-    pub DFWR: VolatileCell<u32>,
-  }
+  ioregs!(PORT = {
+    0x0    => reg32 pcr[32] {
+      0      => ps,
+      1      => pe,
+      2      => sre,
+      4      => pfe,
+      5      => ode,
+      6      => dse,
+      8..10  => mux,
+      15     => lk,
+      16..19 => irqc,
+      24     => isf,
+    }
+
+    0x80   => reg32 gpclr {
+      0..15  => gpwd,
+      16..31 => gpwe,
+    }
+
+    0x84   => reg32 gpchr {
+      0..15  => gpwd,
+      16..31 => gpwe,
+    }
+
+    0x88   => reg32 isfr {
+      0..31  => isf,
+    }
+  })
 
   extern {
     #[link_name="iomem_PORTA"] pub static PORTA: PORT;
@@ -199,13 +208,30 @@ mod reg {
     #[link_name="iomem_PORTE"] pub static PORTE: PORT;
   }
 
-  ioreg!(GPIO: u32, PDOR, PSOR, PCOR, PTOR, PDIR, PDDR)
-  reg_rw!(GPIO, u32, PDOR,  set_PDOR,  PDOR)
-  reg_rw!(GPIO, u32, PSOR,  set_PSOR,  PSOR)
-  reg_rw!(GPIO, u32, PCOR,  set_PCOR,  PCOR)
-  reg_rw!(GPIO, u32, PTOR,  set_PTOR,  PTOR)
-  reg_rw!(GPIO, u32, PDIR,  set_PDIR,  PDIR)
-  reg_rw!(GPIO, u32, PDDR,  set_PDDR,  PDDR)
+  ioregs!(GPIO = {
+    0x0     => reg32 pdo  /// port data output register
+      {0..31   => pdo}
+
+    0x4     => reg32 psor /// port set output register
+      {0..31   => ptso[32]}
+
+    0x8     => reg32 pcor /// port clear output register
+      {0..31   => ptco[32]}
+
+    0xc     => reg32 ptor /// port toggle output register
+      {0..31   => ptto[32]}
+
+    0x10    => reg32 pdir /// port data input register
+      {0..31   => pdi[32]}
+
+    0x14    => reg32 pddr /// port direction register
+      {
+        0..31   => pdd[32] {
+          0 => INPUT,
+          1 => OUTPUT,
+        }
+      }
+  })
 
   extern {
     #[link_name="iomem_GPIOA"] pub static GPIOA: GPIO;
