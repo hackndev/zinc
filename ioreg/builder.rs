@@ -314,6 +314,60 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
     }
   }
 
+  /// Build an expression containing the value of the field within the
+  /// given register
+  fn get_field(&self, reg: &node::Reg, field: &node::Field,
+               reg_value: P<ast::Expr>) -> P<ast::Expr> {
+    let shifted_masked: P<ast::Expr> =
+      self.builder.cx.expr_binary(
+        DUMMY_SP,
+        ast::BiBitAnd,
+        self.builder.cx.expr_binary(
+          DUMMY_SP,
+          ast::BiShr,
+          reg_value,
+          self.shift(field)),
+        self.mask(field));
+    self.from_primitive(reg, field, shifted_masked)
+  }
+
+  /// Build an expression containing the value of the register with the
+  /// given field updated
+  fn set_field(&self, reg: &node::Reg, field: &node::Field,
+               old_reg_value: P<ast::Expr>, new_field_value: P<ast::Expr>)
+               -> P<ast::Expr> {
+    let packed_ty: P<ast::Ty> =
+      self.builder.cx.ty_path(
+        self.builder.reg_primitive_type_path(reg).unwrap(),
+        None);
+    let shifted_mask: P<ast::Expr> =
+      self.builder.cx.expr_binary(
+        DUMMY_SP,
+        ast::BiShr,
+        self.mask(field),
+        self.shift(field));
+    let old_masked: P<ast::Expr> =
+      self.builder.cx.expr_binary(
+        DUMMY_SP,
+        ast::BiBitAnd,
+        old_reg_value,
+        self.builder.cx.expr_unary(DUMMY_SP, ast::UnNot, shifted_mask)
+      );
+    let new_masked_shifted: P<ast::Expr> =
+      self.builder.cx.expr_binary(
+        DUMMY_SP,
+        ast::BiShl,
+        self.builder.cx.expr_binary(
+          DUMMY_SP,
+          ast::BiBitAnd,
+          self.builder.cx.expr_cast(DUMMY_SP, new_field_value, packed_ty),
+          self.mask(field)
+        ),
+        self.shift(field));
+    self.builder.cx.expr_binary(DUMMY_SP, ast::BiBitOr,
+                                old_masked, new_masked_shifted)
+  }
+
   fn build_field_getter(&self, path: &Vec<String>, reg: &node::Reg,
                         field: &node::Field, show_docstring: bool)
                         -> P<ast::Method> {
@@ -335,7 +389,7 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
       };
     let decl: P<ast::FnDecl> = self.builder.cx.fn_decl(inputs, ty);
 
-    let value: P<ast::Expr> =
+    let reg_value: P<ast::Expr> =
       self.builder.cx.expr_method_call(
         DUMMY_SP,
         self.builder.cx.expr_field_access(
@@ -345,16 +399,7 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
         self.builder.cx.ident_of("get"),
         Vec::new()
       );
-    let shifted_masked: P<ast::Expr> =
-      self.builder.cx.expr_binary(
-        DUMMY_SP,
-        ast::BiBitAnd,
-        self.builder.cx.expr_binary(DUMMY_SP,
-                                    ast::BiShr,
-                                    value,
-                                    self.shift(field)),
-        self.mask(field));
-    let expr: P<ast::Expr> = self.from_primitive(reg, field, shifted_masked);
+    let value: P<ast::Expr> = self.get_field(reg, field, reg_value);
 
     let attrs = match field.docstring {
       Some(docstring) if show_docstring =>
@@ -363,7 +408,7 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
     };
 
     let body: P<ast::Block> =
-      self.builder.cx.block(DUMMY_SP, Vec::new(), Some(expr));
+      self.builder.cx.block(DUMMY_SP, Vec::new(), Some(value));
     box(GC) ast::Method {
       ident: self.builder.cx.ident_of(field.name.node.as_slice()),
       attrs: attrs,
@@ -388,11 +433,11 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
                               None);
     let self_arg: ast::Arg =
       ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
-    let new_value: ast::Arg =
+    let new_value_arg: ast::Arg =
       self.builder.cx.arg(DUMMY_SP, self.builder.cx.ident_of("new_value"), ty);
     let inputs: Vec<ast::Arg> =
       if field.count.node == 1 {
-        vec!(self_arg, new_value)
+        vec!(self_arg, new_value_arg)
       } else {
         let idx_arg: ast::Arg =
           self.builder.cx.arg(
@@ -400,61 +445,32 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
             self.builder.cx.ident_of("idx"),
             self.builder.cx.ty_ident(DUMMY_SP,
                                      self.builder.cx.ident_of("uint")));
-        vec!(self_arg, idx_arg, new_value)
+        vec!(self_arg, idx_arg, new_value_arg)
       };
     let decl: P<ast::FnDecl> =
       self.builder.cx.fn_decl(inputs, self.builder.cx.ty_nil());
 
-    let shifted_mask: P<ast::Expr> =
-      self.builder.cx.expr_binary(
-        DUMMY_SP,
-        ast::BiShr,
-        self.mask(field),
-        self.shift(field));
     let cell: P<ast::Expr> =
         self.builder.cx.expr_field_access(
           DUMMY_SP,
           self.builder.cx.expr_self(DUMMY_SP),
           self.builder.cx.ident_of("_value"));
-    let old: P<ast::Expr> =
+    let old_value: P<ast::Expr> =
       self.builder.cx.expr_method_call(
         DUMMY_SP,
         cell,
         self.builder.cx.ident_of("get"),
         Vec::new()
       );
-    let old_masked: P<ast::Expr> =
-      self.builder.cx.expr_binary(
-        DUMMY_SP,
-        ast::BiBitAnd,
-        old,
-        self.builder.cx.expr_unary(DUMMY_SP, ast::UnNot, shifted_mask)
-      );
-    let new_masked_shifted: P<ast::Expr> =
-      self.builder.cx.expr_binary(
-        DUMMY_SP,
-        ast::BiShl,
-        self.builder.cx.expr_binary(
-          DUMMY_SP,
-          ast::BiBitAnd,
-          self.builder.cx.expr_cast(
-            DUMMY_SP,
-            self.builder.cx.expr_ident(DUMMY_SP,
-                                       self.builder.cx.ident_of("new_value")),
-            self.builder.cx.ty_path(
-              self.builder.reg_primitive_type_path(reg).unwrap(),
-              None)
-          ),
-          self.mask(field)
-        ),
-        self.shift(field));
+    let new_value: P<ast::Expr> =
+      self.builder.cx.expr_ident(DUMMY_SP,
+                                 self.builder.cx.ident_of("new_value"));
     let expr: Gc<ast::Expr> =
       self.builder.cx.expr_method_call(
         DUMMY_SP,
         cell,
         self.builder.cx.ident_of("set"),
-        vec!(self.builder.cx.expr_binary(DUMMY_SP, ast::BiBitOr,
-                                         old_masked, new_masked_shifted)));
+        vec!(self.set_field(reg, field, old_value, new_value)));
 
     let attrs = match field.docstring {
       Some(docstring) if show_docstring =>
@@ -575,7 +591,7 @@ impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
       is_virtual: false,
     };
     let mut attrs = match reg.docstring {
-      Some(docstring) =>s
+      Some(docstring) =>
         vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
       None => Vec::new(),
     };
