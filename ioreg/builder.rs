@@ -95,17 +95,22 @@ impl<'a, 'b> Builder<'a, 'b> {
   }
 
   /// Generate a `#[name(...)]` attribute of the given type
-  pub fn list_attribute(&self, name: &'static str, list: Vec<&'static str>) -> ast::Attribute {
-    let words = list.move_iter().map(|word| self.cx.meta_word(DUMMY_SP, token::InternedString::new(word)));
+  pub fn list_attribute(&self, name: &'static str, list: Vec<&'static str>)
+                        -> ast::Attribute {
+    let words =
+     list.move_iter()
+     .map(|word| self.cx.meta_word(DUMMY_SP, token::InternedString::new(word)));
     let allow = self.cx.meta_list(DUMMY_SP, token::InternedString::new(name),
                                   FromIterator::from_iter(words));
     self.cx.attribute(DUMMY_SP, allow)
   }
 
   /// Generate a `#[doc="..."]` attribute of the given type
-  pub fn doc_attribute(&self, docstring: token::InternedString) -> ast::Attribute {
+  pub fn doc_attribute(&self, docstring: token::InternedString)
+                       -> ast::Attribute {
     let s: ast::Lit_ = ast::LitStr(docstring, ast::CookedStr);
-    let attr = self.cx.meta_name_value(DUMMY_SP, token::InternedString::new("doc"), s);
+    let attr =
+      self.cx.meta_name_value(DUMMY_SP, token::InternedString::new("doc"), s);
     self.cx.attribute(DUMMY_SP, attr)
   }
 
@@ -141,18 +146,22 @@ impl<'a, 'b> Builder<'a, 'b> {
     self.cx.ident_of(path.clone().connect("_").as_slice())
   }
 
-  /// Returns the type of the field representing the given register within a `RegGroup` struct
+  /// Returns the type of the field representing the given register
+  /// within a `RegGroup` struct
   fn reg_struct_type(&self, path: &Vec<String>, reg: &node::Reg) -> P<ast::Ty> {
     let base_ty_path = self.cx.path_ident(DUMMY_SP, self.path_ident(path));
     let base_ty: P<ast::Ty> = self.cx.ty_path(base_ty_path, None);
     match reg.count.node {
       1 => base_ty,
-      n => self.cx.ty(DUMMY_SP, ast::TyFixedLengthVec(base_ty, self.cx.expr_uint(DUMMY_SP, n))),
+      n =>
+        self.cx.ty(DUMMY_SP,
+                   ast::TyFixedLengthVec(base_ty,
+                                         self.cx.expr_uint(DUMMY_SP, n))),
     }
   }
 
-  fn field_type_path(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
-                     -> ast::Path {
+  fn field_type_path(&self, path: &Vec<String>, reg: &node::Reg,
+                     field: &node::Field) -> ast::Path {
     let span = field.ty.span;
     match field.ty.node {
       node::UIntField => {
@@ -164,9 +173,11 @@ impl<'a, 'b> Builder<'a, 'b> {
       node::BoolField => self.cx.path_ident(span, self.cx.ident_of("bool")),
       node::EnumField { opt_name: ref opt_name, ..} => {
         match opt_name {
-          &Some(ref name) => self.cx.path_ident(span, self.cx.ident_of(name.as_slice())),
+          &Some(ref name) =>
+            self.cx.path_ident(span, self.cx.ident_of(name.as_slice())),
           &None => {
-            let name = path.clone().append_one(field.name.node.clone()).connect("_");
+            let name =
+              path.clone().append_one(field.name.node.clone()).connect("_");
             self.cx.path_ident(span, self.cx.ident_of(name.as_slice()))
           }
         }
@@ -175,7 +186,8 @@ impl<'a, 'b> Builder<'a, 'b> {
   }
 
   /*
-  fn emit_instance(&self, group: P<node::RegGroup>, name: String) -> P<ast::ForeignItem> {
+  fn emit_instance(&self, group: P<node::RegGroup>, name: String)
+                   -> P<ast::ForeignItem> {
     let ident = self.cx.ident_of(group.name.node.as_slice());
     let ty: P<ast::Ty> = self.cx.ty_ident(DUMMY_SP, ident);
     box(GC) ast::ForeignItem {
@@ -188,13 +200,20 @@ impl<'a, 'b> Builder<'a, 'b> {
     }
   }
 
-  fn emit_instances(&self, instances: Vec<(P<node::RegGroup>, String)>) -> P<ast::Item> {
+  fn emit_instances(&self, instances: Vec<(P<node::RegGroup>, String)>)
+                    -> P<ast::Item> {
     let fmod = ast::ForeignMod {
       abi: abi::C,
       view_items: Vec::new(),
-      items: FromIterator::from_iter(instances.move_iter().map(|(group,name)| self.emit_instance(group, name))),
+      items: FromIterator::from_iter(
+        instances.move_iter()
+        .map(|(group,name)| self.emit_instance(group, name))),
     };
-    self.cx.item(DUMMY_SP, token::special_idents::invalid, Vec::new(), ast::ItemForeignMod(fmod))
+    self.cx.item(
+      DUMMY_SP,
+      token::special_idents::invalid,
+      Vec::new(),
+      ast::ItemForeignMod(fmod))
   }
   */
 }
@@ -207,7 +226,8 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildAccessors<'a, 'b, 'c> {
                         _width: node::RegWidth, fields: &Vec<node::Field>) {
     let accessors: Vec<Gc<ast::Method>> =
       FromIterator::from_iter(
-        fields.iter().flat_map(|f| self.build_field_accessors(path, reg, f).move_iter()));
+        fields.iter()
+          .flat_map(|f| self.build_field_accessors(path, reg, f).move_iter()));
     let impl_ = ast::ItemImpl(
       no_generics(),
       None,
@@ -217,16 +237,19 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildAccessors<'a, 'b, 'c> {
       accessors
     );
     let attrs: Vec<ast::Attribute> =
-      vec!(self.builder.list_attribute("allow", vec!("non_snake_case_functions", "dead_code")));
-    let item = self.builder.cx.item(DUMMY_SP, self.builder.cx.ident_of(reg.name.node.as_slice()), attrs, impl_);
+      vec!(self.builder.list_attribute("allow", vec!("non_snake_case_functions",
+                                                     "dead_code")));
+    let item = self.builder.cx.item(
+      DUMMY_SP, self.builder.cx.ident_of(reg.name.node.as_slice()),
+      attrs, impl_);
     self.builder.push_item(item)
   }
 }
 
 impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
   /// Build the accessors for a field
-  fn build_field_accessors(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
-                           -> Vec<P<ast::Method>> {
+  fn build_field_accessors(&self, path: &Vec<String>, reg: &node::Reg,
+                           field: &node::Field) -> Vec<P<ast::Method>> {
     // only show the docstring for one of the accessors to avoid noise
     match field.access {
       node::ReadWrite => vec!(self.build_field_setter(path, reg, field, false),
@@ -236,11 +259,15 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
     }
   }
 
-  /// Given an `Expr` of the given register's primitive type, return an `Expr` of the field type
-  fn from_primitive(&self, reg: &node::Reg, field: &node::Field, prim: P<ast::Expr>) -> P<ast::Expr> {
+  /// Given an `Expr` of the given register's primitive type, return
+  /// an `Expr` of the field type
+  fn from_primitive(&self, reg: &node::Reg, field: &node::Field,
+                    prim: P<ast::Expr>) -> P<ast::Expr> {
     match field.ty.node {
       node::UIntField => prim,
-      node::BoolField => self.builder.cx.expr_binary(DUMMY_SP, ast::BiNe, prim, self.builder.expr_int(0)),
+      node::BoolField =>
+        self.builder.cx.expr_binary(DUMMY_SP, ast::BiNe,
+                                    prim, self.builder.expr_int(0)),
       node::EnumField {..} => {
         let from = match reg.ty {
           node::RegPrim(width,_) =>
@@ -249,13 +276,15 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
               node::Reg16 => "from_u16",
               node::Reg8  => "from_u8",
             },
-          _            => fail!("Can't convert group register to primitive type"),
+          _ => fail!("Can't convert group register to primitive type"),
         };
         self.builder.cx.expr_method_call(
           DUMMY_SP,
           self.builder.cx.expr_call_global(
             DUMMY_SP,
-            vec!(self.builder.cx.ident_of("core"), self.builder.cx.ident_of("num"), self.builder.cx.ident_of(from)),
+            vec!(self.builder.cx.ident_of("core"),
+                 self.builder.cx.ident_of("num"),
+                 self.builder.cx.ident_of(from)),
             vec!(prim)
           ),
           self.builder.cx.ident_of("unwrap"),
@@ -269,31 +298,39 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
     self.builder.expr_int(((1i << field.width) - 1) as i64)
   }
 
-  /// An expression for the shift of a field (including the array index if necessary)
+  /// An expression for the shift of a field (including the array
+  /// index if necessary)
   fn shift(&self, field: &node::Field) -> P<ast::Expr> {
     let low = self.builder.expr_int(field.low_bit as i64);
     if field.count.node > 1 {
-      let idx = self.builder.cx.expr_ident(DUMMY_SP, self.builder.cx.ident_of("idx"));
+      let idx =
+        self.builder.cx.expr_ident(DUMMY_SP, self.builder.cx.ident_of("idx"));
       let width = self.builder.expr_int(field.width as i64);
-      let idx_offset = self.builder.cx.expr_binary(DUMMY_SP, ast::BiMul, idx, width);
+      let idx_offset =
+        self.builder.cx.expr_binary(DUMMY_SP, ast::BiMul, idx, width);
       self.builder.cx.expr_binary(DUMMY_SP, ast::BiAdd, low, idx_offset)
     } else {
       low
     }
   }
 
-  fn build_field_getter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field,
-                        show_docstring: bool)
+  fn build_field_getter(&self, path: &Vec<String>, reg: &node::Reg,
+                        field: &node::Field, show_docstring: bool)
                         -> P<ast::Method> {
-    let ty: P<ast::Ty> = self.builder.cx.ty_path(self.builder.field_type_path(path, reg, field), None);
+    let ty: P<ast::Ty> =
+      self.builder.cx.ty_path(self.builder.field_type_path(path, reg, field),
+                              None);
     let self_arg: ast::Arg = ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
     let inputs: Vec<ast::Arg> =
       if field.count.node == 1 {
         vec!(self_arg)
       } else {
         let idx_arg: ast::Arg =
-          self.builder.cx.arg(DUMMY_SP, self.builder.cx.ident_of("idx"),
-                              self.builder.cx.ty_ident(DUMMY_SP, self.builder.cx.ident_of("uint")));
+          self.builder.cx.arg(
+            DUMMY_SP,
+            self.builder.cx.ident_of("idx"),
+            self.builder.cx.ty_ident(DUMMY_SP,
+                                     self.builder.cx.ident_of("uint")));
         vec!(self_arg, idx_arg)
       };
     let decl: P<ast::FnDecl> = self.builder.cx.fn_decl(inputs, ty);
@@ -301,7 +338,10 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
     let value: P<ast::Expr> =
       self.builder.cx.expr_method_call(
         DUMMY_SP,
-        self.builder.cx.expr_field_access(DUMMY_SP, self.builder.cx.expr_self(DUMMY_SP), self.builder.cx.ident_of("_value")),
+        self.builder.cx.expr_field_access(
+          DUMMY_SP,
+          self.builder.cx.expr_self(DUMMY_SP),
+          self.builder.cx.ident_of("_value")),
         self.builder.cx.ident_of("get"),
         Vec::new()
       );
@@ -309,7 +349,10 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
       self.builder.cx.expr_binary(
         DUMMY_SP,
         ast::BiBitAnd,
-        self.builder.cx.expr_binary(DUMMY_SP, ast::BiShr, value, self.shift(field)),
+        self.builder.cx.expr_binary(DUMMY_SP,
+                                    ast::BiShr,
+                                    value,
+                                    self.shift(field)),
         self.mask(field));
     let expr: P<ast::Expr> = self.from_primitive(reg, field, shifted_masked);
 
@@ -319,12 +362,14 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
       _ => Vec::new(),
     };
 
-    let body: P<ast::Block> = self.builder.cx.block(DUMMY_SP, Vec::new(), Some(expr));
+    let body: P<ast::Block> =
+      self.builder.cx.block(DUMMY_SP, Vec::new(), Some(expr));
     box(GC) ast::Method {
       ident: self.builder.cx.ident_of(field.name.node.as_slice()),
       attrs: attrs,
       generics: no_generics(),
-      explicit_self: Spanned {span: DUMMY_SP, node: ast::SelfRegion(None, ast::MutImmutable)},
+      explicit_self: Spanned {span: DUMMY_SP,
+                              node: ast::SelfRegion(None, ast::MutImmutable)},
       fn_style: ast::NormalFn,
       decl: decl,
       body: body,
@@ -335,21 +380,30 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
   }
 
   /// Build a setter for a field
-  fn build_field_setter(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field,
-                        show_docstring: bool) -> P<ast::Method> {
-    let ty: P<ast::Ty> = self.builder.cx.ty_path(self.builder.field_type_path(path, reg, field), None);
-    let self_arg: ast::Arg = ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
-    let new_value: ast::Arg = self.builder.cx.arg(DUMMY_SP, self.builder.cx.ident_of("new_value"), ty);
+  fn build_field_setter(&self, path: &Vec<String>, reg: &node::Reg,
+                        field: &node::Field, show_docstring: bool)
+                        -> P<ast::Method> {
+    let ty: P<ast::Ty> =
+      self.builder.cx.ty_path(self.builder.field_type_path(path, reg, field),
+                              None);
+    let self_arg: ast::Arg =
+      ast::Arg::new_self(DUMMY_SP, ast::MutImmutable);
+    let new_value: ast::Arg =
+      self.builder.cx.arg(DUMMY_SP, self.builder.cx.ident_of("new_value"), ty);
     let inputs: Vec<ast::Arg> =
       if field.count.node == 1 {
         vec!(self_arg, new_value)
       } else {
         let idx_arg: ast::Arg =
-          self.builder.cx.arg(DUMMY_SP, self.builder.cx.ident_of("idx"),
-                              self.builder.cx.ty_ident(DUMMY_SP, self.builder.cx.ident_of("uint")));
+          self.builder.cx.arg(
+            DUMMY_SP,
+            self.builder.cx.ident_of("idx"),
+            self.builder.cx.ty_ident(DUMMY_SP,
+                                     self.builder.cx.ident_of("uint")));
         vec!(self_arg, idx_arg, new_value)
       };
-    let decl: P<ast::FnDecl> = self.builder.cx.fn_decl(inputs, self.builder.cx.ty_nil());
+    let decl: P<ast::FnDecl> =
+      self.builder.cx.fn_decl(inputs, self.builder.cx.ty_nil());
 
     let shifted_mask: P<ast::Expr> =
       self.builder.cx.expr_binary(
@@ -358,7 +412,10 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
         self.mask(field),
         self.shift(field));
     let cell: P<ast::Expr> =
-        self.builder.cx.expr_field_access(DUMMY_SP, self.builder.cx.expr_self(DUMMY_SP), self.builder.cx.ident_of("_value"));
+        self.builder.cx.expr_field_access(
+          DUMMY_SP,
+          self.builder.cx.expr_self(DUMMY_SP),
+          self.builder.cx.ident_of("_value"));
     let old: P<ast::Expr> =
       self.builder.cx.expr_method_call(
         DUMMY_SP,
@@ -382,8 +439,12 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
           ast::BiBitAnd,
           self.builder.cx.expr_cast(
             DUMMY_SP,
-            self.builder.cx.expr_ident(DUMMY_SP, self.builder.cx.ident_of("new_value")),
-            self.builder.cx.ty_path(self.builder.reg_primitive_type_path(reg).unwrap(), None)),
+            self.builder.cx.expr_ident(DUMMY_SP,
+                                       self.builder.cx.ident_of("new_value")),
+            self.builder.cx.ty_path(
+              self.builder.reg_primitive_type_path(reg).unwrap(),
+              None)
+          ),
           self.mask(field)
         ),
         self.shift(field));
@@ -392,7 +453,8 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
         DUMMY_SP,
         cell,
         self.builder.cx.ident_of("set"),
-        vec!(self.builder.cx.expr_binary(DUMMY_SP, ast::BiBitOr, old_masked, new_masked_shifted)));
+        vec!(self.builder.cx.expr_binary(DUMMY_SP, ast::BiBitOr,
+                                         old_masked, new_masked_shifted)));
 
     let attrs = match field.docstring {
       Some(docstring) if show_docstring =>
@@ -400,12 +462,17 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
       _ => Vec::new(),
     };
 
-    let body: P<ast::Block> = self.builder.cx.block(DUMMY_SP, vec!(self.builder.cx.stmt_expr(expr)), None);
+    let body: P<ast::Block> = self.builder.cx.block(
+      DUMMY_SP,
+      vec!(self.builder.cx.stmt_expr(expr)),
+      None);
     box(GC) ast::Method {
-      ident: self.builder.cx.ident_of((String::from_str("set_")+field.name.node).as_slice()),
+      ident: self.builder.cx.ident_of((
+        String::from_str("set_")+field.name.node).as_slice()),
       attrs: attrs,
       generics: no_generics(),
-      explicit_self: Spanned {span: DUMMY_SP, node: ast::SelfRegion(None, ast::MutImmutable)},
+      explicit_self: Spanned { span: DUMMY_SP,
+                               node: ast::SelfRegion(None, ast::MutImmutable)},
       fn_style: ast::NormalFn,
       decl: decl,
       body: body,
@@ -436,18 +503,25 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildRegStructs<'a, 'b, 'c> {
 
 impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
   /// Build a field type if necessary (e.g. in the case of an `EnumField`)
-  fn build_field_type(&self, path: &Vec<String>, reg: &node::Reg, field: &node::Field)
-                      -> Option<P<ast::Item>> {
+  fn build_field_type(&self, path: &Vec<String>, reg: &node::Reg,
+                      field: &node::Field) -> Option<P<ast::Item>> {
     match field.ty.node {
       node::EnumField { variants: ref variants, .. } => {
-        // FIXME: We construct a path, then only take the last segment, this could be more efficient
-        let name: ast::Ident = self.builder.field_type_path(path, reg, field).segments.last().unwrap().identifier;
+        // FIXME: We construct a path, then only take the last
+        // segment, this could be more efficient
+        let name: ast::Ident =
+          self.builder.field_type_path(path, reg, field)
+          .segments.last().unwrap().identifier;
         let enum_def: ast::EnumDef = ast::EnumDef {
-          variants: FromIterator::from_iter(variants.iter().map(|v| box(GC) self.build_enum_variant(v))),
+          variants: FromIterator::from_iter(
+            variants.iter().map(|v| box(GC) self.build_enum_variant(v))),
         };
         let attrs: Vec<ast::Attribute> = vec!(
           self.builder.list_attribute("deriving", vec!("FromPrimitive")),
-          self.builder.list_attribute("allow", vec!("uppercase_variables", "dead_code", "non_camel_case_types")));
+          self.builder.list_attribute("allow",
+                                      vec!("uppercase_variables",
+                                           "dead_code",
+                                           "non_camel_case_types")));
         let item: P<ast::Item> = box(GC) ast::Item {
           ident: name,
           id: ast::DUMMY_NODE_ID,
@@ -462,14 +536,16 @@ impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
     }
   }
 
-  /// Produce a register struct if necessary (in the case of primitive typed registers).
+  /// Produce a register struct if necessary (for primitive typed registers).
   /// In this case `None` indicates no struct is necessary, not failure.
   /// For instance,
   ///
   ///     pub struct REG {_value: u32}
-  fn build_reg_struct(&self, path: &Vec<String>, reg: &node::Reg, width: node::RegWidth)
-                      -> P<ast::Item> {
-    let prim_ty = self.builder.cx.ty_path(self.builder.primitive_type_path(width), None);
+  fn build_reg_struct(&self, path: &Vec<String>, reg: &node::Reg,
+                      width: node::RegWidth) -> P<ast::Item> {
+    let prim_ty = self.builder.cx.ty_path(
+      self.builder.primitive_type_path(width),
+      None);
     let cell_ty: P<ast::Ty> =
       self.builder.cx.ty_path(
         self.builder.cx.path_all(
@@ -486,7 +562,8 @@ impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
         Spanned {
           span: DUMMY_SP,
           node: ast::StructField_ {
-            kind: ast::NamedField(self.builder.cx.ident_of("_value"), ast::Inherited),
+            kind: ast::NamedField(self.builder.cx.ident_of("_value"),
+                                  ast::Inherited),
             id: ast::DUMMY_NODE_ID,
             ty: cell_ty,
             attrs: Vec::new(),
@@ -498,10 +575,12 @@ impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
       is_virtual: false,
     };
     let mut attrs = match reg.docstring {
-      Some(docstring) => vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
+      Some(docstring) =>s
+        vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
       None => Vec::new(),
     };
-    attrs.push(self.builder.list_attribute("allow", vec!("non_camel_case_types")));
+    attrs.push(self.builder.list_attribute("allow",
+                                           vec!("non_camel_case_types")));
     let item: P<ast::Item> = box(GC) ast::Item {
       ident: self.builder.path_ident(path),
       attrs: attrs,
@@ -516,7 +595,8 @@ impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
   /// Build a variant of an `EnumField`
   fn build_enum_variant(&self, variant: &node::Variant) -> ast::Variant {
     let attrs = match variant.docstring {
-      Some(docstring) => vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
+      Some(docstring) =>
+        vec!(self.builder.doc_attribute(token::get_ident(docstring.node))),
       None => Vec::new(),
     };
 
@@ -550,7 +630,8 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildUnionTypes<'a, 'b, 'c> {
 
 impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   /// Produce a field for the given register in a `RegUnion` struct
-  fn build_reg_union_field(&self, path: &Vec<String>, reg: &node::Reg) -> ast::StructField {
+  fn build_reg_union_field(&self, path: &Vec<String>, reg: &node::Reg)
+                           -> ast::StructField {
     let attrs = match reg.docstring {
       Some(doc) => vec!(self.builder.doc_attribute(token::get_ident(doc.node))),
       None => Vec::new(),
@@ -559,7 +640,9 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
     Spanned {
       span: DUMMY_SP,
       node: ast::StructField_ {
-        kind: ast::NamedField(self.builder.cx.ident_of(reg.name.node.as_slice()), ast::Public),
+        kind: ast::NamedField(
+          self.builder.cx.ident_of(reg.name.node.as_slice()),
+          ast::Public),
         id: ast::DUMMY_NODE_ID,
         ty: self.builder.reg_struct_type(&field_path, reg),
         attrs: attrs,
@@ -568,21 +651,26 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   }
 
   /// Build field for padding or a register
-  fn build_pad_or_reg<'a>(&self, path: &Vec<String>, regOrPad: RegOrPadding<'a>, index: uint)
-                          -> ast::StructField {
+  fn build_pad_or_reg<'a>(&self, path: &Vec<String>, regOrPad: RegOrPadding<'a>,
+                          index: uint) -> ast::StructField {
    match regOrPad {
       Reg(reg) => self.build_reg_union_field(path, reg),
       Pad(length) => {
-        let u8_path = self.builder.cx.path_ident(DUMMY_SP, self.builder.cx.ident_of("u8"));
+        let u8_path = self.builder.cx.path_ident(
+          DUMMY_SP,
+          self.builder.cx.ident_of("u8"));
         let u8_ty: P<ast::Ty> = self.builder.cx.ty_path(u8_path, None);
         let ty: P<ast::Ty> =
-          self.builder.cx.ty(DUMMY_SP,
-                     ast::TyFixedLengthVec(u8_ty, self.builder.cx.expr_uint(DUMMY_SP, length)));
+          self.builder.cx.ty(
+            DUMMY_SP,
+            ast::TyFixedLengthVec(u8_ty,
+                                  self.builder.cx.expr_uint(DUMMY_SP, length)));
         Spanned {
           span: DUMMY_SP,
           node: ast::StructField_ {
-            kind: ast::NamedField(self.builder.cx.ident_of(format!("_pad{}",index).as_slice()),
-                                  ast::Inherited),
+            kind: ast::NamedField(
+              self.builder.cx.ident_of(format!("_pad{}",index).as_slice()),
+              ast::Inherited),
             id: ast::DUMMY_NODE_ID,
             ty: ty,
             attrs: Vec::new(),
@@ -593,15 +681,18 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   }
 
   /// Build the type associated with a register group
-  fn build_union_type(&self, path: &Vec<String>, reg: &node::Reg, regs: &Vec<node::Reg>) -> P<ast::Item> {
+  fn build_union_type(&self, path: &Vec<String>, reg: &node::Reg,
+                      regs: &Vec<node::Reg>) -> P<ast::Item> {
     let name = Spanned {
-      node: String::from_str(token::get_ident(self.builder.path_ident(path)).get()),
+      node: String::from_str(
+        token::get_ident(self.builder.path_ident(path)).get()),
       span: DUMMY_SP
     };
     // Registers are already sorted by parser
     let mut regs = regs.clone();
     let padded_regs = PaddedRegsIterator::new(&mut regs);
-    let fields = padded_regs.enumerate().map(|(n,r)| self.build_pad_or_reg(path, r, n));
+    let fields =
+      padded_regs.enumerate() .map(|(n,r)| self.build_pad_or_reg(path, r, n));
     let struct_def = ast::StructDef {
       fields: FromIterator::from_iter(fields),
       ctor_id: None,
@@ -609,10 +700,14 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
       is_virtual: false,
     };
     let mut attrs: Vec<ast::Attribute> = vec!(
-      self.builder.list_attribute("allow", vec!("non_camel_case_types", "uppercase_variables", "dead_code")),
+      self.builder.list_attribute("allow", vec!("non_camel_case_types",
+                                                "uppercase_variables",
+                                                "dead_code")),
     );
     match reg.docstring {
-      Some(docstring) => attrs.push(self.builder.doc_attribute(token::get_ident(docstring.node))),
+      Some(docstring) =>
+        attrs.push(
+          self.builder.doc_attribute(token::get_ident(docstring.node))),
       None => (),
     }
     box(GC) ast::Item {
