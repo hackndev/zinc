@@ -409,6 +409,11 @@ impl<'a, 'b> Parser<'a, 'b> {
 
     let mut require_comma: bool = false;
     loop {
+      if self.token == token::RBRACE {
+        self.bump();
+        break;
+      }
+
       if require_comma && !self.expect(&token::COMMA) {
         return None;
       }
