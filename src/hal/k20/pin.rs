@@ -169,35 +169,55 @@ impl ::hal::pin::GPIO for Pin {
 }
 
 mod reg {
-  use lib::volatile_cell::VolatileCell;
-
   ioregs!(PORT = {
-    0x0    => reg32 pcr[32] {
-      0      => ps,
-      1      => pe,
-      2      => sre,
-      4      => pfe,
-      5      => ode,
-      6      => dse,
-      8..10  => mux,
-      15     => lk,
-      16..19 => irqc,
-      24     => isf,
+
+    0x0    => reg32 pcr[32]     /// Port control register
+    {
+      0      => ps    /// Pull direction select
+        { 0 => PULL_DOWN,
+          1 => PULL_UP
+        }
+      1      => pe,   /// Pull enable
+      2      => sre   /// Slew rate
+        { 0 => FAST,
+          1 => SLOW
+        }
+      4      => pfe,  /// Passive filter enable
+      5      => ode,  /// Open drain enable
+      6      => dse   /// Drive strength
+        { 0 => LOW_DRIVE,
+          1 => HIGH_DRIVE
+        }
+      8..10  => mux,  /// Multiplexer configuration
+      15     => lk,   /// Configuration lock
+      16..19 => irqc  /// Interrupt configuration
+        { 0  => IRQ_NONE,
+          1  => IRQ_DMA_RISING,
+          2  => IRQ_DMA_FALLING,
+          3  => IRQ_DMA_EITHER,
+          // reserved
+          8  => IRQ_ZERO,
+          9  => IRQ_RISING,
+          10 => IRQ_FALLING,
+          11 => IRQ_EITHER,
+          12 => IRQ_ONE,
+        }
     }
 
-    0x80   => reg32 gpclr {
+    0x80   => reg32 gpclr     /// Global pin control low
+    {
       0..15  => gpwd,
       16..31 => gpwe,
     }
 
-    0x84   => reg32 gpchr {
+    0x84   => reg32 gpchr     /// Global pin control high
+    {
       0..15  => gpwd,
       16..31 => gpwe,
     }
 
-    0x88   => reg32 isfr {
-      0..31  => isf,
-    }
+    0x88   => reg32 isfr      /// Interrupt status
+    {0..31  => isf}
   })
 
   extern {
