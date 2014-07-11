@@ -178,7 +178,7 @@ impl<'a> Parser<'a> {
       token::IDENT(_, _) => {
         token::to_string(&self.bump())
       },
-      token::LIT_INT_UNSUFFIXED(u) => {
+      token::LIT_INTEGER(u) => {
         self.bump();
         u.to_string()
       }
@@ -325,7 +325,7 @@ impl<'a> Parser<'a> {
         let string = token::get_ident(string_val).get().to_string();
         Some(node::StrValue(string))
       },
-      token::LIT_INT_UNSUFFIXED(intval) => {
+      token::LIT_INTEGER(intval) => {
         self.bump();
         Some(node::IntValue(intval as uint))
       },
