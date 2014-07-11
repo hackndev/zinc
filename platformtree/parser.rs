@@ -322,12 +322,11 @@ impl<'a> Parser<'a> {
     match self.token {
       token::LIT_STR(string_val) => {
         self.bump();
-        let string = token::get_ident(string_val).get().to_string();
-        Some(node::StrValue(string))
+        Some(node::StrValue(string_val.as_str().to_string()))
       },
       token::LIT_INTEGER(intval) => {
         self.bump();
-        Some(node::IntValue(intval as uint))
+        Some(node::IntValue(intval.uint()))
       },
       token::BINOP(token::AND) => {
         self.bump();
