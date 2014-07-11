@@ -35,8 +35,8 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
 fn mutate_pin(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   let pin_node_name = node.get_ref_attr("pin").unwrap();
   let pin_node = builder.pt().get_by_name(pin_node_name.as_slice()).unwrap();
-  pin_node.attributes.borrow_mut().insert("direction".to_str(),
-        Rc::new(node::Attribute::new_nosp(node::StrValue("out".to_str()))));
+  pin_node.attributes.borrow_mut().insert("direction".to_string(),
+        Rc::new(node::Attribute::new_nosp(node::StrValue("out".to_string()))));
 }
 
 fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
@@ -57,9 +57,9 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let typename = format!("zinc::drivers::dht22::DHT22");
   node.set_type_name(typename);
   let ty_params = vec!(
-      "'a".to_str(),
-      "zinc::hal::timer::Timer".to_str(),
-      "zinc::hal::pin::GPIO".to_str());
+      "'a".to_string(),
+      "zinc::hal::timer::Timer".to_string(),
+      "zinc::hal::pin::GPIO".to_string());
   node.set_type_params(ty_params);
 
   let st = quote_stmt!(&*cx,
@@ -84,8 +84,8 @@ mod test {
         timer = &timer;
       }", |cx, failed, pt| {
       let mut builder = Builder::new(pt.clone());
-      pt.get_by_name("timer").unwrap().set_type_name("T".to_str());
-      pt.get_by_name("pin").unwrap().set_type_name("P".to_str());
+      pt.get_by_name("timer").unwrap().set_type_name("T".to_string());
+      pt.get_by_name("pin").unwrap().set_type_name("P".to_string());
       super::mutate_pin(&mut builder, cx, pt.get_by_name("dht").unwrap());
       super::build_dht22(&mut builder, cx, pt.get_by_name("dht").unwrap());
       assert_that(unsafe{*failed}, is(equal_to(false)));

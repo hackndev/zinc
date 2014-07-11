@@ -176,15 +176,15 @@ impl<'a> Parser<'a> {
 
     let node_path = match self.token {
       token::IDENT(_, _) => {
-        token::to_str(&self.bump())
+        token::to_string(&self.bump())
       },
       token::LIT_INT_UNSUFFIXED(u) => {
         self.bump();
-        u.to_str()
+        u.to_string()
       }
       ref other => {
         self.error(format!("expected node path but found `{}`",
-            token::to_str(other)));
+            token::to_string(other)));
         return None;
       }
     };
@@ -219,7 +219,7 @@ impl<'a> Parser<'a> {
       },
       ref other => {
         self.error(format!("expected `{{` or `;` but found `{}`",
-            token::to_str(other)));
+            token::to_string(other)));
         return None;
       }
     }
@@ -295,7 +295,7 @@ impl<'a> Parser<'a> {
           None => {
             self.span = oldsp;
             self.error(format!("expected `=` or node but found `{}`",
-                token::to_str(&oldtok)));
+                token::to_string(&oldtok)));
             return None;
           },
         };
@@ -307,7 +307,7 @@ impl<'a> Parser<'a> {
               path));
           let old_node: Rc<node::Node> = subnodes.as_map().get(&path).upgrade().unwrap();
           self.span = old_node.path_span.clone();
-          self.error("previously defined here".to_str());
+          self.error("previously defined here".to_string());
           return None;
         } else {
           subnodes.push(node);
@@ -322,7 +322,7 @@ impl<'a> Parser<'a> {
     match self.token {
       token::LIT_STR(string_val) => {
         self.bump();
-        let string = token::get_ident(string_val).get().to_str();
+        let string = token::get_ident(string_val).get().to_string();
         Some(node::StrValue(string))
       },
       token::LIT_INT_UNSUFFIXED(intval) => {
@@ -339,7 +339,7 @@ impl<'a> Parser<'a> {
       },
       ref other => {
         self.error(format!("expected string but found `{}`",
-            token::to_str(other)));
+            token::to_string(other)));
         None
       }
     }
@@ -373,8 +373,8 @@ impl<'a> Parser<'a> {
       self.bump();
       true
     } else {
-      let token_str = token::to_str(t);
-      let this_token_str = token::to_str(&self.token);
+      let token_str = token::to_string(t);
+      let this_token_str = token::to_string(&self.token);
       self.error(format!("expected `{}` but found `{}`", token_str,
           this_token_str));
       false
@@ -384,7 +384,7 @@ impl<'a> Parser<'a> {
   /// Expects that the current token is IDENT, returns its string value. Bumps
   /// on success.
   fn expect_ident(&mut self) -> Option<String> {
-    let tok_str = token::to_str(&self.token);
+    let tok_str = token::to_string(&self.token);
     match self.token {
       token::IDENT(_, _) => {
         self.bump();

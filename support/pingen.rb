@@ -185,7 +185,7 @@ pub fn port_def() -> HashMap<String, PinsDef> {
       <% if pin.functions.length > 0 %>
       let mut pin = HashMap::new();
       <% pin.functions.each_with_index do |fn, i| %><% unless fn.nil? %>
-      pin.insert("<%= fn.name.downcase %>".to_str(), <%= i+1 %>);
+      pin.insert("<%= fn.name.downcase %>".to_string(), <%= i+1 %>);
       <% end %><% end %>
       pins.push(Some(pin));
       <% else %>
@@ -193,7 +193,7 @@ pub fn port_def() -> HashMap<String, PinsDef> {
       <% end %>
     }
     <% end %>
-    h.insert("<%= port.name %>".to_str(), pins);
+    h.insert("<%= port.name %>".to_string(), pins);
   }
   <% end %>
 

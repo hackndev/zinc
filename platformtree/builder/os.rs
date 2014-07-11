@@ -245,7 +245,7 @@ mod test {
       named@ref;
       ", |cx, failed, pt| {
       let mut builder = Builder::new(pt.clone());
-      pt.get_by_path("ref").unwrap().set_type_name("hello::world::Struct".to_str());
+      pt.get_by_path("ref").unwrap().set_type_name("hello::world::Struct".to_string());
 
       build_single_task(&mut builder, cx, pt.get_by_path("single_task").unwrap().clone());
       assert!(unsafe{*failed} == false);
