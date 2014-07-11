@@ -152,8 +152,8 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
   let mut collected_params = vec!();
   let mut ty_params_vec = vec!();
   for ty in ty_params.iter() {
-    let typaram = cx.typaram(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice()), ast::StaticSize,
-        OwnedSlice::empty(), None);
+    let typaram = cx.typaram(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice()), OwnedSlice::empty(),
+        None, None);
     collected_params.push(typaram);
     ty_params_vec.push(ty.clone());
   }
