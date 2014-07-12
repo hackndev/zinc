@@ -19,7 +19,7 @@ use test_helpers::{fails_to_parse, with_parsed, with_parsed_node};
 fn parse_anonymous_node() {
   with_parsed_node("node", "node {}", |node| {
     assert!(node.name == None);
-    assert!(node.path == "node".to_str());
+    assert!(node.path == "node".to_string());
     assert!(node.attributes.borrow().len() == 0);
     assert!(node.subnodes().len() == 0);
   });
@@ -28,8 +28,8 @@ fn parse_anonymous_node() {
 #[test]
 fn parse_node_with_name() {
   with_parsed_node("root", "test@root {}", |node| {
-    assert!(node.name == Some("test".to_str()));
-    assert!(node.path == "root".to_str());
+    assert!(node.name == Some("test".to_string()));
+    assert!(node.path == "root".to_string());
     assert!(node.attributes.borrow().len() == 0);
     assert!(node.subnodes().len() == 0);
   });
@@ -69,23 +69,23 @@ fn parse_node_with_no_body() {
 #[test]
 fn parse_node_with_numeric_path() {
   with_parsed_node("1", "test@1 {}", |node| {
-    assert!(node.path == "1".to_str());
+    assert!(node.path == "1".to_string());
   });
 }
 
 #[test]
 fn parse_attributes() {
   with_parsed_node("root", "test@root { a = \"value\"; b = 1; c = &ref; }", |node| {
-    assert!(node.get_string_attr("a") == Some("value".to_str()));
+    assert!(node.get_string_attr("a") == Some("value".to_string()));
     assert!(node.get_int_attr("b")    == Some(1));
-    assert!(node.get_ref_attr("c")    == Some("ref".to_str()));
+    assert!(node.get_ref_attr("c")    == Some("ref".to_string()));
   });
 }
 
 #[test]
 fn parse_string_attribute() {
   with_parsed_node("root", "test@root { key = \"value\"; }", |node| {
-    assert!(node.get_string_attr("key") == Some("value".to_str()));
+    assert!(node.get_string_attr("key") == Some("value".to_string()));
   });
 }
 
@@ -99,7 +99,7 @@ fn parse_integer_attribute() {
 #[test]
 fn parse_ref_attribute() {
   with_parsed_node("root", "test@root { key = &ref; }", |node| {
-    assert!(node.get_ref_attr("key") == Some("ref".to_str()));
+    assert!(node.get_ref_attr("key") == Some("ref".to_string()));
   });
 }
 
@@ -145,7 +145,7 @@ fn tracks_nodes_by_name() {
   with_parsed("test@root { sub@child; }", |_, _, pt| {
     let subnode = pt.get_by_name("sub");
     assert!(subnode.is_some());
-    assert!(subnode.unwrap().path == "child".to_str());
+    assert!(subnode.unwrap().path == "child".to_string());
   });
 }
 

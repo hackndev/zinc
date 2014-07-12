@@ -92,10 +92,10 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
         '1' => "Forced1",
         '0' => "Forced0",
         _ => fail!(),
-      }.to_str());
+      }.to_string());
   let stop_bits = mode.as_slice().char_at(2).to_digit(10).unwrap() as u8;
 
-  sub.set_type_name("zinc::hal::lpc17xx::uart::UART".to_str());
+  sub.set_type_name("zinc::hal::lpc17xx::uart::UART".to_string());
   let uart_name = TokenString(sub.name.clone().unwrap());
 
   let st = quote_stmt!(&*cx,
@@ -112,11 +112,11 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
 pub fn build_uart_gpio(builder: &Builder, uart_idx: uint, name: &str,
     istx: bool) {
   let node = builder.pt().get_by_name(name).unwrap();
-  let direction = (if istx {"out"} else {"in"}).to_str();
+  let direction = (if istx {"out"} else {"in"}).to_string();
   let function = format!("{}{}", if istx {"txd"} else {"rxd"}, uart_idx);
-  node.attributes.borrow_mut().insert("direction".to_str(),
+  node.attributes.borrow_mut().insert("direction".to_string(),
         Rc::new(node::Attribute::new_nosp(node::StrValue(direction))));
-  node.attributes.borrow_mut().insert("function".to_str(),
+  node.attributes.borrow_mut().insert("function".to_string(),
         Rc::new(node::Attribute::new_nosp(node::StrValue(function))));
 }
 
@@ -161,12 +161,12 @@ mod test {
                1u8);");
 
       let tx_node = pt.get_by_name("uart_tx").unwrap();
-      assert!(tx_node.get_string_attr("direction").unwrap() == "out".to_str());
-      assert!(tx_node.get_string_attr("function").unwrap() == "txd0".to_str());
+      assert!(tx_node.get_string_attr("direction").unwrap() == "out".to_string());
+      assert!(tx_node.get_string_attr("function").unwrap() == "txd0".to_string());
 
       let rx_node = pt.get_by_name("uart_rx").unwrap();
-      assert!(rx_node.get_string_attr("direction").unwrap() == "in".to_str());
-      assert!(rx_node.get_string_attr("function").unwrap() == "rxd0".to_str());
+      assert!(rx_node.get_string_attr("direction").unwrap() == "in".to_string());
+      assert!(rx_node.get_string_attr("function").unwrap() == "rxd0".to_string());
     });
   }
 }

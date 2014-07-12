@@ -35,18 +35,18 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   let clock_source = TokenString(match source.as_slice() {
     "internal-oscillator" => {
       source_freq = 4_000_000;
-      "system_clock::Internal".to_str()
+      "system_clock::Internal".to_string()
     },
     "rtc-oscillator"      => {
       source_freq = 32_000;
-      "system_clock::RTC".to_str()
+      "system_clock::RTC".to_string()
     },
     "main-oscillator"     => {
       let some_source_frequency =
           node.get_required_int_attr(cx, "source_frequency");
       if some_source_frequency == None {
         source_freq = 0;
-        "BAD".to_str()
+        "BAD".to_string()
       } else {
         source_freq = some_source_frequency.unwrap();
         format!("system_clock::Main({})", source_freq)
@@ -57,7 +57,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
       cx.span_err(
           node.get_attr("source").value_span,
           format!("unknown oscillator value `{}`", other).as_slice());
-      "BAD".to_str()
+      "BAD".to_string()
     },
   });
 
@@ -88,7 +88,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let sysfreq = source_freq * 2 * pll_m as uint / pll_n as uint
       / pll_divisor as uint;
-  node.attributes.borrow_mut().insert("system_frequency".to_str(),
+  node.attributes.borrow_mut().insert("system_frequency".to_string(),
       Rc::new(node::Attribute::new_nosp(node::IntValue(sysfreq))));
 
   let ex = quote_expr!(&*cx,

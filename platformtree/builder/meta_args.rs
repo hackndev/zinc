@@ -91,7 +91,7 @@ fn get_task(tasks: &Vec<Gc<ast::MetaItem>>, task: &str) -> Vec<String> {
       ast::MetaList(ref k, ref v) if k.get() == task => {
         for submi in v.iter() {
           match submi.node {
-            ast::MetaWord(ref w) => ty_params.push(w.get().to_str()),
+            ast::MetaWord(ref w) => ty_params.push(w.get().to_string()),
             _ => fail!("unexpected node type"),
           }
         }

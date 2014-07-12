@@ -62,7 +62,7 @@ pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
 
   println!("Platform Tree dump:")
   for i in result.make_items().unwrap().as_slice().iter() {
-    println!("{}", pprust::item_to_str(i.deref()));
+    println!("{}", pprust::item_to_string(i.deref()));
   }
 
   result
@@ -92,7 +92,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
               cx.path_all(
                   DUMMY_SP,
                   false,
-                  ["pt".to_str(), fn_name.to_str() + "_args"].iter().map(|t| cx.ident_of(t.as_slice())).collect(),
+                  ["pt".to_string(), fn_name.to_str() + "_args"].iter().map(|t| cx.ident_of(t.as_slice())).collect(),
                   vec!(),
                   ty_params.iter().map(|ty| {
                     cx.ty_path(cx.path_ident(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice())), None)
