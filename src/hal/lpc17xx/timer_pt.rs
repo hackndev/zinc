@@ -61,7 +61,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     }
   };
 
-  node.set_type_name("zinc::hal::lpc17xx::timer::Timer".to_str());
+  node.set_type_name("zinc::hal::lpc17xx::timer::Timer".to_string());
 
   let st = quote_stmt!(&*cx,
       let $name = zinc::hal::lpc17xx::timer::Timer::new(
