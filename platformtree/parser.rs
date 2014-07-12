@@ -15,10 +15,10 @@
 
 use std::collections::hashmap::HashMap;
 use std::rc::{Rc, Weak};
-use syntax::ast::TokenTree;
+use syntax::ast::{TokenTree, LitIntUnsuffixed};
 use syntax::codemap::{Span, mk_sp};
 use syntax::ext::base::ExtCtxt;
-use syntax::parse::{token, ParseSess, lexer};
+use syntax::parse::{token, ParseSess, lexer, integer_lit};
 
 use node;
 
@@ -176,15 +176,26 @@ impl<'a> Parser<'a> {
 
     let node_path = match self.token {
       token::IDENT(_, _) => {
-        token::to_str(&self.bump())
+        token::to_string(&self.bump())
       },
-      token::LIT_INT_UNSUFFIXED(u) => {
+      token::LIT_INTEGER(intname) => {
         self.bump();
-        u.to_str()
+
+        let lit = integer_lit(intname.as_str(), &self.sess.span_diagnostic, self.span);
+        match lit {
+          LitIntUnsuffixed(i) => {
+            format!("{}", i)
+          },
+          _ => {
+            self.error(format!("expected unsuffixed integer but found `{}`",
+                token::to_string(&self.token)));
+            return None
+          }
+        }
       }
       ref other => {
         self.error(format!("expected node path but found `{}`",
-            token::to_str(other)));
+            token::to_string(other)));
         return None;
       }
     };
@@ -219,7 +230,7 @@ impl<'a> Parser<'a> {
       },
       ref other => {
         self.error(format!("expected `{{` or `;` but found `{}`",
-            token::to_str(other)));
+            token::to_string(other)));
         return None;
       }
     }
@@ -295,7 +306,7 @@ impl<'a> Parser<'a> {
           None => {
             self.span = oldsp;
             self.error(format!("expected `=` or node but found `{}`",
-                token::to_str(&oldtok)));
+                token::to_string(&oldtok)));
             return None;
           },
         };
@@ -307,7 +318,7 @@ impl<'a> Parser<'a> {
               path));
           let old_node: Rc<node::Node> = subnodes.as_map().get(&path).upgrade().unwrap();
           self.span = old_node.path_span.clone();
-          self.error("previously defined here".to_str());
+          self.error("previously defined here".to_string());
           return None;
         } else {
           subnodes.push(node);
@@ -322,12 +333,21 @@ impl<'a> Parser<'a> {
     match self.token {
       token::LIT_STR(string_val) => {
         self.bump();
-        let string = token::get_ident(string_val).get().to_str();
-        Some(node::StrValue(string))
+        Some(node::StrValue(string_val.as_str().to_string()))
       },
-      token::LIT_INT_UNSUFFIXED(intval) => {
-        self.bump();
-        Some(node::IntValue(intval as uint))
+      token::LIT_INTEGER(intname) => {
+        let lit = integer_lit(intname.as_str(), &self.sess.span_diagnostic, self.span);
+        match lit {
+          LitIntUnsuffixed(i) => {
+            self.bump();
+            Some(node::IntValue(i as uint))
+          },
+          _ => {
+            self.error(format!("expected unsuffixed integer but found `{}`",
+                token::to_string(&self.token)));
+            None
+          }
+        }
       },
       token::BINOP(token::AND) => {
         self.bump();
@@ -338,8 +358,8 @@ impl<'a> Parser<'a> {
         Some(node::RefValue(name))
       },
       ref other => {
-        self.error(format!("expected string but found `{}`",
-            token::to_str(other)));
+        self.error(format!("expected attribute value but found `{}`",
+            token::to_string(other)));
         None
       }
     }
@@ -373,8 +393,8 @@ impl<'a> Parser<'a> {
       self.bump();
       true
     } else {
-      let token_str = token::to_str(t);
-      let this_token_str = token::to_str(&self.token);
+      let token_str = token::to_string(t);
+      let this_token_str = token::to_string(&self.token);
       self.error(format!("expected `{}` but found `{}`", token_str,
           this_token_str));
       false
@@ -384,7 +404,7 @@ impl<'a> Parser<'a> {
   /// Expects that the current token is IDENT, returns its string value. Bumps
   /// on success.
   fn expect_ident(&mut self) -> Option<String> {
-    let tok_str = token::to_str(&self.token);
+    let tok_str = token::to_string(&self.token);
     match self.token {
       token::IDENT(_, _) => {
         self.bump();

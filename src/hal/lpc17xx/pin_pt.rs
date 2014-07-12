@@ -72,7 +72,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
       }
     }
   };
-  let direction = TokenString(direction_str.to_str());
+  let direction = TokenString(direction_str.to_string());
 
   let pin_str = match from_str::<uint>(node.path.as_slice()).unwrap() {
     0..31 => &node.path,
@@ -86,7 +86,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let port_def = pinmap::port_def();
   let function_str = match node.get_string_attr("function") {
-    None => "GPIO".to_str(),
+    None => "GPIO".to_string(),
     Some(fun) => {
       let pins = port_def.get(port_path);
       let maybe_pin = pins.get(from_str(node.path.as_slice()).unwrap());
@@ -102,7 +102,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
           let maybe_func = pin_funcs.find(&fun);
           match maybe_func {
             None => {
-              let avaliable: Vec<String> = pin_funcs.keys().map(|k|{k.to_str()}).collect();
+              let avaliable: Vec<String> = pin_funcs.keys().map(|k|{k.to_string()}).collect();
               cx.parse_sess().span_diagnostic.span_err(
                   node.get_attr("function").value_span,
                   format!("unknown pin function `{}`, allowed functions: {}",
@@ -122,7 +122,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let pin = TokenString(format!("{}u8", pin_str));
   let pin_name = TokenString(node.name.clone().unwrap());
 
-  node.set_type_name("zinc::hal::lpc17xx::pin::Pin".to_str());
+  node.set_type_name("zinc::hal::lpc17xx::pin::Pin".to_string());
 
   let st = quote_stmt!(&*cx,
       let $pin_name = zinc::hal::lpc17xx::pin::Pin::new(

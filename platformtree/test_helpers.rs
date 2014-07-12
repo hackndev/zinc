@@ -59,7 +59,7 @@ pub fn equal_to<T : PartialEq+Show>(expected: T) -> Box<EqualToString<T>> {
 }
 
 pub fn equal_to_s(expected: &str) -> Box<EqualToString<String>> {
-  equal_to(expected.to_str())
+  equal_to(expected.to_string())
 }
 
 pub fn fails_to_parse(src: &str) {
@@ -104,12 +104,12 @@ pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<Rc<nod
   cx.bt_push(ExpnInfo {
     call_site: mk_sp(BytePos(0), BytePos(0)),
     callee: NameAndSpan {
-      name: "platformtree".to_str(),
+      name: "platformtree".to_string(),
       format: MacroBang,
       span: None,
     },
   });
-  let tts = cx.parse_tts(src.to_str());
+  let tts = cx.parse_tts(src.to_string());
 
   let pt = Parser::new(&mut cx, tts.as_slice()).parse_platformtree();
 
@@ -129,7 +129,8 @@ impl CustomEmmiter {
 }
 
 impl Emitter for CustomEmmiter {
-  fn emit(&mut self, _: Option<(&codemap::CodeMap, Span)>, m: &str, l: Level) {
+  fn emit(&mut self, _: Option<(&CodeMap, Span)>, m: &str, _: Option<&str>,
+      l: Level) {
     unsafe { *self.failed = true };
     println!("{} {}", l, m);
   }
@@ -140,7 +141,7 @@ impl Emitter for CustomEmmiter {
 }
 
 pub fn assert_equal_source(stmt: &Gc<ast::Stmt>, src: &str) {
-  let gen_src = pprust::stmt_to_str(stmt.deref());
+  let gen_src = pprust::stmt_to_string(stmt.deref());
   println!("generated: {}", gen_src);
   println!("expected:  {}", src);
 
@@ -151,7 +152,7 @@ pub fn assert_equal_source(stmt: &Gc<ast::Stmt>, src: &str) {
 }
 
 pub fn assert_equal_items(stmt: &Gc<ast::Item>, src: &str) {
-  let gen_src = pprust::item_to_str(stmt.deref());
+  let gen_src = pprust::item_to_string(stmt.deref());
   println!("generated: {}", gen_src);
   println!("expected:  {}", src);
 
