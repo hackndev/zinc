@@ -129,7 +129,7 @@ impl CustomEmmiter {
 }
 
 impl Emitter for CustomEmmiter {
-  fn emit(&mut self, _: Option<(&codemap::CodeMap, Span)>, m: &str, l: Level) {
+  fn emit(&mut self, _: Option<(&codemap::CodeMap, Span)>, m: &str, _: Option<&str>, l: Level) {
     unsafe { *self.failed = true };
     println!("{} {}", l, m);
   }
