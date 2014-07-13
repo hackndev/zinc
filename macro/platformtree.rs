@@ -49,9 +49,9 @@ pub fn plugin_registrar(reg: &mut Registry) {
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     -> Box<MacResult> {
   let pt = Parser::new(cx, tts).parse_platformtree();
-  let builder = Builder::build(cx, pt.unwrap());
-
-  let items = builder.emit_items(cx);
+  let items = Builder::build(cx, pt.unwrap())
+    .expect(format!("Unexpected failure on {}", line!()).as_slice())
+    .emit_items(cx);
   MacItems::new(items)
 }
 
