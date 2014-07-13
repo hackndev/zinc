@@ -1,3 +1,5 @@
+INCLUDE ./src/hal/cortex_m3/armmem.ld
+
 iomem_TIM2  = 0x40000000;
 
 iomem_PWR   = 0x40007000;

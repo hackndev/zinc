@@ -23,19 +23,6 @@ use core::intrinsics::abort;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
-/// Pin configuration.
-///
-/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
-/// has all possible pin configurations.
-pub struct PinConf {
-  /// Pin port, mcu-specific.
-  pub port: Port,
-  /// Pin number.
-  pub pin: u8,
-  /// Pin function, mcu-specific.
-  pub function: Function,
-}
-
 /// Available port names.
 pub enum Port {
   PortA,
@@ -73,6 +60,19 @@ impl Port {
   }
 }
 
+/// Pin configuration.
+///
+/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
+/// has all possible pin configurations.
+pub struct PinConf {
+  /// Pin port, mcu-specific.
+  pub port: Port,
+  /// Pin number.
+  pub pin: u8,
+  /// Pin function, mcu-specific.
+  pub function: Function,
+}
+
 impl PinConf {
   #[no_split_stack]
   #[inline(always)]
@@ -103,6 +103,17 @@ impl PinConf {
   pub fn set_low(&self) {
     let bit: u32 = 1 << (self.pin as uint + 16);
     self.get_reg().set_BSRR(bit);
+  }
+
+  /// Returns input GPIO level.
+  pub fn level(&self) -> ::hal::pin::GPIOLevel {
+    let bit: u32 = 1 << (self.pin as uint);
+    let reg = self.get_reg();
+
+    match reg.IDR() & bit {
+      0 => ::hal::pin::Low,
+      _ => ::hal::pin::High,
+    }
   }
 
   fn get_reg(&self) -> &reg::GPIO {
