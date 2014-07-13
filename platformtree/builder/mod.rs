@@ -38,11 +38,11 @@ pub struct Builder {
 }
 
 impl Builder {
-  pub fn build(cx: &mut ExtCtxt, pt: Rc<node::PlatformTree>) -> Builder {
+  pub fn build(cx: &mut ExtCtxt, pt: Rc<node::PlatformTree>) -> Option<Builder> {
     let mut builder = Builder::new(pt.clone());
 
     if !pt.expect_subnodes(cx, ["mcu", "os", "drivers"]) {
-      return builder;  // TODO(farcaller): report error?
+      return None;
     }
 
     match pt.get_by_path("mcu") {
@@ -73,7 +73,7 @@ impl Builder {
       }
     }
 
-    builder
+    Some(builder)
   }
 
   fn walk_mutate(builder: &mut Builder, cx: &mut ExtCtxt, node: &Rc<node::Node>) {

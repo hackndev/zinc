@@ -114,8 +114,10 @@ mod test {
           }
         }
       }", |cx, failed, pt| {
-      let builder = Builder::build(cx, pt);
-      let items = builder.emit_items(cx);
+      let items = Builder::build(cx, pt)
+        .expect(format!("Unexpected failure on {}", line!()).as_slice())
+        .emit_items(cx);
+
       assert!(unsafe{*failed} == false);
       assert!(items.len() == 3);
 
