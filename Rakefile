@@ -95,6 +95,7 @@ compile_rust :macro_platformtree, {
   build_for: :host,
 }
 
+desc "Build API documentation"
 task build_docs: [:build_docs_html]
 
 task build_docs_html: [] do |t|
