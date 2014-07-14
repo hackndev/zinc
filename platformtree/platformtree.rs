@@ -15,6 +15,7 @@
 
 //! Platform tree operations crate
 
+#![experimental]
 #![feature(quote)]
 #![crate_name="platformtree"]
 #![crate_type="rlib"]
