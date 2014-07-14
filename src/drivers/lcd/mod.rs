@@ -30,7 +30,7 @@ pub mod font_small_7;
 /// `pixel` to set a pixel.
 ///
 /// LCD does not flush buffers automatically, user must call `flush` after the
-/// drwaing sequence to actually display the data on screen.
+/// drawing sequence to actually display the data on screen.
 pub trait LCD : CharIO {
   /// Clears the screen.
   fn clear(&self);

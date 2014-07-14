@@ -14,7 +14,7 @@
 // limitations under the License.
 
 /*!
-HAL provides abstactions for specific MCU hardware.
+HAL provides abstractions for specific MCU hardware.
 
 Each peripheral in `hal` has a `xxxConf` struct that can be defined statically,
 and each such struct has a `setup()` method that configures the hardware
