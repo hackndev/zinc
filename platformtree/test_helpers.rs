@@ -19,7 +19,8 @@ use syntax::ast;
 use syntax::codemap::MacroBang;
 use syntax::codemap::{CodeMap, Span, mk_sp, BytePos, ExpnInfo, NameAndSpan};
 use syntax::codemap;
-use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler, mk_handler};
+use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler};
+use syntax::diagnostic::mk_handler;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
@@ -33,6 +34,7 @@ use parser::Parser;
 use hamcrest::{success,Matcher,MatchResult,SelfDescribing};
 use std::fmt::Show;
 
+/// A helper matcher for equal_to_s.
 pub struct EqualToString<T> {
   expected: T
 }
@@ -54,14 +56,18 @@ impl<T : PartialEq+Show> Matcher<T> for EqualToString<T> {
   }
 }
 
+/// Like hamcrest's equal_to, but requires the objects to support Show (and has
+/// way better logging in case of failure).
 pub fn equal_to<T : PartialEq+Show>(expected: T) -> Box<EqualToString<T>> {
   box EqualToString { expected: expected }
 }
 
+/// A helper for equal_to that takes a &str argument.
 pub fn equal_to_s(expected: &str) -> Box<EqualToString<String>> {
   equal_to(expected.to_string())
 }
 
+/// Tests if the source fails to be parsed by PT parser.
 pub fn fails_to_parse(src: &str) {
   with_parsed_tts(src, |_, failed, pt| {
     assert!(unsafe{*failed} == true);
@@ -69,16 +75,20 @@ pub fn fails_to_parse(src: &str) {
   });
 }
 
+/// Tests if the source fails to be built by PT builder.
 pub fn fails_to_build(src: &str) {
   with_parsed(src, |cx, failed, pt| {
+    assert!(unsafe{*failed} == false);
     Builder::build(cx, pt);
-    assert!(unsafe{*failed} == true);
   });
 }
 
-pub fn with_parsed(src: &str, block: |&mut ExtCtxt, *mut bool, Rc<node::PlatformTree>|) {
+/// Yields an ExtCtxt, parser error state and parsed PT.
+///
+/// TODO(farcaller): get rid of that bool, it's broken.
+pub fn with_parsed(src: &str,
+    block: |&mut ExtCtxt, *mut bool, Rc<node::PlatformTree>|) {
   with_parsed_tts(src, |cx, failed, pt| {
-    assert!(unsafe{*failed} == false);
     block(cx, failed, pt.unwrap());
   });
 }
