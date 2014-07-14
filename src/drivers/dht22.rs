@@ -19,7 +19,7 @@ use core::iter::{Iterator, range};
 use hal::pin::{GPIO, Low, High, In, Out, GPIOLevel};
 use hal::timer::Timer;
 
-/// Basic DHT22 driver ported over from arduino example.
+/// Basic DHT22 driver ported over from Arduino example.
 pub struct DHT22<'a, T, P> {
   gpio: &'a P,
   timer: &'a T,

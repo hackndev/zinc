@@ -18,7 +18,7 @@ Timer interface.
 
 TimerConf is a MCU-specific struct.
 
-Timers porvide a simple way to delay program executon for some time.
+Timers provide a simple way to delay program execution for some time.
 */
 
 #[path="../lib/wait_for.rs"] mod wait_for;
