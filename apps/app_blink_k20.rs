@@ -13,10 +13,10 @@ use zinc::hal::cortex_m4::systick;
 /// Wait the given number of SysTick ticks
 pub fn wait(ticks: u32) {
   let mut n = ticks;
-  let mut t = systick::reg::SYSTICK.CURRENT();
+  let mut t = systick::get_current();
   loop {
-    if systick::reg::SYSTICK.CURRENT() > t {
-      t = systick::reg::SYSTICK.CURRENT();
+    if systick::get_current() > t {
+      t = systick::get_current();
       n -= 1;
       if n == 0 {
         break;

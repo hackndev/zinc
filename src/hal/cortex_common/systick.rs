@@ -56,6 +56,11 @@ pub fn disable_irq() {
   reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() & !0b010);
 }
 
+/// Gets the current systick value
+pub fn get_current() -> u32 {
+  reg::SYSTICK.CURRENT()
+}
+
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
