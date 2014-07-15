@@ -56,7 +56,7 @@ pub fn disable_irq() {
   reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() & !0b010);
 }
 
-pub mod reg {
+mod reg {
   use lib::volatile_cell::VolatileCell;
 
   ioreg!(SYSTICKReg: u32, CONTROL, RELOAD, CURRENT, CALIBRATION)
