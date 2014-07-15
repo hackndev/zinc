@@ -19,15 +19,24 @@ pub enum GPIODirection {
   Out,
 }
 
+/// Logic levels.
 #[deriving(PartialEq)]
 pub enum GPIOLevel {
   Low,
   High,
 }
 
+/// General Purpose I/O
 pub trait GPIO {
+  /// Set to logic high
   fn set_high(&self);
+
+  /// Set to logic low
   fn set_low(&self);
+
+  /// Read current logic level
   fn level(&self) -> GPIOLevel;
+
+  /// Set directio to `Low` or `High`
   fn set_direction(&self, new_mode: GPIODirection);
 }
