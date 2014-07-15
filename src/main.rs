@@ -17,6 +17,7 @@
 #![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(ctypes)]
+#![warn(missing_doc)]
 #![no_std]
 
 /*!
