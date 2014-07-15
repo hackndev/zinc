@@ -18,17 +18,19 @@
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
+/// Returns the CPUID
 #[allow(dead_code)]
 pub fn cpuid() -> u32 {
   reg::SCB.CPUID()
 }
 
+/// Sets the pending state of the PendSV interrupt
 pub fn set_pendsv(val: bool) {
-    if val {
-        reg::SCB.set_ICSR(1 << 28);
-    } else {
-        reg::SCB.set_ICSR(1 << 27);
-    }
+  if val {
+    reg::SCB.set_ICSR(1 << 28);
+  } else {
+    reg::SCB.set_ICSR(1 << 27);
+  }
 }
 
 mod reg {
