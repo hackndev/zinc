@@ -15,14 +15,18 @@
 
 /// GPIO direction.
 pub enum GPIODirection {
+  /// Input mode
   In,
+  /// Output mode
   Out,
 }
 
 /// Logic levels.
 #[deriving(PartialEq)]
 pub enum GPIOLevel {
+  /// Logic low
   Low,
+  /// Logic high
   High,
 }
 
@@ -37,6 +41,7 @@ pub trait GPIO {
   /// Read current logic level
   fn level(&self) -> GPIOLevel;
 
-  /// Set directio to `Low` or `High`
+  /// Set direction mode to `In` or `Out`,
+  /// for reading or writing respectively
   fn set_direction(&self, new_mode: GPIODirection);
 }
