@@ -18,6 +18,8 @@
 use core::kinds::marker;
 use core::intrinsics::{volatile_load, volatile_store};
 
+/// This structure is used to represent a hardware register.
+/// It is mostly used by `ioreg!` macro.
 // TODO(bharrisau) I don't know enough about markers - is it better
 // to just use an Unsafe<T> here instead?
 pub struct VolatileCell<T> {
@@ -26,6 +28,7 @@ pub struct VolatileCell<T> {
 }
 
 impl<T> VolatileCell<T> {
+  /// Create a cell with initial value.
   pub fn new(value: T) -> VolatileCell<T> {
     VolatileCell {
       value: value,
@@ -33,6 +36,7 @@ impl<T> VolatileCell<T> {
     }
   }
 
+  /// Get register value.
   #[inline]
   pub fn get(&self) -> T {
     unsafe {
@@ -40,6 +44,7 @@ impl<T> VolatileCell<T> {
     }
   }
 
+  /// Set register value.
   #[inline]
   pub fn set(&self, value: T) {
     unsafe {
