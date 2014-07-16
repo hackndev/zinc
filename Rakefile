@@ -3,9 +3,7 @@ load 'support/rake.rb'
 TOOLCHAIN = 'arm-none-eabi-'
 RUSTC = 'rustc'
 
-features = [:tft_lcd]
-
-Context.create(__FILE__, ENV['PLATFORM'], features)
+Context.create(__FILE__, ENV['PLATFORM'])
 
 provide_stdlibs
 
@@ -34,7 +32,7 @@ compile_rust :zinc_crate, {
   deps:    :core_crate,
   produce: 'main.rs'.in_source.as_rlib.in_build,
   out_dir: true,
-  recompile_on: [:triple, :platform, :features],
+  recompile_on: [:triple, :platform],
 }
 
 # zinc runtime support lib
@@ -51,18 +49,16 @@ compile_rust :zinc_isr, {
   source:  'hal/isr.rs'.in_source,
   deps:    :core_crate,
   produce: 'isr.o'.in_intermediate,
-  recompile_on: [:triple, :features],
+  recompile_on: [:triple],
 }
 
 # zinc scheduler assembly
-# TODO(farcaller): make platform-specific
-if features.include?(:multitasking)
-  compile_c :zinc_isr_sched, {
-    source:  'hal/cortex_m3/sched.S'.in_source,
-    produce: 'isr_sched.o'.in_intermediate,
-    recompile_on: [:triple, :features],
-  }
-end
+# TODO(farcaller): broken until implemented in PT.
+# compile_c :zinc_isr_sched, {
+#   source:  'hal/cortex_m3/sched.S'.in_source,
+#   produce: 'isr_sched.o'.in_intermediate,
+#   recompile_on: [:triple],
+# }
 
 # platform tree
 compile_rust :platformtree_crate, {
@@ -82,7 +78,7 @@ rust_tests :zinc_test, {
   source:  'main.rs'.in_source,
   deps:    [:core_crate],
   produce: 'zinc_test'.in_build,
-  recompile_on: [:platform, :features],
+  recompile_on: [:platform],
   build_for: :host,
 }
 
@@ -113,13 +109,14 @@ app_tasks = Context.instance.applications.map do |a|
       :macro_platformtree,
     ],
     produce: "app_#{a}.o".in_intermediate(a),
-    recompile_on: [:triple, :platform, :features],
+    recompile_on: [:triple, :platform],
   }
 
   link_binary "app_#{a}_elf".to_sym, {
     script: 'layout.ld'.in_platform,
-    deps: ["app_#{a}".to_sym, :zinc_isr, :zinc_support] +
-          (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
+    deps: ["app_#{a}".to_sym, :zinc_isr, :zinc_support],
+    # TODO(farcaller): broken until implemented in PT.
+    # (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
     produce: "app_#{a}.elf".in_build,
   }
 
