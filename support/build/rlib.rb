@@ -32,6 +32,6 @@ module Rlib
     end
 
     digest = Digest::SHA256.hexdigest(crate + '-' + version)[0...8]
-    "lib#{crate}-#{digest}-#{version}.rlib"
+    "lib#{crate}.rlib"
   end
 end
