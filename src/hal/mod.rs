@@ -22,13 +22,13 @@ and each such struct has a `setup()` method that configures the hardware
 */
 
 
-#[cfg(mcu_lpc17xx)] pub mod lpc17xx;
-#[cfg(mcu_stm32f4)] pub mod stm32f4;
-#[cfg(mcu_k20)]     pub mod k20;
+pub mod lpc17xx;
+pub mod stm32f4;
+pub mod k20;
 
 mod cortex_common;
-#[cfg(arch_cortex_m3)] pub mod cortex_m3;
-#[cfg(arch_cortex_m4)] pub mod cortex_m4;
+pub mod cortex_m3;
+pub mod cortex_m4;
 
 pub mod mem_init;
 pub mod pin;
