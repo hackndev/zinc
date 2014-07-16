@@ -16,24 +16,27 @@
 use core::option::{Some, None};
 use core::iter::{Iterator, range};
 
-use interfaces::lcd;
-use interfaces::chario;
-use hal::timer;
-use hal::gpio::ConnectedPin;
-use hal::spi;
+use super::LCD;
+use drivers::chario::CharIO;
+use hal::timer::Timer;
+use hal::pin::GPIO;
+use hal::spi::SPI;
 
-pub struct ILI9341<'a> {
-  spi: &'a spi::SPI,
-  dc:    ConnectedPin,
-  cs:    ConnectedPin,
-  reset: ConnectedPin,
+pub struct ILI9341<'a, S, T, P> {
+  spi: &'a S,
+  timer: &'a T,
+  dc: &'a P,
+  cs: &'a P,
+  reset: &'a P,
   // backlight: gpio::OutGPIO,
 }
 
-impl<'a> ILI9341<'a> {
-  pub fn new(spi: &'a spi::SPI, dc: ConnectedPin, cs: ConnectedPin, reset: ConnectedPin) -> ILI9341 {
+impl<'a, S: SPI, T: Timer, P: GPIO> ILI9341<'a, S, T, P> {
+  pub fn new(spi: &'a S, timer: &'a T, dc: &'a P, cs: &'a P, reset: &'a P)
+    -> ILI9341<'a, S, T, P> {
     let lcd = ILI9341 {
       spi: spi,
+      timer: timer,
       dc: dc,
       cs: cs,
       reset:reset,
@@ -54,7 +57,7 @@ impl<'a> ILI9341<'a> {
     self.dc.set_high();
 
     self.reset.set_low();
-    timer::wait_ms(10);
+    self.timer.wait_ms(10);
     self.reset.set_high();
 
     self.verify_id(); // this fails :)
@@ -207,7 +210,7 @@ impl<'a> ILI9341<'a> {
     self.write_data(0x0F);
 
     self.send_cmd(0x11);
-    timer::wait_ms(120);
+    self.timer.wait_ms(120);
 
     self.send_cmd(0x29);
     self.send_cmd(0x2c);
@@ -272,7 +275,7 @@ impl<'a> ILI9341<'a> {
 
     self.dc.set_high();
     self.cs.set_low();
-    for i in range(0, 38400) {
+    for _ in range(0u, 38400) {
       self.spi.transfer(0);
       self.spi.transfer(0);
       self.spi.transfer(0);
@@ -289,8 +292,7 @@ impl<'a> ILI9341<'a> {
   }
 }
 
-#[allow(unused_variable)]
-impl<'a> lcd::LCD for ILI9341<'a> {
+impl<'a, S: SPI, T: Timer, P: GPIO> LCD for ILI9341<'a, S, T, P> {
   fn clear(&self) {
     self.do_clear();
   }
@@ -300,9 +302,8 @@ impl<'a> lcd::LCD for ILI9341<'a> {
   }
 }
 
-impl<'a> chario::CharIO for ILI9341<'a> {
-  #[allow(unused_variable)]
+impl<'a, S: SPI, T: Timer, P: GPIO> CharIO for ILI9341<'a, S, T, P> {
   fn putc(&self, value: char) {
-
+    // TODO(farcaller): implement
   }
 }
