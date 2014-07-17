@@ -110,7 +110,7 @@ fn init_flash_access(freq: u32) {
                         if freq > 80_000_000 { 5 } else
                         if freq > 60_000_000 { 4 } else
                         if freq > 40_000_000 { 3 } else
-                        if freq > 40_000_000 { 2 } else
+                        if freq > 20_000_000 { 2 } else
                         { 1 };
   let val = (num_clocks - 1) << 12;
   reg::FLASHCFG.set_value(val);
