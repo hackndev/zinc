@@ -70,82 +70,82 @@ PROVIDE(isr_port_d          = isr_default_fault);
 PROVIDE(isr_port_e          = isr_default_fault);
 PROVIDE(isr_soft            = isr_default_fault);
 
-iomem_PERIPH0   = 0x40000000;
+k20_iomem_PERIPH0   = 0x40000000;
 
-iomem_CROSSBAR  = 0x40004000;
+k20_iomem_CROSSBAR  = 0x40004000;
 
-iomem_DMACON    = 0x40008000;
-iomem_DMATCD    = 0x40009000;
+k20_iomem_DMACON    = 0x40008000;
+k20_iomem_DMATCD    = 0x40009000;
 
-iomem_FLASHCON  = 0x4001F000;
-iomem_FLASH     = 0x40020000;
-iomem_DMAMUX0   = 0x40021000;
+k20_iomem_FLASHCON  = 0x4001F000;
+k20_iomem_FLASH     = 0x40020000;
+k20_iomem_DMAMUX0   = 0x40021000;
 
-iomem_CAN0      = 0x40024000;
+k20_iomem_CAN0      = 0x40024000;
 
-iomem_SPI0      = 0x4002C000;
-iomem_SPI1      = 0x4002D000;
-iomem_I2S0      = 0x4002F000;
+k20_iomem_SPI0      = 0x4002C000;
+k20_iomem_SPI1      = 0x4002D000;
+k20_iomem_I2S0      = 0x4002F000;
 
-iomem_CRC       = 0x40032000;
+k20_iomem_CRC       = 0x40032000;
 
-iomem_USBDCD    = 0x40035000;
-iomem_PDB       = 0x40036000;
-iomem_PIT       = 0x40037000;
-iomem_FTM0      = 0x40038000;
-iomem_FTM1      = 0x40039000;
+k20_iomem_USBDCD    = 0x40035000;
+k20_iomem_PDB       = 0x40036000;
+k20_iomem_PIT       = 0x40037000;
+k20_iomem_FTM0      = 0x40038000;
+k20_iomem_FTM1      = 0x40039000;
 
-iomem_ADC0      = 0x4003B000;
+k20_iomem_ADC0      = 0x4003B000;
 
-iomem_RTC       = 0x4003D000;
-iomem_VBAT      = 0x4003E000;
+k20_iomem_RTC       = 0x4003D000;
+k20_iomem_VBAT      = 0x4003E000;
 
-iomem_LPTMR     = 0x40040000;
-iomem_SYSREG    = 0x40041000;
+k20_iomem_LPTMR     = 0x40040000;
+k20_iomem_SYSREG    = 0x40041000;
 
-iomem_TSI       = 0x40045000;
+k20_iomem_TSI       = 0x40045000;
 
-iomem_SIM       = 0x40047000;
-iomem_PORTA     = 0x40049000;
-iomem_PORTB     = 0x4004A000;
-iomem_PORTC     = 0x4004B000;
-iomem_PORTD     = 0x4004C000;
-iomem_PORTE     = 0x4004D000;
+k20_iomem_SIM       = 0x40047000;
+k20_iomem_PORTA     = 0x40049000;
+k20_iomem_PORTB     = 0x4004A000;
+k20_iomem_PORTC     = 0x4004B000;
+k20_iomem_PORTD     = 0x4004C000;
+k20_iomem_PORTE     = 0x4004D000;
 
-iomem_WDINT     = 0x40052000;
+k20_iomem_WDINT     = 0x40052000;
 
-iomem_WDEXT     = 0x40061000;
-iomem_CMT       = 0x40062000;
+k20_iomem_WDEXT     = 0x40061000;
+k20_iomem_CMT       = 0x40062000;
 
-iomem_MCG       = 0x40064000;
-iomem_OSC       = 0x40065000;
-iomem_I2C0      = 0x40066000;
-iomem_I2C1      = 0x40067000;
+k20_iomem_MCG       = 0x40064000;
+k20_iomem_OSC       = 0x40065000;
+k20_iomem_I2C0      = 0x40066000;
+k20_iomem_I2C1      = 0x40067000;
 
-iomem_UART0     = 0x4006A000;
-iomem_UART1     = 0x4006B000;
-iomem_UART2     = 0x4006C000;
+k20_iomem_UART0     = 0x4006A000;
+k20_iomem_UART1     = 0x4006B000;
+k20_iomem_UART2     = 0x4006C000;
 
-iomem_USB       = 0x40072000;
-iomem_CMP       = 0x40073000;
-iomem_VREF      = 0x40074000;
+k20_iomem_USB       = 0x40072000;
+k20_iomem_CMP       = 0x40073000;
+k20_iomem_VREF      = 0x40074000;
 
-iomem_LLWU      = 0x4007C000;
-iomem_PMC       = 0x4007D000;
-iomem_SMC       = 0x4007E000;
-iomem_RCM       = 0x4007F000;
+k20_iomem_LLWU      = 0x4007C000;
+k20_iomem_PMC       = 0x4007D000;
+k20_iomem_SMC       = 0x4007E000;
+k20_iomem_RCM       = 0x4007F000;
 
 
-iomem_PERIPH1   = 0x40080000;
+k20_iomem_PERIPH1   = 0x40080000;
 
-iomem_FTM2      = 0x400B8000;
+k20_iomem_FTM2      = 0x400B8000;
 
-iomem_ADC1      = 0x400BB000;
+k20_iomem_ADC1      = 0x400BB000;
 
-iomem_DAC0      = 0x400CC000;
+k20_iomem_DAC0      = 0x400CC000;
 
-iomem_GPIOA     = 0x400ff000;
-iomem_GPIOB     = 0x400ff040;
-iomem_GPIOC     = 0x400ff080;
-iomem_GPIOD     = 0x400ff0C0;
-iomem_GPIOE     = 0x400ff100;
+k20_iomem_GPIOA     = 0x400ff000;
+k20_iomem_GPIOB     = 0x400ff040;
+k20_iomem_GPIOC     = 0x400ff080;
+k20_iomem_GPIOD     = 0x400ff0C0;
+k20_iomem_GPIOE     = 0x400ff100;

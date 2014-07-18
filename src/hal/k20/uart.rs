@@ -183,8 +183,8 @@ mod reg {
   // FIXME(bgamari): Specialized registers omitted
 
   extern {
-    #[link_name="iomem_UART1"] pub static UART0: UART;
-    #[link_name="iomem_UART2"] pub static UART1: UART;
-    #[link_name="iomem_UART3"] pub static UART2: UART;
+    #[link_name="k20_iomem_UART1"] pub static UART0: UART;
+    #[link_name="k20_iomem_UART2"] pub static UART1: UART;
+    #[link_name="k20_iomem_UART3"] pub static UART2: UART;
   }
 }

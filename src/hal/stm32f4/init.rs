@@ -317,8 +317,8 @@ pub mod reg {
   reg_rw!(PWRReg, u32, CSR, set_CSR, CSR)
 
   extern {
-    #[link_name="iomem_RCC"] pub static RCC: RCCReg;
-    #[link_name="iomem_FLASH"] pub static FLASH: FLASHReg;
-    #[link_name="iomem_PWR"] pub static PWR: PWRReg;
+    #[link_name="stm32f4_iomem_RCC"] pub static RCC: RCCReg;
+    #[link_name="stm32f4_iomem_FLASH"] pub static FLASH: FLASHReg;
+    #[link_name="stm32f4_iomem_PWR"] pub static PWR: PWRReg;
   }
 }

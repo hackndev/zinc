@@ -148,15 +148,15 @@ mod reg {
   reg_rw!(GPIO, u32, AFRH,     set_AFRH,     AFRH)
 
   extern {
-    #[link_name="iomem_GPIOA"] pub static GPIOA: GPIO;
-    #[link_name="iomem_GPIOB"] pub static GPIOB: GPIO;
-    #[link_name="iomem_GPIOC"] pub static GPIOC: GPIO;
-    #[link_name="iomem_GPIOD"] pub static GPIOD: GPIO;
-    #[link_name="iomem_GPIOE"] pub static GPIOE: GPIO;
-    #[link_name="iomem_GPIOF"] pub static GPIOF: GPIO;
-    #[link_name="iomem_GPIOG"] pub static GPIOG: GPIO;
-    #[link_name="iomem_GPIOH"] pub static GPIOH: GPIO;
-    #[link_name="iomem_GPIOI"] pub static GPIOI: GPIO;
+    #[link_name="stm32f4_iomem_GPIOA"] pub static GPIOA: GPIO;
+    #[link_name="stm32f4_iomem_GPIOB"] pub static GPIOB: GPIO;
+    #[link_name="stm32f4_iomem_GPIOC"] pub static GPIOC: GPIO;
+    #[link_name="stm32f4_iomem_GPIOD"] pub static GPIOD: GPIO;
+    #[link_name="stm32f4_iomem_GPIOE"] pub static GPIOE: GPIO;
+    #[link_name="stm32f4_iomem_GPIOF"] pub static GPIOF: GPIO;
+    #[link_name="stm32f4_iomem_GPIOG"] pub static GPIOG: GPIO;
+    #[link_name="stm32f4_iomem_GPIOH"] pub static GPIOH: GPIO;
+    #[link_name="stm32f4_iomem_GPIOI"] pub static GPIOI: GPIO;
     // define_reg!(GPIO_J: GPIO @ 0x40022400)
     // define_reg!(GPIO_K: GPIO @ 0x40022800)
   }

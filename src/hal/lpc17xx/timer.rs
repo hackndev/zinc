@@ -97,9 +97,9 @@ mod reg {
   reg_rw!(TIMER, u32, CTCR, set_CTCR, CTCR)
 
   extern {
-    #[link_name="iomem_TIMER0"] pub static TIMER0: TIMER;
-    #[link_name="iomem_TIMER1"] pub static TIMER1: TIMER;
-    #[link_name="iomem_TIMER2"] pub static TIMER2: TIMER;
-    #[link_name="iomem_TIMER3"] pub static TIMER3: TIMER;
+    #[link_name="lpc17xx_iomem_TIMER0"] pub static TIMER0: TIMER;
+    #[link_name="lpc17xx_iomem_TIMER1"] pub static TIMER1: TIMER;
+    #[link_name="lpc17xx_iomem_TIMER2"] pub static TIMER2: TIMER;
+    #[link_name="lpc17xx_iomem_TIMER3"] pub static TIMER3: TIMER;
   }
 }

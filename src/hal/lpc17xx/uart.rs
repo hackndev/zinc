@@ -290,8 +290,8 @@ mod reg {
   reg_rw!(UART, u32, TER, set_TER, TER)
 
   extern {
-    #[link_name="iomem_UART0"] pub static UART0: UART;
-    #[link_name="iomem_UART2"] pub static UART2: UART;
-    #[link_name="iomem_UART3"] pub static UART3: UART;
+    #[link_name="lpc17xx_iomem_UART0"] pub static UART0: UART;
+    #[link_name="lpc17xx_iomem_UART2"] pub static UART2: UART;
+    #[link_name="lpc17xx_iomem_UART3"] pub static UART3: UART;
   }
 }
