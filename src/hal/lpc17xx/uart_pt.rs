@@ -152,7 +152,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts().get(0),
+      assert_equal_source(builder.main_stmts()[0],
           "let uart = zinc::hal::lpc17xx::uart::UART::new(
                zinc::hal::lpc17xx::uart::UART0,
                9600u32,

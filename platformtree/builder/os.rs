@@ -227,7 +227,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts[0],
           "loop {
             run();
           }");
@@ -256,14 +256,14 @@ mod test {
       assert!(builder.main_stmts.len() == 1);
       assert!(builder.type_items.len() == 1);
 
-      assert_equal_source(&cx.stmt_item(DUMMY_SP, *builder.type_items.get(0)),
+      assert_equal_source(cx.stmt_item(DUMMY_SP, builder.type_items[0]),
           "pub struct run_args<'a> {
             pub a: u32,
             pub b: &'static str,
             pub c: &'a hello::world::Struct,
           }");
 
-      assert_equal_source(builder.main_stmts.get(0),
+      assert_equal_source(builder.main_stmts[0],
           "loop {
             run(&pt::run_args {
               a: 1u,
