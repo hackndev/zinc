@@ -17,21 +17,6 @@ require 'digest'
 
 module Rlib
   def self.crate_name(src)
-    crate = File.basename(src, File.extname(src))
-    version = '0.0'
-
-    id_regex = /#!\[crate_name.*=.*"([a-zA-Z0-9_]+)(?:#([a-zA-Z0-9_.\-]+))?"\]/
-    lines = open(src).read.split("\n")
-    lines.each do |l|
-      m = id_regex.match(l)
-      if m
-        crate = m[1]
-        version = m[2] ? m[2] : '0.0'
-        break
-      end
-    end
-
-    digest = Digest::SHA256.hexdigest(crate + '-' + version)[0...8]
-    "lib#{crate}.rlib"
+    `#{RUSTC} --print-file-name "#{src}"`
   end
 end
