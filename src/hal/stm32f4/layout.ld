@@ -14,4 +14,6 @@ MEMORY
     /* ram(WAIL) : ORIGIN = 0x2001C000, LENGTH = 16K */
 }
 
+REGION_ALIAS("vectors", rom);
+
 INCLUDE ./src/hal/layout_common.ld
