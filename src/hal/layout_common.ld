@@ -1,17 +1,16 @@
 SECTIONS
 {
-    .text : ALIGN(4)
+    .vector : ALIGN(4)
     {
         FILL(0xff)
 
         KEEP(*(.isr_vector))
         KEEP(*(.isr_vector_nvic))
-    } > rom
+    } > vectors
 
     .text : ALIGN(4)
     {
         FILL(0xff)
-
         *(.text*)
         *(.rodata .rodata.*)
     } > rom
