@@ -187,11 +187,11 @@ mod reg {
   }
 
   extern {
-    #[link_name="iomem_PORTA"] pub static PORTA: PORT;
-    #[link_name="iomem_PORTB"] pub static PORTB: PORT;
-    #[link_name="iomem_PORTC"] pub static PORTC: PORT;
-    #[link_name="iomem_PORTD"] pub static PORTD: PORT;
-    #[link_name="iomem_PORTE"] pub static PORTE: PORT;
+    #[link_name="k20_iomem_PORTA"] pub static PORTA: PORT;
+    #[link_name="k20_iomem_PORTB"] pub static PORTB: PORT;
+    #[link_name="k20_iomem_PORTC"] pub static PORTC: PORT;
+    #[link_name="k20_iomem_PORTD"] pub static PORTD: PORT;
+    #[link_name="k20_iomem_PORTE"] pub static PORTE: PORT;
   }
 
   ioreg!(GPIO: u32, PDOR, PSOR, PCOR, PTOR, PDIR, PDDR)
@@ -203,10 +203,10 @@ mod reg {
   reg_rw!(GPIO, u32, PDDR,  set_PDDR,  PDDR)
 
   extern {
-    #[link_name="iomem_GPIOA"] pub static GPIOA: GPIO;
-    #[link_name="iomem_GPIOB"] pub static GPIOB: GPIO;
-    #[link_name="iomem_GPIOC"] pub static GPIOC: GPIO;
-    #[link_name="iomem_GPIOD"] pub static GPIOD: GPIO;
-    #[link_name="iomem_GPIOE"] pub static GPIOE: GPIO;
+    #[link_name="k20_iomem_GPIOA"] pub static GPIOA: GPIO;
+    #[link_name="k20_iomem_GPIOB"] pub static GPIOB: GPIO;
+    #[link_name="k20_iomem_GPIOC"] pub static GPIOC: GPIO;
+    #[link_name="k20_iomem_GPIOD"] pub static GPIOD: GPIO;
+    #[link_name="k20_iomem_GPIOE"] pub static GPIOE: GPIO;
   }
 }

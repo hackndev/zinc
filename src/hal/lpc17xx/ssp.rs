@@ -239,7 +239,7 @@ mod reg {
   reg_rw!(SSP, u32, DMACR, set_DMACR, DMACR)
 
   extern {
-    #[link_name="iomem_SSP0"] pub static SSP0: SSP;
-    #[link_name="iomem_SSP1"] pub static SSP1: SSP;
+    #[link_name="lpc17xx_iomem_SSP0"] pub static SSP0: SSP;
+    #[link_name="lpc17xx_iomem_SSP1"] pub static SSP1: SSP;
   }
 }

@@ -46,6 +46,6 @@ pub mod reg {
   reg_rw!(SIM, u32, SCGC5,  set_SCGC5,  SCGC5)
 
   extern {
-    #[link_name="iomem_SIM"] pub static SIM: SIM;
+    #[link_name="k20_iomem_SIM"] pub static SIM: SIM;
   }
 }

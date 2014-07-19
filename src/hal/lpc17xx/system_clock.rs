@@ -169,13 +169,13 @@ mod reg {
   reg_w!(CLKSRCSEL, u32, set_value, value)
 
   extern {
-    #[link_name="iomem_SCS"] pub static SCS: SCS;
-    #[link_name="iomem_FLASHCFG"] pub static FLASHCFG: FLASHCFG;
-    #[link_name="iomem_PLL0CFG"] pub static PLL0CFG: PLL0CFG;
-    #[link_name="iomem_PLL0CON"] pub static PLL0CON: PLL0CON;
-    #[link_name="iomem_CCLKCFG"] pub static CCLKCFG: CCLKCFG;
-    #[link_name="iomem_PLL0FEED"] pub static PLL0FEED: PLL0FEED;
-    #[link_name="iomem_CLKSRCSEL"] pub static CLKSRCSEL: CLKSRCSEL;
-    #[link_name="iomem_PLL0STAT"] pub static PLL0STAT: PLL0STAT;
+    #[link_name="lpc17xx_iomem_SCS"] pub static SCS: SCS;
+    #[link_name="lpc17xx_iomem_FLASHCFG"] pub static FLASHCFG: FLASHCFG;
+    #[link_name="lpc17xx_iomem_PLL0CFG"] pub static PLL0CFG: PLL0CFG;
+    #[link_name="lpc17xx_iomem_PLL0CON"] pub static PLL0CON: PLL0CON;
+    #[link_name="lpc17xx_iomem_CCLKCFG"] pub static CCLKCFG: CCLKCFG;
+    #[link_name="lpc17xx_iomem_PLL0FEED"] pub static PLL0FEED: PLL0FEED;
+    #[link_name="lpc17xx_iomem_CLKSRCSEL"] pub static CLKSRCSEL: CLKSRCSEL;
+    #[link_name="lpc17xx_iomem_PLL0STAT"] pub static PLL0STAT: PLL0STAT;
   }
 }

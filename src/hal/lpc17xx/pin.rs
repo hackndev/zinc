@@ -164,14 +164,14 @@ mod reg {
   reg_rw!(PINSEL, u32, value, set_value, value)
 
   extern {
-    #[link_name="iomem_PINSEL0"]  pub static PINSEL0:  PINSEL;
-    #[link_name="iomem_PINSEL1"]  pub static PINSEL1:  PINSEL;
-    #[link_name="iomem_PINSEL2"]  pub static PINSEL2:  PINSEL;
-    #[link_name="iomem_PINSEL3"]  pub static PINSEL3:  PINSEL;
-    #[link_name="iomem_PINSEL4"]  pub static PINSEL4:  PINSEL;
-    #[link_name="iomem_PINSEL7"]  pub static PINSEL7:  PINSEL;
-    #[link_name="iomem_PINSEL9"]  pub static PINSEL9:  PINSEL;
-    #[link_name="iomem_PINSEL10"] pub static PINSEL10: PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL0"]  pub static PINSEL0:  PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL1"]  pub static PINSEL1:  PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL2"]  pub static PINSEL2:  PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL3"]  pub static PINSEL3:  PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL4"]  pub static PINSEL4:  PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL7"]  pub static PINSEL7:  PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL9"]  pub static PINSEL9:  PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL10"] pub static PINSEL10: PINSEL;
   }
 
   ioreg!(GPIO: u32, FIODIR, _r0, _r1, _r2, FIOMASK, FIOPIN, FIOSET, FIOCLR)
@@ -182,10 +182,10 @@ mod reg {
   reg_rw!(GPIO, u32, FIOCLR,  set_FIOCLR,  FIOCLR)
 
   extern {
-    #[link_name="iomem_GPIO0"] pub static GPIO0: GPIO;
-    #[link_name="iomem_GPIO1"] pub static GPIO1: GPIO;
-    #[link_name="iomem_GPIO2"] pub static GPIO2: GPIO;
-    #[link_name="iomem_GPIO3"] pub static GPIO3: GPIO;
-    #[link_name="iomem_GPIO4"] pub static GPIO4: GPIO;
+    #[link_name="lpc17xx_iomem_GPIO0"] pub static GPIO0: GPIO;
+    #[link_name="lpc17xx_iomem_GPIO1"] pub static GPIO1: GPIO;
+    #[link_name="lpc17xx_iomem_GPIO2"] pub static GPIO2: GPIO;
+    #[link_name="lpc17xx_iomem_GPIO3"] pub static GPIO3: GPIO;
+    #[link_name="lpc17xx_iomem_GPIO4"] pub static GPIO4: GPIO;
   }
 }

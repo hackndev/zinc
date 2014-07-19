@@ -83,6 +83,6 @@ mod reg {
   reg_rw!(TIM2To5, u32, OR,    set_OR,    OR)
 
   extern {
-    #[link_name="iomem_TIM2"] pub static TIM2: TIM2To5;
+    #[link_name="stm32f4_iomem_TIM2"] pub static TIM2: TIM2To5;
   }
 }

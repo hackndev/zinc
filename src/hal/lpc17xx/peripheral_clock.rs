@@ -219,8 +219,8 @@ mod reg {
   reg_rw!(PCLKSEL, u32, value, set_value, value)
 
   extern {
-    #[link_name="iomem_PCONP"] pub static PCONP: PCONP;
-    #[link_name="iomem_PCLKSEL0"] pub static PCLKSEL0: PCLKSEL;
-    #[link_name="iomem_PCLKSEL1"] pub static PCLKSEL1: PCLKSEL;
+    #[link_name="lpc17xx_iomem_PCONP"] pub static PCONP: PCONP;
+    #[link_name="lpc17xx_iomem_PCLKSEL0"] pub static PCLKSEL0: PCLKSEL;
+    #[link_name="lpc17xx_iomem_PCLKSEL1"] pub static PCLKSEL1: PCLKSEL;
   }
 }

@@ -54,6 +54,7 @@ pub struct Attribute {
 }
 
 impl Attribute {
+  /// Creates a new attribute with given span.
   pub fn new(value: AttributeValue, key_span: Span, value_span: Span)
       -> Attribute {
     Attribute {
@@ -63,6 +64,7 @@ impl Attribute {
     }
   }
 
+  /// Creates a new attribute with DUMMY_SP for key and value.
   pub fn new_nosp(value: AttributeValue) -> Attribute {
     Attribute {
       value: value,
@@ -72,8 +74,14 @@ impl Attribute {
   }
 }
 
+/// Node builder is a function that generates code based on the node content or
+/// mutates other nodes.
 pub type NodeBuilderFn = fn(&mut Builder, &mut ExtCtxt, Rc<Node>);
 
+/// Subnodes is effectively an ordered map.
+///
+/// We still address nodes by path for most of use cases, but we need to know
+/// the original order of appearance (it makes things deterministic).
 pub struct Subnodes {
   by_index: Vec<Rc<Node>>,
   by_path: HashMap<String, Weak<Node>>,
@@ -87,20 +95,28 @@ impl Subnodes {
     }
   }
 
+  /// Adds a node to subnodes.
+  ///
+  /// The node must not be present in the subnodes.
   pub fn push(&mut self, node: Rc<Node>) {
     let weak = node.downgrade();
     self.by_path.insert(node.path.clone(), weak);
     self.by_index.push(node);
   }
 
+  /// Returns a vector representation of subnodes.
   pub fn as_vec<'a>(&'a self) -> &'a Vec<Rc<Node>> {
     &self.by_index
   }
 
+  /// Returns a map representation of subnodes.
   pub fn as_map<'a>(&'a self) -> &'a HashMap<String, Weak<Node>> {
     &self.by_path
   }
 
+  /// A helper method to move data from other subnodes into current instance.
+  ///
+  /// Used as a helper for wrapping in RefCell.
   pub fn clone_from(&mut self, other: Subnodes) {
     self.by_index = other.by_index;
     self.by_path = other.by_path;
@@ -113,31 +129,52 @@ impl Subnodes {
 /// path_span. Attributes are stored by name, subnodes are stored by path.
 /// Type_name, if present, must specify the type path for the node's
 /// materialized object.
+///
+/// Two nodes are equal if their full paths are equal.
 pub struct Node {
+  /// Node name, might be optional.
   pub name: Option<String>,
+
+  /// Name span if name is present or path span otherwise.
   pub name_span: Span,
 
+  /// Node path, which is unique among all sibling nodes.
   pub path: String,
+
+  /// Path span.
   pub path_span: Span,
 
+  /// A map of node's attributes.
   pub attributes: RefCell<HashMap<String, Rc<Attribute>>>,
-  subnodes: RefCell<Subnodes>,
+
+  /// A weak reference to parent node, None for root nodes.
   pub parent: Option<Weak<Node>>,
 
-  type_name: RefCell<Option<String>>,
-  type_params: RefCell<Vec<String>>,
-
-  /// A function that materializes this node.
+  /// A function that materializes this node, i.e. generates some actionable
+  /// code.
+  ///
+  /// Materializers are exectuted in order of dependencies resolution, so having
+  /// a fully built tree of dependencies is a must.
   pub materializer: Cell<Option<NodeBuilderFn>>,
 
   /// Present iff this node will modify state of any other nodes.
+  ///
+  /// Mutators are executed before materializers in no specific order.
   pub mutator: Cell<Option<NodeBuilderFn>>,
 
   /// List of nodes that must be materialized before this node.
+  ///
+  /// Generally, a node must depend on something to be materialized. The root
+  /// node that all other nodes must depend on implicitly or explicitly is
+  /// mcu::clock, which must always be present in PT.
   pub depends_on: RefCell<Vec<Weak<Node>>>,
 
   /// List of nodes that may be materialized before this node.
   pub rev_depends_on: RefCell<Vec<Weak<Node>>>,
+
+  subnodes: RefCell<Subnodes>,
+  type_name: RefCell<Option<String>>,
+  type_params: RefCell<Vec<String>>,
 }
 
 impl Node {
@@ -160,41 +197,60 @@ impl Node {
     }
   }
 
+  /// Set type name for the generated struct.
+  ///
+  /// If this node generates an object in main(), type_name references the type
+  /// of that object, e.g. for DHT22 driver that would be
+  /// `zinc::drivers::dht22::DHT22`.
   pub fn set_type_name(&self, tn: String) {
     let mut borrow = self.type_name.borrow_mut();
     borrow.deref_mut().clone_from(&Some(tn));
   }
 
+  /// Get type name for the generated struct.
   pub fn type_name(&self) -> Option<String> {
     self.type_name.borrow().clone()
   }
 
+  /// Get type parameters for the generated object.
   pub fn type_params(&self) -> Vec<String> {
     self.type_params.borrow().clone()
   }
 
+  /// Set type parameters for the generated object, including lifetimes.
+  ///
+  /// A default lifetime if this is going to end as a task argument is 'a. Other
+  /// lifetimes or fully-qualified types may be used as well. DHT22 driver uses
+  /// this to provide `zinc::hal::timer::Timer` and `zinc::hal::pin::GPIO` for
+  /// its public struct of `pub struct DHT22<'a, T, P>`.
   pub fn set_type_params(&self, params: Vec<String>) {
     let mut borrow = self.type_params.borrow_mut();
     borrow.deref_mut().clone_from(&params);
   }
 
+  /// Returns a cloned vec of node's subnodes.
   pub fn subnodes(&self) -> Vec<Rc<Node>> {
     self.subnodes.borrow().as_vec().clone()
   }
 
+  /// Invokes the closure for each node from node's subnodes passing a path and
+  /// weak node reference.
   pub fn with_subnodes_map(&self, f: |&HashMap<String, Weak<Node>>|) {
     let borrow = self.subnodes.borrow();
     f(borrow.as_map());
   }
 
+  /// Sets the node's subnodes from a passed object.
   pub fn set_subnodes(&self, new: Subnodes) {
     self.subnodes.borrow_mut().clone_from(new);
   }
 
+  /// Returns a clones string of current node's path.
   pub fn path(&self) -> String {
     self.path.clone()
   }
 
+  /// Returns a fully-qualified path of the current node.
   pub fn full_path(&self) -> String {
     let pp = match self.parent {
       Some(ref parent) => parent.clone().upgrade().unwrap().full_path() + "::",
@@ -372,6 +428,9 @@ impl fmt::Show for Node {
 ///
 /// Root nodes are stored by path in `nodes`, All the nmaed nodes are also
 /// stored by name in `named`.
+///
+/// TODO(farcaller): this could be really refactored into transient root node
+/// object that can depend on mcu::clock.
 pub struct PlatformTree {
   nodes: HashMap<String, Rc<Node>>,
   named: HashMap<String, Weak<Node>>,

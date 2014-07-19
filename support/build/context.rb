@@ -24,7 +24,7 @@ require 'build/rlib'
 
 class Context
   attr_reader :rules, :env, :application, :tracking_triple, :tracking_platform
-  attr_reader :applications, :tracking_features
+  attr_reader :applications
 
   def self.create(*args)
     raise RuntimeError("Context already created") if @context_instance
@@ -35,10 +35,9 @@ class Context
     @context_instance
   end
 
-  def initialize(rakefile, platform, build_features)
+  def initialize(rakefile, platform)
     @cached_rlib_names = {}
     @rules = {}
-    @build_features = build_features
 
     @root_path = File.dirname(rakefile)
     @available_platforms = Platform.from_yaml(root_dir('platforms.yml'))
@@ -92,9 +91,7 @@ class Context
   end
 
   def collect_config_flags!
-    @config_flags = (@platform.features + @build_features).map do |f|
-      "cfg_#{f}"
-    end
+    @config_flags = @platform.features.map { |f| "cfg_#{f}" }
 
     @config_flags << "mcu_#{@platform.name}"
     @config_flags << "arch_#{@platform.arch.name}"
@@ -136,8 +133,6 @@ class Context
         build_dir('.target_triple'), @platform.arch.target)
     @tracking_platform = TrackingTask.define_task(
         build_dir('.target_name'), @platform.name)
-    @tracking_features = TrackingTask.define_task(
-        build_dir('.features'), build_features_hash)
   end
 
   def collect_applications!
@@ -150,9 +145,5 @@ class Context
     return ENV[name.to_s] if ENV[name.to_s]
     return Object.const_get(name) if Object.const_defined?(name)
     raise RuntimeError.new("Undefined constant #{name}")
-  end
-
-  def build_features_hash
-    @build_features.to_yaml
   end
 end

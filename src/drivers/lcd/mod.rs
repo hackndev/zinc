@@ -20,8 +20,8 @@ use core::iter::{Iterator, range, range_inclusive};
 
 use drivers::chario::CharIO;
 
-#[cfg(cfg_mcu_has_spi)] pub mod c12332;
-#[cfg(cfg_mcu_has_spi, FIXME_BROKEN)] pub mod ili9341;
+pub mod c12332;
+pub mod ili9341;
 pub mod font_small_7;
 
 /// LCD provides a generic interface to a TFT LCD peripheral.

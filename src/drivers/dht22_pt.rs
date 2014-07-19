@@ -71,8 +71,8 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 #[cfg(test)]
 mod test {
   use builder::Builder;
-  use test_helpers::{assert_equal_source, with_parsed, equal_to, equal_to_s};
-  use hamcrest::{assert_that,is};
+  use test_helpers::{assert_equal_source, with_parsed};
+  use hamcrest::{assert_that, is, equal_to};
 
   #[test]
   fn builds_lpc17xx_pt() {
@@ -96,7 +96,7 @@ mod test {
 
       let pin_node = pt.get_by_name("pin").unwrap();
       assert_that(pin_node.get_string_attr("direction").unwrap(),
-          is(equal_to_s("out")));
+          is(equal_to("out".to_string())));
     });
   }
 }
