@@ -89,16 +89,16 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     None => "GPIO".to_string(),
     Some(fun) => {
       let pins = port_def.get(port_path);
-      let maybe_pin = pins.get(from_str(node.path.as_slice()).unwrap());
-      match maybe_pin {
-        &None => {
+      let maybe_pin_index = from_str(node.path.as_slice()).unwrap();
+      match pins[maybe_pin_index] {
+        None => {
           cx.parse_sess().span_diagnostic.span_err(
               node.get_attr("function").value_span,
               format!("unknown pin function `{}`, only GPIO avaliable on this pin",
                   fun).as_slice());
           return;
         }
-        &Some(ref pin_funcs) => {
+        Some(ref pin_funcs) => {
           let maybe_func = pin_funcs.find(&fun);
           match maybe_func {
             None => {
@@ -152,7 +152,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts().get(0),
+      assert_equal_source(builder.main_stmts()[0],
           "let p1 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                1u8,
@@ -174,7 +174,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts().get(0),
+      assert_equal_source(builder.main_stmts()[0],
           "let p2 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                2u8,
@@ -196,7 +196,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts().get(0),
+      assert_equal_source(builder.main_stmts()[0],
           "let p3 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                3u8,

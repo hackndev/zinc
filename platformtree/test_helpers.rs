@@ -114,7 +114,7 @@ impl Emitter for CustomEmmiter {
   }
 }
 
-pub fn assert_equal_source(stmt: &Gc<ast::Stmt>, src: &str) {
+pub fn assert_equal_source(stmt: Gc<ast::Stmt>, src: &str) {
   let gen_src = pprust::stmt_to_string(stmt.deref());
   println!("generated: {}", gen_src);
   println!("expected:  {}", src);
@@ -125,7 +125,7 @@ pub fn assert_equal_source(stmt: &Gc<ast::Stmt>, src: &str) {
   assert!(stripped_gen_src == stripped_src);
 }
 
-pub fn assert_equal_items(stmt: &Gc<ast::Item>, src: &str) {
+pub fn assert_equal_items(stmt: Gc<ast::Item>, src: &str) {
   let gen_src = pprust::item_to_string(stmt.deref());
   println!("generated: {}", gen_src);
   println!("expected:  {}", src);

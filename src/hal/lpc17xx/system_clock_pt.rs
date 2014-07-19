@@ -131,7 +131,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts().get(0),
+      assert_equal_source(builder.main_stmts()[0],
           "{
             use zinc::hal::lpc17xx::system_clock;
             system_clock::init_clock(
