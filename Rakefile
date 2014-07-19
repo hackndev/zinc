@@ -18,6 +18,14 @@ compile_rust :hamcrest_crate, {
   do_not_collect_rust_deps: true,
 }
 
+# cross-compiled librlibc
+compile_rust :rlibc_crate, {
+  source:  'thirdparty/librlibc/lib.rs'.in_root,
+  produce: 'thirdparty/librlibc/lib.rs'.in_root.as_rlib.in_build,
+  out_dir: true,
+  recompile_on: :triple,
+}
+
 # cross-compiled libcore
 compile_rust :core_crate, {
   source:  'thirdparty/libcore/lib.rs'.in_root,
@@ -29,7 +37,7 @@ compile_rust :core_crate, {
 # zinc crate
 compile_rust :zinc_crate, {
   source:  'main.rs'.in_source,
-  deps:    :core_crate,
+  deps:    [:core_crate, :rlibc_crate],
   produce: 'main.rs'.in_source.as_rlib.in_build,
   out_dir: true,
   recompile_on: [:triple, :platform],
@@ -38,6 +46,7 @@ compile_rust :zinc_crate, {
 # zinc runtime support lib
 compile_rust :zinc_support, {
   source:  'lib/support.rs'.in_source,
+  deps:    [:rlibc_crate],
   produce: 'support.o'.in_intermediate,
   llvm_pass: :inline,
   lto: false,
