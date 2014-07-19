@@ -144,7 +144,7 @@ pub struct Node {
   /// Path span.
   pub path_span: Span,
 
-  /// a map of node's attributes.
+  /// A map of node's attributes.
   pub attributes: RefCell<HashMap<String, Rc<Attribute>>>,
 
   /// A weak reference to parent node, None for root nodes.
