@@ -56,9 +56,15 @@ pub fn disable_irq() {
   reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() & !0b010);
 }
 
-/// Gets the current systick value
+/// Gets the current 24bit systick value
 pub fn get_current() -> u32 {
-  reg::SYSTICK.CURRENT()
+  reg::SYSTICK.CURRENT() & 0xFFFFFF
+}
+
+/// Checks if the timer has been triggered since last call.
+/// The flag is cleared when this is called.
+pub fn tick() -> bool {
+  ((reg::SYSTICK.CONTROL() >> 16) & 0x1) == 1
 }
 
 mod reg {
