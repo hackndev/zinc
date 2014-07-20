@@ -17,51 +17,6 @@
 #![crate_type="rlib"]
 #![feature(asm, intrinsics)]
 
-extern "rust-intrinsic" {
-  pub fn offset<T>(dst: *const T, offset: int) -> *const T;
-}
-
-#[allow(non_camel_case_types)]
-pub type c_int = i32;
-
-#[no_mangle]
-#[no_split_stack]
-#[inline(never)]
-pub fn memcpy(dest: *mut u8, src: *const u8, n: int) {
-  unsafe {
-    let mut i = 0;
-    while i < n {
-      *(offset(dest as *const u8, i) as *mut u8) = *(offset(src, i));
-      i += 1;
-    }
-  }
-}
-
-#[no_mangle]
-#[no_split_stack]
-pub extern "C" fn __aeabi_memcpy(dest: *mut u8, src: *const u8, n: int) {
-  memcpy(dest, src, n);
-}
-
-#[no_mangle]
-#[no_split_stack]
-#[inline(never)]
-pub fn memset(s: *mut u8, c: c_int, n: int) {
-  unsafe {
-    let mut i = 0;
-    while i < n {
-      *(offset(s as *const u8, i) as *mut u8) = c as u8;
-      i += 1;
-    }
-  }
-}
-
-#[no_mangle]
-#[no_split_stack]
-pub extern "C" fn __aeabi_memset(s: *mut u8, n: int, c: c_int) {
-  memset(s, c, n);
-}
-
 #[cfg(test)]
 #[no_split_stack]
 #[no_mangle]
