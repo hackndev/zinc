@@ -195,7 +195,7 @@ impl PeripheralClock {
     }
   }
 
-  fn divisor_reg_and_offset(self) -> (&reg::PCLKSEL, u32) {
+  fn divisor_reg_and_offset(self) -> (&'static reg::PCLKSEL, u32) {
     match self.to_divisor() {
       WDTDivisor|TIMER0Divisor|TIMER1Divisor|UART0Divisor|UART1Divisor|
       PWM1Divisor|I2C0Divisor|SPIDivisor|SSP1Divisor|DACDivisor|ADCDivisor|
