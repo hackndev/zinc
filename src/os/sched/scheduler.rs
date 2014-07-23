@@ -30,8 +30,8 @@ use hal::systick::Systick;
 pub struct Scheduler<'a, T, S> {
   index: task::TasksIndex<'a>,
   context_switch: ||:'a,
-  systick: &'a T,
-  stack_manager: &'a S,
+  systick: T,
+  stack_manager: S,
 }
 
 impl<'a, T: Systick, S: StackManager> Scheduler<'a, T, S> {
@@ -39,9 +39,8 @@ impl<'a, T: Systick, S: StackManager> Scheduler<'a, T, S> {
   /// management routines.
   ///
   /// At least one task must be defined in task index.
-  pub fn new(ti: task::TasksIndex<'a>, systick: &'a T,
-      stack_manager: &'a S, ctx_switch: ||:'a)
-    -> Scheduler<'a, T, S> {
+  pub fn new(ti: task::TasksIndex<'a>, systick: T, stack_manager: S,
+    ctx_switch: ||:'a) -> Scheduler<'a, T, S> {
     Scheduler {
       index: ti,
       context_switch: ctx_switch,
@@ -52,7 +51,8 @@ impl<'a, T: Systick, S: StackManager> Scheduler<'a, T, S> {
 
   /// Starts a scheduler and switches to first task. Never returns.
   pub fn start(&mut self) {
-    self.stack_manager.set_task_stack_pointer(self.index.tasks[0].stack_start);
+    self.stack_manager.set_task_stack_pointer(
+        self.index.tasks[self.index.current_task_index as uint].stack_start);
     self.systick.start();
     (self.context_switch)();
   }
@@ -85,7 +85,6 @@ impl<'a, T: Systick, S: StackManager> Scheduler<'a, T, S> {
 #[cfg(test)]
 mod test {
   use hamcrest::{assert_that, is, equal_to};
-  use std::cell::Cell;
   use std::kinds::marker;
 
   use hal::systick::Systick;
@@ -94,34 +93,45 @@ mod test {
   use super::Scheduler;
 
   struct FakeSystick {
-    pub started: Cell<bool>
+    started_ptr: *mut bool
   }
 
   impl FakeSystick {
-    pub fn new() -> FakeSystick { FakeSystick { started: Cell::new(false) } }
+    pub fn new(started: &mut bool) -> FakeSystick {
+      FakeSystick {
+        started_ptr: started as *mut bool
+      }
+    }
   }
   impl Systick for FakeSystick {
-    fn start(&self) { self.started.set(true); }
+    fn start(&self) {
+      unsafe { *self.started_ptr = true; }
+    }
   }
 
   struct FakeStackManager {
-    pub sp: Cell<u32>
+    pub sp_ptr: *mut u32
   }
   impl FakeStackManager {
-    pub fn new() -> FakeStackManager { FakeStackManager { sp: Cell::new(0) } }
+    pub fn new(sp: &mut u32) -> FakeStackManager {
+      FakeStackManager {
+        sp_ptr: sp as *mut u32
+      }
+    }
   }
   impl StackManager for FakeStackManager {
     fn get_task_stack_pointer(&self) -> u32 {
-      self.sp.get()
+      unsafe { *self.sp_ptr }
     }
     fn set_task_stack_pointer(&self, sp: u32) {
-      self.sp.set(sp);
+      unsafe { *self.sp_ptr = sp; }
     }
   }
 
   describe!(
     before_each {
-      let tick = FakeSystick::new();
+      let mut systick_started = false;
+      let tick = FakeSystick::new(&mut systick_started);
       let mut tasks = [task::Task {
         state: task::Runnable,
         stack_start: 100,
@@ -137,14 +147,15 @@ mod test {
         current_task_index: 0,
         no_copy: marker::NoCopy,
       };
-      let fsm = FakeStackManager::new();
+      let mut sp = 0u32;
+      let fsm = FakeStackManager::new(&mut sp);
     }
 
     it "calls a context switch with first task" {
       let mut called = false;
 
       {
-        let mut scheduler = Scheduler::new(ti, &tick, &fsm, || { called = true });
+        let mut scheduler = Scheduler::new(ti, tick, fsm, || { called = true });
         scheduler.start();
       }
 
@@ -152,7 +163,7 @@ mod test {
     }
 
     it "schedules second task on timer interrupt" {
-      let mut scheduler = Scheduler::new(ti, &tick, &fsm, || {});
+      let mut scheduler = Scheduler::new(ti, tick, fsm, || {});
       scheduler.start();
 
       scheduler.switch();
@@ -161,7 +172,7 @@ mod test {
     }
 
     it "wraps over to first task when all tasks are done" {
-      let mut scheduler = Scheduler::new(ti, &tick, &fsm, || {});
+      let mut scheduler = Scheduler::new(ti, tick, fsm, || {});
       scheduler.start();
 
       scheduler.switch();
@@ -171,36 +182,37 @@ mod test {
     }
 
     it "enables systick timer on start" {
-      let mut scheduler = Scheduler::new(ti, &tick, &fsm, || {});
+      let mut scheduler = Scheduler::new(ti, tick, fsm, || {});
       scheduler.start();
 
-      assert_that(tick.started.get(), is(equal_to(true)));
+      assert_that(systick_started, is(equal_to(true)));
     }
 
     it "loads first task stack pointer" {
-      let mut scheduler = Scheduler::new(ti, &tick, &fsm, || {});
+      let mut scheduler = Scheduler::new(ti, tick, fsm, || {});
       scheduler.start();
 
-      assert_that(fsm.sp.get(), is(equal_to(100u32)));
+      assert_that(sp, is(equal_to(100u32)));
     }
 
     it "saves stack pointer to current task on switch" {
-      let mut scheduler = Scheduler::new(ti, &tick, &fsm, || {});
+      let mut scheduler = Scheduler::new(ti, tick, fsm, || {});
       scheduler.start();
 
-      fsm.sp.set(110);
+      sp = 110;
       scheduler.switch();
 
       assert_that(scheduler.index().tasks[0].stack_start, is(equal_to(110u32)));
+      assert_that(sp, is(equal_to(200u32)));
     }
 
     it "loads stack pointer to next task on switch" {
-      let mut scheduler = Scheduler::new(ti, &tick, &fsm, || {});
+      let mut scheduler = Scheduler::new(ti, tick, fsm, || {});
       scheduler.start();
 
       scheduler.switch();
 
-      assert_that(fsm.sp.get(), is(equal_to(200u32)));
+      assert_that(sp, is(equal_to(200u32)));
     }
   )
 }
