@@ -162,4 +162,8 @@ def provide_stdlibs
   Rake::FileTask.define_task 'thirdparty/hamcrest-rust'.in_root do |t|
     sh "git clone --single-branch --depth 1 https://github.com/carllerche/hamcrest-rust #{t.name}"
   end.invoke
+
+  Rake::FileTask.define_task 'thirdparty/shiny'.in_root do |t|
+    sh "git clone --single-branch --depth 1 https://github.com/farcaller/shiny #{t.name}"
+  end.invoke
 end

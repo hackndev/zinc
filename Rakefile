@@ -7,6 +7,14 @@ Context.create(__FILE__, ENV['PLATFORM'])
 
 provide_stdlibs
 
+# shiny
+compile_rust :shiny_crate, {
+  source:    'thirdparty/shiny/src/lib.rs'.in_root,
+  produce:   'thirdparty/shiny/src/lib.rs'.in_root.as_rlib.in_build,
+  out_dir:   true,
+  build_for: :host,
+}
+
 # tests
 desc "Run tests"
 task :test
@@ -90,9 +98,10 @@ rust_tests :platformtree_test, {
   produce: 'platformtree_test'.in_build,
 }
 
+# zinc test
 rust_tests :zinc_test, {
   source:  'main.rs'.in_source,
-  deps:    [:core_crate, :macro_ioreg],
+  deps:    [:core_crate, :macro_ioreg, :hamcrest_crate, :shiny_crate],
   produce: 'zinc_test'.in_build,
   recompile_on: [:platform],
   build_for: :host,
