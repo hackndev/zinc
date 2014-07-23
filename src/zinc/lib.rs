@@ -48,7 +48,9 @@ extern crate core;
 extern crate rlibc;
 
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
+#[cfg(test)] #[phase(plugin,link)] extern crate shiny;
 #[cfg(test)] extern crate native;
+#[cfg(test)] extern crate hamcrest;
 #[phase(plugin)] extern crate macro_ioreg;
 
 pub mod drivers;

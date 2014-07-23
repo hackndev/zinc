@@ -13,28 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-HAL provides abstractions for specific MCU hardware.
+use core::kinds::marker;
 
-Each peripheral in `hal` has a `xxxConf` struct that can be defined statically,
-and each such struct has a `setup()` method that configures the hardware
-(returning the object to interact with it where applicable).
-*/
+pub enum State {
+  Runnable
+}
 
+pub struct Task {
+  pub state: State,
+  pub stack_start: u32,
+  pub stack_end: u32,
+}
 
-pub mod lpc17xx;
-pub mod stm32f4;
-pub mod stm32l1;
-pub mod k20;
+#[packed]
+pub struct TasksIndex<'a> {
+  pub tasks: &'a mut [Task],
+  pub current_task_index: u8,
 
-mod cortex_common;
-pub mod cortex_m3;
-pub mod cortex_m4;
-
-pub mod mem_init;
-pub mod pin;
-pub mod spi;
-pub mod stack;
-pub mod timer;
-pub mod uart;
-pub mod systick;
+  pub no_copy: marker::NoCopy,
+}

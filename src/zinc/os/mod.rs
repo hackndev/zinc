@@ -20,9 +20,9 @@ This module is a higher level abstraction over hardware than hal. It might be
 incompatible direct hal usage in some cases.
 */
 
-// pub mod debug;
 pub mod syscall;
 #[cfg(cfg_multitasking)] pub mod task;
 pub mod mutex;
 pub mod cond_var;
 pub mod debug;
+pub mod sched;
