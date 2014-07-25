@@ -75,6 +75,7 @@ compile_rust :platformtree_crate, {
   produce:   'platformtree/platformtree.rs'.in_root.as_rlib.in_build,
   out_dir:   true,
   build_for: :host,
+  optimize: 0,
 }
 
 rust_tests :platformtree_test, {
@@ -98,6 +99,7 @@ compile_rust :macro_platformtree, {
   produce:   'macro/platformtree.rs'.in_root.as_dylib.in_build,
   out_dir:   true,
   build_for: :host,
+  optimize: 0,
 }
 
 desc "Build API documentation"

@@ -8,6 +8,8 @@ install:
     - tar xf rust.tgz
     - (cd ./rust-nightly-x86_64-unknown-linux-gnu/; sudo ./install.sh)
     - export LD_LIBRARY_PATH=/usr/local/lib
+    - (mkdir -p ./thirdparty; cd ./thirdparty; git clone --depth 50 https://github.com/rust-lang/rust)
+    - "(cd ./thirdparty/rust; git checkout `rustc --version|awk '{sub(/\\(/, \"\", $3); print $3}'`)"
 before_script:
     - rustc --version
 script:

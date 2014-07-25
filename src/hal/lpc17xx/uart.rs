@@ -113,7 +113,7 @@ pub struct UART {
 }
 
 impl UARTPeripheral {
-  fn reg(self) -> &reg::UART {
+  fn reg(self) -> &'static reg::UART {
     match self {
       UART0 => &reg::UART0,
       UART2 => &reg::UART2,
