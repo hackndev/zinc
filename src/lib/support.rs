@@ -13,66 +13,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![no_std]
-#![crate_type="rlib"]
-#![feature(asm, intrinsics)]
+//! Support functions currently required by the linker for bare-metal targets.
 
+#[doc(hidden)]
 #[cfg(test)]
 #[no_split_stack]
 #[no_mangle]
-pub fn breakpoint() { unimplemented!() }
+pub extern fn breakpoint() { unimplemented!() }
 
+/// Call the debugger.
 #[cfg(not(test))]
 #[no_split_stack]
 #[no_mangle]
-pub fn breakpoint() {
+pub extern fn breakpoint() {
   unsafe { asm!("bkpt") }
 }
 
+/// Call the debugger and halts execution.
 #[no_split_stack]
 #[no_mangle]
-pub fn abort() -> ! {
+pub extern fn abort() -> ! {
   breakpoint();
   loop {}
 }
 
+#[doc(hidden)]
 #[no_split_stack]
 #[no_mangle]
-pub fn __aeabi_unwind_cpp_pr0() {
+pub extern fn __aeabi_unwind_cpp_pr0() {
   abort();
 }
 
+#[doc(hidden)]
 #[no_split_stack]
 #[no_mangle]
-pub fn __aeabi_unwind_cpp_pr1() {
+pub extern fn __aeabi_unwind_cpp_pr1() {
   abort();
 }
 
+#[doc(hidden)]
 #[no_split_stack]
 #[no_mangle]
-pub fn get_eit_entry() {
-  abort();
-}
-
-#[no_split_stack]
-#[no_mangle]
-pub fn unwind_phase2_forced() {
-  abort();
-}
-
-#[no_split_stack]
-#[no_mangle]
-pub fn unwind_phase2() {
-  abort();
-}
-
-#[no_split_stack]
-#[no_mangle]
-pub unsafe fn rust_fail_bounds_check() {
-  abort();
-}
-#[no_split_stack]
-#[no_mangle]
-pub fn rust_begin_unwind() {
+pub extern fn get_eit_entry() {
   abort();
 }
