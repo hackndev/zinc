@@ -69,6 +69,7 @@ pub fn system_clock() -> u32 {
   unsafe { SystemClock }
 }
 
+/// Initialise the system clock.
 #[inline(always)]
 pub fn init_clock(clock: &Clock) {
   let src_clock: u32 = match clock.source {

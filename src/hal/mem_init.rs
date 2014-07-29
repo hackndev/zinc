@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Helper functions for memory initialisation.
+
 use hal::stack::set_stack_limit;
 
 extern {
@@ -25,12 +27,14 @@ extern {
   static _eglobals: u32;
 }
 
+/// Helper function to initialise the stack limit.
 #[inline(always)]
 pub fn init_stack() {
   set_stack_limit((&_eglobals as *const u32) as u32);
 }
 
-/// Helper function to copy over .data from rom to ram and zero out .bss
+/// Helper function to initialize memory.
+/// Copies `.data` sections in to RAM and initializes `.bss` sections to zero.
 #[inline(always)]
 pub fn init_data() {
   unsafe {

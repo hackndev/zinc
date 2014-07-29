@@ -13,9 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! HAL for Kinetis SIM module.
+
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
-pub mod reg {
+/// Enable clock to a PORTx peripheral
+#[allow(non_snake_case_functions)]
+pub fn enable_PORT(num: uint) {
+  reg::SIM.set_SCGC5(reg::SIM.SCGC5() | (1 << (num + 8)));
+}
+
+#[allow(dead_code)]
+mod reg {
   use lib::volatile_cell::VolatileCell;
 
   #[allow(uppercase_variables)]

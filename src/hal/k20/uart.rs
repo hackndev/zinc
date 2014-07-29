@@ -26,23 +26,27 @@ use hal::uart;
 #[path="../../lib/wait_for.rs"] mod wait_for;
 
 /// Available UART peripherals.
+#[allow(missing_doc)]
 pub enum UARTPeripheral {
   UART0,
   UART1,
   UART2,
 }
 
+/// Structure describing a UART instance.
 pub struct UART {
   reg: &'static reg::UART,
 }
 
 /// UART word length.
+#[allow(missing_doc)]
 pub enum WordLen {
   WordLen8bits = 0,
   WordLen9bits = 0b00010000,
 }
 
 impl WordLen {
+  /// Convert from number to WordLen.
   pub fn from_u8(val: u8) -> WordLen {
     match val {
       8 => WordLen8bits,
@@ -53,12 +57,14 @@ impl WordLen {
 }
 
 /// Stop bits configuration.
-/// K20 UART only supports one stop bit
+/// K20 UART only supports one stop bit.
 pub enum StopBit {
+  /// Single stop bit.
   StopBit1bit  = 0,
 }
 
 impl StopBit {
+  /// Convert from number to StopBit.
   pub fn from_u8(val: u8) -> StopBit {
     match val {
       1 => StopBit1bit,
@@ -117,7 +123,7 @@ impl UART {
   }
 
   #[no_split_stack]
-  fn set_mode(&self, word_len: WordLen, parity: uart::Parity, stop_bits: StopBit) {
+  fn set_mode(&self, word_len: WordLen, parity: uart::Parity, _: StopBit) {
     let c1: u8 = (*(self.reg)).C1();
     let computed_val: u8 = word_len as u8 | match parity {
       uart::Disabled => PEDisabled as u8  | PSOdd as u8,

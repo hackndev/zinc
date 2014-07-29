@@ -20,8 +20,7 @@ Some pins that could be configured here may be missing from actual MCU depending
 on the package.
 */
 
-use core::intrinsics::abort;
-use core::option::{Option, Some, None};
+use core::option::Option;
 
 use lib::volatile_cell::VolatileCell;
 
@@ -29,13 +28,15 @@ use super::sim;
 
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
-/// A pin
+/// A pin.
+#[allow(missing_doc)]
 pub struct Pin {
   pub port: Port,
   pub pin: u8,
 }
 
 /// Available port names.
+#[allow(missing_doc)]
 pub enum Port {
   PortA = 1,
   PortB = 2,
@@ -46,6 +47,7 @@ pub enum Port {
 
 /// Pin functions (GPIO or up to seven additional functions).
 #[deriving(PartialEq)]
+#[allow(missing_doc)]
 pub enum Function {
   Analog       = 0,
   GPIO         = 1,
@@ -57,26 +59,30 @@ pub enum Function {
   AltFunction7 = 7,
 }
 
-/// Pull-up/-down configuration
+/// Pull-up/-down configuration.
+#[allow(missing_doc)]
 pub enum PullConf {
   PullNone   = 0,
   PullUp     = 1,
   PullDown   = 2,
 }
 
-/// Pin output driver strength
+/// Pin output driver strength.
+#[allow(missing_doc)]
 pub enum DriveStrength {
   DriveStrengthHigh   = 0,
   DriveStrengthLow    = 1,
 }
 
-/// Pin output drive slew rate
+/// Pin output drive slew rate.
+#[allow(missing_doc)]
 pub enum SlewRate {
   SlewFast   = 0,
   SlewSlow   = 1,
 }
 
 impl Pin {
+  /// Create and setup a Pin.
   pub fn new(port: Port, pin_index: u8, function: Function,
       gpiodir: Option<::hal::pin::GPIODirection>) -> Pin {
     let pin = Pin {
@@ -89,12 +95,12 @@ impl Pin {
     pin
   }
 
-  pub fn setup_regs(&self, function: Function,
+  fn setup_regs(&self, function: Function,
       gpiodir: Option<::hal::pin::GPIODirection>,
       pull: PullConf, drive_strength: DriveStrength,
       slew_rate: SlewRate, filter: bool, open_drain: bool) {
     // enable port clock
-    sim::reg::SIM.set_SCGC5(sim::reg::SIM.SCGC5() | (1 << (self.port as uint + 8)));
+    sim::enable_PORT(self.port as uint);
 
     let value =
           (pull as u32 << 0)

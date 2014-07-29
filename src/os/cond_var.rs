@@ -38,7 +38,7 @@ impl CondVar {
     CondVar { waiting: Queue::new() }
   }
 
-  /// Wait on a condition variable
+  /// Wait on a condition variable.
   pub fn wait<'a>(&'a self) {
     /*
      * The signalling thread is responsible for removing the waiting
@@ -53,7 +53,7 @@ impl CondVar {
     }
   }
 
-  /// Wake up a thread waiting on a condition variable
+  /// Wake up a thread waiting on a condition variable.
   pub fn signal<'a>(&'a self) {
     unsafe {
       let crit = NoInterrupts::new();
@@ -64,7 +64,7 @@ impl CondVar {
     }
   }
 
-  /// Wake up all threads waiting on a condition variable
+  /// Wake up all threads waiting on a condition variable.
   pub fn broadcast<'a>(&'a self) {
     unsafe {
       let crit = NoInterrupts::new();

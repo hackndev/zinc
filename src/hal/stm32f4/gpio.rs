@@ -13,12 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! HAL for STM32F4 GPIO peripheral.
+
 use hal::stm32f4::pin;
 use hal::pin::{GPIODirection};
 
 #[path="../../lib/ioreg.rs"]
 mod ioreg;
 
+/// Configuration for a GPIO.
 pub struct GPIOConf {
   /// Pin configuration for this GPIO.
   pub pin: pin::PinConf,

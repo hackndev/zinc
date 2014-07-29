@@ -26,6 +26,7 @@ use core::option::{Option};
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 /// Available port names.
+#[allow(missing_doc)]
 pub enum Port {
   Port0,
   Port1,
@@ -36,6 +37,7 @@ pub enum Port {
 
 /// Pin functions (GPIO or up to three additional functions).
 #[deriving(PartialEq)]
+#[allow(missing_doc)]
 pub enum Function {
   GPIO         = 0,
   AltFunction1 = 1,
@@ -43,12 +45,16 @@ pub enum Function {
   AltFunction3 = 3,
 }
 
+/// Structure to describe the location of a pin
 pub struct Pin {
+  /// Port the pin is attached to
   port: Port,
+  /// Pin number in the port
   pin: u8
 }
 
 impl Pin {
+  /// Create and setup a Pin
   pub fn new(port: Port, pin_index: u8, function: Function,
       gpiodir: Option<::hal::pin::GPIODirection>) -> Pin {
     let pin = Pin {

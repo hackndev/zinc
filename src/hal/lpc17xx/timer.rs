@@ -25,6 +25,7 @@ use hal::timer;
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 /// Available timer peripherals.
+#[allow(missing_doc)]
 pub enum TimerPeripheral {
   Timer0,
   Timer1,
@@ -42,11 +43,13 @@ pub struct TimerConf {
   pub divisor: u8,
 }
 
+/// Struct describing a timer instance.
 pub struct Timer {
   reg: &'static reg::TIMER,
 }
 
 impl Timer {
+  /// Create an start a timer.
   pub fn new(peripheral: TimerPeripheral, counter: u32, divisor: u8) -> Timer {
     let (clock, reg) = match peripheral {
       Timer0 => (peripheral_clock::TIM0Clock, &reg::TIMER0),

@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! HAL for STM32F4.
+
 pub mod pin;
 pub mod init;
 pub mod gpio;

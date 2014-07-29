@@ -23,9 +23,14 @@ UART objects implement CharIO trait to perform actual data transmission.
 
 /// UART parity mode.
 pub enum Parity {
+  /// Partity disabled.
   Disabled,
+  /// Partity bit added to make number of 1s odd.
   Odd,
+  /// Partity bit added to make number of 1s even.
   Even,
+  /// Partity bit forced to 1.
   Forced1,
+  /// Partity bit forced to 0.
   Forced0,
 }

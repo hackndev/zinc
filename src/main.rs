@@ -17,7 +17,7 @@
 #![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(ctypes)]
-#![warn(missing_doc)]
+#![deny(missing_doc)]
 #![no_std]
 
 /*!
@@ -50,7 +50,7 @@ extern crate rlibc;
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
 #[cfg(test)] extern crate native;
 
-pub mod drivers;
+#[warn(missing_doc)] pub mod drivers;
 pub mod hal;
 pub mod lib;
 pub mod os;
