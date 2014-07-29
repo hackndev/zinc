@@ -13,8 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Memory initialisation.
+
 use hal::stack::set_stack_limit;
 
+// Addresses provided by the linker.
 extern {
   static _data_load: u32;
   static mut _data: u32;
@@ -25,12 +28,19 @@ extern {
   static _eglobals: u32;
 }
 
+/// Helper function to set the stack limit.
 #[inline(always)]
 pub fn init_stack() {
   set_stack_limit((&_eglobals as *const u32) as u32);
 }
 
-/// Helper function to copy over .data from rom to ram and zero out .bss
+/// Helper function to copy read-only objects (`.data` section)
+/// from program memory (i.e. flash or EEPROM) into runtime memory
+/// (i.e. SRAM) and zero out statically-allocated objects without
+/// an explicit initialiser (`.bss` section).
+// TODO(errordeveloper): figure out if we can reference read-only
+// data in-place and avoid polluting runtime memory with strings
+// and other static data.
 #[inline(always)]
 pub fn init_data() {
   unsafe {
