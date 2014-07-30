@@ -24,8 +24,6 @@ use core::intrinsics::abort;
 #[path="../../lib/ioreg.rs"] mod ioreg;
 #[path="../../lib/wait_for.rs"] mod wait_for;
 
-pub struct HSI;
-
 /// System clock source.
 pub enum SystemClockSource {
   /// High-speed internal oscillator, 16MHz.
@@ -96,8 +94,8 @@ pub fn apb_low_clock() -> u32 {
   unsafe { APBLowClock }
 }
 
-/// Performs the MCU initialization.
 impl SysConf {
+  /// Performs the MCU initialization.
   pub fn setup(&self) {
     init_data();
     self.clock.setup();
@@ -265,6 +263,7 @@ impl PLLConf {
 // TODO(farcaller): this mod is pub as it's being used in peripheral_clock.rs.
 //                  This is not the best design solution and a good reason to
 //                  split RCC into distinct registers.
+#[allow(missing_doc)]
 pub mod reg {
   use lib::volatile_cell::VolatileCell;
 

@@ -100,7 +100,7 @@ unsafe fn task_finished() {
 #[cfg(test)]
 unsafe fn task_finished() { unimplemented!() }
 
-/// Phantom type to indicate that interrupts are disabled
+/// Phantom type to indicate that interrupts are disabled.
 pub struct NoInterrupts {
   contents: ()
 }

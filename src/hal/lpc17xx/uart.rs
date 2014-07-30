@@ -30,6 +30,7 @@ use hal::uart;
 #[path="../../lib/wait_for.rs"] mod wait_for;
 
 /// Available UART peripherals.
+#[allow(missing_doc)]
 pub enum UARTPeripheral {
   UART0,
   UART2,
@@ -37,6 +38,7 @@ pub enum UARTPeripheral {
 }
 
 /// UART word length.
+#[allow(missing_doc)]
 pub enum WordLen {
   WordLen5bits = 0b00,
   WordLen6bits = 0b01,
@@ -45,6 +47,7 @@ pub enum WordLen {
 }
 
 impl WordLen {
+  /// Convert a number into a WordLen.
   pub fn from_u8(val: u8) -> WordLen {
     match val {
       5 => WordLen5bits,
@@ -58,11 +61,14 @@ impl WordLen {
 
 /// Stop bits configuration.
 pub enum StopBit {
+  /// Single stop bit.
   StopBit1bit  = 0b0_00,
+  /// Two stop bits.
   StopBit2bits = 0b1_00,
 }
 
 impl StopBit {
+  /// Convert a number into a StopBit.
   pub fn from_u8(val: u8) -> StopBit {
     match val {
       1 => StopBit1bit,
@@ -107,6 +113,7 @@ enum FIFOTriggerLevel {
   FT14chars = 0b11_00_0_0_0_0,
 }
 
+/// Structure describing a UART instance.
 pub struct UART {
   reg: &'static reg::UART,
   clock: PeripheralClock,
@@ -131,6 +138,7 @@ impl UARTPeripheral {
 }
 
 impl UART {
+  /// Create ans setup a UART.
   pub fn new(peripheral: UARTPeripheral, baudrate: u32, word_len: u8,
       parity: uart::Parity, stop_bits: u8) -> UART {
     let uart = UART {

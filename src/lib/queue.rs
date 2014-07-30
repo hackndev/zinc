@@ -34,7 +34,7 @@ impl<T> Queue<T> {
     }
   }
 
-  /// Push to tail
+  /// Push to tail.
   pub unsafe fn push(&self, node: *mut Node<T>, _: &NoInterrupts) {
     if (*self.head.get()).is_null() {
       *self.head.get() = node;
@@ -47,7 +47,7 @@ impl<T> Queue<T> {
     *self.tail.get() = node;
   }
 
-  /// Peek at head
+  /// Peek at head.
   pub unsafe fn peek(&self) -> Option<*mut Node<T>> {
     let head = self.head.get();
     if (*head).is_null() {
@@ -57,7 +57,7 @@ impl<T> Queue<T> {
     }
   }
 
-  /// Pop off of head
+  /// Pop off of head.
   pub unsafe fn pop(&self, _: &NoInterrupts) -> Option<*mut Node<T>> {
     let head = self.head.get();
     if (*head).is_null() {
@@ -70,7 +70,7 @@ impl<T> Queue<T> {
 }
 
 impl<T: Ord> Queue<T> {
-  /// Priority insertion (higher ends up closer to head)
+  /// Priority insertion (higher ends up closer to head).
   pub unsafe fn insert(&self, node: *mut Node<T>, _: &NoInterrupts) {
     let mut next: &Unsafe<*mut Node<T>> = &self.head;
     loop {

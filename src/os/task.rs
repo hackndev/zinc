@@ -23,7 +23,7 @@ use hal::cortex_m3::sched::NoInterrupts;
 use os::syscall::syscall;
 use hal::stack;
 
-/// Task takes one argument, which is u32
+/// Task takes one argument, which is u32.
 pub type Task = fn(u32);
 
 mod current_stack_offset {

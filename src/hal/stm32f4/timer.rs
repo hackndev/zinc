@@ -15,7 +15,7 @@
 
 //! Timer configuration for ST STM32F4.
 //!
-//! This code supports only TIM2 at the moment
+//! This code supports only TIM2 at the moment.
 
 use super::peripheral_clock;
 use hal::timer;
@@ -23,15 +23,18 @@ use hal::timer;
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 /// Available timer peripherals.
+#[allow(missing_doc)]
 pub enum TimerPeripheral {
   Timer2,
 }
 
+/// Structure describing a Timer.
 pub struct Timer {
   reg: &'static reg::TIM2To5,
 }
 
 impl Timer {
+  /// Create and start a Timer.
   pub fn new(peripheral: TimerPeripheral, counter: u32) -> Timer {
     let (clock, reg) = match peripheral {
       Timer2 => (peripheral_clock::TIM2Clock, &reg::TIM2),

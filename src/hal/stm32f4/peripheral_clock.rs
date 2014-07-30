@@ -26,6 +26,7 @@ use super::init::reg;
 /// Configures the state of peripheral clock.
 ///
 /// This enum contains all available clocks from both AHB and APB.
+#[allow(missing_doc)]
 pub enum PeripheralClock {
   // AHB1
   GPIOAClock,

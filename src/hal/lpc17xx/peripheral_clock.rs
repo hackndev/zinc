@@ -26,6 +26,7 @@ use super::system_clock::system_clock;
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 /// Configures the state of peripheral clock.
+#[allow(missing_doc)]
 pub enum PeripheralClock {
   // reserved = 0,
   TIM0Clock  = 1,
@@ -62,6 +63,7 @@ pub enum PeripheralClock {
 }
 
 /// Configures the divisor of peripheral clock based on core clock.
+#[allow(missing_doc)]
 pub enum PeripheralDivisor {
   WDTDivisor     = 0,
   TIMER0Divisor  = 2,

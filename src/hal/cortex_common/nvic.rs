@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Interface to Nested Vector Interrupt Controller
+//! Interface to Nested Vector Interrupt Controller.
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/CIHIGCIF.html
 
 #[path="../../lib/ioreg.rs"] mod ioreg;

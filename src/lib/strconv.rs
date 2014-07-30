@@ -17,6 +17,7 @@
 
 use core::mem::uninitialized;
 
+/// Convert an integer to a string.
 pub fn itoa(val: u32, buf : &mut [u8], base: u32) {
   let mut rbuf : [u8, ..32] = unsafe { uninitialized() };
   let mut myval : u32 = val;
