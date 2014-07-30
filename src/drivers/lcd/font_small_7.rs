@@ -13,6 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Definition of a 9x9 font.
+//! 
+//! Font definition consists of a 4 byte header:
+//!   - Length of a character definition
+//!   - Maximum width of a character
+//!   - Maximum height of a character
+//!   - Number of bytes per vertical line
+//!
+//! Each character definition consists of:
+//!   - Single byte describing actual width of the character
+//!   - Remaining bytes describe vertical lines from left to right with the 
+//!     LSB defining the top of the line
+
 pub static FONT: &'static [u8] = &[
 19,9,9,2,                                    // Length,horz,vert,byte/vert
 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // Code for char

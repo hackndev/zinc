@@ -26,8 +26,7 @@ might be an issue for any other peripheral sharing the same SPI bus.
 use core::cell;
 use core::slice::ImmutableVector;
 use core::mem::zeroed;
-use core::option::{Some, None};
-use core::iter::{Iterator, range};
+use core::iter::range;
 
 use super::font_small_7;
 use super::LCD;
@@ -36,6 +35,7 @@ use hal::timer::Timer;
 use hal::pin::GPIO;
 use hal::spi::SPI;
 
+/// C12332 driver.
 pub struct C12332<'a, S, T, P> {
   spi: &'a S,
   timer: &'a T,
@@ -52,6 +52,7 @@ pub struct C12332<'a, S, T, P> {
 }
 
 impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
+  /// Creates a new C12332 driver instance.
   pub fn new(spi: &'a S, timer: &'a T, dc: &'a P, cs: &'a P,
       reset: &'a P) -> C12332<'a, S, T, P> {
     let lcd = C12332 {
@@ -115,6 +116,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
     self.cs.set_high();
   }
 
+  /// Sets an individual pixel.
   pub fn set_pixel(&self, x: u32, y: u32, color: u16) {
     if x > 127 || y > 31 {
       return
@@ -130,6 +132,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> C12332<'a, S, T, P> {
     }
   }
 
+  /// Prints a character to the display.
   pub fn character(&self, x: u32, y: u32, c: u8) {
     let width: u32 = 128;
     let height: u32 = 32;

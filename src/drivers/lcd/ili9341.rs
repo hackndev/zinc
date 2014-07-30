@@ -13,8 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use core::option::{Some, None};
-use core::iter::{Iterator, range};
+//! Driver for the ILI9341 LCD.
+
+use core::iter::range;
 
 use super::LCD;
 use drivers::chario::CharIO;
@@ -22,6 +23,7 @@ use hal::timer::Timer;
 use hal::pin::GPIO;
 use hal::spi::SPI;
 
+/// ILI9341 driver.
 pub struct ILI9341<'a, S, T, P> {
   spi: &'a S,
   timer: &'a T,
@@ -32,6 +34,7 @@ pub struct ILI9341<'a, S, T, P> {
 }
 
 impl<'a, S: SPI, T: Timer, P: GPIO> ILI9341<'a, S, T, P> {
+  /// Creates a new ILI9341 driver instance.
   pub fn new(spi: &'a S, timer: &'a T, dc: &'a P, cs: &'a P, reset: &'a P)
     -> ILI9341<'a, S, T, P> {
     let lcd = ILI9341 {
@@ -303,7 +306,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> LCD for ILI9341<'a, S, T, P> {
 }
 
 impl<'a, S: SPI, T: Timer, P: GPIO> CharIO for ILI9341<'a, S, T, P> {
-  fn putc(&self, value: char) {
+  fn putc(&self, _: char) {
     // TODO(farcaller): implement
   }
 }
