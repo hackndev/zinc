@@ -14,12 +14,7 @@ before_script:
     - rustc --version
 script:
     - rake build_all test
-after_success:
-    - test $TRAVIS_PULL_REQUEST == "false" && test $TRAVIS_BRANCH == "master" && ./support/record_stats.sh
 env:
-  global:
-    - STATS_REPO="git@github.com:bharr/zinc-stats"
-    - secure: "NPM3mliwtjsO/W6ywlL36WvjgtMLKI5ZOR5Pd1OJNFVYTTJXE6sKfKDYhVVyn9kp+6eieXal/ntBaXpABTY5W1UrgnG4uFKoz5Bi06oQAZDxnwK1bH3EowGbiXtEkI50tD5SfhnLig2cNjabgu8eg/u/UrXyZovLz1oOgCpaUWc="
   matrix:
     - PLATFORM=lpc17xx
     - PLATFORM=stm32f4
