@@ -15,8 +15,7 @@
 
 //! Drivers for TFT LCDs.
 
-use core::option::{Some, None};
-use core::iter::{Iterator, range, range_inclusive};
+use core::iter::{range, range_inclusive};
 
 use drivers::chario::CharIO;
 
@@ -158,8 +157,7 @@ pub trait LCD : CharIO {
 #[cfg(test)]
 mod test {
   use core::mem::zeroed;
-  use core::option::{Some, None};
-  use core::iter::{Iterator, Range, range};
+  use core::iter::{Range, range};
   use core::cell::Cell;
 
   use drivers::chario::CharIO;

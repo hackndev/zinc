@@ -15,11 +15,10 @@
 
 //! Generic char output trait.
 
-use core::option::{Some, None};
 use core::str::{Str, StrSlice};
 use core::slice::{Vector, ImmutableVector};
 use core::collections::Collection;
-use core::iter::{Iterator, range};
+use core::iter::range;
 
 use core::mem::zeroed;
 

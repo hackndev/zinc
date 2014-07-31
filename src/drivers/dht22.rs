@@ -13,8 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//! Driver for DHT22.
+
+use core::iter::range;
 use core::option::{Option, Some, None};
-use core::iter::{Iterator, range};
 
 use hal::pin::{GPIO, Low, High, In, Out, GPIOLevel};
 use hal::timer::Timer;
@@ -25,6 +27,8 @@ pub struct DHT22<'a, T, P> {
   timer: &'a T,
 }
 
+/// Measurement data from the DHT22.
+#[allow(missing_doc)]
 pub struct Measurements {
   pub humidity: f32,
   pub temperature: f32,

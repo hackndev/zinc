@@ -50,7 +50,7 @@ extern crate rlibc;
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
 #[cfg(test)] extern crate native;
 
-#[warn(missing_doc)] pub mod drivers;
+pub mod drivers;
 pub mod hal;
 pub mod lib;
 pub mod os;
