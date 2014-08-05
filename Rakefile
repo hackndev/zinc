@@ -43,16 +43,6 @@ compile_rust :zinc_crate, {
   recompile_on: [:triple, :platform],
 }
 
-# zinc runtime support lib
-compile_rust :zinc_support, {
-  source:  'lib/support.rs'.in_source,
-  deps:    [:rlibc_crate],
-  produce: 'support.o'.in_intermediate,
-  llvm_pass: :inline,
-  lto: false,
-  recompile_on: :triple,
-}
-
 # zinc isr crate
 compile_rust :zinc_isr, {
   source:  'hal/isr.rs'.in_source,
@@ -125,7 +115,7 @@ app_tasks = Context.instance.applications.map do |a|
 
   link_binary "app_#{a}_elf".to_sym, {
     script: 'layout.ld'.in_platform,
-    deps: ["app_#{a}".to_sym, :zinc_isr, :zinc_support],
+    deps: ["app_#{a}".to_sym, :zinc_isr],
     # TODO(farcaller): broken until implemented in PT.
     # (features.include?(:multitasking) ? [:zinc_isr_sched] : []),
     produce: "app_#{a}.elf".in_build,
