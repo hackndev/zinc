@@ -15,7 +15,7 @@
 
 use std::collections::hashmap::HashMap;
 use std::rc::{Rc, Weak};
-use syntax::ast::{TokenTree, LitIntUnsuffixed};
+use syntax::ast::{TokenTree, LitInt, UnsuffixedIntLit};
 use syntax::codemap::{Span, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer, integer_lit};
@@ -183,7 +183,7 @@ impl<'a> Parser<'a> {
 
         let lit = integer_lit(intname.as_str(), &self.sess.span_diagnostic, self.span);
         match lit {
-          LitIntUnsuffixed(i) => {
+          LitInt(i, _) => {
             format!("{}", i)
           },
           _ => {
@@ -338,7 +338,7 @@ impl<'a> Parser<'a> {
       token::LIT_INTEGER(intname) => {
         let lit = integer_lit(intname.as_str(), &self.sess.span_diagnostic, self.span);
         match lit {
-          LitIntUnsuffixed(i) => {
+          LitInt(i, UnsuffixedIntLit(_)) => {
             self.bump();
             Some(node::IntValue(i as uint))
           },
