@@ -75,7 +75,8 @@ fn build_field_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
         utils::list_attribute(cx, "allow",
                               vec!("uppercase_variables",
                                    "dead_code",
-                                   "non_camel_case_types")));
+                                   "non_camel_case_types",
+                                   "missing_doc")));
       let item: P<ast::Item> = box(GC) ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
