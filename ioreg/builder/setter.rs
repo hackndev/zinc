@@ -234,15 +234,20 @@ fn build_field_clear_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   let fn_name =
     cx.ident_of((String::from_str("clear_")+field.name.node).as_slice());
   let mask = utils::mask(cx, field);
-  let docstring = match field.docstring {
-    Some(d) => utils::doc_attribute(cx, token::get_ident(d.node)).node.to_tokens(cx),
-    None => Vec::new(),
+
+  let field_doc = match field.docstring {
+    Some(d) => token::get_ident(d.node).get().into_string(),
+    None => "no documentation".into_string(),
   };
+  let docstring = format!("Clear `{}` flag: {}",
+                          field.name.node,
+                          field_doc);
+  let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
   if field.count.node == 1 {
     let shift = utils::shift(cx, None, field);
     quote_method!(cx,
-      $docstring
+      $doc_attr
       pub fn $fn_name<'a>(&'a mut self) -> &'a mut $setter_ty {
           self.value |= $mask << $shift;
           self.mask |= $mask << $shift;
@@ -252,7 +257,7 @@ fn build_field_clear_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   } else {
     let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
     quote_method!(cx,
-      $docstring
+      $doc_attr
       pub fn $fn_name<'a>(&'a mut self, idx: uint)
                           -> &'a mut $setter_ty {
           self.value |= $mask << $shift;
