@@ -180,7 +180,8 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
       utils::list_attribute(self.cx, "allow",
                             vec!("non_camel_case_types",
                                  "uppercase_variables",
-                                 "dead_code")),
+                                 "dead_code",
+                                 "missing_doc")),
     );
     match reg.docstring {
       Some(docstring) =>
