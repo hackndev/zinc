@@ -96,14 +96,20 @@ fn build_field_accessors<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   )
 }
 
-fn build_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, _reg: &node::Reg)
+fn build_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
                     -> P<ast::Item>
 {
   let reg_ty: P<ast::Ty> =
     cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
   let getter_ty = utils::getter_name(cx, path);
+
+  let docstring = format!("Fetch the value of the `{}` register",
+                          reg.name.node);
+  let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
+
   let item = quote_item!(cx,
     impl $reg_ty {
+      $doc_attr
       #[allow(dead_code)]
       pub fn get(&'static self) -> $getter_ty {
         $getter_ty::new(self)
