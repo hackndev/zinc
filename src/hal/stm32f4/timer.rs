@@ -62,7 +62,7 @@ impl timer::Timer for Timer {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(TIM2To5: u32, CR1, CR2, SMCR, DIER, SR, EGR, CCMR1, CCMR2, CCER, CNT,
+  ioreg_old!(TIM2To5: u32, CR1, CR2, SMCR, DIER, SR, EGR, CCMR1, CCMR2, CCER, CNT,
                        PSC, ARR, _pad_0, CCR1, CCR2, CCR3, CCR4, _pad_1, DCR,
                        DMAR, OR)
   reg_rw!(TIM2To5, u32, CR1,   set_CR1,   CR1)

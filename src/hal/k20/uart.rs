@@ -162,7 +162,7 @@ static PFIFORxFifoEnabled: u8 = 0b0000_1000;
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(UART: u8, BDH, BDL, C1, C2, S1, S2, C3, D, MA1, MA2, C4, C5, ED, MODEM, IR,
+  ioreg_old!(UART: u8, BDH, BDL, C1, C2, S1, S2, C3, D, MA1, MA2, C4, C5, ED, MODEM, IR,
          PFIFO, CFIFO, SFIFO, TWFIFO, TCFIFO, RWFIFO, RCFIFO)
   reg_rw!(UART, u8, BDH,     set_BDH,     BDH)
   reg_rw!(UART, u8, BDL,     set_BDL,     BDL)

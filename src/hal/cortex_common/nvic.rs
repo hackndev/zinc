@@ -21,7 +21,7 @@
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(ISERReg: u32, ISER0, ISER1, ISER2, ISER3,
+  ioreg_old!(ISERReg: u32, ISER0, ISER1, ISER2, ISER3,
         ISER4, ISER5, ISER6, ISER7)
   reg_rw!(ISERReg, u32, ISER0,   set_ISER0,      ISER0)
   reg_rw!(ISERReg, u32, ISER1,   set_ISER1,      ISER1)
@@ -32,7 +32,7 @@ mod reg {
   reg_rw!(ISERReg, u32, ISER6,   set_ISER6,      ISER6)
   reg_rw!(ISERReg, u32, ISER7,   set_ISER7,      ISER7)
 
-  ioreg!(ICERReg: u32, ICER0, ICER1, ICER2, ICER3,
+  ioreg_old!(ICERReg: u32, ICER0, ICER1, ICER2, ICER3,
         ICER4, ICER5, ICER6, ICER7)
   reg_rw!(ICERReg, u32, ICER0,   set_ICER0,      ICER0)
   reg_rw!(ICERReg, u32, ICER1,   set_ICER1,      ICER1)
@@ -43,7 +43,7 @@ mod reg {
   reg_rw!(ICERReg, u32, ICER6,   set_ICER6,      ICER6)
   reg_rw!(ICERReg, u32, ICER7,   set_ICER7,      ICER7)
 
-  ioreg!(ISPRReg: u32, ISPR0, ISPR1, ISPR2, ISPR3,
+  ioreg_old!(ISPRReg: u32, ISPR0, ISPR1, ISPR2, ISPR3,
         ISPR4, ISPR5, ISPR6, ISPR7)
   reg_rw!(ISPRReg, u32, ISPR0,   set_ISPR0,      ISPR0)
   reg_rw!(ISPRReg, u32, ISPR1,   set_ISPR1,      ISPR1)
@@ -54,7 +54,7 @@ mod reg {
   reg_rw!(ISPRReg, u32, ISPR6,   set_ISPR6,      ISPR6)
   reg_rw!(ISPRReg, u32, ISPR7,   set_ISPR7,      ISPR7)
 
-  ioreg!(ICPRReg: u32, ICPR0, ICPR1, ICPR2, ICPR3,
+  ioreg_old!(ICPRReg: u32, ICPR0, ICPR1, ICPR2, ICPR3,
         ICPR4, ICPR5, ICPR6, ICPR7)
   reg_rw!(ICPRReg, u32, ICPR0,   set_ICPR0,      ICPR0)
   reg_rw!(ICPRReg, u32, ICPR1,   set_ICPR1,      ICPR1)
@@ -65,7 +65,7 @@ mod reg {
   reg_rw!(ICPRReg, u32, ICPR6,   set_ICPR6,      ICPR6)
   reg_rw!(ICPRReg, u32, ICPR7,   set_ICPR7,      ICPR7)
 
-  ioreg!(IABRReg: u32, IABR0, IABR1, IABR2, IABR3,
+  ioreg_old!(IABRReg: u32, IABR0, IABR1, IABR2, IABR3,
         IABR4, IABR5, IABR6, IABR7)
   reg_rw!(IABRReg, u32, IABR0,   set_IABR0,      IABR0)
   reg_rw!(IABRReg, u32, IABR1,   set_IABR1,      IABR1)
@@ -77,10 +77,10 @@ mod reg {
   reg_rw!(IABRReg, u32, IABR7,   set_IABR7,      IABR7)
 
   //TODO(bharrisau): Implement byte-level access for 240 Priority Registers
-  ioreg!(IPRReg: u32, IPR0)
+  ioreg_old!(IPRReg: u32, IPR0)
   reg_w!(IPRReg, u32, set_IPR0, IPR0)
 
-  ioreg!(STIRReg: u32, STIR)
+  ioreg_old!(STIRReg: u32, STIR)
   reg_w!(STIRReg, u32, set_STIR, STIR)
 
   #[allow(dead_code)]

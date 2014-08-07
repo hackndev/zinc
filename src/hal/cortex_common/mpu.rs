@@ -21,7 +21,7 @@
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(MPUReg: u32, TYPE, CTRL, RNR, RBAR, RASR)
+  ioreg_old!(MPUReg: u32, TYPE, CTRL, RNR, RBAR, RASR)
   reg_r!( MPUReg, u32, TYPE,                     TYPE)
   reg_rw!(MPUReg, u32, CTRL,     set_CTRL,       CTRL)
   reg_rw!(MPUReg, u32, RNR,      set_RNR,        RNR)

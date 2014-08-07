@@ -200,7 +200,7 @@ mod reg {
     #[link_name="k20_iomem_PORTE"] pub static PORTE: PORT;
   }
 
-  ioreg!(GPIO: u32, PDOR, PSOR, PCOR, PTOR, PDIR, PDDR)
+  ioreg_old!(GPIO: u32, PDOR, PSOR, PCOR, PTOR, PDIR, PDDR)
   reg_rw!(GPIO, u32, PDOR,  set_PDOR,  PDOR)
   reg_rw!(GPIO, u32, PSOR,  set_PSOR,  PSOR)
   reg_rw!(GPIO, u32, PCOR,  set_PCOR,  PCOR)

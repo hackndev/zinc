@@ -36,10 +36,10 @@ pub fn set_pendsv(val: bool) {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(SCBACTLRReg: u32, ACTLR)
+  ioreg_old!(SCBACTLRReg: u32, ACTLR)
   reg_rw!(SCBACTLRReg, u32, ACTLR, set_ACTLR, ACTLR)
 
-  ioreg!(SCBReg: u32, CPUID, ICSR, VTOR, AIRCR, SCR, CCR, SHPR1, SHPR2,
+  ioreg_old!(SCBReg: u32, CPUID, ICSR, VTOR, AIRCR, SCR, CCR, SHPR1, SHPR2,
          SHPR3, SHCRS, CFSR, HFSR, _pad_0, MMAR, BFAR, AFSR)
   reg_r!( SCBReg, u32, CPUID,                    CPUID)
   reg_rw!(SCBReg, u32, ICSR,     set_ICSR,       ICSR)
