@@ -24,11 +24,12 @@ pub fn enable_PORT(num: uint) {
 }
 
 #[allow(dead_code)]
-mod reg {
+#[allow(missing_doc)]
+pub mod reg {
   use lib::volatile_cell::VolatileCell;
 
   #[allow(uppercase_variables)]
-  struct SIM {
+  pub struct SIM {
     SOPT1:    VolatileCell<u32>,
     SOPT1CFG: VolatileCell<u32>,
     _pad0:    [VolatileCell<u32>, ..(0x1004 - 0x8) / 4],
