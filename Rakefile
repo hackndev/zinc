@@ -58,6 +58,12 @@ compile_rust :macro_ioreg, {
   build_for: :host,
 }
 
+rust_tests :ioreg_test, {
+  source:    'ioreg/test.rs'.in_root,
+  deps:      [:core_crate, :macro_ioreg, :shiny_crate],
+  produce:   'ioreg_test'.in_build,
+}
+
 # zinc crate
 compile_rust :zinc_crate, {
   source:  'main.rs'.in_source,
