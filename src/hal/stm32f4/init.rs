@@ -273,7 +273,7 @@ pub mod reg {
     SystemClockPLL = 2,
   }
 
-  ioreg!(RCCReg: u32, CR, PLLCFGR, CFGR, CIR, AHB1RSTR, AHB2RSTR, AHB3RSTR,
+  ioreg_old!(RCCReg: u32, CR, PLLCFGR, CFGR, CIR, AHB1RSTR, AHB2RSTR, AHB3RSTR,
                       _pad_0, APB1RSTR, APB2RSTR, _pad_1, _pad_2, AHB1ENR,
                       AHB2ENR, AHB3ENR, _pad_3, APB1ENR, APB2ENR, _pad_4,
                       _pad_5, AHB1LPENR, AHB2LPENR, AHB3LPENR, _pad_6,
@@ -303,7 +303,7 @@ pub mod reg {
   reg_rw!(RCCReg, u32, SSCGR,      set_SSCGR,      SSCGR)
   reg_rw!(RCCReg, u32, PLLI2SCFGR, set_PLLI2SCFGR, PLLI2SCFGR)
 
-  ioreg!(FLASHReg: u32, ACR, KEYR, OPTKEYR, SR, CR, OPTCR)
+  ioreg_old!(FLASHReg: u32, ACR, KEYR, OPTKEYR, SR, CR, OPTCR)
   reg_rw!(FLASHReg, u32, ACR,   set_ACR,     ACR)
   reg_w!(FLASHReg,  u32,        set_KEYR,    KEYR)
   reg_w!(FLASHReg,  u32,        set_OPTKEYR, OPTKEYR)
@@ -311,7 +311,7 @@ pub mod reg {
   reg_rw!(FLASHReg, u32, CR,    set_CR,      CR)
   reg_rw!(FLASHReg, u32, OPTCR, set_OPTCR,   OPTCR)
 
-  ioreg!(PWRReg: u32, CR, CSR)
+  ioreg_old!(PWRReg: u32, CR, CSR)
   reg_rw!(PWRReg, u32, CR,  set_CR,  CR)
   reg_rw!(PWRReg, u32, CSR, set_CSR, CSR)
 

@@ -15,7 +15,7 @@
 
 #![macro_escape]
 
-macro_rules! ioreg(
+macro_rules! ioreg_old(
   ($io:ident: $ty:ty, $($reg:ident),+) => (
     #[allow(uppercase_variables)]
     pub struct $io {

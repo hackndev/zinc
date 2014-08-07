@@ -19,7 +19,7 @@ use core::kinds::marker;
 use core::intrinsics::{volatile_load, volatile_store};
 
 /// This structure is used to represent a hardware register.
-/// It is mostly used by `ioreg!` macro.
+/// It is mostly used by the ioreg family of macros.
 pub struct VolatileCell<T> {
   value: T,
   invariant: marker::InvariantType<T>,

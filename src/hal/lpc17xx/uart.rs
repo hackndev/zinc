@@ -281,7 +281,7 @@ static LSRTHREmpty: u8 = 0x20;
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(UART: u32, RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
+  ioreg_old!(UART: u32, RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
   reg_r!( UART, u32, RBR,          RBR_THR_DLL)
   reg_w!( UART, u32,      set_THR, RBR_THR_DLL)
   reg_rw!(UART, u32, DLL, set_DLL, RBR_THR_DLL)

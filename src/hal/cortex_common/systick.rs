@@ -70,7 +70,7 @@ pub fn tick() -> bool {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(SYSTICKReg: u32, CONTROL, RELOAD, CURRENT, CALIBRATION)
+  ioreg_old!(SYSTICKReg: u32, CONTROL, RELOAD, CURRENT, CALIBRATION)
   reg_rw!(SYSTICKReg, u32, CONTROL,     set_CONTROL, CONTROL)
   reg_rw!(SYSTICKReg, u32, RELOAD,      set_RELOAD,  RELOAD)
   reg_rw!(SYSTICKReg, u32, CURRENT,     set_CURRENT, CURRENT)

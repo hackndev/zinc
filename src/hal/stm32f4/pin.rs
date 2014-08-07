@@ -138,7 +138,7 @@ impl PinConf {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(GPIO: u32, MODER, OTYPER, OSPEEDER, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH)
+  ioreg_old!(GPIO: u32, MODER, OTYPER, OSPEEDER, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH)
   reg_rw!(GPIO, u32, MODER,    set_MODER,    MODER)
   reg_rw!(GPIO, u32, OTYPER,   set_OTYPER,   OTYPER)
   reg_rw!(GPIO, u32, OSPEEDER, set_OSPEEDER, OSPEEDER)

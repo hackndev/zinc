@@ -214,10 +214,10 @@ impl PeripheralClock {
 mod reg {
   use lib::volatile_cell::VolatileCell;
 
-  ioreg!(PCONP: u32, value)
+  ioreg_old!(PCONP: u32, value)
   reg_rw!(PCONP, u32, value, set_value, value)
 
-  ioreg!(PCLKSEL: u32, value)
+  ioreg_old!(PCLKSEL: u32, value)
   reg_rw!(PCLKSEL, u32, value, set_value, value)
 
   extern {
