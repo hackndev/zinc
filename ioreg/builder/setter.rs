@@ -75,10 +75,10 @@ fn build_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   let item = quote_item!(cx,
     $doc_attr
     #[allow(non_camel_case_types)]
-    pub struct $name {
+    pub struct $name<'a> {
       value: $packed_ty,
       mask: $packed_ty,
-      reg: &'static $reg_ty,
+      reg: &'a $reg_ty,
     }
   );
   item.unwrap()
@@ -92,7 +92,7 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
                                           utils::setter_name(cx, path));
   let item = quote_item!(cx,
     #[doc="Create a new updater"]
-    pub fn new(reg: &'static $reg_ty) -> $setter_ty {
+    pub fn new(reg: &'a $reg_ty) -> $setter_ty {
       $setter_ty {
         value: 0,
         mask: 0,
@@ -125,7 +125,7 @@ fn build_drop<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   let item = quote_item!(cx,
     #[unsafe_destructor]
     #[doc = "This performs the register update"]
-    impl Drop for $setter_ty {
+    impl<'a> Drop for $setter_ty<'a> {
       fn drop(&mut self) {
         let clear_mask: $unpacked_ty = $clear as $unpacked_ty;
         if self.mask != 0 {
@@ -161,7 +161,7 @@ fn build_impl<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   let done: P<ast::Method> = build_done(cx);
   let impl_ = quote_item!(cx,
     #[allow(dead_code)]
-    impl $setter_ty {
+    impl<'a> $setter_ty<'a> {
       $new
       $methods
       $done
@@ -206,8 +206,8 @@ fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     let shift = utils::shift(cx, None, field);
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name<'a>(&'a mut self, new_value: $field_ty)
-          -> &'a mut $setter_ty {
+      pub fn $fn_name<'b>(&'b mut self, new_value: $field_ty)
+          -> &'b mut $setter_ty<'a> {
         self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
         self.mask |= $mask << $shift;
         self
@@ -217,11 +217,11 @@ fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name<'a>(&'a mut self, idx: uint, new_value: $field_ty)
-        -> &'a mut $setter_ty {
-          self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
-          self.mask |= $mask << $shift;
-          self
+      pub fn $fn_name<'b>(&'b mut self, idx: uint, new_value: $field_ty)
+          -> &'b mut $setter_ty<'a> {
+        self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
+        self.mask |= $mask << $shift;
+        self
       }
     )
   }
@@ -248,21 +248,20 @@ fn build_field_clear_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
     let shift = utils::shift(cx, None, field);
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name<'a>(&'a mut self) -> &'a mut $setter_ty {
-          self.value |= $mask << $shift;
-          self.mask |= $mask << $shift;
-          self
+      pub fn $fn_name<'b>(&'b mut self) -> &'b mut $setter_ty<'a> {
+        self.value |= $mask << $shift;
+        self.mask |= $mask << $shift;
+        self
       }
     )
   } else {
     let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name<'a>(&'a mut self, idx: uint)
-                          -> &'a mut $setter_ty {
-          self.value |= $mask << $shift;
-          self.mask |= $mask << $shift;
-          self
+      pub fn $fn_name<'b>(&'b mut self, idx: uint) -> &'b mut $setter_ty<'a> {
+        self.value |= $mask << $shift;
+        self.mask |= $mask << $shift;
+        self
       }
     )
   }

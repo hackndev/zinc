@@ -83,7 +83,7 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
                                           utils::getter_name(cx, path));
   let item = quote_item!(cx,
     #[doc = "Create a getter reflecting the current value of the given register."]
-    pub fn new(reg: &'static $reg_ty) -> $getter_ty {
+    pub fn new(reg: & $reg_ty) -> $getter_ty {
       $getter_ty {
         value: reg.value.get(),
       }
