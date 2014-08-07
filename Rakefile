@@ -112,7 +112,7 @@ desc "Build API documentation"
 task build_docs: [:build_docs_html]
 
 task build_docs_html: [] do |t|
-  ['src/main.rs', 'platformtree/platformtree.rs'].each do |f|
+  ['src/main.rs', 'platformtree/platformtree.rs', 'ioreg/ioreg.rs'].each do |f|
     build = Context.instance.build_dir
     sh ("rustdoc -w html -o #{build}/doc -L #{build} " \
 	+ f + ' ' + :config_flags.in_env.join(' '))
