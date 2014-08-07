@@ -113,7 +113,9 @@ task build_docs: [:build_docs_html]
 
 task build_docs_html: [] do |t|
   ['src/main.rs', 'platformtree/platformtree.rs'].each do |f|
-    sh ("rustdoc -w html -o build/doc " + f + ' ' + :config_flags.in_env.join(' '))
+    build = Context.instance.build_dir
+    sh ("rustdoc -w html -o #{build}/doc -L #{build} " \
+	+ f + ' ' + :config_flags.in_env.join(' '))
   end
 end
 
