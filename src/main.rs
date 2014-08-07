@@ -49,6 +49,7 @@ extern crate rlibc;
 
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
 #[cfg(test)] extern crate native;
+#[phase(plugin)] extern crate macro_ioreg;
 
 pub mod drivers;
 pub mod hal;
@@ -59,4 +60,6 @@ pub mod os;
 #[cfg(not(test))]
 mod std {
   pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
+  pub use core::option;
+  pub use core::num;
 }
