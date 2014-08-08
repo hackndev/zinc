@@ -1,0 +1,12 @@
+[package]
+name = "ioreg"
+version = "0.0.1"
+authors = ["bgamari@gmail.com"]
+
+[[lib]]
+name = "ioreg"
+path = "ioreg.rs"
+plugin = true
+
+[dev-dependencies.hamcrest]
+git = "https://github.com/carllerche/hamcrest-rust.git"

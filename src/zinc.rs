@@ -49,7 +49,7 @@ extern crate rlibc;
 
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
 #[cfg(test)] extern crate native;
-#[phase(plugin)] extern crate macro_ioreg;
+#[phase(plugin)] extern crate ioreg;
 
 pub mod drivers;
 pub mod hal;
