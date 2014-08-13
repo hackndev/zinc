@@ -92,7 +92,7 @@ rust_tests :platformtree_test, {
 
 rust_tests :zinc_test, {
   source:  'main.rs'.in_source,
-  deps:    [:core_crate],
+  deps:    [:core_crate, :macro_ioreg],
   produce: 'zinc_test'.in_build,
   recompile_on: [:platform],
   build_for: :host,

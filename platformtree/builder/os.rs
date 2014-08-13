@@ -148,7 +148,6 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
   }
 
   let name_ident = cx.ident_of(format!("{}_args", struct_name).as_slice());
-  let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
   let mut collected_params = vec!();
   let mut ty_params_vec = vec!();
   for ty in ty_params.iter() {
@@ -173,7 +172,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       super_struct: None,
       is_virtual: false,
     }, ast::Generics {
-      lifetimes: vec!(a_lifetime),
+      lifetimes: vec!(cx.lifetime_def(DUMMY_SP, intern("'a"), vec!())),
       ty_params: OwnedSlice::from_vec(collected_params),
     }),
     vis: ast::Public,
