@@ -23,6 +23,16 @@ use syntax::parse::{token, ParseSess, lexer};
 
 use node;
 
+/// The scope of a doc comment
+enum Scope {
+  /// Applies to the next item in the block
+  Inner,
+  /// Applies to the previous item in the block
+  Trailing,
+  /// Applies to the owner of the current block
+  Outer,
+}
+
 pub struct Parser<'a,'b> {
   cx: &'a ExtCtxt<'b>,
   sess: &'a ParseSess,
@@ -73,7 +83,7 @@ impl<'a, 'b> Parser<'a, 'b> {
       return None;
     }
 
-    let docstring = self.parse_docstring();
+    let docstring = self.parse_docstring(Inner);
 
     let regs = match self.parse_regs() {
       Some(regs) => regs,
@@ -148,6 +158,9 @@ impl<'a, 'b> Parser<'a, 'b> {
 
   /// Parse the introduction of a register
   fn parse_reg(&mut self) -> Option<node::Reg> {
+    // We might have an outer docstring
+    let docstring = self.parse_docstring(Outer);
+
     // we are still sitting at the offset
     let offset = match self.expect_uint() {
       Some(offset) => offset,
@@ -181,13 +194,17 @@ impl<'a, 'b> Parser<'a, 'b> {
       Some(count) => count,
     };
 
-    let docstring = self.parse_docstring();
+    // Potentially a trailing docstring before the block
+    let docstring = docstring.or_else(|| self.parse_docstring(Trailing));
+
+    // Catch beginning of block and potentially an inner docstring
+    if !self.expect(&token::LBRACE) {
+      return None;
+    }
+    let docstring = docstring.or_else(|| self.parse_docstring(Inner));
 
     let ty = match ty {
       node::RegPrim(width, _) => {
-        if !self.expect(&token::LBRACE) {
-          return None;
-        }
         match self.parse_fields() {
           None => return None,
           Some(mut fields) => {
@@ -221,9 +238,6 @@ impl<'a, 'b> Parser<'a, 'b> {
         }
       },
       node::RegUnion(_) => {
-        if !self.expect(&token::LBRACE) {
-          return None;
-        }
         match self.parse_regs() {
           Some(regs) => node::RegUnion(box(GC) regs),
           None => return None,
@@ -355,9 +369,8 @@ impl<'a, 'b> Parser<'a, 'b> {
       require_comma = false;
     }
 
-    let docstring = self.parse_docstring();
 
-    let ty = match self.token {
+    let (docstring, ty) = match self.token {
       // A list of enumeration variants
       token::LBRACE if !require_comma => {
         self.error(String::from_str("Unexpected enumeration list after comma"));
@@ -366,17 +379,26 @@ impl<'a, 'b> Parser<'a, 'b> {
       token::LBRACE => {
         // we don't require a delimiting comma after a block
         require_comma = false;
+
+        if !self.expect(&token::LBRACE) {
+          return None;
+        }
+        let docstring = self.parse_docstring(Inner);
         match self.parse_enum_variants() {
-          Some(variants) => node::EnumField {opt_name: None, variants: variants},
+          Some(variants) => {
+            let ty = node::EnumField {opt_name: None, variants: variants};
+            (docstring, ty)
+          },
           None => return None,
         }
       },
       _ => {
-        if width == 1 {
-          node::BoolField
-        } else {
-          node::UIntField
-        }
+        let docstring = self.parse_docstring(Trailing);
+        let ty = match width {
+          1 => node::BoolField,
+          _ => node::UIntField,
+        };
+        (docstring, ty)
       },
     };
 
@@ -408,12 +430,9 @@ impl<'a, 'b> Parser<'a, 'b> {
   }
 
   fn parse_enum_variants(&mut self) -> Option<Vec<node::Variant>> {
-    // sitting on LBRACE
+    // sitting at beginning of block after LBRACE
     let mut variants: Vec<node::Variant> = Vec::new();
 
-    if !self.expect(&token::LBRACE) {
-      return None;
-    }
 
     let mut require_comma: bool = false;
     loop {
@@ -455,7 +474,7 @@ impl<'a, 'b> Parser<'a, 'b> {
         _ => {}
       }
 
-      let docstring = self.parse_docstring();
+      let docstring = self.parse_docstring(Trailing);
 
       let value: node::Variant = node::Variant { name: name, value: value, docstring: docstring };
       variants.push(value);
@@ -463,15 +482,24 @@ impl<'a, 'b> Parser<'a, 'b> {
     Some(variants)
   }
 
-  fn parse_docstring(&mut self) -> Option<Spanned<Ident>> {
+  fn parse_docstring(&mut self, scope: Scope) -> Option<Spanned<Ident>> {
     let mut docs: Vec<String> = Vec::new();
+    let prefix = match scope {
+      Inner => "//!",
+      Trailing => "//=",
+      Outer => "///",
+    };
     loop {
       match self.token {
         token::DOC_COMMENT(docstring) => {
-          self.bump();
-          // for some reason ident begins with '/// '
           let s = token::get_ident(docstring.ident());
-          let stripped = s.get().trim_left_chars(['/',' '].as_slice());
+          if !s.get().starts_with(prefix) {
+            break
+          }
+
+          self.bump();
+          let stripped = s.get().slice_from(prefix.len())
+            .trim_left_chars(' ');
           docs.push(String::from_str(stripped));
         },
         _ => break,

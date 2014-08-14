@@ -110,25 +110,31 @@ and bitfields are free of overlap).
 
 It is highly recommended that register definitions include
 docstrings. Registers, fields, and `enum` values can all be annotated
-with docstrings with the typical Rust `/// comment` syntax
-although, in contrast to Rust, a comment will be assumed to describe
-the item preceding it. This makes it convenient to place a definition
-and its documentation on the same line.
+with docstrings with the typical Rust doc comment syntax. Both outer
+(`/// comment`) and inner (`//! comment`) comments are accepted. Inner
+comments apply to the item to which the current block belongs whereas
+outer comments apply to the item that follows. In addition,
+trailing comments are supported with the `//=` syntax. These apply
+to the preceding item, allowing definitions and associated comments
+to inhabit the same line. Multiple successive comments of the same
+type will be concatenated together into a single doc comment.
 
 For instance, we might document the above example as follows,
 
 ```
 ioregs!(UART = {
-    0x0    => reg32 cr {       ///! Control register
-        0      => rxe,         /// Receive enable
-        1      => txe,         /// Transmit enable
-        2      => rxie,        /// Receive interrupt enable
-        3      => txie,        /// Transmit interrupt enable
-        4..12  => br,          /// Baud rate
-        14..16 => parity {     /// Parity selection
-          0x0  => NoParity,    /// No parity
-          0x2  => EvenParity,  /// Even parity
-          0x3  => OddParity,   /// Odd parity
+    /// Control register
+    /// Here is some discussion of the function of the `cr` register.
+    0x0    => reg32 cr {
+        0      => rxe,         //= Receive enable
+        1      => txe,         //= Transmit enable
+        2      => rxie,        //= Receive interrupt enable
+        3      => txie,        //= Transmit interrupt enable
+        4..12  => br,          //= Baud rate
+        14..16 => parity {     //! Parity selection
+          0x0  => NoParity,    //= No parity
+          0x2  => EvenParity,  //= Even parity
+          0x3  => OddParity,   //= Odd parity
         }
     }
 
