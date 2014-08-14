@@ -64,8 +64,8 @@ fn build_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   let reg_ty = cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
 
   let reg_doc = match reg.docstring {
-    Some(d) => d.node,
-    None => cx.ident_of("no documentation"),
+    Some(d) => token::get_ident(d.node).get().into_string(),
+    None => "no documentation".into_string(),
   };
   let docstring = format!("Update value of `{}` register: {}",
                           reg.name.node,
