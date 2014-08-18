@@ -17,6 +17,7 @@ use std::gc::GC;
 use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ast::P;
+use syntax::ast_util::empty_generics;
 use syntax::codemap::{respan, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
@@ -80,7 +81,7 @@ fn build_field_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
       let item: P<ast::Item> = box(GC) ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
-        node: ast::ItemEnum(enum_def, utils::no_generics()),
+        node: ast::ItemEnum(enum_def, empty_generics()),
         vis: ast::Public,
         attrs: attrs,
         span: field.ty.span,
