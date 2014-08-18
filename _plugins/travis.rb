@@ -9,7 +9,7 @@ class TravisLoader
   def load
     builds = JSON.parse(File.open("_data/travis.json", "r:utf-8").read)
     repo = Travis::Repository.find('hackndev/zinc')
-    repo.recent_builds.each do |b|
+    repo.builds.each do |b|
       c = collect_build(b, builds)
       unless c.kind_of?(Integer)
         puts "#{c['number']} #{c['commit']['branch']}/#{c['commit']['sha'][0..8]} #{c['commit']['message'].split("\n").first}"
