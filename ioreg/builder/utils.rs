@@ -18,17 +18,9 @@ use syntax::ast;
 use syntax::ast::P;
 use syntax::codemap::DUMMY_SP;
 use syntax::ext::build::AstBuilder;
-use syntax::owned_slice::OwnedSlice;
 use syntax::parse::token;
 
 use super::super::node;
-
-pub fn no_generics() -> ast::Generics {
-  ast::Generics {
-    lifetimes: Vec::new(),
-    ty_params: OwnedSlice::empty()
-  }
-}
 
 /// Generate an unsuffixed integer literal expression with a dummy span
 pub fn expr_int<'a>(cx: &'a ExtCtxt, n: i64) -> P<ast::Expr> {
