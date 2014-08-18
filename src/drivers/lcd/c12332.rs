@@ -24,7 +24,7 @@ might be an issue for any other peripheral sharing the same SPI bus.
 */
 
 use core::cell;
-use core::slice::ImmutableVector;
+use core::slice::ImmutableSlice;
 use core::mem::zeroed;
 use core::iter::range;
 

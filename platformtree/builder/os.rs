@@ -174,6 +174,10 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     }, ast::Generics {
       lifetimes: vec!(cx.lifetime_def(DUMMY_SP, intern("'a"), vec!())),
       ty_params: OwnedSlice::from_vec(collected_params),
+      where_clause: ast::WhereClause {
+        id: ast::DUMMY_NODE_ID,
+        predicates: vec!(),
+      }
     }),
     vis: ast::Public,
     span: DUMMY_SP,

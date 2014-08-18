@@ -17,6 +17,7 @@ use std::gc::{Gc, GC};
 use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ast::P;
+use syntax::ast_util::empty_generics;
 use syntax::codemap::{DUMMY_SP, dummy_spanned};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
@@ -193,7 +194,7 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
       ident: self.cx.ident_of(name.node.as_slice()),
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
-      node: ast::ItemStruct(box(GC) struct_def, utils::no_generics()),
+      node: ast::ItemStruct(box(GC) struct_def, empty_generics()),
       vis: ast::Public,
       span: name.span,
     }

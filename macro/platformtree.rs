@@ -109,6 +109,10 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
       let new_generics = ast::Generics {
         lifetimes: vec!(),
         ty_params: OwnedSlice::from_vec(params),
+        where_clause: ast::WhereClause {
+          id: ast::DUMMY_NODE_ID,
+          predicates: vec!(),
+        }
       };
       let new_node = ast::ItemFn(new_decl, style, abi, new_generics, block);
 
