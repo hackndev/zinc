@@ -102,7 +102,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
   all_keys.sort();
 
   for k in all_keys.iter() {
-    let v = node_attr.get(k);
+    let v = &(*node_attr)[*k];
 
     let (ty, val) = match v.value {
       node::IntValue(i) =>

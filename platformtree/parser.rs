@@ -78,7 +78,7 @@ impl<'a> Parser<'a> {
         failed = true;
         self.sess.span_diagnostic.span_err(node.path_span,
             format!("duplicate node definition `{}`", path).as_slice());
-        let old_node: &Rc<node::Node> = nodes.get(&path);
+        let old_node: &Rc<node::Node> = &nodes[path];
         self.sess.span_diagnostic.span_err(old_node.path_span,
             "previously defined here");
       } else {
@@ -120,7 +120,7 @@ impl<'a> Parser<'a> {
                 "duplicate `{}` definition", name).as_slice());
 
             self.sess.span_diagnostic.span_warn(
-                map.get(name).upgrade().unwrap().name_span,
+                (*map)[*name].upgrade().unwrap().name_span,
                 "previously defined here");
             return false;
           } else {
@@ -316,7 +316,7 @@ impl<'a> Parser<'a> {
           self.span = node.path_span;
           self.error(format!("duplicate node definition `{}`",
               path));
-          let old_node: Rc<node::Node> = subnodes.as_map().get(&path).upgrade().unwrap();
+          let old_node: Rc<node::Node> = subnodes.as_map()[path].upgrade().unwrap();
           self.span = old_node.path_span.clone();
           self.error("previously defined here".to_string());
           return None;

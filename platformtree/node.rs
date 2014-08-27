@@ -261,7 +261,8 @@ impl Node {
 
   /// Returns attribute by name or fail!()s.
   pub fn get_attr(&self, key: &str) -> Rc<Attribute> {
-    self.attributes.borrow().get(&key.to_string()).clone()
+    let ref attr = (*self.attributes.borrow())[key.to_string()];
+    attr.clone()
   }
 
   /// Returns a string attribute by name or None, if it's not present or not of
