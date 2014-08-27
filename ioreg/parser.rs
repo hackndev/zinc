@@ -471,7 +471,7 @@ impl<'a, 'b> Parser<'a, 'b> {
           self.bump();
           // for some reason ident begins with '/// '
           let s = token::get_ident(docstring.ident());
-          let stripped = s.get().trim_left_chars(&['/',' ']);
+          let stripped = s.get().trim_left_chars(['/',' '].as_slice());
           docs.push(String::from_str(stripped));
         },
         _ => break,
