@@ -42,21 +42,27 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildSetters<'a, 'b, 'c> {
   fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>,
       reg: &'a node::Reg, _width: node::RegWidth, fields: &Vec<node::Field>)
   {
-    if fields.iter().any(|f| f.access != node::ReadOnly) {
-      let it = build_type(self.cx, path, reg, fields);
+    if fields.iter().all(|f| f.access == node::WriteOnly) {
+      let it = build_type(self.cx, path, reg, fields, true);
+      self.builder.push_item(it);
+
+      let it = build_impl(self.cx, path, reg, fields, true);
+      self.builder.push_item(it);
+    } else if fields.iter().any(|f| f.access != node::ReadOnly) {
+      let it = build_type(self.cx, path, reg, fields, false);
       self.builder.push_item(it);
 
       let it = build_drop(self.cx, path, reg, fields);
       self.builder.push_item(it);
 
-      let it = build_impl(self.cx, path, reg, fields);
+      let it = build_impl(self.cx, path, reg, fields, false);
       self.builder.push_item(it);
     }
   }
 }
 
 fn build_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
-    reg: &node::Reg, _fields: &Vec<node::Field>) -> P<ast::Item>
+    reg: &node::Reg, _fields: &Vec<node::Field>, wo: bool) -> P<ast::Item>
 {
   let packed_ty = utils::reg_primitive_type(cx, reg)
     .expect("Unexpected non-primitive register");
@@ -72,33 +78,53 @@ fn build_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
                           reg_doc);
   let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
-  let item = quote_item!(cx,
-    $doc_attr
-    #[allow(non_camel_case_types)]
-    pub struct $name {
-      value: $packed_ty,
-      mask: $packed_ty,
-      reg: &'static $reg_ty,
-    }
-  );
+  let item = if wo {
+    quote_item!(cx,
+      $doc_attr
+      #[allow(non_camel_case_types)]
+      pub struct $name {
+        reg: &'static $reg_ty,
+      }
+    )
+  } else {
+    quote_item!(cx,
+      $doc_attr
+      #[allow(non_camel_case_types)]
+      pub struct $name {
+        value: $packed_ty,
+        mask: $packed_ty,
+        reg: &'static $reg_ty,
+      }
+    )
+  };
   item.unwrap()
 }
 
-fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
+fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>, wo: bool)
                  -> P<ast::Item> {
   let reg_ty: P<ast::Ty> =
     cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
   let setter_ty: P<ast::Ty> = cx.ty_ident(DUMMY_SP,
                                           utils::setter_name(cx, path));
-  let item = quote_item!(cx,
-    #[doc="Create a new updater"]
-    pub fn new(reg: &'static $reg_ty) -> $setter_ty {
-      $setter_ty {
-        value: 0,
-        mask: 0,
-        reg: reg,
-      }
-    });
+  let item = if wo {
+    quote_item!(cx,
+      #[doc="Create a new updater"]
+      pub fn new(reg: &'static $reg_ty) -> $setter_ty {
+        $setter_ty {
+          reg: reg,
+        }
+    })
+  } else {
+    quote_item!(cx,
+      #[doc="Create a new updater"]
+      pub fn new(reg: &'static $reg_ty) -> $setter_ty {
+        $setter_ty {
+          value: 0,
+          mask: 0,
+          reg: reg,
+        }
+    })
+  };
   item.unwrap()
 }
 
@@ -148,16 +174,16 @@ fn build_done<'a>(cx: &'a ExtCtxt) -> P<ast::Method>
 }
 
 fn build_impl<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
-                  fields: &Vec<node::Field>) -> P<ast::Item>
+                  fields: &Vec<node::Field>, wo: bool) -> P<ast::Item>
 {
-  let new = build_new(cx, path);
+  let new = build_new(cx, path, wo);
   let setter_ty: P<ast::Ty> = cx.ty_ident(
     DUMMY_SP,
     utils::setter_name(cx, path));
   let methods: Vec<P<ast::Method>> =
     FromIterator::from_iter(
       fields.iter()
-        .filter_map(|field| build_field_fn(cx, path, reg, field)));
+        .filter_map(|field| build_field_fn(cx, path, reg, field, wo)));
   let done: P<ast::Method> = build_done(cx);
   let impl_ = quote_item!(cx,
     #[allow(dead_code)]
@@ -171,18 +197,18 @@ fn build_impl<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
 }
 
 fn build_field_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
-                      field: &node::Field) -> Option<P<ast::Method>>
+                      field: &node::Field, wo: bool) -> Option<P<ast::Method>>
 {
   match field.access {
     node::ReadOnly => None,
     node::SetToClear => Some(build_field_clear_fn(cx, path, reg, field)),
-    _ => Some(build_field_set_fn(cx, path, reg, field)),
+    _ => Some(build_field_set_fn(cx, path, reg, field, wo)),
   }
 }
 
 /// Build a setter for a field
 fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
-                          field: &node::Field) -> P<ast::Method>
+                          field: &node::Field, wo: bool) -> P<ast::Method>
 {
   let setter_ty = utils::setter_name(cx, path);
   let unpacked_ty = utils::reg_primitive_type(cx, reg)
@@ -202,28 +228,54 @@ fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
                           field_doc);
   let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
-  if field.count.node == 1 {
-    let shift = utils::shift(cx, None, field);
-    quote_method!(cx,
-      $doc_attr
-      pub fn $fn_name<'a>(&'a mut self, new_value: $field_ty)
-          -> &'a mut $setter_ty {
-        self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
-        self.mask |= $mask << $shift;
-        self
-      }
-    )
-  } else {
-    let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
-    quote_method!(cx,
-      $doc_attr
-      pub fn $fn_name<'a>(&'a mut self, idx: uint, new_value: $field_ty)
-        -> &'a mut $setter_ty {
+  match (field.count.node, wo) {
+    (1, false) => {
+      let shift = utils::shift(cx, None, field);
+      quote_method!(cx,
+        $doc_attr
+        pub fn $fn_name<'a>(&'a mut self, new_value: $field_ty)
+            -> &'a mut $setter_ty {
           self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
           self.mask |= $mask << $shift;
           self
-      }
-    )
+        }
+      )
+    },
+    (_, false) => {
+      let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
+      quote_method!(cx,
+        $doc_attr
+        pub fn $fn_name<'a>(&'a mut self, idx: uint, new_value: $field_ty)
+            -> &'a mut $setter_ty {
+          self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
+          self.mask |= $mask << $shift;
+          self
+        }
+      )
+    },
+    (1, true) => {
+      let shift = utils::shift(cx, None, field);
+      quote_method!(cx,
+        $doc_attr
+        pub fn $fn_name<'a>(&'a mut self, new_value: $field_ty)
+            -> &'a mut $setter_ty {
+          self.reg.set((new_value as $unpacked_ty) << $shift);
+          self
+        }
+      )
+    },
+    (_, true) => {
+      let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
+      quote_method!(cx,
+        $doc_attr
+        pub fn $fn_name<'a>(&'a mut self, idx: uint, new_value: $field_ty)
+            -> &'a mut $setter_ty {
+          self.reg.set((new_value as $unpacked_ty) << $shift);
+          self
+        }
+      )
+    },
+
   }
 }
 
