@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::gc::GC;
 use syntax::ast;
 use syntax::ast::P;
 use syntax::ext::base::ExtCtxt;
@@ -72,7 +73,9 @@ fn build_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
       value: $packed_ty,
     }
   );
-  item.unwrap()
+  let mut item: ast::Item = item.unwrap().deref().clone();
+  item.span = reg.name.span;
+  box(GC) item
 }
 
 fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
