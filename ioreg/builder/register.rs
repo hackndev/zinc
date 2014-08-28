@@ -120,7 +120,9 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
       value: VolatileCell<$packed_ty>,
     }
   );
-  item.unwrap()
+  let mut item: ast::Item = item.unwrap().deref().clone();
+  item.span = reg.name.span;
+  box(GC) item
 }
 
 /// Build a variant of an `EnumField`

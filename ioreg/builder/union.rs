@@ -163,9 +163,8 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   /// Build the type associated with a register group
   fn build_union_type(&self, path: &Vec<String>, reg: &node::Reg,
                       regs: &Vec<node::Reg>) -> P<ast::Item> {
-    let name = dummy_spanned(
-      String::from_str(
-        token::get_ident(utils::path_ident(self.cx, path)).get()));
+    let name = String::from_str(
+        token::get_ident(utils::path_ident(self.cx, path)).get());
     // Registers are already sorted by parser
     let mut regs = regs.clone();
     let padded_regs = PaddedRegsIterator::new(&mut regs);
@@ -191,12 +190,12 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
       None => (),
     }
     box(GC) ast::Item {
-      ident: self.cx.ident_of(name.node.as_slice()),
+      ident: self.cx.ident_of(name.as_slice()),
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
       node: ast::ItemStruct(box(GC) struct_def, empty_generics()),
       vis: ast::Public,
-      span: name.span,
+      span: reg.name.span,
     }
   }
 }

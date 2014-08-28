@@ -266,11 +266,12 @@ format!("txe={}, rxe={}, br={}", cr.txe(), cr.rxe(), cr.br())
 
 In the case of read-only (resp. write-only) fields the set (resp. get)
 method is omitted. In the case of `set_to_clear` fields a `clear`
-method is instead produced. For instance, in the case of the `sr`
-register's `fe` flag,
+method is instead produced in place of `set`. For instance, in the
+case of the `sr` register's `fe` flag,
 
 ```
-pub fn clear_fe(&self) -> UART_sr_Update { ... }
+pub fn fe(self: &UART_sr_Getter) -> bool { ... }
+pub fn clear_fe(self: &UART_sr_Update) -> UART_sr_Update { ... }
 ```
 
 ### Informal grammar
