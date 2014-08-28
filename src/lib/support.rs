@@ -57,3 +57,15 @@ pub extern fn __aeabi_unwind_cpp_pr1() {
 pub extern fn get_eit_entry() {
   abort();
 }
+
+#[cfg(not(test))]
+#[inline(always)]
+/// NOP instruction
+pub fn nop() {
+  unsafe { asm!("nop" :::: "volatile"); }
+}
+
+#[cfg(test)]
+/// NOP instruction (mock)
+pub fn nop() {
+}

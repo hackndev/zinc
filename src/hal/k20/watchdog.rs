@@ -15,6 +15,8 @@
 
 //! Watchdog for Kinetis SIM module.
 
+use lib::support::nop;
+
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
 /// Watchdog state
@@ -42,7 +44,7 @@ fn unlock() {
   reg::WDOG.unlock.set_unlock(reg::UnlockSeq2);
 
   // Enforce one cycle delay
-  unsafe { asm!("nop" :::: "volatile"); }
+  nop();
 }
 
 /// Write refresh sequence to refresh watchdog
