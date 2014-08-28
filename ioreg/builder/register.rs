@@ -99,7 +99,7 @@ fn build_field_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
 ///     pub struct REG {_value: u32}
 fn build_reg_struct<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
     reg: &node::Reg, _width: node::RegWidth) -> P<ast::Item> {
-  let packed_ty = 
+  let packed_ty =
     utils::reg_primitive_type(cx, reg)
     .expect("Unexpected non-primitive reg");
 
@@ -120,7 +120,9 @@ fn build_reg_struct<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
       value: VolatileCell<$packed_ty>,
     }
   );
-  item.unwrap()
+  let mut item: ast::Item = item.unwrap().deref().clone();
+  item.span = reg.name.span;
+  box(GC) item
 }
 
 /// Build a variant of an `EnumField`
