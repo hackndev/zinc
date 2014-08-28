@@ -55,9 +55,9 @@ impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
   }
 }
 
-fn build_field_accessors<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
-                             reg: &node::Reg, field: &node::Field)
-                             -> Option<P<ast::Item>>
+fn build_field_accessors(cx: &ExtCtxt, path: &Vec<String>,
+                         reg: &node::Reg, field: &node::Field)
+                         -> Option<P<ast::Item>>
 {
   let reg_ty: P<ast::Ty> =
     cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
@@ -98,8 +98,8 @@ fn build_field_accessors<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   )
 }
 
-fn build_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
-                    -> P<ast::Item>
+fn build_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
+                -> P<ast::Item>
 {
   let reg_ty: P<ast::Ty> =
     cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
@@ -121,9 +121,9 @@ fn build_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
   item.unwrap()
 }
 
-fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
-                          reg: &node::Reg, field: &node::Field)
-                          -> P<ast::Method>
+fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
+                      reg: &node::Reg, field: &node::Field)
+                      -> P<ast::Method>
 {
   let fn_name =
     cx.ident_of((String::from_str("set_")+field.name.node).as_slice());
@@ -151,9 +151,9 @@ fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   }
 }
 
-fn build_field_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
-                          reg: &node::Reg, field: &node::Field)
-                          -> P<ast::Method>
+fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>,
+                      reg: &node::Reg, field: &node::Field)
+                      -> P<ast::Method>
 {
   let fn_name = cx.ident_of(field.name.node.as_slice());
   let field_ty: P<ast::Ty> =
@@ -176,9 +176,9 @@ fn build_field_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   }
 }
 
-fn build_field_clear_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
-                            _reg: &node::Reg, field: &node::Field)
-                            -> P<ast::Method>
+fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
+                        _reg: &node::Reg, field: &node::Field)
+                        -> P<ast::Method>
 {
   let fn_name =
     cx.ident_of((String::from_str("clear_")+field.name.node).as_slice());
