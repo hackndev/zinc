@@ -23,20 +23,20 @@ use syntax::parse::token;
 use super::super::node;
 
 /// Generate an unsuffixed integer literal expression with a dummy span
-pub fn expr_int<'a>(cx: &'a ExtCtxt, n: i64) -> P<ast::Expr> {
+pub fn expr_int(cx: &ExtCtxt, n: i64) -> P<ast::Expr> {
   let sign = if n < 0 {ast::Minus} else {ast::Plus};
   cx.expr_lit(DUMMY_SP, ast::LitInt(n as u64, ast::UnsuffixedIntLit(sign)))
 }
 
 /// The name of the structure representing a register
-pub fn path_ident<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
+pub fn path_ident(cx: &ExtCtxt, path: &Vec<String>)
                       -> ast::Ident {
   cx.ident_of(path.clone().connect("_").as_slice())
 }
 
 
 /// Generate a `#[name(...)]` attribute of the given type
-pub fn list_attribute<'a>(cx: &'a ExtCtxt, name: &'static str,
+pub fn list_attribute(cx: &ExtCtxt, name: &'static str,
     list: Vec<&'static str>) -> ast::Attribute {
   let words =
    list.move_iter()
@@ -47,8 +47,8 @@ pub fn list_attribute<'a>(cx: &'a ExtCtxt, name: &'static str,
 }
 
 /// Generate a `#[doc="..."]` attribute of the given type
-pub fn doc_attribute<'a>(cx: &'a ExtCtxt,
-    docstring: token::InternedString) -> ast::Attribute {
+pub fn doc_attribute(cx: &ExtCtxt, docstring: token::InternedString)
+                     -> ast::Attribute {
   let s: ast::Lit_ = ast::LitStr(docstring, ast::CookedStr);
   let attr =
     cx.meta_name_value(DUMMY_SP, token::InternedString::new("doc"), s);
@@ -56,7 +56,7 @@ pub fn doc_attribute<'a>(cx: &'a ExtCtxt,
 }
 
 pub fn primitive_type_path(cx: &ExtCtxt, width: node::RegWidth)
-                       -> ast::Path {
+                           -> ast::Path {
   let name = match width {
     node::Reg8  => "u8",
     node::Reg16 => "u16",
@@ -81,7 +81,7 @@ pub fn reg_primitive_type(cx: &ExtCtxt, reg: &node::Reg)
   path.map(|p| cx.ty_path(p, None))
 }
 
-pub fn field_type_path<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
+pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
     reg: &node::Reg, field: &node::Field) -> ast::Path {
   let span = field.ty.span;
   match field.ty.node {
@@ -107,13 +107,13 @@ pub fn field_type_path<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
 }
 
 /// Build an expression for the mask of a field
-pub fn mask<'a>(cx: &'a ExtCtxt, field: &node::Field) -> P<ast::Expr> {
+pub fn mask(cx: &ExtCtxt, field: &node::Field) -> P<ast::Expr> {
   expr_int(cx, ((1i << field.width) - 1) as i64)
 }
 
 /// Build an expression for the shift of a field (including the array
 /// index if necessary)
-pub fn shift<'a>(cx: &'a ExtCtxt, idx: Option<P<ast::Expr>>,
+pub fn shift(cx: &ExtCtxt, idx: Option<P<ast::Expr>>,
                  field: &node::Field) -> P<ast::Expr> {
   let low = expr_int(cx, field.low_bit as i64);
   match idx {
@@ -126,13 +126,13 @@ pub fn shift<'a>(cx: &'a ExtCtxt, idx: Option<P<ast::Expr>>,
 }
 
 /// The name of the setter type for a register
-pub fn setter_name<'a>(cx: &'a ExtCtxt, path: &Vec<String>) -> ast::Ident {
+pub fn setter_name(cx: &ExtCtxt, path: &Vec<String>) -> ast::Ident {
   let s = path.clone().append_one("Update".to_string());
   path_ident(cx, &s)
 }
 
 /// The name of the getter type for a register
-pub fn getter_name<'a>(cx: &'a ExtCtxt, path: &Vec<String>) -> ast::Ident {
+pub fn getter_name(cx: &ExtCtxt, path: &Vec<String>) -> ast::Ident {
   let s = path.clone().append_one("Get".to_string());
   path_ident(cx, &s)
 }

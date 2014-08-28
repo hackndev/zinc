@@ -36,7 +36,7 @@ impl Builder {
     Builder {items: Vec::new()}
   }
 
-  pub fn emit_items<'a>(&mut self, cx: &'a ExtCtxt, reg: Gc<node::Reg>)
+  pub fn emit_items(&mut self, cx: &ExtCtxt, reg: Gc<node::Reg>)
                     -> Vec<P<ast::Item>> {
     node::visit_reg(&*reg, &mut setter::BuildSetters::new(self, cx));
     node::visit_reg(&*reg, &mut getter::BuildGetters::new(self, cx));
