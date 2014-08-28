@@ -122,6 +122,15 @@ fn build_drop<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
     }
   }
 
+  // no need to read write-only registers
+  let wo_reg: bool = fields.iter().all(|f| f.access == node::WriteOnly);
+  let initial_value =
+    if wo_reg {
+      quote_expr!(cx, 0)
+    } else {
+      quote_expr!(cx, self.reg.value.get())
+    };
+
   let item = quote_item!(cx,
     #[unsafe_destructor]
     #[doc = "This performs the register update"]
@@ -129,7 +138,7 @@ fn build_drop<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
       fn drop(&mut self) {
         let clear_mask: $unpacked_ty = $clear as $unpacked_ty;
         if self.mask != 0 {
-          let v: $unpacked_ty = self.reg.value.get() & ! clear_mask & ! self.mask;
+          let v: $unpacked_ty = $initial_value & ! clear_mask & ! self.mask;
           self.reg.value.set(self.value | v);
         }
       }
