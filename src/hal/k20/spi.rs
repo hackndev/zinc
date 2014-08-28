@@ -17,6 +17,48 @@
 SPI peripheral
 */
 
+use hal::spi;
+
+#[path="../../lib/wait_for.rs"] mod wait_for;
+
+pub enum ChipSelect {
+  CS0 = 0,
+  CS1 = 1,
+  CS2 = 2,
+  CS3 = 3,
+  CS4 = 4,
+  CS5 = 5,
+}
+
+/// An SPI peripheral instance
+pub struct DSPI {
+  reg: &'static reg::DSPI,
+  cs: ChipSelect,
+}
+
+impl DSPI {
+  fn new(reg: &'static reg::DSPI, cs: ChipSelect) -> DSPI {
+    reg.mcr.set_halt(false);
+    DSPI {reg: reg, cs: cs}
+  }
+}
+
+impl spi::SPI for DSPI {
+  fn write(&self, value: u8) {
+    wait_for!(self.reg.sr.tfff());
+    self.reg.sr.clear_tfff();
+    // TODO(bgamari): Need to ensure this doesn't read
+    self.reg.pushr
+      .set_txdata(value as u32)
+      .set_pcs(self.cs as u32);
+  }
+
+  fn read(&self) -> u8 {
+    wait_for!(self.reg.sr.rfdf());
+    self.reg.popr.rxdata() as u8
+  }
+}
+
 /// Registers
 pub mod reg {
   use lib::volatile_cell::VolatileCell;
