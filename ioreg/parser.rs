@@ -387,10 +387,13 @@ impl<'a, 'b> Parser<'a, 'b> {
           return None;
         }
 
+        let sp_lo = self.span.lo;
         let docstring = docstring.or_else(|| self.parse_docstring(Inner));
         match self.parse_enum_variants() {
           Some(variants) => {
-            let ty = node::EnumField {opt_name: None, variants: variants};
+            let ty = respan(
+              mk_sp(sp_lo, self.span.hi),
+              node::EnumField {opt_name: None, variants: variants});
             (docstring, ty)
           },
           None => return None,
@@ -402,7 +405,7 @@ impl<'a, 'b> Parser<'a, 'b> {
           1 => node::BoolField,
           _ => node::UIntField,
         };
-        (docstring, ty)
+        (docstring, respan(name.span, ty))
       },
     };
 
@@ -427,7 +430,7 @@ impl<'a, 'b> Parser<'a, 'b> {
       count: count,
       bit_range_span: bits_span,
       access: access,
-      ty: dummy_spanned(ty),
+      ty: ty,
       docstring: docstring,
     };
     Some(field)
