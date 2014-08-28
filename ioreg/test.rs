@@ -53,21 +53,25 @@ mod test {
     0x4 => reg32 reg2 {
       0      => field1,
     }
+    0x8 => reg32 wo_reg {
+      0..15  => field1: wo,
+      16..31 => field2: wo,
+    }
   })
-  
+
   describe!(
     before_each {
       let test: BASIC_TEST = zeroed_safe();
     }
 
-    it "can round_trip simple field values (1)" {
+    it "can round_trip simple field values 1" {
       test.reg1.set_field1(true);
       assert_eq!(test.reg1.field1(), true)
       assert_eq!(get_value(&test, 0), 1)
       assert_eq!(get_value(&test, 1), 0)
     }
 
-    it "can round trip simple field values (2)" {
+    it "can round trip simple field values 2" {
       test.reg1.set_field3(0xde);
       assert_eq!(test.reg1.field3(), 0xde)
       assert_eq!(get_value(&test, 0), 0xde<<16)
@@ -76,6 +80,13 @@ mod test {
     it "sets set_to_clear fields" {
       test.reg1.clear_field4();
       assert_eq!(get_value(&test, 0), 1<<25)
+    }
+
+    it "doesn't read from writeonly registers" {
+      test.wo_reg.set_field1(0xdead);
+      assert_eq!(get_value(&test, 2), 0xdead);
+      test.wo_reg.set_field2(0xdead);
+      assert_eq!(get_value(&test, 2), 0xdead<<16);
     }
   )
 
