@@ -132,8 +132,8 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   }
 
   /// Build field for padding or a register
-  fn build_pad_or_reg<'a>(&self, path: &Vec<String>, regOrPad: RegOrPadding<'a>,
-                          index: uint) -> ast::StructField {
+  fn build_pad_or_reg(&self, path: &Vec<String>, regOrPad: RegOrPadding,
+                      index: uint) -> ast::StructField {
     match regOrPad {
       Reg(reg) => self.build_reg_union_field(path, reg),
       Pad(length) => {
