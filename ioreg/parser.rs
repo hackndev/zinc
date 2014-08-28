@@ -25,11 +25,11 @@ use node;
 
 /// The scope of a doc comment
 enum Scope {
-  /// Applies to the next item in the block
+  /// Applies to the next item in the block (///)
   Inner,
-  /// Applies to the previous item in the block
+  /// Applies to the previous item in the block (//=)
   Trailing,
-  /// Applies to the owner of the current block
+  /// Applies to the owner of the current block (//!)
   Outer,
 }
 
@@ -286,8 +286,6 @@ impl<'a, 'b> Parser<'a, 'b> {
   /// parsed field.
   ///
   fn parse_field(&mut self) -> Option<node::Field> {
-    let mut require_comma: bool = true;
-
     // potentially an initial outer docstring
     let docstring = self.parse_docstring(Outer);
 
@@ -368,30 +366,29 @@ impl<'a, 'b> Parser<'a, 'b> {
       _ => node::ReadWrite,
     };
 
-    if self.token == token::COMMA {
-      self.bump();
-      require_comma = false;
-    }
-
-
     let (docstring, ty) = match self.token {
-      // A list of enumeration variants
-      token::LBRACE if !require_comma => {
-        self.error(String::from_str("Unexpected enumeration list after comma"));
-        return None;
-      },
-      token::LBRACE => {
-        // we don't require a delimiting comma after a block
-        require_comma = false;
-
-        if !self.expect(&token::LBRACE) {
-          return None;
+      token::COMMA | token::RBRACE => {
+        if self.token == token::COMMA {
+          self.bump();
         }
+        let docstring = docstring.or_else(|| self.parse_docstring(Trailing));
+        let ty = match width {
+          1 => node::BoolField,
+          _ => node::UIntField,
+        };
+        (docstring, respan(name.span, ty))
+      },
+      // A list of enumeration variants
+      token::LBRACE => {
+        self.bump();
 
         let sp_lo = self.span.lo;
         let docstring = docstring.or_else(|| self.parse_docstring(Inner));
         match self.parse_enum_variants() {
           Some(variants) => {
+            if self.token == token::COMMA {
+              self.bump();
+            }
             let ty = respan(
               mk_sp(sp_lo, self.span.hi),
               node::EnumField {opt_name: None, variants: variants});
@@ -401,28 +398,12 @@ impl<'a, 'b> Parser<'a, 'b> {
         }
       },
       _ => {
-        let docstring = self.parse_docstring(Trailing);
-        let ty = match width {
-          1 => node::BoolField,
-          _ => node::UIntField,
-        };
-        (docstring, respan(name.span, ty))
+        self.error(format!(
+          "Expected `,` enumeration variant list, or `}}`, found `{}`",
+          token::to_string(&self.token)));
+        return None;
       },
     };
-
-    // Require a comma unless we are the last element in the block
-    if self.token != token::RBRACE {
-      if require_comma {
-        if !self.expect(&token::COMMA) {
-          return None;
-        }
-      } else {
-        match self.token {
-          token::COMMA => {self.bump();},
-          _ => {}
-        }
-      }
-    }
 
     let field = node::Field {
       name: name,
@@ -440,7 +421,6 @@ impl<'a, 'b> Parser<'a, 'b> {
   fn parse_enum_variants(&mut self) -> Option<Vec<node::Variant>> {
     // sitting at beginning of block after LBRACE
     let mut variants: Vec<node::Variant> = Vec::new();
-
 
     let mut require_comma: bool = false;
     loop {
