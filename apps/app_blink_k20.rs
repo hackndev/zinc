@@ -6,7 +6,7 @@ extern crate core;
 extern crate zinc;
 
 use core::option::Some;
-use zinc::hal::k20::pin;
+use zinc::hal::k20::{pin, watchdog};
 use zinc::hal::pin::GPIO;
 use zinc::hal::cortex_m4::systick;
 
@@ -32,6 +32,7 @@ pub fn wait(ticks: u32) {
 pub unsafe fn main() {
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
+  watchdog::init(watchdog::Disabled);
 
   // Pins for MC HCK (http://www.mchck.org/)
   let led1 = pin::Pin::new(pin::PortB, 16, pin::GPIO, Some(zinc::hal::pin::Out));
