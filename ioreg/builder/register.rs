@@ -57,9 +57,9 @@ impl<'a, 'b, 'c> BuildRegStructs<'a, 'b, 'c> {
 }
 
 /// Build a field type if necessary (e.g. in the case of an `EnumField`)
-fn build_field_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
-                        reg: &node::Reg, field: &node::Field)
-                        -> Option<P<ast::Item>> {
+fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
+                    reg: &node::Reg, field: &node::Field)
+                    -> Option<P<ast::Item>> {
   match field.ty.node {
     node::EnumField { variants: ref variants, .. } => {
       // FIXME(bgamari): We construct a path, then only take the last
@@ -97,9 +97,9 @@ fn build_field_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
 /// For instance,
 ///
 ///     pub struct REG {_value: u32}
-fn build_reg_struct<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
+fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
     reg: &node::Reg, _width: node::RegWidth) -> P<ast::Item> {
-  let packed_ty = 
+  let packed_ty =
     utils::reg_primitive_type(cx, reg)
     .expect("Unexpected non-primitive reg");
 
@@ -124,8 +124,8 @@ fn build_reg_struct<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
 }
 
 /// Build a variant of an `EnumField`
-fn build_enum_variant<'a>(cx: &'a ExtCtxt,
-                          variant: &node::Variant) -> ast::Variant {
+fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
+                      -> ast::Variant {
   let doc = match variant.docstring {
     Some(d) => token::get_ident(d.node).get().into_string(),
     None => "no documentation".into_string(),
