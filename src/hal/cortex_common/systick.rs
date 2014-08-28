@@ -15,68 +15,103 @@
 
 //! Interface to SYSTICK timer.
 
+use core::option::{Option,None,Some};
+
 #[path="../../lib/ioreg.rs"] mod ioreg;
 
-/// A constant that requests to use hardware calibration value.
-/// Note that not all core implementations support this.
-pub static CALIBRATED: u32 = 0xffffffff;
-
-/// Initializes systick timer.
+/// Initialize systick timer.
+///
+/// After this call system timer will be disabled, and needs to be enabled manual. SysTick irq will
+/// be disabled and needs to be enabled manually, too.
 ///
 /// Arguments:
 ///
-///  * calibration: Timer reload value, or `CALIBRATED` to use the device 10ms
-///                 calibrated value.
-///  * enable_irq: true, if IRQ should be initially enabled.
-pub fn setup(calibration: u32, enable_irq: bool) {
-  reg::SYSTICK.set_CONTROL(0b100);  // disabled, no interrupt
-  let reload_val: u32 = match calibration {
-    CALIBRATED => reg::SYSTICK.CALIBRATION() & 0xffffff,
-    val => val,
-  };
-  reg::SYSTICK.set_RELOAD(reload_val);
-  reg::SYSTICK.set_CURRENT(0);
-  if enable_irq {
-    reg::SYSTICK.set_CONTROL(0b110);
+///  * reload: Reload value for the timer
+pub fn setup(reload: u32) {
+  reg::SYSTICK.csr.set_enable(false).set_tickint(false).set_clksource(reg::CPU);
+
+  reg::SYSTICK.rvr.set_reload(reload);
+  reg::SYSTICK.cvr.set_current(0);
+}
+
+/// Read ten millisecond calibration value from hardware
+pub fn ten_ms() -> Option<u32> {
+  let calib = reg::SYSTICK.calib.tenms();
+  match calib {
+    0 => None,
+    val => Some(val)
   }
 }
 
 /// Enables the timer.
 pub fn enable() {
-  reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() | 1);
+  reg::SYSTICK.csr.set_enable(true);
+}
+
+/// Disable the timer.
+pub fn disable() {
+  reg::SYSTICK.csr.set_enable(false);
 }
 
 /// Enables interrupts generation for timer.
 pub fn enable_irq() {
-  reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() | 0b010);
+  reg::SYSTICK.csr.set_tickint(true);
 }
 
 /// Disables interrupts generation for timer, which is still ticking.
 pub fn disable_irq() {
-  reg::SYSTICK.set_CONTROL(reg::SYSTICK.CONTROL() & !0b010);
+  reg::SYSTICK.csr.set_tickint(false);
 }
 
 /// Gets the current 24bit systick value.
 pub fn get_current() -> u32 {
-  reg::SYSTICK.CURRENT() & 0xFFFFFF
+  reg::SYSTICK.cvr.current()
 }
 
 /// Checks if the timer has been triggered since last call.
 /// The flag is cleared when this is called.
 pub fn tick() -> bool {
-  ((reg::SYSTICK.CONTROL() >> 16) & 0x1) == 1
+  reg::SYSTICK.csr.countflag()
 }
 
+#[allow(dead_code)]
 mod reg {
   use lib::volatile_cell::VolatileCell;
+  use core::ops::Drop;
 
-  ioreg_old!(SYSTICKReg: u32, CONTROL, RELOAD, CURRENT, CALIBRATION)
-  reg_rw!(SYSTICKReg, u32, CONTROL,     set_CONTROL, CONTROL)
-  reg_rw!(SYSTICKReg, u32, RELOAD,      set_RELOAD,  RELOAD)
-  reg_rw!(SYSTICKReg, u32, CURRENT,     set_CURRENT, CURRENT)
-  reg_r!( SYSTICKReg, u32, CALIBRATION,              CALIBRATION)
+  ioregs!(SYSTICK = {
+    /// SysTick Control and Status Register
+    0x0 => reg32 csr
+    {
+      16 => countflag : ro,   //= Returns 1 if timer counted to 0
+                              //= since last time this was read.
+      2  => clksource : rw {
+        0 => External,        //= External clock
+        1 => CPU,             //= CPU clock
+      },
+      1 => tickint : rw,      //= Enable SysTick exception
+      0 => enable : rw
+    },
+
+    /// Reload Value Register
+    0x4 => reg32 rvr {
+      23..0 => reload : rw    //= Reload value
+    }
+
+    /// Current Value Register
+    0x8 => reg32 cvr {
+      31..0 => current : rw   //= Current timer value
+    },
+
+    0xc => reg32 calib {
+      31    => noref : ro,    //= If 1, the reference clock is not provided
+      30    => skew : ro,     //= If 1, the calibration value is inexact
+      23..0 => tenms : ro,    //= An optional Reload value for 10ms (100Hz) timing
+                              //= If zero calibration value not known
+    },
+  })
 
   extern {
-    #[link_name="armmem_SYSTICK"] pub static SYSTICK: SYSTICKReg;
+    #[link_name="armmem_SYSTICK"] pub static SYSTICK: SYSTICK;
   }
 }

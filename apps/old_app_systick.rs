@@ -40,7 +40,7 @@ unsafe fn systick_handler() {
 #[no_split_stack]
 pub fn main() {
   platform.configuration.setup();
-  systick::setup(systick::CALIBRATED, true);
+  systick::setup(systick::ten_ms().unwrap_or(480000));
 
   let led1 = platform.led1.setup();
 
@@ -48,6 +48,7 @@ pub fn main() {
 
   let mut ison: bool = true;
 
+  systick::enable_irq();
   systick::enable();
 
   unsafe { loop {
