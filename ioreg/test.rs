@@ -60,14 +60,14 @@ mod test {
       let test: BASIC_TEST = zeroed_safe();
     }
 
-    it "can round_trip simple field values (1)" {
+    it "can round_trip simple field values 1" {
       test.reg1.set_field1(true);
       assert_eq!(test.reg1.field1(), true)
       assert_eq!(get_value(&test, 0), 1)
       assert_eq!(get_value(&test, 1), 0)
     }
 
-    it "can round trip simple field values (2)" {
+    it "can round trip simple field values 2" {
       test.reg1.set_field3(0xde);
       assert_eq!(test.reg1.field3(), 0xde)
       assert_eq!(get_value(&test, 0), 0xde<<16)
