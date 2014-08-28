@@ -55,7 +55,7 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildSetters<'a, 'b, 'c> {
   }
 }
 
-fn build_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
+fn build_type(cx: &ExtCtxt, path: &Vec<String>,
     reg: &node::Reg, _fields: &Vec<node::Field>) -> P<ast::Item>
 {
   let packed_ty = utils::reg_primitive_type(cx, reg)
@@ -102,7 +102,7 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
   item.unwrap()
 }
 
-fn build_drop<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
+fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
     reg: &node::Reg, fields: &Vec<node::Field>) -> P<ast::Item>
 {
   let setter_ty: P<ast::Ty> = cx.ty_ident(DUMMY_SP,
@@ -147,7 +147,7 @@ fn build_drop<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   item.unwrap()
 }
 
-fn build_done<'a>(cx: &'a ExtCtxt) -> P<ast::Method>
+fn build_done(cx: &ExtCtxt) -> P<ast::Method>
 {
   quote_method!(cx,
     #[doc="Commit changes to register. This is to allow chains of `set_*` \
@@ -156,8 +156,8 @@ fn build_done<'a>(cx: &'a ExtCtxt) -> P<ast::Method>
   )
 }
 
-fn build_impl<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
-                  fields: &Vec<node::Field>) -> P<ast::Item>
+fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
+              fields: &Vec<node::Field>) -> P<ast::Item>
 {
   let new = build_new(cx, path);
   let setter_ty: P<ast::Ty> = cx.ty_ident(
@@ -179,8 +179,8 @@ fn build_impl<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   impl_.unwrap()
 }
 
-fn build_field_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
-                      field: &node::Field) -> Option<P<ast::Method>>
+fn build_field_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
+                  field: &node::Field) -> Option<P<ast::Method>>
 {
   match field.access {
     node::ReadOnly => None,
@@ -190,8 +190,8 @@ fn build_field_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
 }
 
 /// Build a setter for a field
-fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
-                          field: &node::Field) -> P<ast::Method>
+fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
+                      field: &node::Field) -> P<ast::Method>
 {
   let setter_ty = utils::setter_name(cx, path);
   let unpacked_ty = utils::reg_primitive_type(cx, reg)
@@ -236,7 +236,7 @@ fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   }
 }
 
-fn build_field_clear_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
+fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
     _: &node::Reg, field: &node::Field) -> P<ast::Method>
 {
   let setter_ty = utils::setter_name(cx, path);
