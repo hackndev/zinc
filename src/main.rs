@@ -56,9 +56,14 @@ pub mod hal;
 pub mod lib;
 pub mod os;
 
-// TODO(farcaller): clean up when fixed.
+/// Export a subset of `core` as `std.
+///
+/// This is exported as a temporary convenience as `rustc` still looks
+/// for some items in the `std` namespace.
+///
+/// TODO(farcaller): clean up when fixed.
 #[cfg(not(test))]
-mod std {
+pub mod std {
   pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
   pub use core::option;
   pub use core::num;
