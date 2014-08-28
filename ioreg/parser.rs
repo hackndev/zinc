@@ -79,6 +79,7 @@ impl<'a, 'b> Parser<'a, 'b> {
       return None;
     }
 
+    let sp_lo = self.span.lo;
     if !self.expect(&token::LBRACE) {
       return None;
     }
@@ -94,7 +95,7 @@ impl<'a, 'b> Parser<'a, 'b> {
       offset: 0,
       name: name,
       ty: node::RegUnion(box(GC) regs),
-      count: dummy_spanned(1),
+      count: respan(mk_sp(sp_lo, self.span.hi), 1),
       docstring: docstring,
     };
 
