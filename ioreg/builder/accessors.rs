@@ -84,7 +84,7 @@ fn build_field_accessors<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
     },
     None => "no documentation".into_string()
   };
-  let docstring = format!("*[{}]* Field `{}`: {}",
+  let docstring = format!("*[{}]* `{}` field: {}",
                           access_tag,
                           field.name.node,
                           field_doc);
@@ -113,7 +113,7 @@ fn build_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
     impl $reg_ty {
       $doc_attr
       #[allow(dead_code)]
-      pub fn get(&'static self) -> $getter_ty {
+      pub fn get(&self) -> $getter_ty {
         $getter_ty::new(self)
       }
     }
@@ -133,7 +133,7 @@ fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   if field.count.node == 1 {
     quote_method!(cx,
       #[allow(dead_code, missing_doc)]
-      pub fn $fn_name(&'static self, new_value: $field_ty) -> $setter_ty {
+      pub fn $fn_name<'a>(&'a self, new_value: $field_ty) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name(new_value);
         setter
@@ -142,7 +142,7 @@ fn build_field_set_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   } else {
     quote_method!(cx,
       #[allow(dead_code, missing_doc)]
-      pub fn $fn_name(&'static self, idx: uint, new_value: $field_ty) -> $setter_ty {
+      pub fn $fn_name<'a>(&'a self, idx: uint, new_value: $field_ty) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name(idx, new_value);
         setter
@@ -162,14 +162,14 @@ fn build_field_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   if field.count.node == 1 {
     quote_method!(cx,
       #[allow(dead_code, missing_doc)]
-      pub fn $fn_name(&'static self) -> $field_ty {
+      pub fn $fn_name(&self) -> $field_ty {
         $getter_ty::new(self).$fn_name()
       }
     )
   } else {
     quote_method!(cx,
       #[allow(dead_code, missing_doc)]
-      pub fn $fn_name(&'static self, idx: uint) -> $field_ty {
+      pub fn $fn_name(&self, idx: uint) -> $field_ty {
         $getter_ty::new(self).$fn_name(idx)
       }
     )
@@ -186,7 +186,7 @@ fn build_field_clear_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   if field.count.node == 1 {
     quote_method!(cx,
       #[allow(dead_code, missing_doc)]
-      pub fn $fn_name(&'static self) -> $setter_ty {
+      pub fn $fn_name<'a>(&'a self) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name();
         setter
@@ -195,7 +195,7 @@ fn build_field_clear_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   } else {
     quote_method!(cx,
       #[allow(dead_code, missing_doc)]
-      pub fn $fn_name(&'static self, idx: uint) -> $setter_ty {
+      pub fn $fn_name<'a>(&'a self, idx: uint) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name(idx);
         setter

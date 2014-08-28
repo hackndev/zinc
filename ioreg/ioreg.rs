@@ -208,18 +208,18 @@ look at `cr` in particular,
 
 ```
 impl UART_cr {
-    pub fn get(&'static self) -> UART_cr_Get { ... }
+    pub fn get(&self) -> UART_cr_Get { ... }
 
-    pub fn set_rxe(&'static self, new_value: bool) -> UART_cr_Update { ... }
-    pub fn rxe(&'static self) -> bool { ... }
+    pub fn set_rxe(&self, new_value: bool) -> UART_cr_Update { ... }
+    pub fn rxe(&self) -> bool { ... }
 
     // similar methods for `txe`, `rxie`, `txie`
 
-    pub fn set_br(&'static self, new_value: u32) -> UART_cr_Update { ... }
-    pub fn br(&'static self) -> u32 { ... }
+    pub fn set_br(&self, new_value: u32) -> UART_cr_Update { ... }
+    pub fn br(&self) -> u32 { ... }
 
-    pub fn set_parity(&'static self, new_value: UART_cr_parity) -> UART_cr_Update { ... }
-    pub fn parity(&'static self) -> UART_cr_parity { ... }
+    pub fn set_parity(&self, new_value: UART_cr_parity) -> UART_cr_Update { ... }
+    pub fn parity(&self) -> UART_cr_parity { ... }
 }
 ```
 
@@ -264,7 +264,7 @@ method is instead produced. For instance, in the case of the `sr`
 register's `fe` flag,
 
 ```
-pub fn clear_fe(&'static self) -> UART_sr_Update { ... }
+pub fn clear_fe(&self) -> UART_sr_Update { ... }
 ```
 
 ### Informal grammar
