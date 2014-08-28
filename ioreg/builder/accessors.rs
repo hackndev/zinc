@@ -67,7 +67,8 @@ fn build_field_accessors<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
                             build_field_get_fn(cx, path, reg, field)),
     node::ReadOnly  => vec!(build_field_get_fn(cx, path, reg, field)),
     node::WriteOnly => vec!(build_field_set_fn(cx, path, reg, field)),
-    node::SetToClear => vec!(build_field_clear_fn(cx, path, reg, field)),
+    node::SetToClear => vec!(build_field_clear_fn(cx, path, reg, field),
+                             build_field_get_fn(cx, path, reg, field)),
   };
 
   let access_tag = match field.access {
