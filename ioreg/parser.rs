@@ -287,6 +287,9 @@ impl<'a, 'b> Parser<'a, 'b> {
   fn parse_field(&mut self) -> Option<node::Field> {
     let mut require_comma: bool = true;
 
+    // potentially an initial outer docstring
+    let docstring = self.parse_docstring(Outer);
+
     // sitting at starting bit number
     let low_bit = match self.expect_uint() {
       Some(bit) => bit,
@@ -383,7 +386,8 @@ impl<'a, 'b> Parser<'a, 'b> {
         if !self.expect(&token::LBRACE) {
           return None;
         }
-        let docstring = self.parse_docstring(Inner);
+
+        let docstring = docstring.or_else(|| self.parse_docstring(Inner));
         match self.parse_enum_variants() {
           Some(variants) => {
             let ty = node::EnumField {opt_name: None, variants: variants};
