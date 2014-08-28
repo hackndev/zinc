@@ -39,9 +39,9 @@ impl<'a, 'b, 'c> BuildGetters<'a, 'b, 'c> {
 }
 
 impl<'a, 'b, 'c> node::RegVisitor for BuildGetters<'a, 'b, 'c> {
-  fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>,
-                        reg: &'a node::Reg, _width: node::RegWidth,
-                        fields: &Vec<node::Field>) {
+  fn visit_prim_reg(&mut self, path: &Vec<String>,
+                    reg: &node::Reg, _width: node::RegWidth,
+                    fields: &Vec<node::Field>) {
     if fields.iter().any(|f| f.access != node::WriteOnly) {
       let it = build_type(self.cx, path, reg);
       self.builder.push_item(it);
@@ -52,8 +52,8 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildGetters<'a, 'b, 'c> {
   }
 }
 
-fn build_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
-                  reg: &node::Reg) -> P<ast::Item>
+fn build_type(cx: &ExtCtxt, path: &Vec<String>,
+              reg: &node::Reg) -> P<ast::Item>
 {
   let packed_ty = utils::reg_primitive_type(cx, reg)
     .expect("Unexpected non-primitive register");
@@ -75,8 +75,7 @@ fn build_type<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   item.unwrap()
 }
 
-fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
-                 -> P<ast::Item> {
+fn build_new(cx: &ExtCtxt, path: &Vec<String>) -> P<ast::Item> {
   let reg_ty: P<ast::Ty> =
     cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
   let getter_ty: P<ast::Ty> = cx.ty_ident(DUMMY_SP,
@@ -94,9 +93,9 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
 
 /// Given an `Expr` of the given register's primitive type, return
 /// an `Expr` of the field type
-fn from_primitive<'a>(cx: &'a ExtCtxt, reg: &node::Reg,
-                      field: &node::Field, prim: P<ast::Expr>)
-                      -> P<ast::Expr> {
+fn from_primitive(cx: &ExtCtxt, reg: &node::Reg,
+                  field: &node::Field, prim: P<ast::Expr>)
+                  -> P<ast::Expr> {
   match field.ty.node {
     node::UIntField => prim,
     node::BoolField =>
@@ -148,8 +147,8 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
 }
 
 /// Build a getter for a field
-fn build_field_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
-                          field: &node::Field) -> P<ast::Method>
+fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
+                      field: &node::Field) -> P<ast::Method>
 {
   let fn_name = cx.ident_of(field.name.node.as_slice());
   let field_ty: P<ast::Ty> =
@@ -171,7 +170,7 @@ fn build_field_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
       quote_expr!(cx, (self.value >> $shift) & $mask));
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name<'a>(&'a self) -> $field_ty {
+      pub fn $fn_name(&self) -> $field_ty {
         $value
       }
     )
@@ -182,7 +181,7 @@ fn build_field_get_fn<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg,
       quote_expr!(cx, (self.value >> $shift) & $mask));
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name<'a>(&'a self, idx: uint) -> $field_ty {
+      pub fn $fn_name(&self, idx: uint) -> $field_ty {
         $value
       }
     )
