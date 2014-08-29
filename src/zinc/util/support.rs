@@ -69,3 +69,15 @@ pub fn nop() {
 /// NOP instruction (mock)
 pub fn nop() {
 }
+
+#[cfg(not(test))]
+#[inline(always)]
+/// WFI instruction
+pub fn wfi() {
+    unsafe { asm!("wfi" :::: "volatile"); }
+}
+
+#[cfg(test)]
+/// WFI instruction (mock)
+pub fn wfi() {
+}
