@@ -7,17 +7,19 @@ require 'github_api'
 
 class TravisLoader
   def load
-    builds = JSON.parse(File.open("_data/travis.json", "r:utf-8").read)
+    builds = begin
+      JSON.parse(File.open("_data/travis.json", "r:utf-8").read)
+    rescue
+      {}
+    end
     repo = Travis::Repository.find('hackndev/zinc')
     repo.builds.each do |b|
       c = collect_build(b, builds)
       unless c.kind_of?(Integer)
         puts "#{c['number']} #{c['commit']['branch']}/#{c['commit']['sha'][0..8]} #{c['commit']['message'].split("\n").first}"
-        builds[c['number']] = c
+        builds[c['build_id'].to_s] = c
       else
         puts "early break at #{c}"
-        build_prev = builds[(c-1).to_s]
-        puts "#{c-1} doesn't exist!" unless build_prev
         break
       end
     end
@@ -65,7 +67,7 @@ class TravisLoader
     h['build_id'] = build.id
     h['commit'] = build.commit.to_h
 
-    return h['number'].to_i if old[h['number']]
+    return h['build_id'].to_i if old[h['build_id'].to_s]
 
     h.delete('config')
     h['jobs'] = build.jobs.map do |j|
