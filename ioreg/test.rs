@@ -22,7 +22,7 @@ extern crate core;
 
 
 #[allow(dead_code)]
-#[path="../src/lib/volatile_cell.rs"] mod volatile_cell;
+#[path="../src/zinc/util/volatile_cell.rs"] mod volatile_cell;
 
 #[cfg(test)]
 mod test {

@@ -13,22 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Platform tree operations crate
+//! This file is not part of zinc crate, it is linked separately, alongside the
+//! ISRs for the platform.
 
-#![experimental]
-#![feature(quote)]
-#![crate_name="platformtree"]
-#![crate_type="rlib"]
+#![feature(asm, globs, lang_items)]
+#![crate_name="isr"]
+#![crate_type="staticlib"]
+#![no_std]
 
-extern crate syntax;
-#[cfg(test)] extern crate hamcrest;
+extern crate core;
 
-pub mod builder;
-pub mod node;
-pub mod parser;
+#[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
 
-#[path="../src/zinc/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
-#[path="../src/zinc/drivers/drivers_pt.rs"] mod drivers_pt;
+#[cfg(mcu_lpc17xx)]
+#[path="lpc17xx/isr.rs"] pub mod isr_lpc17xx;
 
-#[cfg(test)] mod test_helpers;
-#[cfg(test)] mod parser_test;
+#[cfg(mcu_k20)]
+#[path="k20/isr.rs"] pub mod isr_k20;
+
+#[path="../util/lang_items.rs"] mod lang_items;
