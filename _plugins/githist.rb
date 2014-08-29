@@ -96,14 +96,17 @@ module GitHist
       page.data['pulls'] = prs.map do |pr|
         statuses = github.repos.statuses.all('hackndev', 'zinc', pr['head']['sha'])
             .sort{ |a,b| a['created_at'] <=> b['created_at'] }
-        if statuses.empty?
-          build = nil
+        build = if statuses.empty?
+          nil
         elsif statuses.last['context'] == 'continuous-integration/travis-ci'
           build_id = statuses.last['target_url'].gsub(/.+\//,'').to_i
-          build = build_by_id(build_id)
+          build_by_id(build_id)
+        elsif statuses.last['context'] == 'default'
+          # passthrough, this was teamcity.
+          nil
         else
           puts "Unknown status #{statuses.last} num=#{pr['number']} sha=#{pr['head']['sha']}"
-          build = nil
+          nil
         end
 
         if build
