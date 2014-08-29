@@ -8,10 +8,10 @@ extern crate zinc;
 
 use core::intrinsics::volatile_load;
 
-use core::option::Some;
-use zinc::hal::k20::{pin, watchdog};
+use zinc::hal::k20::watchdog;
 use zinc::hal::pin::GPIO;
 use zinc::hal::cortex_m4::systick;
+use zinc::hal::board;
 
 static mut i: u32 = 0;
 static mut global_on: u32 = 0;
@@ -35,8 +35,7 @@ pub fn main() {
   zinc::hal::mem_init::init_data();
   watchdog::init(watchdog::Disabled);
 
-  // Pins for MC HCK (http://www.mchck.org/)
-  let led1 = pin::Pin::new(pin::PortB, 16, pin::GPIO, Some(zinc::hal::pin::Out));
+  let led1 = board::open_led();
 
   systick::setup(systick::ten_ms().unwrap_or(480000));
   systick::enable();

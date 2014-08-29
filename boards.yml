@@ -1,0 +1,12 @@
+teensy31:
+  platform: k20
+
+# generic versions for backward compatibility
+k20:
+  platform: k20
+
+stm32f4:
+  platform: stm32f4
+
+lpc17xx:
+  platform: lpc17xx

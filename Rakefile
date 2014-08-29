@@ -3,7 +3,13 @@ load 'support/rake.rb'
 TOOLCHAIN = 'arm-none-eabi-'
 RUSTC = 'rustc'
 
-Context.create(__FILE__, ENV['PLATFORM'])
+BOARD = if ENV['BOARD'].to_s != ''
+  ENV['BOARD']
+else
+  ENV['PLATFORM']
+end
+
+Context.create(__FILE__, BOARD)
 
 provide_stdlibs
 
@@ -173,7 +179,7 @@ app_tasks = Context.instance.applications.map do |a|
 end
 
 desc "Build all applications"
-case ENV['PLATFORM']
+case Context.instance.platform.name
 when 'k20'
   task :build_all => [:build_blink_k20, :build_blink_k20_isr]
 when 'stm32f4'

@@ -16,6 +16,6 @@ script:
     - rake build_all test
 env:
   matrix:
-    - PLATFORM=lpc17xx
-    - PLATFORM=stm32f4
-    - PLATFORM=k20
+    - BOARD=lpc17xx
+    - BOARD=stm32f4
+    - BOARD=teensy31

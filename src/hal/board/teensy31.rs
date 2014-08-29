@@ -1,5 +1,5 @@
 // Zinc, the bare metal stack for rust.
-// Copyright 2014 Vladimir "farcaller" Pouzanov <farcaller@gmail.com>
+// Copyright 2014 Dawid Ciężarkiewicz <dpc@ucore.info>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,28 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-HAL provides abstractions for specific MCU hardware.
+//! Common board routines for Teensy Board 3.1
 
-Each peripheral in `hal` has a `xxxConf` struct that can be defined statically,
-and each such struct has a `setup()` method that configures the hardware
-(returning the object to interact with it where applicable).
-*/
+use hal::k20::pin;
+use hal;
+use core::option::Some;
 
-
-pub mod lpc17xx;
-pub mod stm32f4;
-pub mod k20;
-
-mod cortex_common;
-pub mod cortex_m3;
-pub mod cortex_m4;
-
-pub mod mem_init;
-pub mod pin;
-pub mod spi;
-pub mod stack;
-pub mod timer;
-pub mod uart;
-
-pub mod board;
+/// Get in-built LED port
+pub fn open_led() -> pin::Pin {
+  pin::Pin::new(pin::PortC, 5, pin::GPIO, Some(hal::pin::Out))
+}

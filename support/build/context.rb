@@ -17,6 +17,7 @@ require 'singleton'
 require 'yaml'
 require 'erb'
 
+require 'build/board'
 require 'build/platform'
 require 'build/architecture'
 require 'build/tracking_tasks'
@@ -24,7 +25,8 @@ require 'build/rlib'
 
 class Context
   attr_reader :rules, :env, :application, :tracking_triple, :tracking_platform
-  attr_reader :applications
+  attr_reader :applications, :platform
+  attr_accessor :platform
 
   def self.create(*args)
     raise RuntimeError("Context already created") if @context_instance
@@ -35,16 +37,20 @@ class Context
     @context_instance
   end
 
-  def initialize(rakefile, platform)
+  def initialize(rakefile, board)
     @cached_rlib_names = {}
     @rules = {}
 
     @root_path = File.dirname(rakefile)
+    @available_boards = Board.from_yaml(root_dir('boards.yml'))
     @available_platforms = Platform.from_yaml(root_dir('platforms.yml'))
     @available_archs = Architecture.from_yaml(root_dir('architectures.yml'))
 
-    @platform = @available_platforms[platform] or raise ArgumentError.new(
-        "Unknown platform #{platform}, " +
+    @board = @available_boards[board] or raise ArgumentError.new(
+        "Unknown board #{@board}, " +
+        "available boards: #{@available_boards.keys.join(', ')}")
+    @platform = @available_platforms[@board.platform] or raise ArgumentError.new(
+        "Unknown platform #{@board.platform}, " +
         "available platforms: #{@available_platforms.keys.join(', ')}")
     @platform.arch = @available_archs[@platform.arch_name] or raise ArgumentError.new(
         "Undefined arch #{@platform.arch_name} for platform #{@platform}, " +
@@ -91,8 +97,11 @@ class Context
   end
 
   def collect_config_flags!
-    @config_flags = @platform.features.map { |f| "cfg_#{f}" }
+    @config_flags = []
+    @config_flags.concat @board.features.map { |f| "cfg_#{f}" }
+    @config_flags.concat @platform.features.map { |f| "cfg_#{f}" }
 
+    @config_flags << "board_#{@board.name}"
     @config_flags << "mcu_#{@platform.name}"
     @config_flags << "arch_#{@platform.arch.name}"
 
