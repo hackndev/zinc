@@ -37,7 +37,7 @@ pub unsafe fn main() {
   // Pins for MC HCK (http://www.mchck.org/)
   let led1 = pin::Pin::new(pin::PortB, 16, pin::GPIO, Some(zinc::hal::pin::Out));
 
-  systick::setup(480000, false);
+  systick::setup(systick::ten_ms().unwrap_or(480000));
   systick::enable();
   loop {
     led1.set_high();
