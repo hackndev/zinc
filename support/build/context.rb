@@ -60,7 +60,7 @@ class Context
   def root_dir(*args); File.join(@root_path, *args); end
 
   # Returns path relative to $root/src
-  def src_dir(*args); File.join(root_dir, 'src', *args); end
+  def src_dir(*args); File.join(root_dir, 'src/zinc', *args); end
 
   # Returns path relative to $root/build
   def build_dir(*args)

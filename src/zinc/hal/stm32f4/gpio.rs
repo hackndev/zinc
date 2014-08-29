@@ -13,22 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Platform tree operations crate
+//! HAL for STM32F4 GPIO peripheral.
 
-#![experimental]
-#![feature(quote)]
-#![crate_name="platformtree"]
-#![crate_type="rlib"]
+use hal::stm32f4::pin;
+use hal::pin::{GPIODirection};
 
-extern crate syntax;
-#[cfg(test)] extern crate hamcrest;
+#[path="../../util/ioreg.rs"]
+mod ioreg;
 
-pub mod builder;
-pub mod node;
-pub mod parser;
+/// Configuration for a GPIO.
+pub struct GPIOConf {
+  /// Pin configuration for this GPIO.
+  pub pin: pin::PinConf,
 
-#[path="../src/zinc/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
-#[path="../src/zinc/drivers/drivers_pt.rs"] mod drivers_pt;
+  /// Direction for GPIO, either `In` or `Out`.
+  pub direction: GPIODirection,
+}
 
-#[cfg(test)] mod test_helpers;
-#[cfg(test)] mod parser_test;
+impl GPIOConf {
+  /// Returns a GPIO object (actually -- self), that can be used to toggle or
+  /// read GPIO value.
+  pub fn setup<'a>(&'a self) -> &'a pin::PinConf {
+    self.pin.setup();
+
+    &self.pin
+  }
+}

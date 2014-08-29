@@ -66,9 +66,9 @@ rust_tests :ioreg_test, {
 
 # zinc crate
 compile_rust :zinc_crate, {
-  source:  'main.rs'.in_source,
+  source:  'lib.rs'.in_source,
   deps:    [:core_crate, :rlibc_crate, :macro_ioreg],
-  produce: 'main.rs'.in_source.as_rlib.in_build,
+  produce: 'lib.rs'.in_source.as_rlib.in_build,
   out_dir: true,
   recompile_on: [:triple, :platform],
 }
@@ -106,7 +106,7 @@ rust_tests :platformtree_test, {
 
 # zinc test
 rust_tests :zinc_test, {
-  source:  'main.rs'.in_source,
+  source:  'lib.rs'.in_source,
   deps:    [:core_crate, :macro_ioreg, :hamcrest_crate, :shiny_crate],
   produce: 'zinc_test'.in_build,
   recompile_on: [:platform],
@@ -127,7 +127,7 @@ desc "Build API documentation"
 task build_docs: [:build_docs_html]
 
 task build_docs_html: [] do |t|
-  ['src/main.rs', 'platformtree/platformtree.rs', 'ioreg/ioreg.rs'].each do |f|
+  ['src/zinc/lib.rs', 'platformtree/platformtree.rs', 'ioreg/ioreg.rs'].each do |f|
     build = Context.instance.build_dir
     sh ("rustdoc -w html -o #{build}/doc -L #{build} " \
 	+ f + ' ' + :config_flags.in_env.join(' '))
