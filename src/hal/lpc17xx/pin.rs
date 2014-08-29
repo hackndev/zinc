@@ -69,20 +69,14 @@ impl Pin {
   fn setup_regs(&self, function: Function,
       gpiodir: Option<::hal::pin::GPIODirection>) {
     let (offset, reg) = self.get_pinsel_reg_and_offset();
-
-    let fun_bits: u32  = function as u32 << (offset as uint * 2);
-    let mask_bits: u32 = !(3u32 << (offset as uint * 2));
-
-    let val: u32 = reg.value();
-    let new_val = (val & mask_bits) | fun_bits;
-    reg.set_value(new_val);
+    reg.set_pin(offset as uint, function as u32);
 
     if function == GPIO {
       (self as &::hal::pin::GPIO).set_direction(gpiodir.unwrap());
     }
   }
 
-  fn gpioreg(&self) -> &reg::GPIO {
+  fn gpioreg(&self) -> &'static reg::GPIO {
     match self.port {
       Port0 => &reg::GPIO0,
       Port1 => &reg::GPIO1,
@@ -92,28 +86,28 @@ impl Pin {
     }
   }
 
-  fn get_pinsel_reg_and_offset(&self) -> (u8, &reg::PINSEL) {
+  fn get_pinsel_reg_and_offset(&self) -> (u8, &'static reg::PINSEL_pinsel) {
     match self.port {
       Port0 => match self.pin {
-        0..15  => (self.pin,    &reg::PINSEL0),
-        16..30 => (self.pin-16, &reg::PINSEL1),
+        0..15  => (self.pin,    &reg::PINSEL.pinsel[0]),
+        16..30 => (self.pin-16, &reg::PINSEL.pinsel[1]),
         _      => unsafe { abort() },
       },
       Port1 => match self.pin {
-        0..15  => (self.pin,    &reg::PINSEL2),
-        16..31 => (self.pin-16, &reg::PINSEL3),
+        0..15  => (self.pin,    &reg::PINSEL.pinsel[2]),
+        16..31 => (self.pin-16, &reg::PINSEL.pinsel[3]),
         _      => unsafe { abort() },
       },
       Port2 => match self.pin {
-        0..13  => (self.pin,    &reg::PINSEL4),
+        0..13  => (self.pin,    &reg::PINSEL.pinsel[4]),
         _      => unsafe { abort() },
       },
       Port3 => match self.pin {
-        25|26 => (self.pin-16,  &reg::PINSEL7),
+        25|26 => (self.pin-16,  &reg::PINSEL.pinsel[7]),
         _     => unsafe { abort() },
       },
       Port4 => match self.pin {
-        28|29 => (self.pin-16,  &reg::PINSEL9),
+        28|29 => (self.pin-16,  &reg::PINSEL.pinsel[9]),
         _     => unsafe { abort() },
       },
     }
@@ -123,69 +117,101 @@ impl Pin {
 impl ::hal::pin::GPIO for Pin {
   /// Sets output GPIO value to high.
   fn set_high(&self) {
-    self.gpioreg().set_FIOSET(1 << (self.pin as uint));
+    self.gpioreg().fioset.set_set(self.pin as uint, true);
   }
 
   /// Sets output GPIO value to low.
   fn set_low(&self) {
-    self.gpioreg().set_FIOCLR(1 << (self.pin as uint));
+    self.gpioreg().fioclr.set_clr(self.pin as uint, true);
   }
 
   /// Returns input GPIO level.
   fn level(&self) -> ::hal::pin::GPIOLevel {
-    let bit: u32 = 1 << (self.pin as uint);
     let reg = self.gpioreg();
-
-    match reg.FIOPIN() & bit {
-      0 => ::hal::pin::Low,
-      _ => ::hal::pin::High,
+    match reg.fiopin.pin(self.pin as uint) {
+      false => ::hal::pin::Low,
+      _     => ::hal::pin::High,
     }
   }
 
   /// Sets output GPIO direction.
   fn set_direction(&self, new_mode: ::hal::pin::GPIODirection) {
-    let bit: u32 = 1 << (self.pin as uint);
-    let mask: u32 = !bit;
     let reg = self.gpioreg();
-    let val: u32 = reg.FIODIR();
-    let new_val: u32 = match new_mode {
-      ::hal::pin::In  => val & mask,
-      ::hal::pin::Out => (val & mask) | bit,
+    let dir = match new_mode {
+      ::hal::pin::In  => reg::INPUT,
+      ::hal::pin::Out => reg::OUTPUT,
     };
-
-    reg.set_FIODIR(new_val);
+    reg.fiodir.set_dir(self.pin as uint, dir);
   }
 }
 
 /// Sets the state of trace port interface.
 pub fn set_trace_port_interface_enabled(enabled: bool) {
-  let value: u32 = if enabled { 0b1000 } else { 0 };
-  reg::PINSEL10.set_value(value);
+  reg::PINSEL.pinsel10.set_gpio_trace(enabled);
 }
 
 mod reg {
   use lib::volatile_cell::VolatileCell;
+  use core::ops::Drop;
 
-  ioreg_old!(PINSEL: u32, value)
-  reg_rw!(PINSEL, u32, value, set_value, value)
+  ioregs!(PINSEL = {
+    0x0      => reg32 pinsel[10] {     //! Pin function select register
+      0..31    => pin[16]
+    }
+
+    0x28     => reg32 pinsel10 {       //! TPIU interface enable register
+      3        => gpio_trace,
+    }
+
+    0x40     => reg32 pinmode[10] {    //! Pin pull-up/down select register
+      0..31    => pin[16] {
+        0x0    => PULL_UP,
+        0x1    => REPEATER,
+        0x2    => NO_PULL,
+        0x3    => PULL_DOWN,
+      }
+    }
+
+    0x68     => reg32 pinmode_od[5] {  //! Pin open-drain mode select register
+      0..31    => pin[32],
+    }
+
+    0x7c     => reg32 i2cpadcfg {      //! I2C pin configuration register
+      0        => sdadrv0,
+      1        => sdai2c0,
+      2        => scldrv0,
+      3        => scli2c0,
+    }
+  })
 
   extern {
-    #[link_name="lpc17xx_iomem_PINSEL0"]  pub static PINSEL0:  PINSEL;
-    #[link_name="lpc17xx_iomem_PINSEL1"]  pub static PINSEL1:  PINSEL;
-    #[link_name="lpc17xx_iomem_PINSEL2"]  pub static PINSEL2:  PINSEL;
-    #[link_name="lpc17xx_iomem_PINSEL3"]  pub static PINSEL3:  PINSEL;
-    #[link_name="lpc17xx_iomem_PINSEL4"]  pub static PINSEL4:  PINSEL;
-    #[link_name="lpc17xx_iomem_PINSEL7"]  pub static PINSEL7:  PINSEL;
-    #[link_name="lpc17xx_iomem_PINSEL9"]  pub static PINSEL9:  PINSEL;
-    #[link_name="lpc17xx_iomem_PINSEL10"] pub static PINSEL10: PINSEL;
+    #[link_name="lpc17xx_iomem_PINSEL"]  pub static PINSEL:  PINSEL;
   }
 
-  ioreg_old!(GPIO: u32, FIODIR, _r0, _r1, _r2, FIOMASK, FIOPIN, FIOSET, FIOCLR)
-  reg_rw!(GPIO, u32, FIODIR,  set_FIODIR,  FIODIR)
-  reg_rw!(GPIO, u32, FIOMASK, set_FIOMASK, FIOMASK)
-  reg_rw!(GPIO, u32, FIOPIN,  set_FIOPIN,  FIOPIN)
-  reg_rw!(GPIO, u32, FIOSET,  set_FIOSET,  FIOSET)
-  reg_rw!(GPIO, u32, FIOCLR,  set_FIOCLR,  FIOCLR)
+  ioregs!(GPIO = {
+    0x0      => reg32 fiodir {
+      0..31  => dir[32] {
+        0x0    => INPUT,
+        0x1    => OUTPUT,
+      }
+    }
+
+    0x10     => reg32 fiomask {
+      0..31  => mask[32],
+    }
+
+    0x14     => reg32 fiopin {
+      0..31  => pin[32],
+    }
+
+    0x18     => reg32 fioset {
+      0..31  => set[32]: wo,
+    }
+
+    0x1c     => reg32 fioclr {
+      0..31  => clr[32]: wo,
+    }
+  })
 
   extern {
     #[link_name="lpc17xx_iomem_GPIO0"] pub static GPIO0: GPIO;

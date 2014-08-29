@@ -47,14 +47,7 @@ lpc17xx_iomem_TIMER1    = 0x40008000;
 
 lpc17xx_iomem_UART0     = 0x4000C000;
 
-lpc17xx_iomem_PINSEL0   = 0x4002C000;
-lpc17xx_iomem_PINSEL1   = 0x4002C004;
-lpc17xx_iomem_PINSEL2   = 0x4002C008;
-lpc17xx_iomem_PINSEL3   = 0x4002C00C;
-lpc17xx_iomem_PINSEL4   = 0x4002C010;
-lpc17xx_iomem_PINSEL7   = 0x4002C01C;
-lpc17xx_iomem_PINSEL9   = 0x4002C024;
-lpc17xx_iomem_PINSEL10  = 0x4002C028;
+lpc17xx_iomem_PINSEL    = 0x4002C000;
 
 lpc17xx_iomem_SSP1      = 0x40030000;
 lpc17xx_iomem_SSP0      = 0x40088000;
