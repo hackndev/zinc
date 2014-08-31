@@ -24,7 +24,7 @@ use hal::pin::GPIO;
 use hal::spi::SPI;
 
 /// ILI9341 driver.
-pub struct ILI9341<'a, S, T, P> {
+pub struct ILI9341<'a, S:'a, T:'a, P:'a> {
   spi: &'a S,
   timer: &'a T,
   dc: &'a P,

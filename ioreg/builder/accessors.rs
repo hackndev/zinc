@@ -26,12 +26,12 @@ use super::utils;
 use super::super::node;
 
 /// A visitor to build accessor functions for each register struct
-pub struct BuildAccessors<'a, 'b, 'c> {
+pub struct BuildAccessors<'a> {
   builder: &'a mut Builder,
-  cx: &'b ExtCtxt<'c>,
+  cx: &'a ExtCtxt<'a>,
 }
 
-impl<'a, 'b, 'c> node::RegVisitor for BuildAccessors<'a, 'b, 'c> {
+impl<'a> node::RegVisitor for BuildAccessors<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
                     _width: node::RegWidth, fields: &Vec<node::Field>) {
     if fields.iter().any(|f| f.access != node::WriteOnly) {
@@ -48,9 +48,9 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildAccessors<'a, 'b, 'c> {
   }
 }
 
-impl<'a, 'b, 'c> BuildAccessors<'a, 'b, 'c> {
-  pub fn new(builder: &'a mut Builder, cx: &'b ExtCtxt<'c>)
-             -> BuildAccessors<'a, 'b, 'c> {
+impl<'a> BuildAccessors<'a> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
+             -> BuildAccessors<'a> {
     BuildAccessors {builder: builder, cx: cx}
   }
 }

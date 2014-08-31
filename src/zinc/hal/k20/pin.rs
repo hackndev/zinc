@@ -181,7 +181,7 @@ impl ::hal::pin::GPIO for Pin {
 mod reg {
   use util::volatile_cell::VolatileCell;
 
-  #[allow(uppercase_variables)]
+  #[allow(non_snake_case)]
   pub struct PORT {
     pub PCR: [VolatileCell<u32>, ..32],
     pub GPCLR: VolatileCell<u32>,

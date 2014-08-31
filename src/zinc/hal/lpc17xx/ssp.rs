@@ -101,7 +101,7 @@ impl SSPPeripheral {
 }
 
 impl SSP {
-  #[allow(uppercase_variables)]
+  #[allow(non_snake_case)]
   fn set_format(&self, bits: u8, mode: u8) {
     let slave = false;
 

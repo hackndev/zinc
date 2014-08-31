@@ -48,7 +48,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
 }
 
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
-    -> Box<MacResult> {
+    -> Box<MacResult+'static> {
   let pt = Parser::new(cx, tts).parse_platformtree();
   let items = Builder::build(cx, pt.unwrap())
     .expect(format!("Unexpected failure on {}", line!()).as_slice())
@@ -58,7 +58,7 @@ pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
 
 
 pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
-    tts: &[ast::TokenTree]) -> Box<MacResult> {
+    tts: &[ast::TokenTree]) -> Box<MacResult+'static> {
   let result = macro_platformtree(cx, sp, tts);
 
   println!("Platform Tree dump:")
@@ -127,7 +127,7 @@ pub struct MacItems {
 }
 
 impl MacItems {
-  pub fn new(items: Vec<Gc<ast::Item>>) -> Box<MacResult> {
+  pub fn new(items: Vec<Gc<ast::Item>>) -> Box<MacResult+'static> {
     box MacItems { items: items } as Box<MacResult>
   }
 }

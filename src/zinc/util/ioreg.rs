@@ -17,7 +17,7 @@
 
 macro_rules! ioreg_old(
   ($io:ident: $ty:ty, $($reg:ident),+) => (
-    #[allow(uppercase_variables)]
+    #[allow(non_snake_case)]
     pub struct $io {
       $(
         $reg: VolatileCell<$ty>,
@@ -30,7 +30,7 @@ macro_rules! reg_r(
   ($t:ident, $ty:ty, $getter_name:ident, $reg:ident) => (
     impl $t {
       #[no_split_stack]
-      #[allow(dead_code,non_snake_case_functions)]
+      #[allow(dead_code,non_snake_case)]
       #[inline(always)]
       pub fn $getter_name(&self) -> $ty {
         self.$reg.get()
@@ -43,7 +43,7 @@ macro_rules! reg_w(
   ($t:ident, $ty:ty, $setter_name:ident, $reg:ident) => (
     impl $t {
       #[no_split_stack]
-      #[allow(dead_code,non_snake_case_functions)]
+      #[allow(dead_code,non_snake_case)]
       #[inline(always)]
       pub fn $setter_name(&self, val: $ty) {
         self.$reg.set(val);

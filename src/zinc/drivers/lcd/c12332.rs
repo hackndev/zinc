@@ -36,7 +36,7 @@ use hal::pin::GPIO;
 use hal::spi::SPI;
 
 /// C12332 driver.
-pub struct C12332<'a, S, T, P> {
+pub struct C12332<'a, S:'a, T:'a, P:'a> {
   spi: &'a S,
   timer: &'a T,
 
