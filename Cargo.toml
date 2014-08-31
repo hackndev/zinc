@@ -1,0 +1,13 @@
+[package]
+name = "zinc"
+version = "0.0.1"
+authors = ["farcaller@gmail.com"]
+
+[[lib]]
+name = "zinc"
+
+[dependencies.ioreg]
+path = "ioreg"
+
+[dev-dependencies.hamcrest]
+git = "https://github.com/carllerche/hamcrest-rust.git"

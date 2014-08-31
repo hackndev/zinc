@@ -1,0 +1,16 @@
+{
+  "data-layout": "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32",
+  "llvm-target": "thumbv7m-unknown-unknown-eabi",
+  "target-endian": "little",
+  "target-word-size": "32",
+  "arch": "thumb",
+  "cpu": "cortex-m4",
+  "linker": "arm-none-eabi-ld",
+  "pre_link_args": [
+    "-Map /home/ben/git-rust/zinc/build/app_blink_k20.map",
+    "-T /home/ben/git-rust/zinc/src/hal/k20/layout.ld"
+  ],
+  "morestack": false,
+  "relocation_model": "static",
+  "no_compiler_rt": true
+}
