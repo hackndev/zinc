@@ -24,7 +24,7 @@ use node;
 
 pub struct Parser<'a> {
   pub sess: &'a ParseSess,
-  reader: Box<lexer::Reader>,
+  reader: Box<lexer::Reader+'a>,
   token: token::Token,
   span: Span,
 

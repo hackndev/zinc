@@ -73,15 +73,14 @@ impl<'a> Iterator<RegOrPadding<'a>> for PaddedRegsIterator<'a> {
 }
 
 /// Build types for `RegUnions`
-pub struct BuildUnionTypes<'a, 'b, 'c> {
+pub struct BuildUnionTypes<'a> {
   builder: &'a mut Builder,
-  cx: &'b ExtCtxt<'c>
+  cx: &'a ExtCtxt<'a>
 }
 
-impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
-  pub fn new(builder: &'a mut Builder,
-             cx: &'b ExtCtxt<'c>)
-             -> BuildUnionTypes<'a, 'b, 'c> {
+impl<'a> BuildUnionTypes<'a> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
+      -> BuildUnionTypes<'a> {
     BuildUnionTypes { builder: builder, cx: cx }
   }
 }
@@ -102,7 +101,7 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
 }
 
 
-impl<'a, 'b, 'c> node::RegVisitor for BuildUnionTypes<'a, 'b, 'c> {
+impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
   fn visit_union_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a node::Reg,
                          subregs: Gc<Vec<node::Reg>>) {
     let union_type = self.build_union_type(path, reg, &*subregs);
@@ -110,7 +109,7 @@ impl<'a, 'b, 'c> node::RegVisitor for BuildUnionTypes<'a, 'b, 'c> {
   }
 }
 
-impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
+impl<'a> BuildUnionTypes<'a> {
   /// Produce a field for the given register in a `RegUnion` struct
   fn build_reg_union_field(&self, path: &Vec<String>, reg: &node::Reg)
                            -> ast::StructField {
@@ -132,9 +131,9 @@ impl<'a, 'b, 'c> BuildUnionTypes<'a, 'b, 'c> {
   }
 
   /// Build field for padding or a register
-  fn build_pad_or_reg(&self, path: &Vec<String>, regOrPad: RegOrPadding,
+  fn build_pad_or_reg(&self, path: &Vec<String>, reg_or_pad: RegOrPadding,
                       index: uint) -> ast::StructField {
-    match regOrPad {
+    match reg_or_pad {
       Reg(reg) => self.build_reg_union_field(path, reg),
       Pad(length) => {
         let u8_path = self.cx.path_ident(

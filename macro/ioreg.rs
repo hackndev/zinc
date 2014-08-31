@@ -38,7 +38,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
 }
 
 pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
-                    -> Box<MacResult> {
+                    -> Box<MacResult+'static> {
   match Parser::new(cx, tts).parse_ioregs() {
     Some(group) => {
       let mut builder = Builder::new();
@@ -56,7 +56,7 @@ pub struct MacItems {
 }
 
 impl MacItems {
-  pub fn new(items: Vec<Gc<ast::Item>>) -> Box<MacResult> {
+  pub fn new(items: Vec<Gc<ast::Item>>) -> Box<MacResult+'static> {
     box MacItems { items: items } as Box<MacResult>
   }
 }
