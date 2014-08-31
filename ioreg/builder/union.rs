@@ -178,7 +178,6 @@ impl<'a> BuildUnionTypes<'a> {
     let mut attrs: Vec<ast::Attribute> = vec!(
       utils::list_attribute(self.cx, "allow",
                             vec!("non_camel_case_types",
-                                 "uppercase_variables",
                                  "dead_code",
                                  "missing_doc")),
     );

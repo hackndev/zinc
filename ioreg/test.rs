@@ -82,7 +82,7 @@ mod test {
       assert_eq!(get_value(&test, 0), 1<<25)
     }
 
-    it "doesn't read from writeonly registers" {
+    it "does not read from writeonly registers" {
       test.wo_reg.set_field1(0xdead);
       assert_eq!(get_value(&test, 2), 0xdead);
       test.wo_reg.set_field2(0xdead);

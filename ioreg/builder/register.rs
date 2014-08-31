@@ -74,8 +74,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
       let attrs: Vec<ast::Attribute> = vec!(
         utils::list_attribute(cx, "deriving", vec!("FromPrimitive")),
         utils::list_attribute(cx, "allow",
-                              vec!("uppercase_variables",
-                                   "dead_code",
+                              vec!("dead_code",
                                    "non_camel_case_types",
                                    "missing_doc")));
       let item: P<ast::Item> = box(GC) ast::Item {

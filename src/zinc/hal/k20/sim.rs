@@ -27,7 +27,7 @@ pub fn enable_PORT(num: uint) {
 mod reg {
   use util::volatile_cell::VolatileCell;
 
-  #[allow(uppercase_variables)]
+  #[allow(non_snake_case)]
   struct SIM {
     SOPT1:    VolatileCell<u32>,
     SOPT1CFG: VolatileCell<u32>,
