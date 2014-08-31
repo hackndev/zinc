@@ -154,7 +154,9 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     let typaram = cx.typaram(
         DUMMY_SP,
         cx.ident_of(ty.to_tyhash().as_slice()),
-        OwnedSlice::empty(),
+        OwnedSlice::from_vec(vec!(
+          ast::RegionTyParamBound(cx.lifetime(DUMMY_SP, intern("'a")))
+        )),
         None,
         None);
     collected_params.push(typaram);
