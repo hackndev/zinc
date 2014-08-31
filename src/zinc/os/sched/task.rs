@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Task structures.
+//! Task structures.
 
 use core::kinds::marker;
 
@@ -45,5 +45,6 @@ pub struct TasksIndex<'a> {
   /// Current running task index.
   pub current_task_index: u8,
 
+  /// Tasks are not copyable.
   pub no_copy: marker::NoCopy,
 }

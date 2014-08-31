@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Tasks stack management.
+//! Tasks stack management.
 
 /// StackManager provides scheduler with interface to manage task-specific stack
 /// pointer.

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Tasks scheduling and management.
+//! Tasks scheduling and management.
 
 pub mod scheduler;
 pub mod stack;

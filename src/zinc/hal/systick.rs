@@ -20,6 +20,8 @@ This might be merged into generic timer interface. Systick is a bit specific in
 terms of interrupts, but PT should make the difference negligible.
 */
 
+/// A simple systick interface.
+#[experimental]
 pub trait Systick {
   /// Starts the systick timer.
   fn start(&self);
