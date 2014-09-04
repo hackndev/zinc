@@ -27,8 +27,8 @@ pub mod builder;
 pub mod node;
 pub mod parser;
 
-#[path="../src/zinc/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
-#[path="../src/zinc/drivers/drivers_pt.rs"] mod drivers_pt;
+#[path="../zinc/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
+#[path="../zinc/drivers/drivers_pt.rs"] mod drivers_pt;
 
 #[cfg(test)] mod test_helpers;
 #[cfg(test)] mod parser_test;

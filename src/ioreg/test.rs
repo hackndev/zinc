@@ -20,9 +20,7 @@
 #[phase(plugin,link)] extern crate shiny;
 extern crate core;
 
-
-#[allow(dead_code)]
-#[path="../src/zinc/util/volatile_cell.rs"] mod volatile_cell;
+#[path="../zinc/util/volatile_cell.rs"] mod volatile_cell;
 
 #[cfg(test)]
 mod test {

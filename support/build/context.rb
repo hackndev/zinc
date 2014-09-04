@@ -60,7 +60,7 @@ class Context
   def root_dir(*args); File.join(@root_path, *args); end
 
   # Returns path relative to $root/src
-  def src_dir(*args); File.join(root_dir, 'src/zinc', *args); end
+  def src_dir(*args); File.join(root_dir, 'src', *args); end
 
   # Returns path relative to $root/build
   def build_dir(*args)
@@ -71,7 +71,7 @@ class Context
   end
 
   # Returns path relative to $src/hal/$platform
-  def platform_dir(*args); src_dir('hal', @platform.name, *args); end
+  def platform_dir(*args); src_dir('zinc/hal', @platform.name, *args); end
 
   # Returns path relative to $build/intermediate
   def intermediate_dir(*args); build_dir('intermediate', *args); end
