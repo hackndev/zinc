@@ -14,12 +14,12 @@
 // limitations under the License.
 
 use syntax::ast;
-use syntax::ast::P;
 use syntax::codemap::DUMMY_SP;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
 use syntax::parse::token;
+use syntax::ptr::P;
 
 use super::Builder;
 use super::utils;

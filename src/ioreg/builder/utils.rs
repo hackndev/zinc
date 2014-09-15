@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use syntax::ext::base::ExtCtxt;
 use syntax::ast;
-use syntax::ast::P;
 use syntax::codemap::DUMMY_SP;
+use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token;
+use syntax::ptr::P;
 
 use super::super::node;
 
