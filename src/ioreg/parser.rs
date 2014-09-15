@@ -13,8 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::{Gc, GC};
+use std::gc::GC;
 use syntax::ast;
+use syntax::ptr::P;
 use syntax::ast::{Ident, TokenTree};
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
 use syntax::ext::base::ExtCtxt;
@@ -69,7 +70,7 @@ impl<'a> Parser<'a> {
   }
 
   /// Parse the ioregs from passed in tokens.
-  pub fn parse_ioregs(&mut self) -> Option<Gc<node::Reg>> {
+  pub fn parse_ioregs(&mut self) -> Option<P<node::Reg>> {
     let name = match self.expect_ident() {
       Some(name) => respan(self.last_span, name),
       None => return None,
@@ -99,7 +100,7 @@ impl<'a> Parser<'a> {
       docstring: docstring,
     };
 
-    Some(box(GC) group)
+    Some(P(group))
   }
 
   /// Parse a block of regs
