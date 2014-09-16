@@ -15,7 +15,7 @@
 
 use std::gc::Gc;
 use syntax::ast;
-use syntax::ast::P;
+use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 
 use node;
@@ -28,7 +28,7 @@ mod register;
 mod accessors;
 
 pub struct Builder {
-  items: Vec<Gc<ast::Item>>,
+  items: Vec<P<ast::Item>>,
 }
 
 impl Builder {
@@ -46,7 +46,7 @@ impl Builder {
     self.items.clone()
   }
 
-  pub fn push_item(&mut self, item: Gc<ast::Item>) {
+  pub fn push_item(&mut self, item: P<ast::Item>) {
     self.items.push(item);
   }
 }
