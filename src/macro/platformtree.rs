@@ -24,8 +24,9 @@ extern crate rustc;
 extern crate serialize;
 extern crate syntax;
 
+use std::clone::Clone;
+
 use rustc::plugin::Registry;
-use std::gc::{Gc, GC};
 use syntax::ast;
 use syntax::codemap::DUMMY_SP;
 use syntax::codemap::Span;
@@ -34,6 +35,7 @@ use syntax::ext::build::AstBuilder;
 use syntax::owned_slice::OwnedSlice;
 use syntax::print::pprust;
 use syntax::util::small_vector::SmallVector;
+use syntax::ptr::P;
 
 use platformtree::parser::Parser;
 use platformtree::builder::Builder;
@@ -44,7 +46,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("platformtree", macro_platformtree);
   reg.register_macro("platformtree_verbose", macro_platformtree_verbose);
   reg.register_syntax_extension(syntax::parse::token::intern("zinc_task"),
-      ItemModifier(macro_zinc_task));
+      ItemModifier(box macro_zinc_task));
 }
 
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
@@ -56,23 +58,21 @@ pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
   MacItems::new(items)
 }
 
-
 pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
     tts: &[ast::TokenTree]) -> Box<MacResult+'static> {
   let result = macro_platformtree(cx, sp, tts);
-
   println!("Platform Tree dump:")
   for i in result.make_items().unwrap().as_slice().iter() {
     println!("{}", pprust::item_to_string(i.deref()));
   }
 
-  result
+  macro_platformtree(cx, sp, tts)
 }
 
-fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
-    it: Gc<ast::Item>) -> Gc<ast::Item> {
+fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
+    it: P<ast::Item>) -> P<ast::Item> {
   match it.node {
-    ast::ItemFn(decl, style, abi, _, block) => {
+    ast::ItemFn(ref decl, style, abi, _, ref block) => {
       let istr = syntax::parse::token::get_ident(it.ident);
       let fn_name = istr.get();
       let ty_params = platformtree::builder::meta_args::get_ty_params_for_task(cx, fn_name);
@@ -101,10 +101,10 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
               None),
           None,
           ast::MutImmutable));
-      let new_decl = box(GC) ast::FnDecl {
+      let new_decl = P(ast::FnDecl {
         inputs: vec!(new_arg),
         ..decl.deref().clone()
-      };
+      });
 
       let new_generics = ast::Generics {
         lifetimes: vec!(),
@@ -114,25 +114,25 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: Gc<ast::MetaItem>,
           predicates: vec!(),
         }
       };
-      let new_node = ast::ItemFn(new_decl, style, abi, new_generics, block);
+      let new_node = ast::ItemFn(new_decl, style, abi, new_generics, block.clone());
 
-      box(GC) ast::Item {node: new_node, ..it.deref().clone() }
+      P(ast::Item {node: new_node, ..it.deref().clone() })
     },
     _ => fail!(),
   }
 }
 
 pub struct MacItems {
-  items: Vec<Gc<ast::Item>>
+  items: Vec<P<ast::Item>>
 }
 
 impl MacItems {
-  pub fn new(items: Vec<Gc<ast::Item>>) -> Box<MacResult+'static> {
+  pub fn new(items: Vec<P<ast::Item>>) -> Box<MacResult+'static> {
     box MacItems { items: items } as Box<MacResult>
   }
 }
 impl MacResult for MacItems {
-  fn make_items(&self) -> Option<SmallVector<Gc<ast::Item>>> {
+  fn make_items(self: Box<MacItems>) -> Option<SmallVector<P<ast::Item>>> {
     Some(SmallVector::many(self.items.clone()))
   }
 }

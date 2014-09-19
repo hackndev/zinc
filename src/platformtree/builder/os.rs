@@ -14,7 +14,6 @@
 // limitations under the License.
 
 use std::collections::hashmap::HashSet;
-use std::gc::{Gc, GC};
 use std::rc::Rc;
 use syntax::ast;
 use syntax::codemap::{respan, DUMMY_SP};
@@ -23,6 +22,7 @@ use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 use syntax::owned_slice::OwnedSlice;
 use syntax::parse::token::intern;
+use syntax::ptr::P;
 
 use builder::meta_args::{ToTyHash, set_ty_params_for_task};
 use node;
@@ -89,7 +89,7 @@ fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
 }
 
 fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
-    struct_name: &String, node: Rc<node::Node>) -> Gc<ast::Expr> {
+    struct_name: &String, node: Rc<node::Node>) -> P<ast::Expr> {
   let mut fields = vec!();
   let mut expr_fields = vec!();
   let node_attr = node.attributes.borrow();
@@ -164,16 +164,16 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
   }
 
   set_ty_params_for_task(cx, struct_name.as_slice(), ty_params_vec);
-  let struct_item = box(GC) ast::Item {
+  let struct_item = P(ast::Item {
     ident: name_ident,
     attrs: vec!(),
     id: ast::DUMMY_NODE_ID,
-    node: ast::ItemStruct(box(GC) ast::StructDef {
+    node: ast::ItemStruct(P(ast::StructDef {
       fields: fields,
       ctor_id: None,
       super_struct: None,
       is_virtual: false,
-    }, ast::Generics {
+    }), ast::Generics {
       lifetimes: vec!(cx.lifetime_def(DUMMY_SP, intern("'a"), vec!())),
       ty_params: OwnedSlice::from_vec(collected_params),
       where_clause: ast::WhereClause {
@@ -183,7 +183,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     }),
     vis: ast::Public,
     span: DUMMY_SP,
-  };
+  });
   builder.add_type_item(struct_item);
 
   cx.expr_addr_of(DUMMY_SP,

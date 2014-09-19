@@ -13,12 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
 use syntax::ast;
 use syntax::codemap::DUMMY_SP;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token::{InternedString, intern_and_get_ident};
+use syntax::ptr::P;
 
 static TAG: &'static str = "__zinc_task_ty_params";
 
@@ -55,7 +55,7 @@ pub fn get_ty_params_for_task(cx: &ExtCtxt, task: &str) -> Vec<String> {
 }
 
 /// Inserts or replaces tasks vector
-fn set_tasks(cx: &mut ExtCtxt, tasks: Vec<Gc<ast::MetaItem>>) {
+fn set_tasks(cx: &mut ExtCtxt, tasks: Vec<P<ast::MetaItem>>) {
   let mut vec_clone = cx.cfg();
   let maybe_pos = vec_clone.iter().position(|i| {
     match i.node {
@@ -73,7 +73,7 @@ fn set_tasks(cx: &mut ExtCtxt, tasks: Vec<Gc<ast::MetaItem>>) {
 }
 
 /// Returns a vector of MetaLists where each MetaList corresponds to one task.
-fn get_tasks(cx: &ExtCtxt) -> Vec<Gc<ast::MetaItem>> {
+fn get_tasks(cx: &ExtCtxt) -> Vec<P<ast::MetaItem>> {
   for i in cx.cfg.iter() {
     match i.node {
       ast::MetaList(ref k, ref v) if k.get() == TAG => return v.clone(),
@@ -84,7 +84,7 @@ fn get_tasks(cx: &ExtCtxt) -> Vec<Gc<ast::MetaItem>> {
 }
 
 /// Returns a vector of type parameters for named task.
-fn get_task(tasks: &Vec<Gc<ast::MetaItem>>, task: &str) -> Vec<String> {
+fn get_task(tasks: &Vec<P<ast::MetaItem>>, task: &str) -> Vec<String> {
   let mut ty_params = vec!();
   for mi in tasks.iter() {
     match mi.node {
@@ -130,7 +130,7 @@ fn get_task(tasks: &Vec<Gc<ast::MetaItem>>, task: &str) -> Vec<String> {
 //   })
 // }
 
-// fn meta_item_to_meta_args(mi: &Vec<Gc<ast::MetaItem>>) -> Vec<MetaArgs> {
+// fn meta_item_to_meta_args(mi: &Vec<P<ast::MetaItem>>) -> Vec<MetaArgs> {
 //   let mut args = vec!();
 //   for i in mi.iter() {
 //     match i.node {
@@ -146,7 +146,7 @@ fn get_task(tasks: &Vec<Gc<ast::MetaItem>>, task: &str) -> Vec<String> {
 //   args
 // }
 
-// fn meta_args_to_meta_item(name: String, args: Vec<String>) -> Gc<ast::MetaItem> {
+// fn meta_args_to_meta_item(name: String, args: Vec<String>) -> P<ast::MetaItem> {
 //   let ma = MetaArgs {
 //     task_name: name,
 //     extra_ty_params: args,

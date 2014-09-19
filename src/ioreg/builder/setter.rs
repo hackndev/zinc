@@ -13,9 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::GC;
 use syntax::ast;
-use syntax::ast::P;
+use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 use syntax::codemap::DUMMY_SP;
 use syntax::ext::build::AstBuilder;
@@ -84,7 +83,7 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
   );
   let mut item: ast::Item = item.unwrap().deref().clone();
   item.span = reg.name.span;
-  box(GC) item
+  P(item)
 }
 
 fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)

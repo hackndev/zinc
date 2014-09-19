@@ -13,10 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::GC;
 use std::iter::FromIterator;
 use syntax::ast;
-use syntax::ast::P;
+use syntax::ptr::P;
 use syntax::ast_util::empty_generics;
 use syntax::codemap::{respan, mk_sp};
 use syntax::ext::base::ExtCtxt;
@@ -69,7 +68,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
         .segments.last().unwrap().identifier;
       let enum_def: ast::EnumDef = ast::EnumDef {
         variants: FromIterator::from_iter(
-          variants.iter().map(|v| box(GC) build_enum_variant(cx, v))),
+          variants.iter().map(|v| P(build_enum_variant(cx, v)))),
       };
       let attrs: Vec<ast::Attribute> = vec!(
         utils::list_attribute(cx, "deriving", vec!("FromPrimitive")),
@@ -77,14 +76,14 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
                               vec!("dead_code",
                                    "non_camel_case_types",
                                    "missing_doc")));
-      let item: P<ast::Item> = box(GC) ast::Item {
+      let item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
         node: ast::ItemEnum(enum_def, empty_generics()),
         vis: ast::Public,
         attrs: attrs,
         span: field.ty.span,
-      };
+      });
       Some(item)
     },
     _ => None,
@@ -121,7 +120,7 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
   );
   let mut item: ast::Item = item.unwrap().deref().clone();
   item.span = reg.name.span;
-  box(GC) item
+  P(item)
 }
 
 /// Build a variant of an `EnumField`

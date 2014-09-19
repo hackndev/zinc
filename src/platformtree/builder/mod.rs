@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::{Gc, GC};
 use std::rc::Rc;
 use syntax::abi;
 use syntax::ast::TokenTree;
@@ -24,6 +23,7 @@ use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
 use syntax::parse::token::InternedString;
+use syntax::ptr::P;
 
 use node;
 
@@ -32,8 +32,8 @@ mod os;
 pub mod meta_args;
 
 pub struct Builder {
-  main_stmts: Vec<Gc<ast::Stmt>>,
-  type_items: Vec<Gc<ast::Item>>,
+  main_stmts: Vec<P<ast::Stmt>>,
+  type_items: Vec<P<ast::Item>>,
   pt: Rc<node::PlatformTree>,
 }
 
@@ -127,7 +127,7 @@ impl Builder {
     }
   }
 
-  pub fn main_stmts(&self) -> Vec<Gc<ast::Stmt>> {
+  pub fn main_stmts(&self) -> Vec<P<ast::Stmt>> {
     self.main_stmts.clone()
   }
 
@@ -135,15 +135,15 @@ impl Builder {
     self.pt.clone()
   }
 
-  pub fn add_main_statement(&mut self, stmt: Gc<ast::Stmt>) {
+  pub fn add_main_statement(&mut self, stmt: P<ast::Stmt>) {
     self.main_stmts.push(stmt);
   }
 
-  pub fn add_type_item(&mut self, item: Gc<ast::Item>) {
+  pub fn add_type_item(&mut self, item: P<ast::Item>) {
     self.type_items.push(item);
   }
 
-  fn emit_main(&self, cx: &ExtCtxt) -> Gc<ast::Item> {
+  fn emit_main(&self, cx: &ExtCtxt) -> P<ast::Item> {
     // init stack
     let init_stack_stmt = cx.stmt_expr(quote_expr!(&*cx,
         zinc::hal::mem_init::init_stack();
@@ -169,7 +169,7 @@ impl Builder {
     self.item_fn(cx, DUMMY_SP, "main", [allow_noncamel], body)
   }
 
-  fn emit_morestack(&self, cx: &ExtCtxt) -> Gc<ast::Item> {
+  fn emit_morestack(&self, cx: &ExtCtxt) -> P<ast::Item> {
     let stmt = cx.stmt_expr(quote_expr!(&*cx,
         core::intrinsics::abort()
         // or
@@ -180,7 +180,7 @@ impl Builder {
     self.item_fn(cx, empty_span, "__morestack", [], body)
   }
 
-  pub fn emit_items(&self, cx: &ExtCtxt) -> Vec<Gc<ast::Item>> {
+  pub fn emit_items(&self, cx: &ExtCtxt) -> Vec<P<ast::Item>> {
     let non_camel_case_types = cx.meta_word(DUMMY_SP,
         InternedString::new("non_camel_case_types"));
     let allow = cx.meta_list(
@@ -200,8 +200,8 @@ impl Builder {
   }
 
   fn item_fn(&self, cx: &ExtCtxt, span: Span, name: &str,
-      local_attrs: &[ast::Attribute], body: ast::P<ast::Block>)
-      -> Gc<ast::Item> {
+      local_attrs: &[ast::Attribute], body: P<ast::Block>)
+      -> P<ast::Item> {
     let attr_no_mangle = cx.attribute(span, cx.meta_word(
         span, InternedString::new("no_mangle")));
     let attr_no_split_stack = cx.attribute(span, cx.meta_word(
@@ -209,7 +209,7 @@ impl Builder {
     let mut attrs = vec!(attr_no_mangle, attr_no_split_stack);
     attrs = attrs.append(local_attrs);
 
-    box(GC) ast::Item {
+    P(ast::Item {
       ident: cx.ident_of(name),
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
@@ -221,7 +221,7 @@ impl Builder {
           body),
       vis: ast::Public,
       span: span,
-    }
+    })
   }
 }
 

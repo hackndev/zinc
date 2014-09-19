@@ -15,7 +15,7 @@
 
 use syntax::ext::base::ExtCtxt;
 use syntax::ast;
-use syntax::ast::P;
+use syntax::ptr::P;
 use syntax::codemap::DUMMY_SP;
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token;
