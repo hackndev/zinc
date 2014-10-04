@@ -95,17 +95,17 @@ impl Pin {
   fn get_pinsel_reg_and_offset(&self) -> (u8, &reg::PINSEL) {
     match self.port {
       Port0 => match self.pin {
-        0..15  => (self.pin,    &reg::PINSEL0),
-        16..30 => (self.pin-16, &reg::PINSEL1),
+        0...15  => (self.pin,    &reg::PINSEL0),
+        16...30 => (self.pin-16, &reg::PINSEL1),
         _      => unsafe { abort() },
       },
       Port1 => match self.pin {
-        0..15  => (self.pin,    &reg::PINSEL2),
-        16..31 => (self.pin-16, &reg::PINSEL3),
+        0...15  => (self.pin,    &reg::PINSEL2),
+        16...31 => (self.pin-16, &reg::PINSEL3),
         _      => unsafe { abort() },
       },
       Port2 => match self.pin {
-        0..13  => (self.pin,    &reg::PINSEL4),
+        0...13  => (self.pin,    &reg::PINSEL4),
         _      => unsafe { abort() },
       },
       Port3 => match self.pin {

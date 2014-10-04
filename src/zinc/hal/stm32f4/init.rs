@@ -162,12 +162,12 @@ impl ClockConf {
       (1 << 9)  |  // enable instruction cache
       (1 << 10) |  // enable data cache
       match freq/1_000_000 {  // wait states are calculated for 2.7-3.6V range
-        0..30    => 0,
-        31..60   => 1,
-        61..90   => 2,
-        90..120  => 3,
-        121..150 => 4,
-        151..168 => 5,
+        0...30    => 0,
+        31...60   => 1,
+        61...90   => 2,
+        90...120  => 3,
+        121...150 => 4,
+        151...168 => 5,
         _        => unsafe { abort() },
       }
     );
