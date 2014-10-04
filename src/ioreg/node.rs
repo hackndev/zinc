@@ -156,7 +156,9 @@ fn visit_reg_<T: RegVisitor>(reg: &Reg, visitor: &mut T, path: Vec<String>) {
     RegUnion(ref regs) => {
       visitor.visit_union_reg(&path, reg, regs.clone());
       for r in regs.iter() {
-        visit_reg_(r, visitor, path.clone().append_one(r.name.node.clone())); // FIXME  clone
+        let mut new_path = path.clone();
+        new_path.push(r.name.node.clone()); // TODO(bgamari) fix clone
+        visit_reg_(r, visitor, new_path);
       }
     },
     RegPrim(width, ref fields) =>

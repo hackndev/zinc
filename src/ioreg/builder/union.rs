@@ -117,7 +117,8 @@ impl<'a> BuildUnionTypes<'a> {
       Some(doc) => vec!(utils::doc_attribute(self.cx, token::get_ident(doc.node))),
       None => Vec::new(),
     };
-    let field_path = path.clone().append_one(reg.name.node.clone());
+    let mut field_path = path.clone();
+    field_path.push(reg.name.node.clone());
     dummy_spanned(
       ast::StructField_ {
         kind: ast::NamedField(
