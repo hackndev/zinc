@@ -15,7 +15,7 @@
 
 use syntax::codemap::{Spanned, Span};
 use syntax::ast;
-use std::gc::Gc;
+use std::rc::Rc;
 use serialize::Encodable;
 
 /// A variant of an enum field type
@@ -97,15 +97,15 @@ pub enum RegType {
   /// A primitive bitfield
   RegPrim(RegWidth, Vec<Field>),
   /// A group
-  RegUnion(Gc<Vec<Reg>>),
+  RegUnion(Rc<Vec<Reg>>),
 }
 
 impl RegType {
   /// Size of register type in bytes
   pub fn size(&self) -> uint {
-    match *self {
-      RegPrim(width, _) => width.size(),
-      RegUnion(regs)    => regs_size(regs),
+    match self {
+      &RegPrim(width, _)  => width.size(),
+      &RegUnion(ref regs) => regs_size(regs.deref()),
     }
   }
 }
@@ -132,7 +132,7 @@ impl Reg {
 }
 
 /// Size of registers of register group in bytes
-pub fn regs_size(regs: Gc<Vec<Reg>>) -> uint {
+pub fn regs_size(regs: &Vec<Reg>) -> uint {
   match regs.iter().max_by(|r| r.offset) {
     Some(last) => last.offset + last.ty.size(),
     None => 0,
@@ -144,7 +144,7 @@ pub trait RegVisitor {
   fn visit_prim_reg<'a>(&'a mut self, _path: &Vec<String>, _reg: &'a Reg,
                         _width: RegWidth, _fields: &Vec<Field>) {}
   fn visit_union_reg<'a>(&'a mut self, _path: &Vec<String>, _reg: &'a Reg,
-                         _subregs: Gc<Vec<Reg>>) {}
+                         _subregs: Rc<Vec<Reg>>) {}
 }
 
 pub fn visit_reg<T: RegVisitor>(reg: &Reg, visitor: &mut T) {
@@ -154,7 +154,7 @@ pub fn visit_reg<T: RegVisitor>(reg: &Reg, visitor: &mut T) {
 fn visit_reg_<T: RegVisitor>(reg: &Reg, visitor: &mut T, path: Vec<String>) {
   match reg.ty {
     RegUnion(ref regs) => {
-      visitor.visit_union_reg(&path, reg, *regs);
+      visitor.visit_union_reg(&path, reg, regs.clone());
       for r in regs.iter() {
         visit_reg_(r, visitor, path.clone().append_one(r.name.node.clone())); // FIXME  clone
       }

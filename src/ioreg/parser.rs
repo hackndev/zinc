@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::{Gc, GC};
+use std::rc::{Rc};
 use syntax::ast;
 use syntax::ast::{Ident, TokenTree};
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
@@ -69,7 +69,7 @@ impl<'a> Parser<'a> {
   }
 
   /// Parse the ioregs from passed in tokens.
-  pub fn parse_ioregs(&mut self) -> Option<Gc<node::Reg>> {
+  pub fn parse_ioregs(&mut self) -> Option<Rc<node::Reg>> {
     let name = match self.expect_ident() {
       Some(name) => respan(self.last_span, name),
       None => return None,
@@ -94,12 +94,12 @@ impl<'a> Parser<'a> {
     let group = node::Reg {
       offset: 0,
       name: name,
-      ty: node::RegUnion(box(GC) regs),
+      ty: node::RegUnion(Rc::new(regs)),
       count: respan(mk_sp(sp_lo, self.span.hi), 1),
       docstring: docstring,
     };
 
-    Some(box(GC) group)
+    Some(Rc::new(group))
   }
 
   /// Parse a block of regs
@@ -177,7 +177,7 @@ impl<'a> Parser<'a> {
       Some(ref i) if i.equiv(&"reg8")  => node::RegPrim(node::Reg8, Vec::new()),
       Some(ref i) if i.equiv(&"group") => {
         // registers will get filled in later
-        node::RegUnion(box(GC) Vec::new())
+        node::RegUnion(Rc::new(Vec::new()))
       },
       _ => {
         self.error(format!("expected register type but found `{}`",
@@ -240,7 +240,7 @@ impl<'a> Parser<'a> {
       },
       node::RegUnion(_) => {
         match self.parse_regs() {
-          Some(regs) => node::RegUnion(box(GC) regs),
+          Some(regs) => node::RegUnion(Rc::new(regs)),
           None => return None,
         }
       },

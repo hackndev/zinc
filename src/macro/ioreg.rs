@@ -16,7 +16,7 @@
 #![crate_name="macro_ioreg"]
 #![crate_type="dylib"]
 
-#![feature(plugin_registrar, quote, managed_boxes)]
+#![feature(plugin_registrar, quote)]
 
 extern crate rustc;
 extern crate syntax;

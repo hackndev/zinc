@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ptr::P;
@@ -103,7 +103,7 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
 
 impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
   fn visit_union_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a node::Reg,
-                         subregs: Gc<Vec<node::Reg>>) {
+                         subregs: Rc<Vec<node::Reg>>) {
     let union_type = self.build_union_type(path, reg, &*subregs);
     self.builder.push_item(union_type);
   }
