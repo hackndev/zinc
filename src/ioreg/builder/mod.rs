@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::gc::Gc;
+use std::rc::Rc;
 use syntax::ast;
 use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
@@ -36,7 +36,7 @@ impl Builder {
     Builder {items: Vec::new()}
   }
 
-  pub fn emit_items(&mut self, cx: &ExtCtxt, reg: Gc<node::Reg>)
+  pub fn emit_items(&mut self, cx: &ExtCtxt, reg: Rc<node::Reg>)
                     -> Vec<P<ast::Item>> {
     node::visit_reg(&*reg, &mut setter::BuildSetters::new(self, cx));
     node::visit_reg(&*reg, &mut getter::BuildGetters::new(self, cx));

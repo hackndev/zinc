@@ -39,7 +39,7 @@ pub fn path_ident(cx: &ExtCtxt, path: &Vec<String>)
 pub fn list_attribute(cx: &ExtCtxt, name: &'static str,
     list: Vec<&'static str>) -> ast::Attribute {
   let words =
-   list.move_iter()
+   list.into_iter()
    .map(|word| cx.meta_word(DUMMY_SP, token::InternedString::new(word)));
   let allow = cx.meta_list(DUMMY_SP, token::InternedString::new(name),
                                 FromIterator::from_iter(words));
@@ -97,9 +97,9 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
         &Some(ref name) =>
           cx.path_ident(span, cx.ident_of(name.as_slice())),
         &None => {
-          let name =
-            path.clone().append_one(field.name.node.clone()).connect("_");
-          cx.path_ident(span, cx.ident_of(name.as_slice()))
+          let mut name = path.clone();
+          name.push(field.name.node.clone());
+          cx.path_ident(span, cx.ident_of(name.connect("_").as_slice()))
         }
       }
     },
@@ -127,13 +127,15 @@ pub fn shift(cx: &ExtCtxt, idx: Option<P<ast::Expr>>,
 
 /// The name of the setter type for a register
 pub fn setter_name(cx: &ExtCtxt, path: &Vec<String>) -> ast::Ident {
-  let s = path.clone().append_one("Update".to_string());
+  let mut s = path.clone();
+  s.push("Update".to_string());
   path_ident(cx, &s)
 }
 
 /// The name of the getter type for a register
 pub fn getter_name(cx: &ExtCtxt, path: &Vec<String>) -> ast::Ident {
-  let s = path.clone().append_one("Get".to_string());
+  let mut s = path.clone();
+  s.push("Get".to_string());
   path_ident(cx, &s)
 }
 

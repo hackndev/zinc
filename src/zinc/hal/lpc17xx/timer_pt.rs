@@ -51,7 +51,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let divisor: u8 = node.get_int_attr("divisor").unwrap() as u8;
 
   let timer_name = match timer_index {
-    0..3 => TokenString(format!(
+    0...3 => TokenString(format!(
         "zinc::hal::lpc17xx::timer::Timer{}", timer_index)),
     other => {
       cx.parse_sess().span_diagnostic.span_err(node.path_span,

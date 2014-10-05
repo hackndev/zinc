@@ -41,7 +41,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let port_node = node.parent.clone().unwrap().upgrade().unwrap();
   let ref port_path = port_node.path;
   let port_str = format!("Port{}", match from_str::<uint>(port_path.as_slice()).unwrap() {
-    0..4 => port_path,
+    0...4 => port_path,
     other => {
       cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
           format!("unknown port `{}`, allowed values: 0..4",
@@ -75,8 +75,8 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let direction = TokenString(direction_str.to_string());
 
   let pin_str = match from_str::<uint>(node.path.as_slice()).unwrap() {
-    0..31 => &node.path,
-    other => {
+    0...31 => &node.path,
+    other  => {
       cx.parse_sess().span_diagnostic.span_err(node.path_span,
           format!("unknown pin `{}`, allowed values: 0..31",
               other).as_slice());
