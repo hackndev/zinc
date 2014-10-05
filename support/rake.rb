@@ -88,7 +88,7 @@ def compile_rust(n, h)
     fail_wrap = should_fail ? '&>/dev/null' : ''
 
     sh "#{should_fail ? "! " : ""}#{:rustc.in_env} #{flags} " +
-       "#{do_lto ? '-Z lto' : ''} #{crate_type} #{emit} " +
+       "#{do_lto ? '-C lto' : ''} #{crate_type} #{emit} " +
        "#{search_paths} #{codegen} " +
        "#{outflags} #{ignore_warnings} #{rust_src} #{fail_wrap}"
     if File.extname(t.name) == '.o' && !should_fail
