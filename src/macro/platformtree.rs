@@ -17,7 +17,7 @@
 #![crate_type="dylib"]
 #![warn(missing_doc)]
 
-#![feature(plugin_registrar, quote, managed_boxes)]
+#![feature(plugin_registrar, quote)]
 
 extern crate platformtree;
 extern crate rustc;
@@ -30,7 +30,7 @@ use rustc::plugin::Registry;
 use syntax::ast;
 use syntax::codemap::DUMMY_SP;
 use syntax::codemap::Span;
-use syntax::ext::base::{ExtCtxt, MacResult, ItemModifier};
+use syntax::ext::base::{ExtCtxt, MacResult, ItemModifier, Modifier};
 use syntax::ext::build::AstBuilder;
 use syntax::owned_slice::OwnedSlice;
 use syntax::print::pprust;
@@ -46,7 +46,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("platformtree", macro_platformtree);
   reg.register_macro("platformtree_verbose", macro_platformtree_verbose);
   reg.register_syntax_extension(syntax::parse::token::intern("zinc_task"),
-      ItemModifier(box macro_zinc_task));
+      Modifier(box macro_zinc_task));
 }
 
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
