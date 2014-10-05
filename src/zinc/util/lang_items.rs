@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use core::fmt::Arguments;
+
 #[cfg(not(test))]
 #[lang="stack_exhausted"]
 #[no_split_stack]
@@ -27,3 +29,10 @@ extern fn eh_personality() {}
 #[lang="begin_unwind"]
 #[no_split_stack]
 extern fn begin_unwind() {}
+
+#[cfg(not(test))]
+#[lang="fail_fmt"]
+#[no_split_stack]
+pub fn fail_fmt(fmt: &Arguments, file_line: &(&'static str, uint)) -> ! {
+  loop { }
+}
