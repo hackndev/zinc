@@ -1,5 +1,5 @@
 // Zinc, the bare metal stack for rust.
-// Copyright 2014 Vladimir "farcaller" Pouzanov <farcaller@gmail.com>
+// Copyright 2014 Lionel Flandrin <lionel@svkt.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,28 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-HAL provides abstractions for specific MCU hardware.
+//! HAL for TI TM4C123GH6PM
+//! This MCU is used on the TI stellaris and Tiva C launchpad development boards.
 
-Each peripheral in `hal` has a `xxxConf` struct that can be defined statically,
-and each such struct has a `setup()` method that configures the hardware
-(returning the object to interact with it where applicable).
-*/
-
-
-pub mod lpc17xx;
-pub mod stm32f4;
-pub mod stm32l1;
-pub mod k20;
-pub mod tiva_c;
-
-mod cortex_common;
-pub mod cortex_m3;
-pub mod cortex_m4;
-
-pub mod mem_init;
+pub mod sysctl;
 pub mod pin;
-pub mod spi;
-pub mod stack;
 pub mod timer;
 pub mod uart;
+
+#[path="../../util/ioreg.rs"] mod util;

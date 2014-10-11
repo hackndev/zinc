@@ -8,3 +8,5 @@ stm32l1:
   arch:   cortex_m3
 k20:
   arch:   cortex_m4
+tiva_c:
+  arch:   cortex_m4

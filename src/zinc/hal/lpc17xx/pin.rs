@@ -63,6 +63,7 @@ impl Pin {
       port: port,
       pin: pin_index,
     };
+
     pin.setup_regs(function, gpiodir);
 
     pin

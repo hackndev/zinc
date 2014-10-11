@@ -44,7 +44,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     0...4 => port_path,
     other => {
       cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
-          format!("unknown port `{}`, allowed values: 0..4",
+          format!("unknown port `{}`, allowed values: 0...4",
               other).as_slice());
       return;
     }
@@ -78,7 +78,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     0...31 => &node.path,
     other  => {
       cx.parse_sess().span_diagnostic.span_err(node.path_span,
-          format!("unknown pin `{}`, allowed values: 0..31",
+          format!("unknown pin `{}`, allowed values: 0...31",
               other).as_slice());
       return;
     }

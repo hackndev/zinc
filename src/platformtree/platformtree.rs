@@ -16,10 +16,15 @@
 //! Platform tree operations crate
 
 #![experimental]
-#![feature(quote, globs)]
+#![feature(quote, globs, phase)]
+
 #![crate_name="platformtree"]
 #![crate_type="rlib"]
 
+#[phase(plugin)]
+
+extern crate regex_macros;
+extern crate regex;
 extern crate syntax;
 #[cfg(test)] extern crate hamcrest;
 
@@ -28,6 +33,7 @@ pub mod node;
 pub mod parser;
 
 #[path="../zinc/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
+#[path="../zinc/hal/tiva_c/platformtree.rs"] mod tiva_c_pt;
 #[path="../zinc/drivers/drivers_pt.rs"] mod drivers_pt;
 
 #[cfg(test)] mod test_helpers;

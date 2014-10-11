@@ -331,6 +331,8 @@ impl<'a> Parser<'a> {
     Some((attrs, subnodes))
   }
 
+  /// Get an Option<AttributeValue> depending on the Token type and value of
+  /// self.token
   fn parse_attribute_value(&mut self) -> Option<node::AttributeValue> {
     use syntax::parse::token::{Token, Lit};
     match self.token {
@@ -365,6 +367,19 @@ impl<'a> Parser<'a> {
           None => return None,
         };
         Some(node::RefValue(name))
+      },
+      token::Ident(ident, _) => {
+        self.bump();
+        match token::get_ident(ident).get() {
+          "true"  => Some(node::BoolValue(true)),
+          "false" => Some(node::BoolValue(false)),
+          other   => {
+            self.error(format!(
+              "expected attribute value but found identifier `{}`",
+              other));
+            None
+          }
+        }
       },
       ref other => {
         self.error(format!("expected attribute value but found `{}`",
