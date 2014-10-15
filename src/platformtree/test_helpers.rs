@@ -14,7 +14,6 @@
 // limitations under the License.
 
 use std::rc::Rc;
-use std::gc::Gc;
 use syntax::ast;
 use syntax::codemap::MacroBang;
 use syntax::codemap::{CodeMap, Span, mk_sp, BytePos, ExpnInfo, NameAndSpan};
@@ -71,8 +70,10 @@ pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<Rc<nod
   let parse_sess = new_parse_sess_special_handler(sh);
   let cfg = Vec::new();
   let ecfg = ExpansionConfig {
-    deriving_hash_type_parameter: false,
     crate_name: from_str("test").unwrap(),
+    deriving_hash_type_parameter: false,
+    enable_quotes: true,
+    recursion_limit: 10,
   };
   let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
   cx.bt_push(ExpnInfo {
@@ -114,8 +115,8 @@ impl Emitter for CustomEmmiter {
   }
 }
 
-pub fn assert_equal_source(stmt: Gc<ast::Stmt>, src: &str) {
-  let gen_src = pprust::stmt_to_string(stmt.deref());
+pub fn assert_equal_source(stmt: &ast::Stmt, src: &str) {
+  let gen_src = pprust::stmt_to_string(stmt);
   println!("generated: {}", gen_src);
   println!("expected:  {}", src);
 
@@ -125,8 +126,8 @@ pub fn assert_equal_source(stmt: Gc<ast::Stmt>, src: &str) {
   assert!(stripped_gen_src == stripped_src);
 }
 
-pub fn assert_equal_items(stmt: Gc<ast::Item>, src: &str) {
-  let gen_src = pprust::item_to_string(stmt.deref());
+pub fn assert_equal_items(stmt: &ast::Item, src: &str) {
+  let gen_src = pprust::item_to_string(stmt);
   println!("generated: {}", gen_src);
   println!("expected:  {}", src);
 

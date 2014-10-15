@@ -121,7 +121,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(items.len() == 3);
 
-      assert_equal_items(items[1], "
+      assert_equal_items(items[1].deref(), "
           #[no_mangle]
           #[no_stack_check]
           #[allow(unused_variable)]

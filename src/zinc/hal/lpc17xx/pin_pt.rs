@@ -152,7 +152,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0],
+      assert_equal_source(builder.main_stmts()[0].deref(),
           "let p1 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                1u8,
@@ -174,7 +174,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0],
+      assert_equal_source(builder.main_stmts()[0].deref(),
           "let p2 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                2u8,
@@ -196,7 +196,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0],
+      assert_equal_source(builder.main_stmts()[0].deref(),
           "let p3 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                3u8,

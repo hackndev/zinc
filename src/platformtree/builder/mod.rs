@@ -155,7 +155,7 @@ impl Builder {
     ));
 
     let mut stmts = vec!(init_stack_stmt, init_data_stmt);
-    stmts = stmts.append(self.main_stmts.as_slice());
+    stmts.push_all(self.main_stmts.as_slice());
 
     let body = cx.block(DUMMY_SP, stmts, None);
 
@@ -207,7 +207,7 @@ impl Builder {
     let attr_no_stack_check = cx.attribute(span, cx.meta_word(
         span, InternedString::new("no_stack_check")));
     let mut attrs = vec!(attr_no_mangle, attr_no_stack_check);
-    attrs = attrs.append(local_attrs);
+    attrs.push_all(local_attrs);
 
     P(ast::Item {
       ident: cx.ident_of(name),
