@@ -17,22 +17,22 @@ use core::fmt::Arguments;
 
 #[cfg(not(test))]
 #[lang="stack_exhausted"]
-#[no_split_stack]
+#[no_stack_check]
 extern fn stack_exhausted() {}
 
 #[cfg(not(test))]
 #[lang="eh_personality"]
-#[no_split_stack]
+#[no_stack_check]
 extern fn eh_personality() {}
 
 #[cfg(not(test))]
 #[lang="begin_unwind"]
-#[no_split_stack]
+#[no_stack_check]
 extern fn begin_unwind() {}
 
 #[cfg(not(test))]
 #[lang="fail_fmt"]
-#[no_split_stack]
+#[no_stack_check]
 pub fn fail_fmt(fmt: &Arguments, file_line: &(&'static str, uint)) -> ! {
   loop { }
 }

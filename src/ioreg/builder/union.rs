@@ -173,8 +173,6 @@ impl<'a> BuildUnionTypes<'a> {
     let struct_def = ast::StructDef {
       fields: FromIterator::from_iter(fields),
       ctor_id: None,
-      super_struct: None,
-      is_virtual: false,
     };
     let mut attrs: Vec<ast::Attribute> = vec!(
       utils::list_attribute(self.cx, "allow",

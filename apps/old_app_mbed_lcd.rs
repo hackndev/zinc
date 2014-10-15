@@ -55,7 +55,7 @@ static platform: Platform = Platform {
   },
 };
 
-#[no_split_stack]
+#[no_stack_check]
 pub fn main() {
   platform.configuration.setup();
 

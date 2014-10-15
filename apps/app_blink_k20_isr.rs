@@ -18,7 +18,7 @@ static mut i: u32 = 0;
 static mut global_on: u32 = 0;
 
 #[allow(dead_code)]
-#[no_split_stack]
+#[no_stack_check]
 #[no_mangle]
 pub unsafe extern fn isr_systick() {
     i += 1;
@@ -29,7 +29,7 @@ pub unsafe extern fn isr_systick() {
 }
 
 #[no_mangle]
-#[no_split_stack]
+#[no_stack_check]
 #[allow(dead_code)]
 pub fn main() {
   zinc::hal::mem_init::init_stack();

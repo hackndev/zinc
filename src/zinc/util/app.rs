@@ -24,27 +24,27 @@ extern crate core;
 extern crate zinc;
 extern crate app;
 
-#[no_split_stack]
+#[no_stack_check]
 #[no_mangle]
 pub extern fn main() {
   app::main();
 }
 
-#[no_split_stack]
+#[no_stack_check]
 #[no_mangle]
 #[cfg(not(cfg_multitasking))]
 pub extern fn __morestack() {
   unsafe { core::intrinsics::abort() };
 }
 
-#[no_split_stack]
+#[no_stack_check]
 #[no_mangle]
 #[cfg(cfg_multitasking)]
 pub extern fn __morestack() {
   zinc::os::task::morestack();
 }
 
-#[no_split_stack]
+#[no_stack_check]
 #[no_mangle]
 #[cfg(cfg_multitasking)]
 pub unsafe fn task_scheduler() {

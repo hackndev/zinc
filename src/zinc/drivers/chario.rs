@@ -15,8 +15,9 @@
 
 //! Generic char output trait.
 
+use core::ops::Slice;
 use core::str::{Str, StrSlice};
-use core::slice::{Slice, ImmutableSlice};
+use core::slice::ImmutableSlice;
 use core::collections::Collection;
 use core::iter::range;
 

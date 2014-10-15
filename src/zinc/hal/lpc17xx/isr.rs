@@ -53,7 +53,7 @@ extern {
   fn isr_can_activity();
 }
 
-static ISRCount: uint = 35;
+const ISRCount: uint = 35;
 
 #[link_section=".isr_vector_nvic"]
 #[no_mangle]

@@ -29,7 +29,7 @@ macro_rules! ioreg_old(
 macro_rules! reg_r(
   ($t:ident, $ty:ty, $getter_name:ident, $reg:ident) => (
     impl $t {
-      #[no_split_stack]
+      #[no_stack_check]
       #[allow(dead_code,non_snake_case)]
       #[inline(always)]
       pub fn $getter_name(&self) -> $ty {
@@ -42,7 +42,7 @@ macro_rules! reg_r(
 macro_rules! reg_w(
   ($t:ident, $ty:ty, $setter_name:ident, $reg:ident) => (
     impl $t {
-      #[no_split_stack]
+      #[no_stack_check]
       #[allow(dead_code,non_snake_case)]
       #[inline(always)]
       pub fn $setter_name(&self, val: $ty) {

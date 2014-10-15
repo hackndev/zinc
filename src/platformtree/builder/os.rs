@@ -171,8 +171,6 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     node: ast::ItemStruct(P(ast::StructDef {
       fields: fields,
       ctor_id: None,
-      super_struct: None,
-      is_virtual: false,
     }), ast::Generics {
       lifetimes: vec!(cx.lifetime_def(DUMMY_SP, intern("'a"), vec!())),
       ty_params: OwnedSlice::from_vec(collected_params),
