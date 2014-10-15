@@ -215,7 +215,7 @@ pub unsafe fn task_scheduler() {
 // TODO(farcaller): this should not actually use stack!
 // At the time of the call of syscall(), the stack is overflown by 4, we still
 // have 12 bytes in reserve and 2*8*4 to save the frame in pendsv after kill.
-#[no_split_stack]
+#[no_stack_check]
 pub fn morestack() {
   let psp = sched::get_task_stack_pointer();
   let sp = sched::get_current_stack_pointer();
@@ -228,7 +228,7 @@ pub fn morestack() {
 
 #[inline(never)]
 #[no_mangle]
-#[no_split_stack]
+#[no_stack_check]
 pub fn kill_current_task(_: u32) {
   unsafe { Tasks.current_task().invalidate() };
   sched::switch_context();

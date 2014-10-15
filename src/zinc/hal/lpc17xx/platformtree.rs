@@ -121,9 +121,9 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(items.len() == 3);
 
-      assert_equal_items(items[1], "
+      assert_equal_items(items[1].deref(), "
           #[no_mangle]
-          #[no_split_stack]
+          #[no_stack_check]
           #[allow(unused_variable)]
           pub unsafe fn main() {
             zinc::hal::mem_init::init_stack();

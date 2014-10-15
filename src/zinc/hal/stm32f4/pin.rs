@@ -77,7 +77,7 @@ pub struct PinConf {
 
 impl PinConf {
   /// Setup the pin.
-  #[no_split_stack]
+  #[no_stack_check]
   #[inline(always)]
   pub fn setup(&self) {
     self.port.clock().enable();  // TODO(farcaller): should be done once per port

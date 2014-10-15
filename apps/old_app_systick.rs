@@ -28,7 +28,7 @@ static mut i: u32 = 0;
 static mut on: u32 = 0;
 
 #[inline(always)]
-#[no_split_stack]
+#[no_stack_check]
 unsafe fn systick_handler() {
   i += 1;
   if i > 100 {
@@ -37,7 +37,7 @@ unsafe fn systick_handler() {
   }
 }
 
-#[no_split_stack]
+#[no_stack_check]
 pub fn main() {
   platform.configuration.setup();
   systick::setup(systick::ten_ms().unwrap_or(480000));

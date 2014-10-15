@@ -73,7 +73,7 @@ fn main_task(arg: u32) {
   }
 }
 
-#[no_split_stack]
+#[no_stack_check]
 pub fn main() {
   platform.configuration.setup();
   debug::setup(&platform.uart);

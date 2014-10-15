@@ -32,7 +32,7 @@ extern {
 
 #[cfg(not(test))]
 #[no_mangle]
-#[no_split_stack]
+#[no_stack_check]
 pub extern fn isr_default_fault() {
   unsafe {
     asm!("mrs r0, psp
@@ -46,7 +46,7 @@ pub extern fn isr_default_fault() {
 #[cfg(test)]
 pub extern fn isr_default_fault() { unimplemented!() }
 
-static ISRCount: uint = 16;
+const ISRCount: uint = 16;
 
 #[link_section=".isr_vector"]
 #[no_mangle]

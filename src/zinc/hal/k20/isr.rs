@@ -88,7 +88,7 @@ extern {
   fn isr_soft();
 }
 
-static ISRCount: uint = 95;
+const ISRCount: uint = 95;
 
 #[link_section=".isr_vector_nvic"]
 #[no_mangle]
