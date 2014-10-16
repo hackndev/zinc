@@ -179,6 +179,8 @@ when 'k20'
   task :build_all => [:build_blink_k20, :build_blink_k20_isr]
 when 'stm32f4'
   task :build_all => [:build_blink_stm32f4]
+when 'stm32l1'
+  task :build_all => [:build_blink_stm32l1]
 else
   task :build_all => [:build_empty, :build_blink]
 end

@@ -18,4 +18,5 @@ env:
   matrix:
     - PLATFORM=lpc17xx
     - PLATFORM=stm32f4
+    - PLATFORM=stm32l1
     - PLATFORM=k20

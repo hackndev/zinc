@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Routines for initialization of STM32F4.
+//! Routines for initialization of STM32L1.
 //!
 //! This module includes code for setting up the clock, flash, access time and
 //! performing initial peripheral configuration.
@@ -316,8 +316,8 @@ pub mod reg {
   reg_rw!(PWRReg, u32, CSR, set_CSR, CSR)
 
   extern {
-    #[link_name="stm32f4_iomem_RCC"] pub static RCC: RCCReg;
-    #[link_name="stm32f4_iomem_FLASH"] pub static FLASH: FLASHReg;
-    #[link_name="stm32f4_iomem_PWR"] pub static PWR: PWRReg;
+    #[link_name="stm32l1_iomem_RCC"] pub static RCC: RCCReg;
+    #[link_name="stm32l1_iomem_FLASH"] pub static FLASH: FLASHReg;
+    #[link_name="stm32l1_iomem_PWR"] pub static PWR: PWRReg;
   }
 }

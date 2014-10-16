@@ -13,27 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/*!
-HAL provides abstractions for specific MCU hardware.
+//! HAL for STM32L1.
 
-Each peripheral in `hal` has a `xxxConf` struct that can be defined statically,
-and each such struct has a `setup()` method that configures the hardware
-(returning the object to interact with it where applicable).
-*/
-
-
-pub mod lpc17xx;
-pub mod stm32f4;
-pub mod stm32l1;
-pub mod k20;
-
-mod cortex_common;
-pub mod cortex_m3;
-pub mod cortex_m4;
-
-pub mod mem_init;
+pub mod init;
+pub mod peripheral_clock;
 pub mod pin;
-pub mod spi;
-pub mod stack;
-pub mod timer;
-pub mod uart;
