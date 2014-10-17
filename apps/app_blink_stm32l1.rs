@@ -19,7 +19,8 @@ pub unsafe fn main() {
   let led1 = pin::PinConf {
     port: pin::PortC,
     pin: 5u8,
-    function: pin::GPIOOut(pin::OutPushPull),
+    mode: pin::GpioOut(pin::OutPushPull, pin::VeryLow),
+    pull_type: pin::PullUp,
   };
   led1.setup();
 

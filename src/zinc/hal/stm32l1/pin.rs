@@ -25,6 +25,7 @@ use core::intrinsics::abort;
 
 /// Available port names.
 #[allow(missing_doc)]
+#[repr(u8)]
 pub enum Port {
   PortA,
   PortB,
@@ -36,20 +37,46 @@ pub enum Port {
   PortH,
 }
 
-/// Pin functions.
+/// Pin output type.
 #[allow(missing_doc)]
+#[repr(u8)]
 pub enum OutputType {
-    OutPushPull,
-    OutOpenDrain,
+  OutPushPull  = 0,
+  OutOpenDrain = 1,
 }
 
-/// Pin functions.
+/// Pin pull resistors: up, down, or none.
 #[allow(missing_doc)]
-pub enum Function {
-  GPIOIn,
-  GPIOOut(OutputType),
-  AltFunction,
-  Analog,
+#[repr(u8)]
+pub enum PullType {
+  PullNone = 0,
+  PullUp   = 1,
+  PullDown = 2,
+}
+
+/// Pin speed.
+#[repr(u8)]
+pub enum Speed {
+  /// 400 KHz
+  VeryLow = 0,
+  /// 2 MHz
+  Low     = 1,
+  /// 10 MHz
+  Medium  = 2,
+  /// 40 MHz
+  High    = 3,
+}
+
+/// Pin mode.
+pub enum Mode {
+  /// GPIO Input Mode
+  GpioIn,
+  /// GPIO Output Mode
+  GpioOut(OutputType, Speed),
+  // GPIO Alternate function Mode
+  //AltFunction(OutputType, Speed),
+  // GPIO Analog Mode
+  //Analog,
 }
 
 impl Port {
@@ -76,8 +103,10 @@ pub struct PinConf {
   pub port: Port,
   /// Pin number.
   pub pin: u8,
-  /// Pin function, mcu-specific.
-  pub function: Function,
+  /// Pin mode, mcu-specific.
+  pub mode: Mode,
+  /// Pin pull type.
+  pub pull_type: PullType,
 }
 
 impl PinConf {
@@ -87,18 +116,32 @@ impl PinConf {
   pub fn setup(&self) {
     self.port.clock().enable();  // TODO(farcaller): should be done once per port
 
-    let offset: u32 = self.pin as u32 * 2;
+    let offset = self.pin as uint * 2;
     let gpreg = self.get_reg();
 
-    let bits: u32 = match self.function {
-      GPIOOut(_) => 0b01 << offset as uint,
-      GPIOIn  => 0b00 << offset as uint,
-      _       => unsafe { abort() },  // FIXME(farcaller): not implemented
+    let fun: u32 = match self.mode {
+      GpioIn  => 0b00,
+      GpioOut(_, _) => {
+          0b01
+      },
+      /*AltFunction(_, _) => {
+          unsafe { abort() } //TODO
+          0b10
+      },
+      Analog => {
+          unsafe { abort() } //TODO
+          0b11
+      },*/
     };
-    let mask: u32 = !(0b11 << offset as uint);
-    let val: u32 = gpreg.MODER();
 
-    gpreg.set_MODER(val & mask | bits);
+    let mask: u32 = !(0b11 << offset);
+
+    let mode: u32 = gpreg.MODER() & mask;
+    gpreg.set_MODER(mode | (fun << offset));
+
+    let pull: u32 = gpreg.PUPDR() & mask;
+    let pull_val = (self.pull_type as u32) << offset;
+    gpreg.set_PUPDR(pull | pull_val);
   }
 
   /// Sets output GPIO value to high.
