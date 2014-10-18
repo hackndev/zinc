@@ -25,7 +25,7 @@ use super::init::reg;
 
 #[allow(missing_doc)]
 #[repr(u8)]
-pub enum Ahb {
+pub enum BusAhb {
   GpioA,
   GpioB,
   GpioC,
@@ -43,7 +43,7 @@ pub enum Ahb {
   Fsmc,
 }
 
-impl Ahb {
+impl BusAhb {
   fn to_reg_bit(self) -> u32 {
     1 << match self {
       GpioA      => 0,
@@ -75,7 +75,7 @@ impl Ahb {
 
 #[allow(missing_doc)]
 #[repr(u8)]
-pub enum Apb1 {
+pub enum BusApb1 {
   Tim2,
   Tim3,
   Tim4,
@@ -98,7 +98,7 @@ pub enum Apb1 {
   Comp,
 }
 
-impl Apb1 {
+impl BusApb1 {
   fn to_reg_bit(self) -> u32 {
     1 << match self {
       Tim2       => 0,
@@ -135,7 +135,7 @@ impl Apb1 {
 
 #[allow(missing_doc)]
 #[repr(u8)]
-pub enum Apb2 {
+pub enum BusApb2 {
   SysCfg,
   Tim9,
   Tim10,
@@ -146,7 +146,7 @@ pub enum Apb2 {
   Usart1,
 }
 
-impl Apb2 {
+impl BusApb2 {
   fn to_reg_bit(self) -> u32 {
     1 << match self {
       SysCfg     => 0,
@@ -174,9 +174,9 @@ impl Apb2 {
 /// This enum contains all available clocks from both AHB and APB.
 #[allow(missing_doc)]
 pub enum PeripheralClock {
-  ClockAhb(Ahb),
-  ClockApb1(Apb1),
-  ClockApb2(Apb2),
+  ClockAhb(BusAhb),
+  ClockApb1(BusApb1),
+  ClockApb2(BusApb2),
 }
 
 impl PeripheralClock {

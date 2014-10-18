@@ -116,17 +116,19 @@ impl PinConf {
   pub fn setup(&self) {
     self.port.clock().enable();  // TODO(farcaller): should be done once per port
 
-    let offset = self.pin as uint * 2;
-    let mask: u32 = !(0b11 << offset);
+    let offset1 = self.pin as uint;
+    let mask1 = !(0b1 << offset1);
+    let offset2 = self.pin as uint * 2;
+    let mask2: u32 = !(0b11 << offset2);
     let gpreg = self.get_reg();
 
     let fun: u32 = match self.mode {
       GpioIn  => 0b00,
       GpioOut(otype, speed) => {
-          let tv: u32 = gpreg.OTYPER() & !(0b1 << offset);
-          gpreg.set_OTYPER(tv | (otype as u32 << offset));
-          let sv: u32 = gpreg.OSPEEDR() & mask;
-          gpreg.set_OSPEEDR(sv | (speed as u32 << offset));
+          let tv: u32 = gpreg.OTYPER() & mask1;
+          gpreg.set_OTYPER(tv | (otype as u32 << offset1));
+          let sv: u32 = gpreg.OSPEEDR() & mask2;
+          gpreg.set_OSPEEDR(sv | (speed as u32 << offset2));
           0b01
       },
       /*AltFunction(_, _) => {
@@ -139,11 +141,11 @@ impl PinConf {
       },*/
     };
 
-    let mode: u32 = gpreg.MODER() & mask;
-    gpreg.set_MODER(mode | (fun << offset));
+    let mode: u32 = gpreg.MODER() & mask2;
+    gpreg.set_MODER(mode | (fun << offset2));
 
-    let pull: u32 = gpreg.PUPDR() & mask;
-    let pull_val = (self.pull_type as u32) << offset;
+    let pull: u32 = gpreg.PUPDR() & mask2;
+    let pull_val = (self.pull_type as u32) << offset2;
     gpreg.set_PUPDR(pull | pull_val);
   }
 
