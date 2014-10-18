@@ -307,8 +307,8 @@ pub mod reg {
   }
 
   extern {
-    #[link_name="k20_iomem_UART1"] pub static UART0: UART;
-    #[link_name="k20_iomem_UART2"] pub static UART1: UART;
-    #[link_name="k20_iomem_UART3"] pub static UART2: UART;
+    #[link_name="k20_iomem_UART0"] pub static UART0: UART;
+    #[link_name="k20_iomem_UART1"] pub static UART1: UART;
+    #[link_name="k20_iomem_UART2"] pub static UART2: UART;
   }
 }
