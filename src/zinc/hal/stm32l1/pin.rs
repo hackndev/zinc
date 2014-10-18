@@ -81,16 +81,16 @@ pub enum Mode {
 
 impl Port {
   fn clock(self) -> peripheral_clock::PeripheralClock {
-    match self {
-      PortA => peripheral_clock::GPIOAClock,
-      PortB => peripheral_clock::GPIOBClock,
-      PortC => peripheral_clock::GPIOCClock,
-      PortD => peripheral_clock::GPIODClock,
-      PortE => peripheral_clock::GPIOEClock,
-      PortF => peripheral_clock::GPIOFClock,
-      PortG => peripheral_clock::GPIOGClock,
-      PortH => peripheral_clock::GPIOHClock,
-    }
+    peripheral_clock::ClockAhb(match self {
+      PortA => peripheral_clock::GpioA,
+      PortB => peripheral_clock::GpioB,
+      PortC => peripheral_clock::GpioC,
+      PortD => peripheral_clock::GpioD,
+      PortE => peripheral_clock::GpioE,
+      PortF => peripheral_clock::GpioF,
+      PortG => peripheral_clock::GpioG,
+      PortH => peripheral_clock::GpioH,
+    })
   }
 }
 
@@ -117,11 +117,16 @@ impl PinConf {
     self.port.clock().enable();  // TODO(farcaller): should be done once per port
 
     let offset = self.pin as uint * 2;
+    let mask: u32 = !(0b11 << offset);
     let gpreg = self.get_reg();
 
     let fun: u32 = match self.mode {
       GpioIn  => 0b00,
-      GpioOut(_, _) => {
+      GpioOut(otype, speed) => {
+          let tv: u32 = gpreg.OTYPER() & !(0b1 << offset);
+          gpreg.set_OTYPER(tv | (otype as u32 << offset));
+          let sv: u32 = gpreg.OSPEEDR() & mask;
+          gpreg.set_OSPEEDR(sv | (speed as u32 << offset));
           0b01
       },
       /*AltFunction(_, _) => {
@@ -133,8 +138,6 @@ impl PinConf {
           0b11
       },*/
     };
-
-    let mask: u32 = !(0b11 << offset);
 
     let mode: u32 = gpreg.MODER() & mask;
     gpreg.set_MODER(mode | (fun << offset));
@@ -185,10 +188,10 @@ impl PinConf {
 mod reg {
   use util::volatile_cell::VolatileCell;
 
-  ioreg_old!(GPIO: u32, MODER, OTYPER, OSPEEDER, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH)
+  ioreg_old!(GPIO: u32, MODER, OTYPER, OSPEEDR, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH)
   reg_rw!(GPIO, u32, MODER,    set_MODER,    MODER)
   reg_rw!(GPIO, u32, OTYPER,   set_OTYPER,   OTYPER)
-  reg_rw!(GPIO, u32, OSPEEDER, set_OSPEEDER, OSPEEDER)
+  reg_rw!(GPIO, u32, OSPEEDR,  set_OSPEEDR,  OSPEEDR)
   reg_rw!(GPIO, u32, PUPDR,    set_PUPDR,    PUPDR)
   reg_rw!(GPIO, u32, IDR,      set_IDR,      IDR)
   reg_rw!(GPIO, u32, ODR,      set_ODR,      ODR)
