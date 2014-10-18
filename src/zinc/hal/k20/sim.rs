@@ -29,8 +29,9 @@ pub fn enable_PORT(port: pin::Port) {
   }
 }
 
+/// Registers
 #[allow(dead_code)]
-mod reg {
+pub mod reg {
   use util::volatile_cell::VolatileCell;
   use core::ops::Drop;
 
