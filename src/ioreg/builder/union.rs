@@ -61,7 +61,7 @@ impl<'a> Iterator<RegOrPadding<'a>> for PaddedRegsIterator<'a> {
       let ref reg = self.sorted_regs[self.index];
       if reg.offset > self.last_offset {
         let pad_length = reg.offset - self.last_offset;
-        self.last_offset = reg.offset + reg.size();
+        self.last_offset = reg.offset;
         Some(Pad(pad_length))
       } else {
         self.index += 1;
