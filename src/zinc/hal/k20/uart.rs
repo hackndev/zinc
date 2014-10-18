@@ -103,6 +103,7 @@ impl UART {
       uart::Forced1  => unsafe { abort() },
       uart::Forced0  => unsafe { abort() },
     };
+    (*self.reg).c2.set_te(true).set_re(true);
   }
 
   fn set_fifo_enabled(&self, enabled: bool) {
