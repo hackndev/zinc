@@ -46,9 +46,11 @@ pub extern fn isr_default_fault() {
 #[cfg(test)]
 pub extern fn isr_default_fault() { unimplemented!() }
 
+#[allow(non_upper_case_globals)]
 const ISRCount: uint = 16;
 
 #[link_section=".isr_vector"]
+#[allow(non_upper_case_globals)]
 #[no_mangle]
 pub static ISRVectors: [Option<unsafe extern fn()>, ..ISRCount] = [
   Some(__STACK_BASE),

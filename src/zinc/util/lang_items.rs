@@ -33,6 +33,6 @@ extern fn begin_unwind() {}
 #[cfg(not(test))]
 #[lang="fail_fmt"]
 #[no_stack_check]
-pub fn fail_fmt(fmt: &Arguments, file_line: &(&'static str, uint)) -> ! {
+pub fn fail_fmt(_fmt: &Arguments, _file_line: &(&'static str, uint)) -> ! {
   loop { }
 }
