@@ -78,12 +78,10 @@ impl UART {
     uart
   }
 
-  #[no_stack_check]
   fn uart_clock(&self) -> u32 {
     48000000 // FIXME(bgamari): Use peripheral clocks
   }
 
-  #[no_stack_check]
   fn set_baud_rate(&self, baud_rate: u32) {
     let sbr: u32 = self.uart_clock() / 16 / baud_rate;
     let brfa: u32 = (2 * self.uart_clock() / baud_rate) % 32;
@@ -92,7 +90,6 @@ impl UART {
     (*self.reg).c4.set_brfa(brfa as u8);
   }
 
-  #[no_stack_check]
   fn set_mode(&self, word_len: reg::UART_c1_m, parity: uart::Parity,
               _stop_bits: StopBit) {
     let mut c1 = (*self.reg).c1.set_m(word_len);

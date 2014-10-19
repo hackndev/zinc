@@ -26,7 +26,6 @@ platformtree!(
   }
 )
 
-#[no_stack_check]
 fn run() {
   unsafe { asm!("nop") }
 }

@@ -155,12 +155,10 @@ impl UART {
     uart
   }
 
-  #[no_stack_check]
   fn uart_clock(&self) -> u32 {
     self.clock.frequency()
   }
 
-  #[no_stack_check]
   fn set_baud_rate(&self, baud_rate: u32) {
     self.reg.set_LCR(0b1000_0000); // enable divisor latch access
 
@@ -173,7 +171,6 @@ impl UART {
     self.reg.set_LCR(3);
   }
 
-  #[no_stack_check]
   fn set_mode(&self, word_len: WordLen, parity: uart::Parity, stop_bits: StopBit) {
     let lcr: u8 = (*(self.reg)).LCR() as u8;
     let computed_val: u8 = word_len as u8 | stop_bits as u8 | match parity {

@@ -26,7 +26,6 @@ pub fn wait(ticks: u32) {
 }
 
 #[no_mangle]
-#[no_stack_check]
 #[allow(unused_variable)]
 #[allow(dead_code)]
 pub unsafe fn main() {

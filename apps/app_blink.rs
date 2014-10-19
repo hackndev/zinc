@@ -45,7 +45,6 @@ platformtree!(
   }
 )
 
-#[no_stack_check]
 fn run(args: &pt::run_args) {
   use zinc::hal::pin::GPIO;
   use zinc::hal::timer::Timer;
