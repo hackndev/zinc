@@ -96,6 +96,8 @@ mod internal {
   use core::kinds::Share;
   use core::cell::UnsafeCell;
 
+  use util::support::wfi;
+
   /// A condition variable
   pub struct CondVar {
     waiting: UnsafeCell<bool>,
@@ -121,7 +123,7 @@ mod internal {
     pub fn wait(&self) {
       unsafe {
         while *self.waiting.get() {
-          asm!("wfi")
+          wfi();
         }
       }
     }
