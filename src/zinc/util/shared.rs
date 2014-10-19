@@ -20,7 +20,7 @@ use core::ops::{Deref, DerefMut};
 use core::kinds::{Share, Send};
 use core::kinds::marker;
 
-use hal::cortex_m3::sched::NoInterrupts;
+use hal::cortex_m3::irq::NoInterrupts;
 
 /// This allows safe sharing of state, ensuring access occurs only
 /// when in a critical section.
