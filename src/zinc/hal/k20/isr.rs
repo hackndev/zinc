@@ -88,9 +88,11 @@ extern {
   fn isr_soft();
 }
 
+#[allow(non_upper_case_globals)]
 const ISRCount: uint = 95;
 
 #[link_section=".isr_vector_nvic"]
+#[allow(non_upper_case_globals)]
 #[no_mangle]
 pub static NVICVectors: [Option<unsafe extern fn()>, ..ISRCount] = [
   Some(isr_dma_0),
