@@ -125,6 +125,8 @@ impl PinConf {
     let fun: u32 = match self.mode {
       GpioIn  => 0b00,
       GpioOut(otype, speed) => {
+          let mode: u32 = gpreg.MODER() & mask2;    //TEMP
+          gpreg.set_MODER(mode | (1 << offset2));  //TEMP
           let tv: u32 = gpreg.OTYPER() & mask1;
           gpreg.set_OTYPER(tv | (otype as u32 << offset1));
           let sv: u32 = gpreg.OSPEEDR() & mask2;
