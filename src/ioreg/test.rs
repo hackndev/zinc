@@ -139,4 +139,38 @@ mod test {
       assert_eq!(get_value(&test, 0), 0x1 | 0x3<<8)
     }
   )
+
+  ioregs!(GAP_TEST = {
+    0x0 => reg32 reg1 {
+      0..31 => field,
+    }
+    0x10 => reg32 reg2 {
+      0..31 => field,
+    }
+    0x14 => reg32 reg3 {
+      0..31 => field,
+    }
+    0x20 => reg32 reg4 {
+      0..31 => field,
+    }
+  })
+
+  describe!(
+    before_each {
+      let test: GAP_TEST = zeroed_safe();
+      let base = &test as *const GAP_TEST;
+    }
+    it "has zero base offset" {
+      let addr = &test.reg1 as *const GAP_TEST_reg1;
+      assert_eq!(addr.to_uint() - base.to_uint(), 0x0)
+    }
+    it "computes the correct first gap" {
+      let addr = &test.reg2 as *const GAP_TEST_reg2;
+      assert_eq!(addr.to_uint() - base.to_uint(), 0x10)
+    }
+    it "computes the correct second gap" {
+      let addr = &test.reg4 as *const GAP_TEST_reg4;
+      assert_eq!(addr.to_uint() - base.to_uint(), 0x20)
+    }
+  )
 }
