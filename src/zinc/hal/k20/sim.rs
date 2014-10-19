@@ -18,7 +18,7 @@
 use super::pin;
 
 /// Enable clock to a PORTx peripheral
-#[allow(non_snake_case_functions)]
+#[allow(non_snake_case)]
 pub fn enable_PORT(port: pin::Port) {
   match port {
     pin::PortA => {reg::SIM.scgc5.set_porta(true);},
