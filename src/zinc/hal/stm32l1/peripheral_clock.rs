@@ -68,8 +68,8 @@ impl BusAhb {
     let reg_bit = self.to_reg_bit();
     let mask: u32 = !reg_bit;
     let bit: u32 = if enable {reg_bit} else {0};
-    let val = reg::RCC.AHB1ENR() & mask;
-    reg::RCC.set_AHB1ENR(val | bit);
+    let val = reg::RCC.AHBENR() & mask;
+    reg::RCC.set_AHBENR(val | bit);
   }
 }
 
@@ -165,7 +165,7 @@ impl BusApb2 {
     let mask: u32 = !reg_bit;
     let bit: u32 = if enable {reg_bit} else {0};
     let val = reg::RCC.APB2ENR() & mask;
-    reg::RCC.set_AHB1ENR(val | bit);
+    reg::RCC.set_APB2ENR(val | bit);
   }
 }
 

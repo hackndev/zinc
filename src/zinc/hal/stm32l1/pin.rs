@@ -190,17 +190,18 @@ impl PinConf {
 mod reg {
   use util::volatile_cell::VolatileCell;
 
-  ioreg_old!(GPIO: u32, MODER, OTYPER, OSPEEDR, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH)
-  reg_rw!(GPIO, u32, MODER,    set_MODER,    MODER)
-  reg_rw!(GPIO, u32, OTYPER,   set_OTYPER,   OTYPER)
-  reg_rw!(GPIO, u32, OSPEEDR,  set_OSPEEDR,  OSPEEDR)
-  reg_rw!(GPIO, u32, PUPDR,    set_PUPDR,    PUPDR)
-  reg_rw!(GPIO, u32, IDR,      set_IDR,      IDR)
-  reg_rw!(GPIO, u32, ODR,      set_ODR,      ODR)
-  reg_rw!(GPIO, u32, BSRR,     set_BSRR,     BSRR)
-  reg_rw!(GPIO, u32, LCKR,     set_LCKR,     LCKR)
-  reg_rw!(GPIO, u32, AFRL,     set_AFRL,     AFRL)
-  reg_rw!(GPIO, u32, AFRH,     set_AFRH,     AFRH)
+  ioreg_old!(GPIO: u32, MODER, OTYPER, OSPEEDR, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH, BRR)
+  reg_rw!(GPIO, u32, MODER,    set_MODER,    MODER)     // port mode
+  reg_rw!(GPIO, u32, OTYPER,   set_OTYPER,   OTYPER)    // port output type
+  reg_rw!(GPIO, u32, OSPEEDR,  set_OSPEEDR,  OSPEEDR)   // port output speed
+  reg_rw!(GPIO, u32, PUPDR,    set_PUPDR,    PUPDR)     // port pull-up/pull-down
+  reg_rw!(GPIO, u32, IDR,      set_IDR,      IDR)       // port input data
+  reg_rw!(GPIO, u32, ODR,      set_ODR,      ODR)       // port output data
+  reg_rw!(GPIO, u32, BSRR,     set_BSRR,     BSRR)      // port bit set/reset
+  reg_rw!(GPIO, u32, LCKR,     set_LCKR,     LCKR)      // port configuration lock
+  reg_rw!(GPIO, u32, AFRL,     set_AFRL,     AFRL)      // alternate function low
+  reg_rw!(GPIO, u32, AFRH,     set_AFRH,     AFRH)      // alternate function high
+  reg_rw!(GPIO, u32, BRR,      set_BRR,      BRR)       // bit reset register
 
   extern {
     #[link_name="stm32l1_iomem_GPIOA"] pub static GPIOA: GPIO;

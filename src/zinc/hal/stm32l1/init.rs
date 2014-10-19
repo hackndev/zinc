@@ -18,6 +18,9 @@
 //! This module includes code for setting up the clock, flash, access time and
 //! performing initial peripheral configuration.
 
+// THIS WHOLE THING IS COPIED FROM stm32f4, NEEDS TO BE PORTED PROPERLY
+// SO FAR ONLY THE REGISTER SUBMODULE IS PORTED
+
 use hal::mem_init::init_data;
 use core::intrinsics::abort;
 
@@ -226,28 +229,8 @@ impl ClockConf {
 
 impl PLLConf {
   fn setup(&self) {
-    // TODO(farcaller): cmsis code overrides reserved bits in here, is that ok?
-    let val = reg::RCC.PLLCFGR();
-    let mask: u32 = !0b0000_1111_0_1_0000_11_0_111111111_111111;
-    let bits: u32 =
-      self.m as u32 |
-      (self.n as u32 << 6) |
-      (match self.p {
-        2 => 0b00u32,
-        4 => 0b01u32,
-        6 => 0b10u32,
-        8 => 0b11u32,
-        _ => unsafe { abort() },
-      } << 16) |
-      (match self.source {
-        PLLClockHSI    => 0u32,
-        PLLClockHSE(_) => 1u32,
-      } << 22) |
-      (self.q as u32 << 24);
-
-    reg::RCC.set_PLLCFGR(val & mask | bits);
-
-    self.enable_pll();
+    // TODO
+    unsafe { abort(); }
   }
 
   fn enable_pll(&self) {
@@ -273,47 +256,39 @@ pub mod reg {
     SystemClockPLL = 2,
   }
 
-  ioreg_old!(RCCReg: u32, CR, PLLCFGR, CFGR, CIR, AHB1RSTR, AHB2RSTR, AHB3RSTR,
-                      _pad_0, APB1RSTR, APB2RSTR, _pad_1, _pad_2, AHB1ENR,
-                      AHB2ENR, AHB3ENR, _pad_3, APB1ENR, APB2ENR, _pad_4,
-                      _pad_5, AHB1LPENR, AHB2LPENR, AHB3LPENR, _pad_6,
-                      APB1LPENR, APB2LPENR, _pad_7, _pad_8, BDCR, CSR, _pad_9,
-                      _pad_10, SSCGR, PLLI2SCFGR)
-  reg_rw!(RCCReg, u32, CR,         set_CR,         CR)
-  reg_rw!(RCCReg, u32, PLLCFGR,    set_PLLCFGR,    PLLCFGR)
-  reg_rw!(RCCReg, u32, CFGR,       set_CFGR,       CFGR)
-  reg_rw!(RCCReg, u32, CIR,        set_CIR,        CIR)
-  reg_rw!(RCCReg, u32, AHB1RSTR,   set_AHB1RSTR,   AHB1RSTR)
-  reg_rw!(RCCReg, u32, AHB2RSTR,   set_AHB2RSTR,   AHB2RSTR)
-  reg_rw!(RCCReg, u32, AHB3RSTR,   set_AHB3RSTR,   AHB3RSTR)
-  reg_rw!(RCCReg, u32, APB1RSTR,   set_APB1RSTR,   APB1RSTR)
-  reg_rw!(RCCReg, u32, APB2RSTR,   set_APB2RSTR,   APB2RSTR)
-  reg_rw!(RCCReg, u32, AHB1ENR,    set_AHB1ENR,    AHB1ENR)
-  reg_rw!(RCCReg, u32, AHB2ENR,    set_AHB2ENR,    AHB2ENR)
-  reg_rw!(RCCReg, u32, AHB3ENR,    set_AHB3ENR,    AHB3ENR)
-  reg_rw!(RCCReg, u32, APB1ENR,    set_APB1ENR,    APB1ENR)
-  reg_rw!(RCCReg, u32, APB2ENR,    set_APB2ENR,    APB2ENR)
-  reg_rw!(RCCReg, u32, AHB1LPENR,  set_AHB1LPENR,  AHB1LPENR)
-  reg_rw!(RCCReg, u32, AHB2LPENR,  set_AHB2LPENR,  AHB2LPENR)
-  reg_rw!(RCCReg, u32, AHB3LPENR,  set_AHB3LPENR,  AHB3LPENR)
-  reg_rw!(RCCReg, u32, APB1LPENR,  set_APB1LPENR,  APB1LPENR)
-  reg_rw!(RCCReg, u32, APB2LPENR,  set_APB2LPENR,  APB2LPENR)
-  reg_rw!(RCCReg, u32, BDCR,       set_BDCR,       BDCR)
-  reg_rw!(RCCReg, u32, CSR,        set_CSR,        CSR)
-  reg_rw!(RCCReg, u32, SSCGR,      set_SSCGR,      SSCGR)
-  reg_rw!(RCCReg, u32, PLLI2SCFGR, set_PLLI2SCFGR, PLLI2SCFGR)
+  ioreg_old!(RCCReg: u32, CR, ICSCR, CFGR, CIR, AHBRSTR, APB2RSTR, APB1RSTR,
+                          AHBENR, APB2ENR, APB1ENR, AHBLPENR, APB2LPENR,
+                          APB1LPENR, CSR)
+  reg_rw!(RCCReg, u32, CR,         set_CR,         CR)          // clock control
+  reg_rw!(RCCReg, u32, ICSCR,      set_ICSCR,      ICSCR)       // internal clock sources calibration
+  reg_rw!(RCCReg, u32, CFGR,       set_CFGR,       CFGR)        // clock configuration
+  reg_rw!(RCCReg, u32, CIR,        set_CIR,        CIR)         // clock interrupt
+  reg_rw!(RCCReg, u32, AHBRSTR,    set_AHBRSTR,    AHBRSTR)     // AHB peripheral reset
+  reg_rw!(RCCReg, u32, APB2RSTR,   set_APB2RSTR,   APB2RSTR)    // APB2 peripheral reset
+  reg_rw!(RCCReg, u32, APB1RSTR,   set_APB1RSTR,   APB1RSTR)    // APB1 peripheral reset
+  reg_rw!(RCCReg, u32, AHBENR,     set_AHBENR,     AHBENR)      // AHB peripheral clock enable
+  reg_rw!(RCCReg, u32, APB2ENR,    set_APB2ENR,    APB2ENR)     // APB2 peripheral clock enable
+  reg_rw!(RCCReg, u32, APB1ENR,    set_APB1ENR,    APB1ENR)     // APB1 peripheral clock enable
+  reg_rw!(RCCReg, u32, AHBLPENR,   set_AHBLPENR,   AHBLPENR)    // AHB peripheral clock enable in low power mode
+  reg_rw!(RCCReg, u32, APB2LPENR,  set_APB2LPENR,  APB2LPENR)   // APB2 peripheral clock enable in low power mode
+  reg_rw!(RCCReg, u32, APB1LPENR,  set_APB1LPENR,  APB1LPENR)   // APB1 peripheral clock enable in low power mode
+  reg_rw!(RCCReg, u32, CSR,        set_CSR,        CSR)         // control/status
 
-  ioreg_old!(FLASHReg: u32, ACR, KEYR, OPTKEYR, SR, CR, OPTCR)
-  reg_rw!(FLASHReg, u32, ACR,   set_ACR,     ACR)
-  reg_w!(FLASHReg,  u32,        set_KEYR,    KEYR)
-  reg_w!(FLASHReg,  u32,        set_OPTKEYR, OPTKEYR)
-  reg_rw!(FLASHReg, u32, SR,    set_SR,      SR)
-  reg_rw!(FLASHReg, u32, CR,    set_CR,      CR)
-  reg_rw!(FLASHReg, u32, OPTCR, set_OPTCR,   OPTCR)
+  ioreg_old!(FLASHReg: u32, ACR, PECR, PDKEYR, PEKEYR, PRGKEYR, OPTKEYR, SR,
+                            OBR, WRPR)
+  reg_rw!(FLASHReg, u32, ACR,     set_ACR,     ACR)     // access control
+  reg_rw!(FLASHReg, u32, PECR,    set_PECR,    PECR)    // program/erase control
+  reg_rw!(FLASHReg, u32, PDKEYR,  set_PDKEYR,  PDKEYR)  // power down key
+  reg_rw!(FLASHReg, u32, PEKEYR,  set_PEKEYR,  PEKEYR)  // program/erase key
+  reg_rw!(FLASHReg, u32, PRGKEYR, set_PRGKEYR, PRGKEYR) // program memory key
+  reg_rw!(FLASHReg, u32, OPTKEYR, set_OPTKEYR, OPTKEYR) // option byte key
+  reg_rw!(FLASHReg, u32, SR,      set_SR,      SR)      // status register
+  reg_rw!(FLASHReg, u32, OBR,     set_OBR,     OBR)     // option byte
+  reg_rw!(FLASHReg, u32, WRPR,    set_WRPR,    WRPR)    // write protection
 
   ioreg_old!(PWRReg: u32, CR, CSR)
-  reg_rw!(PWRReg, u32, CR,  set_CR,  CR)
-  reg_rw!(PWRReg, u32, CSR, set_CSR, CSR)
+  reg_rw!(PWRReg, u32, CR,  set_CR,  CR)    // power control
+  reg_rw!(PWRReg, u32, CSR, set_CSR, CSR)   // power control/status
 
   extern {
     #[link_name="stm32l1_iomem_RCC"] pub static RCC: RCCReg;
