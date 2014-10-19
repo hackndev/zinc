@@ -13,69 +13,131 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use core::option::{None, Some};
-use core::ty::Unsafe;
-use core::kinds::marker;
-use core::kinds::Share;
+//! Condition variables
 
-use hal::cortex_m3::sched::NoInterrupts;
-use util::queue::{Queue, Node};
-use os::task::{TaskDescriptor, Tasks};
+pub use os::cond_var::internal::{CondVar, COND_VAR_INIT};
 
-pub struct CondVar {
-  waiting: Queue<*mut TaskDescriptor>
-}
+#[cfg(multitasking)]
+mod internal {
+  use core::option::{None, Some};
+  use core::ty::Unsafe;
+  use core::kinds::marker;
+  use core::kinds::Share;
 
-pub static COND_VAR_INIT: CondVar = CondVar {
-  waiting: Queue {
-    head: Unsafe { value: 0 as *mut Node<*mut TaskDescriptor>, marker1: marker::InvariantType },
-    tail: Unsafe { value: 0 as *mut Node<*mut TaskDescriptor>, marker1: marker::InvariantType },
-  }
-};
+  use hal::cortex_m3::sched::NoInterrupts;
+  use util::queue::{Queue, Node};
+  use os::task::{TaskDescriptor, Tasks};
 
-impl CondVar {
-  pub fn new() -> CondVar {
-    CondVar { waiting: Queue::new() }
+  /// A condition variable
+  pub struct CondVar {
+    waiting: Queue<*mut TaskDescriptor>
   }
 
-  /// Wait on a condition variable.
-  pub fn wait<'a>(&'a self) {
-    /*
-     * The signalling thread is responsible for removing the waiting
-     * thread which ensures that a signal wakes up exactly one thread
-     * whenever there is one waiting.
-     */
-    unsafe {
-      let crit = NoInterrupts::new();
-      let mut waiting = Node::new(Tasks.current_task() as *mut TaskDescriptor);
-      self.waiting.push(&mut waiting, &crit);
-      Tasks.current_task().block(crit);
+  /// Static initializer
+  pub const COND_VAR_INIT: CondVar = CondVar {
+    waiting: Queue {
+      head: Unsafe { value: 0 as *mut Node<*mut TaskDescriptor>, marker1: marker::InvariantType },
+      tail: Unsafe { value: 0 as *mut Node<*mut TaskDescriptor>, marker1: marker::InvariantType },
     }
-  }
+  };
 
-  /// Wake up a thread waiting on a condition variable.
-  pub fn signal<'a>(&'a self) {
-    unsafe {
-      let crit = NoInterrupts::new();
-      match self.waiting.pop(&crit) {
-        None => { },
-        Some(task) => (*(*task).data).unblock(&crit)
+  impl CondVar {
+    /// Create a new condition variable
+    pub fn new() -> CondVar {
+      CondVar { waiting: Queue::new() }
+    }
+
+    /// Wait on a condition variable.
+    pub fn wait(&self) {
+      /*
+       * The signalling thread is responsible for removing the waiting
+       * thread which ensures that a signal wakes up exactly one thread
+       * whenever there is one waiting.
+       */
+      unsafe {
+        let crit = NoInterrupts::new();
+        let mut waiting = Node::new(Tasks.current_task() as *mut TaskDescriptor);
+        self.waiting.push(&mut waiting, &crit);
+        Tasks.current_task().block(crit);
       }
     }
-  }
 
-  /// Wake up all threads waiting on a condition variable.
-  pub fn broadcast<'a>(&'a self) {
-    unsafe {
-      let crit = NoInterrupts::new();
-      loop {
+    /// Wake up a thread waiting on a condition variable.
+    pub fn signal(&self) {
+      unsafe {
+        let crit = NoInterrupts::new();
         match self.waiting.pop(&crit) {
-          None => break,
+          None => { },
           Some(task) => (*(*task).data).unblock(&crit)
         }
       }
     }
+
+    /// Wake up all threads waiting on a condition variable.
+    pub fn broadcast(&self) {
+      unsafe {
+        let crit = NoInterrupts::new();
+        loop {
+          match self.waiting.pop(&crit) {
+            None => break,
+            Some(task) => (*(*task).data).unblock(&crit)
+          }
+        }
+      }
+    }
   }
+
+  impl Share for CondVar {}
 }
 
-impl Share for CondVar {}
+#[cfg(not(multitasking))]
+mod internal {
+  use core::kinds::marker;
+  use core::kinds::Share;
+  use core::cell::UnsafeCell;
+
+  /// A condition variable
+  pub struct CondVar {
+    waiting: UnsafeCell<bool>,
+    nocopy: marker::NoCopy
+  }
+
+  /// Static initializer
+  pub const COND_VAR_INIT: CondVar = CondVar {
+    waiting: UnsafeCell { value: false },
+    nocopy: marker::NoCopy,
+  };
+
+  impl CondVar {
+    /// Create a new condition variable
+    pub fn new() -> CondVar {
+      CondVar {
+        waiting: UnsafeCell::new(false),
+        nocopy: marker::NoCopy,
+      }
+    }
+
+    /// Wait on a condition variable.
+    pub fn wait(&self) {
+      unsafe {
+        while *self.waiting.get() {
+          asm!("wfi")
+        }
+      }
+    }
+
+    /// Wake up a thread waiting on a condition variable.
+    pub fn signal(&self) {
+      unsafe {
+        *self.waiting.get() = true;
+      }
+    }
+
+    /// Wake up all threads waiting on a condition variable.
+    pub fn broadcast(&self) {
+      self.signal();
+    }
+  }
+
+  impl Share for CondVar {}
+}

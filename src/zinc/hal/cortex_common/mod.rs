@@ -21,3 +21,4 @@ pub mod systick;
 pub mod mpu;
 pub mod nvic;
 pub mod scb;
+pub mod irq;
