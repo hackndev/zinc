@@ -31,8 +31,14 @@ pub struct Mutex {
 pub static MUTEX_INIT : Mutex = Mutex {
   owner: Unsafe { value: None, marker1: marker::InvariantType },
   waiting: Queue {
-    head: Unsafe { value: 0 as *mut Node<*mut TaskDescriptor>, marker1: marker::InvariantType },
-    tail: Unsafe { value: 0 as *mut Node<*mut TaskDescriptor>, marker1: marker::InvariantType },
+    head: Unsafe {
+      value: 0 as *mut Node<*mut TaskDescriptor>,
+      marker1: marker::InvariantType
+    },
+    tail: Unsafe {
+      value: 0 as *mut Node<*mut TaskDescriptor>,
+      marker1: marker::InvariantType
+    },
   }
 };
 
