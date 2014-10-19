@@ -22,11 +22,8 @@ on the package.
 
 use core::option::Option;
 
-use util::volatile_cell::VolatileCell;
-
 use super::sim;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
 
 /// A pin.
 #[allow(missing_doc)]
@@ -100,23 +97,37 @@ impl Pin {
       pull: PullConf, drive_strength: DriveStrength,
       slew_rate: SlewRate, filter: bool, open_drain: bool) {
     // enable port clock
-    sim::enable_PORT(self.port as uint);
+    sim::enable_PORT(self.port);
 
-    let value =
-          (pull as u32 << 0)
-          | (slew_rate as u32 << 2)
-          | (filter as u32 << 4)
-          | (open_drain as u32 << 5)
-          | (drive_strength as u32 << 6)
-          | (function as u32 << 8);
-    self.pcr().set(value);
+    let (pe, ps) = match pull {
+      PullNone => (false, reg::PULL_DOWN),
+      PullDown => (true,  reg::PULL_DOWN),
+      PullUp   => (true,  reg::PULL_UP),
+    };
+    let sre = match slew_rate {
+      SlewFast => reg::FAST,
+      SlewSlow => reg::SLOW,
+    };
+    let dse = match drive_strength {
+      DriveStrengthHigh => reg::HIGH_DRIVE,
+      DriveStrengthLow  => reg::LOW_DRIVE,
+    };
+
+    self.pcr()
+      .set_pe(pe)
+      .set_ps(ps)
+      .set_sre(sre)
+      .set_pfe(filter)
+      .set_ode(open_drain)
+      .set_dse(dse)
+      .set_mux(function as u32);
 
     if function == GPIO {
       (self as &::hal::pin::GPIO).set_direction(gpiodir.unwrap());
     }
   }
 
-  fn gpioreg(&self) -> &reg::GPIO {
+  fn gpioreg(&self) -> &'static reg::GPIO {
     match self.port {
       PortA => &reg::GPIOA,
       PortB => &reg::GPIOB,
@@ -126,11 +137,7 @@ impl Pin {
     }
   }
 
-  fn gpiobit(&self) -> u32 {
-    1 << (self.pin as uint)
-  }
-
-  fn pcr(&self) -> &VolatileCell<u32> {
+  fn pcr(&self) -> &'static reg::PORT_pcr {
     let port: &reg::PORT = match self.port {
       PortA => &reg::PORTA,
       PortB => &reg::PORTB,
@@ -138,59 +145,95 @@ impl Pin {
       PortD => &reg::PORTD,
       PortE => &reg::PORTE,
     };
-    return &port.PCR[self.pin as uint];
+    return &port.pcr[self.pin as uint];
   }
 }
 
 impl ::hal::pin::GPIO for Pin {
   /// Sets output GPIO value to high.
   fn set_high(&self) {
-    self.gpioreg().set_PSOR(self.gpiobit());
+    self.gpioreg().psor.set_ptso(self.pin as uint, true);
   }
 
   /// Sets output GPIO value to low.
   fn set_low(&self) {
-    self.gpioreg().set_PCOR(self.gpiobit());
+    self.gpioreg().pcor.set_ptco(self.pin as uint, true);
   }
 
   /// Returns input GPIO level.
   fn level(&self) -> ::hal::pin::GPIOLevel {
-    let bit: u32 = self.gpiobit();
     let reg = self.gpioreg();
-
-    match reg.PDIR() & bit {
-      0 => ::hal::pin::Low,
-      _ => ::hal::pin::High,
+    match reg.pdir.pdi(self.pin as uint) {
+      false => ::hal::pin::Low,
+      _     => ::hal::pin::High,
     }
   }
 
   /// Sets output GPIO direction.
   fn set_direction(&self, new_mode: ::hal::pin::GPIODirection) {
-    let bit: u32 = self.gpiobit();
     let reg = self.gpioreg();
-    let val: u32 = reg.PDDR();
-    let new_val: u32 = match new_mode {
-      ::hal::pin::In  => val & !bit,
-      ::hal::pin::Out => val | bit,
+    let val = match new_mode {
+      ::hal::pin::In  => reg::INPUT,
+      ::hal::pin::Out => reg::OUTPUT,
     };
-
-    reg.set_PDDR(new_val);
+    reg.pddr.set_pdd(self.pin as uint, val);
   }
 }
 
-mod reg {
+/// Register definitions
+pub mod reg {
   use util::volatile_cell::VolatileCell;
+  use core::ops::Drop;
 
-  #[allow(non_snake_case)]
-  pub struct PORT {
-    pub PCR: [VolatileCell<u32>, ..32],
-    pub GPCLR: VolatileCell<u32>,
-    pub GPCHR: VolatileCell<u32>,
-    pub ISFR: VolatileCell<u32>,
-    pub DFER: VolatileCell<u32>,
-    pub DFCR: VolatileCell<u32>,
-    pub DFWR: VolatileCell<u32>,
-  }
+  ioregs!(PORT = {
+    /// Port control register
+    0x0    => reg32 pcr[32]
+    {
+      0      => ps {  //= Pull direction select
+        0 => PULL_DOWN,
+        1 => PULL_UP
+      }
+      1      => pe,   //= Pull enable
+      2      => sre { //= Slew rate
+        0 => FAST,
+        1 => SLOW
+      }
+      4      => pfe,  //= Passive filter enable
+      5      => ode,  //= Open drain enable
+      6      => dse { //= Drive strength
+        0 => LOW_DRIVE,
+        1 => HIGH_DRIVE
+      }
+      8..10  => mux,  //= Multiplexer configuration
+      15     => lk,   //= Configuration lock
+      16..19 => irqc {//= Interrupt configuration
+        0  => IRQ_NONE,        //= No IRQ enablled
+        1  => IRQ_DMA_RISING,  //= Trigger DMA on rising edge
+        2  => IRQ_DMA_FALLING, //= Trigger DMA on falling edge
+        3  => IRQ_DMA_EITHER,  //= Trigger DMA on either edge
+        // reserved
+        8  => IRQ_ZERO,
+        9  => IRQ_RISING,
+        10 => IRQ_FALLING,
+        11 => IRQ_EITHER,
+        12 => IRQ_ONE,
+      }
+    }
+
+    0x80   => reg32 gpclr {   //= Global pin control low
+      0..15  => gpwd,
+      16..31 => gpwe,
+    }
+
+    0x84   => reg32 gpchr {   //= Global pin control high
+      0..15  => gpwd,
+      16..31 => gpwe,
+    }
+
+    0x88   => reg32 isfr {    //= Interrupt status
+      0..31  => isf
+    }
+  })
 
   extern {
     #[link_name="k20_iomem_PORTA"] pub static PORTA: PORT;
@@ -200,13 +243,34 @@ mod reg {
     #[link_name="k20_iomem_PORTE"] pub static PORTE: PORT;
   }
 
-  ioreg_old!(GPIO: u32, PDOR, PSOR, PCOR, PTOR, PDIR, PDDR)
-  reg_rw!(GPIO, u32, PDOR,  set_PDOR,  PDOR)
-  reg_rw!(GPIO, u32, PSOR,  set_PSOR,  PSOR)
-  reg_rw!(GPIO, u32, PCOR,  set_PCOR,  PCOR)
-  reg_rw!(GPIO, u32, PTOR,  set_PTOR,  PTOR)
-  reg_rw!(GPIO, u32, PDIR,  set_PDIR,  PDIR)
-  reg_rw!(GPIO, u32, PDDR,  set_PDDR,  PDDR)
+  ioregs!(GPIO = {
+    0x0     => reg32 pdo {  //! port data output register
+      0..31   => pdo
+    }
+
+    0x4     => reg32 psor { //! port set output register
+      0..31   => ptso[32]: wo
+    }
+
+    0x8     => reg32 pcor { //! port clear output register
+      0..31   => ptco[32]: wo
+    }
+
+    0xc     => reg32 ptor { //! port toggle output register
+      0..31   => ptto[32]: wo
+    }
+
+    0x10    => reg32 pdir { //! port data input register
+      0..31   => pdi[32]
+    }
+
+    0x14    => reg32 pddr { //! port direction register
+      0..31   => pdd[32] {
+        0 => INPUT,
+        1 => OUTPUT,
+      }
+    }
+  })
 
   extern {
     #[link_name="k20_iomem_GPIOA"] pub static GPIOA: GPIO;
