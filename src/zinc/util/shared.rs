@@ -33,6 +33,7 @@ pub struct Shared<T> {
 /// A reference to a shared value
 pub struct SharedRef<'a, T: 'a> {
   ptr: &'a Shared<T>,
+  #[allow(dead_code)]
   crit: &'a NoInterrupts
 }
 
