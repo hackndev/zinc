@@ -61,23 +61,26 @@ mod reg {
   use core::ops::Drop;
 
   ioregs!(NVIC = {
-    0x0     => reg32 iser[8] {
+    0x100     => reg32 iser[8] {      //! Interrupt set enable register
       0..31   => iser[32]: set_to_clear,
     }
-    0x80     => reg32 icer[8] {
+    0x180     => reg32 icer[8] {      //! Interrupt clear enable register
       0..31   => icer[32]: set_to_clear,
     }
-    0x100     => reg32 ispr[8] {
+    0x200     => reg32 ispr[8] {      //! Interrupt set pending register
       0..31   => ispr[32]: set_to_clear,
     }
-    0x180     => reg32 icpr[8] {
+    0x280     => reg32 icpr[8] {      //! Interrupt clear pending register
       0..31   => icpr[32]: set_to_clear,
     }
-    0x200     => reg32 iabr[8] {
+    0x300     => reg32 iabr[8] {      //! Interrupt active bit register
       0..31   => iabr[32]: ro,
     }
-    0x300     => reg32 ipr[8] {
+    0x400     => reg32 ipr[8] {       //! Interrupt priority register
       0..31   => ipr[4],
+    }
+    0xF00     => reg32 stir[8] {      //! Software triggered interrupt register
+      0..8    => stir,
     }
   })
 
