@@ -96,6 +96,8 @@ mod internal {
   use core::kinds::Share;
   use core::cell::UnsafeCell;
 
+  use util::support::wfi;
+
   /// A condition variable
   pub struct CondVar {
     waiting: UnsafeCell<bool>,
@@ -120,8 +122,10 @@ mod internal {
     /// Wait on a condition variable.
     pub fn wait(&self) {
       unsafe {
+        // TODO(bgamari): There is a race condition here
+        *self.waiting.get() = true;
         while *self.waiting.get() {
-          asm!("wfi")
+          wfi();
         }
       }
     }
@@ -129,7 +133,7 @@ mod internal {
     /// Wake up a thread waiting on a condition variable.
     pub fn signal(&self) {
       unsafe {
-        *self.waiting.get() = true;
+        *self.waiting.get() = false;
       }
     }
 
