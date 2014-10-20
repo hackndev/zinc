@@ -16,20 +16,44 @@
 //! Interface to Memory Protection Unit.
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/BIHJJABA.html
 
-#[path="../../util/ioreg.rs"] mod ioreg;
-
 mod reg {
   use util::volatile_cell::VolatileCell;
+  use core::ops::Drop;
 
-  ioreg_old!(MPUReg: u32, TYPE, CTRL, RNR, RBAR, RASR)
-  reg_r!( MPUReg, u32, TYPE,                     TYPE)
-  reg_rw!(MPUReg, u32, CTRL,     set_CTRL,       CTRL)
-  reg_rw!(MPUReg, u32, RNR,      set_RNR,        RNR)
-  reg_rw!(MPUReg, u32, RBAR,     set_RBAR,       RBAR)
-  reg_rw!(MPUReg, u32, RASR,     set_RASR,       RASR)
+  ioregs!(MPU = {
+    0x0        => reg32 mpu_type { //! MPU type register
+      0        => separate: ro,
+      8..15    => dregion: ro,
+      16..23   => iregion: ro,
+    }
+    0x4        => reg32 ctrl {     //= MPU control register
+      0        => enable,
+      1        => hfnmiena,
+      2        => privdefena,
+    }
+    0x8        => reg32 rnr {      //! Region number register
+      0..7     => region,
+    }
+    0xc        => reg32 rbar {     //! Region base address register
+      0..3     => region,
+      4        => valid,
+      5..31    => addr,
+    }
+    0x10       => reg32 rasr {     //! Region attribute and size register
+      0        => enable,
+      1..5     => size,
+      8..15    => srd,
+      16       => b,
+      17       => c,
+      18       => s,
+      19..21   => tex,
+      24..26   => ap,
+      28       => xn,
+    }
+  })
 
   #[allow(dead_code)]
   extern {
-    #[link_name="armmem_MPU"] pub static MPU: MPUReg;
+    #[link_name="armmem_MPU"] pub static MPU: MPU;
   }
 }
