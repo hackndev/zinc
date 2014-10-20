@@ -1,5 +1,5 @@
 // Zinc, the bare metal stack for rust.
-// Copyright 2014 Vladimir "farcaller" Pouzanov <farcaller@gmail.com>
+// Copyright 2014 Ben Gamari <ben@smart-cactus.org>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,43 +13,72 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! debug::port provides interface to output structured data over serial port.
+//! Tracing for debugging.
+//
+// Use `set_backend`
 
-use core::mem::{size_of, transmute};
-use core::intrinsics::abort;
+pub use os::debug::internal::{set_backend, print, Token};
 
-use drivers::chario::CharIO;
-use hal::uart::{UART, UARTConf};
+#[cfg(debug)]
+mod internal {
+  use core::option::{Some, None, Option};
+  use core::ops::Drop;
+  use core::mem::transmute;
+  use drivers::chario::CharIO;
 
-extern {
-  fn memcpy(dest: *mut u8, src: *u8, n: int);
-}
+  static mut backend: Option<*const CharIO + 'static> = None;
 
-// TODO(farcaller): fix when size_of is avaliable in statics.
-static SizeOfUART: uint = 64;
-
-static mut uart_buf: [u8, ..SizeOfUART] = [0, ..SizeOfUART];
-
-/// Initializes debug port with uart configuration.
-///
-/// This function must be called before any debug port use.
-pub fn setup(conf: &UARTConf) {
-  if SizeOfUART < size_of::<UART>() {
-    unsafe { abort() };
+  /// A token to ensure the life of the reference to the debugging output backend
+  /// doesn't outlive the backend itself.
+  #[must_use]
+  pub struct Token<'a> {
+    #[allow(dead_code)]
+    hello: ()
   }
 
-  let uart: UART = conf.setup();
+  #[unsafe_destructor]
+  impl<'a> Drop for Token<'a> {
+    fn drop(&mut self) {
+      unsafe {
+        backend = None;
+      }
+    }
+  }
 
-  unsafe {
-    let src_ptr: *u8 = transmute(&uart);
-    let dst_ptr: *mut u8 = transmute(&uart_buf);
-    memcpy(dst_ptr, src_ptr, size_of::<UART>() as int);
+  /// Set the debugging output backend (mock)
+  pub fn set_backend<'a>(b: &'a CharIO) -> Token<'a> {
+    unsafe {
+      backend = Some(transmute(b));
+      Token { hello: () }
+    }
+  }
+
+  /// Print debugging output backend (mock)
+  pub fn print(s: &str) {
+    unsafe {
+      match backend {
+        Some(b) => (*b).puts(s),
+        None => {},
+      }
+    }
   }
 }
 
-/// Returns a CharIO corresponding to current debug port.
-pub fn io() -> &CharIO {
-  let uart: &UART = unsafe { transmute(&uart_buf) };
+#[cfg(not(debug))]
+mod internal {
+  use drivers::chario::CharIO;
 
-  uart as &CharIO
+  /// Set the debugging output backend (mock)
+  pub fn set_backend(_: &CharIO) { }
+
+  /// Print debugging output backend (mock)
+  pub fn print(_: &str) { }
+
+  /// A token to ensure the life of the reference to the debugging output backend
+  /// doesn't outlive the backend itself.
+  #[must_use]
+  pub struct Token<'a> {
+    #[allow(dead_code)]
+    hello: ()
+  }
 }
