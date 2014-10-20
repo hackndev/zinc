@@ -51,6 +51,8 @@ pub extern fn __aeabi_unwind_cpp_pr1() {
   abort();
 }
 
+// TODO(bgamari): This is only necessary for exception handling and
+// can be removed when we have this issue resolved.
 #[doc(hidden)]
 #[no_stack_check]
 #[no_mangle]
