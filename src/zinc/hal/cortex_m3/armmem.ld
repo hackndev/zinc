@@ -25,7 +25,7 @@ PROVIDE(isr_systick     = isr_default_fault);
 
 armmem_SYSTICK    = 0xE000E010;
 
-armmem_NVIC       = 0xE000E100;
+armmem_NVIC       = 0xE000E000;
 
 armmem_SCB_ACTLR  = 0xE000E008;
 armmem_SCB        = 0xE000ED00;
