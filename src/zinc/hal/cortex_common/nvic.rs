@@ -16,81 +16,73 @@
 //! Interface to Nested Vector Interrupt Controller.
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/CIHIGCIF.html
 
-#[path="../../util/ioreg.rs"] mod ioreg;
+/// Enable an interrupt
+pub fn enable_irq(irqn: uint) {
+  reg::NVIC.iser[irqn / 32].clear_iser(irqn % 32);
+}
+
+/// Disable an interrupt
+pub fn disable_irq(irqn: uint) {
+  reg::NVIC.icer[irqn / 32].clear_icer(irqn % 32);
+}
+
+/// Return whether the given interrupt is enabled
+pub fn is_enabled(irqn: uint) -> bool {
+  reg::NVIC.iser[irqn / 32].iser(irqn % 32)
+}
+
+/// Clear the pending flag for the given interrupt
+pub fn clear_pending(irqn: uint) {
+  reg::NVIC.icpr[irqn / 32].clear_icpr(irqn % 32);
+}
+
+/// Return whether the given interrupt is pending
+pub fn is_pending(irqn: uint) -> bool {
+  reg::NVIC.ispr[irqn / 32].ispr(irqn % 32)
+}
+
+/// Return whether the given interrupt is active
+pub fn is_active(irqn: uint) -> bool {
+  reg::NVIC.iabr[irqn / 32].iabr(irqn % 32)
+}
+
+/// Set the priority for the given interrupt
+pub fn set_priority(irqn: uint, prio: u8) {
+  reg::NVIC.ipr[irqn / 4].set_ipr(irqn % 4, prio as u32);
+}
+
+/// Return the priority for the given interrupt
+pub fn get_priority(irqn: uint) -> u8 {
+  reg::NVIC.ipr[irqn / 4].ipr(irqn % 4) as u8
+}
 
 mod reg {
   use util::volatile_cell::VolatileCell;
+  use core::ops::Drop;
 
-  ioreg_old!(ISERReg: u32, ISER0, ISER1, ISER2, ISER3,
-        ISER4, ISER5, ISER6, ISER7)
-  reg_rw!(ISERReg, u32, ISER0,   set_ISER0,      ISER0)
-  reg_rw!(ISERReg, u32, ISER1,   set_ISER1,      ISER1)
-  reg_rw!(ISERReg, u32, ISER2,   set_ISER2,      ISER2)
-  reg_rw!(ISERReg, u32, ISER3,   set_ISER3,      ISER3)
-  reg_rw!(ISERReg, u32, ISER4,   set_ISER4,      ISER4)
-  reg_rw!(ISERReg, u32, ISER5,   set_ISER5,      ISER5)
-  reg_rw!(ISERReg, u32, ISER6,   set_ISER6,      ISER6)
-  reg_rw!(ISERReg, u32, ISER7,   set_ISER7,      ISER7)
-
-  ioreg_old!(ICERReg: u32, ICER0, ICER1, ICER2, ICER3,
-        ICER4, ICER5, ICER6, ICER7)
-  reg_rw!(ICERReg, u32, ICER0,   set_ICER0,      ICER0)
-  reg_rw!(ICERReg, u32, ICER1,   set_ICER1,      ICER1)
-  reg_rw!(ICERReg, u32, ICER2,   set_ICER2,      ICER2)
-  reg_rw!(ICERReg, u32, ICER3,   set_ICER3,      ICER3)
-  reg_rw!(ICERReg, u32, ICER4,   set_ICER4,      ICER4)
-  reg_rw!(ICERReg, u32, ICER5,   set_ICER5,      ICER5)
-  reg_rw!(ICERReg, u32, ICER6,   set_ICER6,      ICER6)
-  reg_rw!(ICERReg, u32, ICER7,   set_ICER7,      ICER7)
-
-  ioreg_old!(ISPRReg: u32, ISPR0, ISPR1, ISPR2, ISPR3,
-        ISPR4, ISPR5, ISPR6, ISPR7)
-  reg_rw!(ISPRReg, u32, ISPR0,   set_ISPR0,      ISPR0)
-  reg_rw!(ISPRReg, u32, ISPR1,   set_ISPR1,      ISPR1)
-  reg_rw!(ISPRReg, u32, ISPR2,   set_ISPR2,      ISPR2)
-  reg_rw!(ISPRReg, u32, ISPR3,   set_ISPR3,      ISPR3)
-  reg_rw!(ISPRReg, u32, ISPR4,   set_ISPR4,      ISPR4)
-  reg_rw!(ISPRReg, u32, ISPR5,   set_ISPR5,      ISPR5)
-  reg_rw!(ISPRReg, u32, ISPR6,   set_ISPR6,      ISPR6)
-  reg_rw!(ISPRReg, u32, ISPR7,   set_ISPR7,      ISPR7)
-
-  ioreg_old!(ICPRReg: u32, ICPR0, ICPR1, ICPR2, ICPR3,
-        ICPR4, ICPR5, ICPR6, ICPR7)
-  reg_rw!(ICPRReg, u32, ICPR0,   set_ICPR0,      ICPR0)
-  reg_rw!(ICPRReg, u32, ICPR1,   set_ICPR1,      ICPR1)
-  reg_rw!(ICPRReg, u32, ICPR2,   set_ICPR2,      ICPR2)
-  reg_rw!(ICPRReg, u32, ICPR3,   set_ICPR3,      ICPR3)
-  reg_rw!(ICPRReg, u32, ICPR4,   set_ICPR4,      ICPR4)
-  reg_rw!(ICPRReg, u32, ICPR5,   set_ICPR5,      ICPR5)
-  reg_rw!(ICPRReg, u32, ICPR6,   set_ICPR6,      ICPR6)
-  reg_rw!(ICPRReg, u32, ICPR7,   set_ICPR7,      ICPR7)
-
-  ioreg_old!(IABRReg: u32, IABR0, IABR1, IABR2, IABR3,
-        IABR4, IABR5, IABR6, IABR7)
-  reg_rw!(IABRReg, u32, IABR0,   set_IABR0,      IABR0)
-  reg_rw!(IABRReg, u32, IABR1,   set_IABR1,      IABR1)
-  reg_rw!(IABRReg, u32, IABR2,   set_IABR2,      IABR2)
-  reg_rw!(IABRReg, u32, IABR3,   set_IABR3,      IABR3)
-  reg_rw!(IABRReg, u32, IABR4,   set_IABR4,      IABR4)
-  reg_rw!(IABRReg, u32, IABR5,   set_IABR5,      IABR5)
-  reg_rw!(IABRReg, u32, IABR6,   set_IABR6,      IABR6)
-  reg_rw!(IABRReg, u32, IABR7,   set_IABR7,      IABR7)
-
-  //TODO(bharrisau): Implement byte-level access for 240 Priority Registers
-  ioreg_old!(IPRReg: u32, IPR0)
-  reg_w!(IPRReg, u32, set_IPR0, IPR0)
-
-  ioreg_old!(STIRReg: u32, STIR)
-  reg_w!(STIRReg, u32, set_STIR, STIR)
+  ioregs!(NVIC = {
+    0x0     => reg32 iser[8] {
+      0..31   => iser[32]: set_to_clear,
+    }
+    0x80     => reg32 icer[8] {
+      0..31   => icer[32]: set_to_clear,
+    }
+    0x100     => reg32 ispr[8] {
+      0..31   => ispr[32]: set_to_clear,
+    }
+    0x180     => reg32 icpr[8] {
+      0..31   => icpr[32]: set_to_clear,
+    }
+    0x200     => reg32 iabr[8] {
+      0..31   => iabr[32]: ro,
+    }
+    0x300     => reg32 ipr[8] {
+      0..31   => ipr[4],
+    }
+  })
 
   #[allow(dead_code)]
   extern {
-    #[link_name="armmem_NVIC_ISER"] pub static ISER: ISERReg;
-    #[link_name="armmem_NVIC_ICER"] pub static ICER: ICERReg;
-    #[link_name="armmem_NVIC_ISPR"] pub static ISPR: ISPRReg;
-    #[link_name="armmem_NVIC_ICPR"] pub static ICPR: ICPRReg;
-    #[link_name="armmem_NVIC_IABR"] pub static IABR: IABRReg;
-    #[link_name="armmem_NVIC_IPR"]  pub static IPR:  IPRReg;
-    #[link_name="armmem_NVIC_STIR"] pub static STIR: STIRReg;
+    #[link_name="armmem_NVIC"] pub static NVIC: NVIC;
   }
 }
