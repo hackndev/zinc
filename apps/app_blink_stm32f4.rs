@@ -6,7 +6,6 @@ extern crate core;
 extern crate zinc;
 
 #[no_mangle]
-#[no_stack_check]
 #[allow(unused_variable)]
 #[allow(dead_code)]
 pub unsafe fn main() {

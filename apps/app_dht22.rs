@@ -65,7 +65,6 @@ platformtree!(
 )
 
 #[zinc_task]
-#[no_stack_check]
 fn run(args: &pt::run_args) {
   use zinc::drivers::chario::CharIO;
   use zinc::hal::timer::Timer;

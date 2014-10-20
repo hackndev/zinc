@@ -201,7 +201,6 @@ impl SSP {
 }
 
 impl spi::SPI for SSP {
-  #[no_stack_check]
   fn write(&self, value: u8) {
     loop { if self.writeable() {
       break;
@@ -212,7 +211,6 @@ impl spi::SPI for SSP {
     } }
   }
 
-  #[no_stack_check]
   fn read(&self) -> u8 {
     loop {
       if self.readable() {
