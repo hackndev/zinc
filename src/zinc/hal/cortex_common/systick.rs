@@ -17,8 +17,6 @@
 
 use core::option::{Option,None,Some};
 
-#[path="../../util/ioreg.rs"] mod ioreg;
-
 /// Initialize systick timer.
 ///
 /// After this call system timer will be disabled, and needs to be enabled manual. SysTick irq will
