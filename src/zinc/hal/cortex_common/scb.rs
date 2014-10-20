@@ -16,50 +16,120 @@
 //! Interface to System Control Block.
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/CIHFDJCA.html
 
-#[path="../../util/ioreg.rs"] mod ioreg;
-
 /// Returns the CPUID.
 #[allow(dead_code)]
-pub fn cpuid() -> u32 {
-  reg::SCB.CPUID()
+pub fn cpuid() -> reg::SCB_cpuid_Get {
+  reg::SCB.cpuid.get()
 }
 
 /// Sets the pending state of the PendSV interrupt.
 pub fn set_pendsv(val: bool) {
   if val {
-    reg::SCB.set_ICSR(1 << 28);
+    reg::SCB.icsr.set_pendsvset(true);
   } else {
-    reg::SCB.set_ICSR(1 << 27);
+    reg::SCB.icsr.set_pendsvclr(true);
   }
 }
 
 mod reg {
   use util::volatile_cell::VolatileCell;
+  use core::ops::Drop;
 
-  ioreg_old!(SCBACTLRReg: u32, ACTLR)
-  reg_rw!(SCBACTLRReg, u32, ACTLR, set_ACTLR, ACTLR)
-
-  ioreg_old!(SCBReg: u32, CPUID, ICSR, VTOR, AIRCR, SCR, CCR, SHPR1, SHPR2,
-         SHPR3, SHCRS, CFSR, HFSR, _pad_0, MMAR, BFAR, AFSR)
-  reg_r!( SCBReg, u32, CPUID,                    CPUID)
-  reg_rw!(SCBReg, u32, ICSR,     set_ICSR,       ICSR)
-  reg_rw!(SCBReg, u32, VTOR,     set_VTOR,       VTOR)
-  reg_rw!(SCBReg, u32, AIRCR,    set_AIRCR,      AIRCR)
-  reg_rw!(SCBReg, u32, SCR,      set_SCR,        SCR)
-  reg_rw!(SCBReg, u32, CCR,      set_CCR,        CCR)
-  reg_rw!(SCBReg, u32, SHPR1,    set_SHPR1,      SHPR1)
-  reg_rw!(SCBReg, u32, SHPR2,    set_SHPR2,      SHPR2)
-  reg_rw!(SCBReg, u32, SHPR3,    set_SHPR3,      SHPR3)
-  reg_rw!(SCBReg, u32, SHCRS,    set_SHCRS,      SHCRS)
-  reg_rw!(SCBReg, u32, CFSR,     set_CFSR,       CFSR)
-  reg_rw!(SCBReg, u32, HFSR,     set_HFSR,       HFSR)
-  reg_rw!(SCBReg, u32, MMAR,     set_MMAR,       MMAR)
-  reg_rw!(SCBReg, u32, BFAR,     set_BFAR,       BFAR)
-  reg_rw!(SCBReg, u32, AFSR,     set_AFSR,       AFSR)
+  ioregs!(SCB = {
+    0x0       => reg32 cpuid { //! CPUID base register
+      0..3    => revision,
+      4..15   => partno,
+      20..23  => variant,
+      24..31  => implementer,
+    }
+    0x4       => reg32 icsr {  //! Interrupt control and state register
+      0..8    => vectactive,
+      11      => rettobase,
+      12..20  => vectpending,
+      22      => isrpending,
+      23      => isrprempt,
+      25      => pendstclr,
+      26      => pendstset,
+      27      => pendsvclr,
+      28      => pendsvset,
+      31      => nmipendset,
+    }
+    0x8       => reg32 vtor {  //! Vector table offset register
+      7..31   => tbloff,
+    }
+    0xc       => reg32 aircr { //! Application interrupt and reset control register
+      0       => vectreset,
+      1       => vectclractive,
+      2       => sysresetreq,
+      8..10   => prigroup,
+      15      => endianness,
+      16..31  => vectkey,
+    }
+    0x10      => reg32 scr {   //! System control register
+      1       => sleeponexit,
+      2       => sleepdeep,
+      4       => sevonpend,
+    }
+    0x14      => reg32 ccr {   //! Configuration and control register
+      0       => nonbasethrdena,
+      1       => usersetmpend,
+      3       => unalign_trp,
+      4       => div_0_trp,
+      8       => bfhfnmign,
+      9       => stkalign,
+    }
+    0x18      => reg32 shpr[3] { //! System handler priority register
+      0..31   => pri[4],
+    }
+    0x24      => reg32 shcsr { //! System handler control and state register
+      0       => memfaultact,
+      1       => busfaultact,
+      3       => usgfaultact,
+      7       => svcallact,
+      8       => monitoract,
+      10      => pendsvact,
+      11      => systickact,
+      12      => usgfaultpended,
+      13      => memfaultpended,
+      14      => busfaultpended,
+      15      => svfaultpended,
+      16      => memfaultpendena,
+      17      => busfaultena,
+      18      => usgfaultena,
+    }
+    0x28      => reg32 cfsr {  //! Configurable fault status register
+      0..7    => memmanage,
+      8..15   => busfault,
+      16..31  => usagefault,
+    }
+    0x2c      => reg32 hfsr {  //! HardFault status register
+      1       => vecttbl,
+      30      => forced,
+      31      => debugevt,
+    }
+    0x30      => reg32 dfsr {  //! DebugFault status register
+      0       => halted,
+      1       => bkpt,
+      2       => dwttrap,
+      3       => vcatch,
+      4       => external,
+    }
+    0x34      => reg32 mmfar { //! MemManage address register
+      0..31   => address,
+    }
+    0x38      => reg32 bfar {  //! BusFault address register
+      0..31   => address,
+    }
+    0x3c      => reg32 afsr {  //! Auxilary fault address register
+      0..31   => afsr,
+    }
+    0x88      => reg32 cpacr { //! Coprocessor access control register
+      0..23   => cp[24],
+    }
+  })
 
   #[allow(dead_code)]
   extern {
-    #[link_name="armmem_SCB"] pub static SCB: SCBReg;
-    #[link_name="armmem_SCB_ACTLR"] pub static SCB_ACTLR: SCBACTLRReg;
+    #[link_name="armmem_SCB"] pub static SCB: SCB;
   }
 }
