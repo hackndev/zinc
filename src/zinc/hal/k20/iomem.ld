@@ -70,6 +70,9 @@ PROVIDE(isr_port_d          = isr_default_fault);
 PROVIDE(isr_port_e          = isr_default_fault);
 PROVIDE(isr_soft            = isr_default_fault);
 
+# This originated from the Freescale K20 Sub-Family Reference Manual
+# Document number K20P48M50SF0RM, Rev. 2
+
 k20_iomem_PERIPH0   = 0x40000000;
 
 k20_iomem_CROSSBAR  = 0x40004000;
