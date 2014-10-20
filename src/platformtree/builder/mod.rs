@@ -204,9 +204,7 @@ impl Builder {
       -> P<ast::Item> {
     let attr_no_mangle = cx.attribute(span, cx.meta_word(
         span, InternedString::new("no_mangle")));
-    let attr_no_stack_check = cx.attribute(span, cx.meta_word(
-        span, InternedString::new("no_stack_check")));
-    let mut attrs = vec!(attr_no_mangle, attr_no_stack_check);
+    let mut attrs = vec!(attr_no_mangle);
     attrs.push_all(local_attrs);
 
     P(ast::Item {
