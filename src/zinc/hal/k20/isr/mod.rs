@@ -1,5 +1,5 @@
 // Zinc, the bare metal stack for rust.
-// Copyright 2014 Vladimir "farcaller" Pouzanov <farcaller@gmail.com>
+// Copyright 2014 Ben Gamari <bgamari@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,22 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! This file is not part of zinc crate, it is linked separately, alongside the
-//! ISRs for the platform.
+#[cfg(k20_72)] pub use hal::k20::isr::k20_72::*;
+#[cfg(k20_50)] pub use hal::k20::isr::k20_50::*;
 
-#![feature(asm, globs, lang_items)]
-#![crate_name="isr"]
-#![crate_type="staticlib"]
-#![no_std]
-
-extern crate core;
-
-#[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
-
-#[cfg(mcu_lpc17xx)]
-#[path="lpc17xx/isr.rs"] pub mod isr_lpc17xx;
-
-#[cfg(mcu_k20)]
-#[path="k20/isr/mod.rs"] pub mod isr_k20;
-
-#[path="../util/lang_items.rs"] mod lang_items;
+#[cfg(k20_72)] mod k20_72;
+#[cfg(k20_50)] mod k20_50;
