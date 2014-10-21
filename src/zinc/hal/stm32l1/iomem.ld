@@ -1,9 +1,5 @@
 INCLUDE ./src/zinc/hal/cortex_m3/armmem.ld
 
-/* Derived from:
-http://www.st.com/web/en/resource/technical/document/application_note/DM00032987.pdf
-*/
-
 stm32l1_iomem_TIM2  = 0x40000000;
 
 stm32l1_iomem_PWR   = 0x40007000;

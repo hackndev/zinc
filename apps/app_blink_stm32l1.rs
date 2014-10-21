@@ -23,12 +23,12 @@ pub unsafe fn main() {
   };
   led1.setup();
 
-  let timer = timer::Timer::new(timer::Timer2, 25u32);
+  let timer = timer::Timer::new(timer::Timer2, 25);
 
   loop {
     led1.set_high();
-    timer.wait_ms(300);
+    timer.wait_ms(50);
     led1.set_low();
-    timer.wait_ms(300);
+    timer.wait_ms(50);
   }
 }
