@@ -15,9 +15,9 @@
 
 //! Concurrency-friendly shared state
 
-use core::ty::Unsafe;
+use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
-use core::kinds::{Share, Send};
+use core::kinds::{Sync, Send};
 use core::kinds::marker;
 
 use hal::cortex_m3::irq::NoInterrupts;
@@ -26,7 +26,7 @@ use hal::cortex_m3::irq::NoInterrupts;
 /// when in a critical section.
 #[allow(missing_doc)]
 pub struct Shared<T> {
-  pub value: Unsafe<T>,
+  pub value: UnsafeCell<T>,
   pub invariant: marker::InvariantType<T>,
 }
 
@@ -41,7 +41,7 @@ impl<T> Shared<T> {
   /// Create a new `Shared` value
   pub fn new(value: T) -> Shared<T> {
     Shared {
-      value: Unsafe::new(value),
+      value: UnsafeCell::new(value),
       invariant: marker::InvariantType,
     }
   }
@@ -68,4 +68,4 @@ impl<'a, T> DerefMut<T> for SharedRef<'a, T> {
   }
 }
 
-impl<T: Send> Share for Shared<T> {}
+impl<T: Send> Sync for Shared<T> {}
