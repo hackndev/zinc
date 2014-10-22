@@ -29,7 +29,7 @@ pub enum TimerPeripheral {
 
 /// Structure describing a Timer.
 pub struct Timer {
-  reg: &'static reg::TIM2To5,
+  reg: &'static reg::TIMER,
 }
 
 impl Timer {
@@ -42,9 +42,9 @@ impl Timer {
 
     clock.enable();
 
-    reg.set_PSC(counter - 1);
-    reg.set_CR1(1);
-    reg.set_EGR(1);
+    reg.psc.set_prescaler(counter as u16 - 1);
+    reg.cr1.set_control(1);
+    reg.egr.set_generate(1);
 
     Timer {
       reg: reg,
@@ -55,37 +55,75 @@ impl Timer {
 impl timer::Timer for Timer {
   #[inline(always)]
   fn get_counter(&self) -> u32 {
-    self.reg.CNT()
+    self.reg.cnt.counter() as u32
   }
 }
 
 mod reg {
   use util::volatile_cell::VolatileCell;
+  use core::ops::Drop;
 
-  ioreg_old!(TIM2To5: u32, CR1, CR2, SMCR, DIER, SR, EGR, CCMR1, CCMR2, CCER, CNT,
-                       PSC, ARR, _pad_0, CCR1, CCR2, CCR3, CCR4, _pad_1, DCR,
-                       DMAR, OR)
-  reg_rw!(TIM2To5, u32, CR1,   set_CR1,   CR1)    // control 1
-  reg_rw!(TIM2To5, u32, CR2,   set_CR2,   CR2)    // control 2
-  reg_rw!(TIM2To5, u32, SMCR,  set_SMCR,  SMCR)   // slave mode control
-  reg_rw!(TIM2To5, u32, DIER,  set_DIER,  DIER)   // DMA/interrupt enable
-  reg_rw!(TIM2To5, u32, SR,    set_SR,    SR)     // status
-  reg_w!( TIM2To5, u32,        set_EGR,   EGR)    // event generation
-  reg_rw!(TIM2To5, u32, CCMR1, set_CCMR1, CCMR1)  // capture/compare mode 1
-  reg_rw!(TIM2To5, u32, CCMR2, set_CCMR2, CCMR2)  // capture/compare mode 2
-  reg_rw!(TIM2To5, u32, CCER,  set_CCER,  CCER)   // capture/compare enable
-  reg_rw!(TIM2To5, u32, CNT,   set_CNT,   CNT)    // counter
-  reg_rw!(TIM2To5, u32, PSC,   set_PSC,   PSC)    // prescaler
-  reg_rw!(TIM2To5, u32, ARR,   set_ARR,   ARR)    // auto-reload
-  reg_rw!(TIM2To5, u32, CCR1,  set_CCR1,  CCR1)   // capture/compare 1
-  reg_rw!(TIM2To5, u32, CCR2,  set_CCR2,  CCR2)   // capture/compare 2
-  reg_rw!(TIM2To5, u32, CCR3,  set_CCR3,  CCR3)   // capture/compare 3
-  reg_rw!(TIM2To5, u32, CCR4,  set_CCR4,  CCR4)   // capture/compare 4
-  reg_rw!(TIM2To5, u32, DCR,   set_DCR,   DCR)    // DMA control
-  reg_rw!(TIM2To5, u32, DMAR,  set_DMAR,  DMAR)   // DMA address for full transfer
-  reg_rw!(TIM2To5, u32, OR,    set_OR,    OR)     // option
+  ioregs!(TIMER = {
+    0x00 => reg16 cr1 {      // control 1
+      15..0 => control : rw,
+    },
+    0x04 => reg16 cr2 {      // control 2
+      15..0 => control : rw,
+    },
+    0x08 => reg16 smcr {     // slave mode control
+      15..0 => slave_control : rw,
+    },
+    0x0A => reg16 dier {     // DMA/interrupt enable
+      15..0 => enable : rw,
+    },
+    0x10 => reg16 sr {       // status
+      15..0 => status : rw,
+    },
+    0x14 => reg16 egr {      // event generation
+      15..0 => generate : wo,
+    },
+    0x18 => reg16 ccmr1 {    // capture/compare mode 1
+      15..0 => mode : rw,
+    },
+    0x1C => reg16 ccmr2 {    // capture/compare mode 2
+      15..0 => mode : rw,
+    },
+    0x20 => reg16 ccer {     // capture/compare enable
+      15..0 => enable : rw,
+    },
+    0x24 => reg16 cnt {      // counter
+      15..0 => counter : rw,
+    },
+    0x28 => reg16 psc {      // prescaler
+      15..0 => prescaler : rw,
+    },
+    0x2C => reg32 arr {      // auto-reload
+      31..0 => reload : rw,
+    },
+    0x34 => reg32 ccr1 {     // capture/compare 1
+      31..0 => cc : rw,
+    },
+    0x38 => reg32 ccr2 {     // capture/compare 2
+      31..0 => cc : rw,
+    },
+    0x3C => reg32 ccr3 {     // capture/compare 3
+      31..0 => cc : rw,
+    },
+    0x40 => reg32 ccr4 {     // capture/compare 4
+      31..0 => cc : rw,
+    },
+    0x48 => reg16 dcr {      // DMA control
+      15..0 => control : rw,
+    },
+    0x4C => reg16 dmap {     // DMA address for full transfer
+      15..0 => address : rw,
+    },
+    0x50 => reg16 or {       // option
+      15..0 => option : rw,
+    },
+  })
 
   extern {
-    #[link_name="stm32l1_iomem_TIM2"] pub static TIM2: TIM2To5;
+    #[link_name="stm32l1_iomem_TIM2"] pub static TIM2: TIMER;
   }
 }

@@ -23,7 +23,7 @@ pub unsafe fn main() {
   };
   led1.setup();
 
-  let timer = timer::Timer::new(timer::Timer2, 25);
+  let timer = timer::Timer::new(timer::Timer2, 16);
 
   loop {
     led1.set_high();
