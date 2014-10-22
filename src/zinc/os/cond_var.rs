@@ -22,7 +22,7 @@ mod internal {
   use core::option::{None, Some};
   use core::ty::Unsafe;
   use core::kinds::marker;
-  use core::kinds::Share;
+  use core::kinds::Sync;
 
   use hal::cortex_m3::sched::NoInterrupts;
   use util::queue::{Queue, Node};
@@ -87,13 +87,13 @@ mod internal {
     }
   }
 
-  impl Share for CondVar {}
+  impl Sync for CondVar {}
 }
 
 #[cfg(not(multitasking))]
 mod internal {
   use core::kinds::marker;
-  use core::kinds::Share;
+  use core::kinds::Sync;
   use core::cell::UnsafeCell;
 
   use util::support::wfi;
@@ -143,5 +143,5 @@ mod internal {
     }
   }
 
-  impl Share for CondVar {}
+  impl Sync for CondVar {}
 }

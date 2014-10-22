@@ -21,7 +21,7 @@ pub use os::mutex::internal::{MUTEX_INIT, Mutex, Guard};
 mod internal {
   use core::kinds::marker;
   use core::ty::Unsafe;
-  use core::kinds::{Share};
+  use core::kinds::Sync;
   use core::option::{Option, None, Some};
   use core::ops::Drop;
 
@@ -137,12 +137,12 @@ mod internal {
     }
   }
 
-  impl Share for Mutex { }
+  impl Sync for Mutex { }
 }
 
 #[cfg(not(multitasking))]
 mod internal {
-  use core::kinds::{Share};
+  use core::kinds::Sync;
   use core::option::{Option, None, Some};
   use core::ops::Drop;
   use core::intrinsics::abort;
@@ -202,5 +202,5 @@ mod internal {
     }
   }
 
-  impl Share for Mutex { }
+  impl Sync for Mutex { }
 }
