@@ -42,8 +42,8 @@ impl Timer {
 
     clock.enable();
 
-    reg.psc.set_prescaler(counter as u16 - 1);
     reg.cr1.set_control(1);
+    reg.psc.set_prescaler(counter as u16 - 1);
     reg.egr.set_generate(1);
 
     Timer {

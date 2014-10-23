@@ -184,6 +184,7 @@ impl PeripheralClock {
   pub fn enable(self) {
     self.set_reg(true);
   }
+
   /// Disables the given peripheral clock.
   pub fn disable(self) {
     self.set_reg(false);

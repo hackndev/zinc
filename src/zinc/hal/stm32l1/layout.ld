@@ -1,4 +1,4 @@
-__STACK_BASE = 0x20007FFF;  /* end of ram */
+__STACK_BASE = 0x20008000;  /* end of ram */
 _boot_checksum = 0; /* TODO(farcaller): extract this to lpc code only */
 _data_load = LOADADDR(.data);
 

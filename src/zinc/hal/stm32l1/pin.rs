@@ -19,7 +19,7 @@
 //! depending on the package.
 
 use super::peripheral_clock;
-use core::intrinsics::abort;
+//use core::intrinsics::abort;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 
@@ -73,6 +73,7 @@ pub enum Mode {
   GpioIn,
   /// GPIO Output Mode
   GpioOut(OutputType, Speed),
+  //TODO (kvark): implement this
   // GPIO Alternate function Mode
   //AltFunction(OutputType, Speed),
   // GPIO Analog Mode
@@ -111,7 +112,6 @@ pub struct PinConf {
 
 impl PinConf {
   /// Setup the pin.
-  #[no_stack_check]
   #[inline(always)]
   pub fn setup(&self) {
     self.port.clock().enable();  // TODO(farcaller): should be done once per port
@@ -131,7 +131,8 @@ impl PinConf {
           gpreg.ospeedr.set_speed(sv | (speed as u32 << offset2));
           0b01
       },
-      /*AltFunction(_, _) => {
+      /*TODO (kvark): implement this
+      AltFunction(_, _) => {
           unsafe { abort() } //TODO
           0b10
       },

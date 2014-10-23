@@ -18,8 +18,8 @@
 //! This module includes code for setting up the clock, flash, access time and
 //! performing initial peripheral configuration.
 
-use hal::mem_init::init_data;
-use core::intrinsics::abort;
+//use hal::mem_init::init_data;
+//use core::intrinsics::abort;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
@@ -31,12 +31,6 @@ use core::intrinsics::abort;
 pub mod reg {
   use util::volatile_cell::VolatileCell;
   use core::ops::Drop;
-
-  pub enum SystemClockSwitch {
-    SystemClockHSI = 0,
-    SystemClockHSE = 1,
-    SystemClockPLL = 2,
-  }
 
   ioregs!(RCC = {
     0x00 => reg32 cr {          // clock control

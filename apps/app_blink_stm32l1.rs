@@ -6,9 +6,6 @@ extern crate core;
 extern crate zinc;
 
 #[no_mangle]
-#[no_stack_check]
-#[allow(unused_variable)]
-#[allow(dead_code)]
 pub unsafe fn main() {
   use zinc::hal::timer::Timer;
   use zinc::hal::stm32l1::{pin, timer};
