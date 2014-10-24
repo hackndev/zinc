@@ -86,7 +86,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let port_def = pinmap::port_def();
   let function_str = match node.get_string_attr("function") {
-    None => "GPIO".to_string(),
+    None => "Gpio".to_string(),
     Some(fun) => {
       let pins = &port_def[*port_path];
       let maybe_pin_index = from_str(node.path.as_slice()).unwrap();
@@ -156,7 +156,7 @@ mod test {
           "let p1 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                1u8,
-               zinc::hal::lpc17xx::pin::GPIO,
+               zinc::hal::lpc17xx::pin::Gpio,
                core::option::Some(zinc::hal::pin::In));");
     });
   }
@@ -178,7 +178,7 @@ mod test {
           "let p2 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                2u8,
-               zinc::hal::lpc17xx::pin::GPIO,
+               zinc::hal::lpc17xx::pin::Gpio,
                core::option::Some(zinc::hal::pin::Out));");
     });
   }

@@ -7,7 +7,7 @@ extern crate zinc;
 
 use core::option::Some;
 use zinc::hal::k20::{pin, watchdog};
-use zinc::hal::pin::GPIO;
+use zinc::hal::pin::{Gpio, High, Low};
 use zinc::hal::cortex_m4::systick;
 
 /// Wait the given number of SysTick ticks
@@ -34,7 +34,7 @@ pub unsafe fn main() {
   watchdog::init(watchdog::Disabled);
 
   // Pins for MC HCK (http://www.mchck.org/)
-  let led1 = pin::Pin::new(pin::PortB, 16, pin::GPIO, Some(zinc::hal::pin::Out));
+  let led1 = pin::Pin::new(pin::PortB, 16, pin::Gpio, Some(zinc::hal::pin::Out));
 
   systick::setup(systick::ten_ms().unwrap_or(480000));
   systick::enable();
