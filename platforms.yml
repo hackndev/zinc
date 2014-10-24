@@ -4,5 +4,7 @@ lpc17xx:
     - mcu_has_spi
 stm32f4:
   arch:   cortex_m4
+stm32l1:
+  arch:   cortex_m3
 k20:
   arch:   cortex_m4

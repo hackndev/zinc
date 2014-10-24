@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Routines for initialization of NXP LPC17xx.
+//! Routines for initialization of STM32F4.
 //!
 //! This module includes code for setting up the clock, flash, access time and
 //! performing initial peripheral configuration.
