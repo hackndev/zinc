@@ -7,25 +7,22 @@ extern crate zinc;
 
 #[no_mangle]
 pub unsafe fn main() {
-  use zinc::hal::timer::Timer;
+  use zinc::hal::pin::GPIO;
   use zinc::hal::stm32l1::{pin, timer};
+  use zinc::hal::timer::Timer;
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
 
-  let led1 = pin::PinConf {
-    port: pin::PortA,
-    pin: 5,
-    mode: pin::GpioOut(pin::OutPushPull, pin::VeryLow),
-    pull_type: pin::PullNone,
-  };
-  led1.setup();
+  let led1 = pin::Pin::new(pin::PortA, 5,
+    pin::GpioOut(pin::OutPushPull, pin::VeryLow),
+    pin::PullNone);
 
-  let timer = timer::Timer::new(timer::Timer2, 16);
+  let timer = timer::Timer::new(timer::Timer2, 2097, 0);
 
   loop {
     led1.set_high();
-    timer.wait_ms(50);
+    timer.wait_ms(1);
     led1.set_low();
-    timer.wait_ms(50);
+    timer.wait_ms(1);
   }
 }

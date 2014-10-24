@@ -19,7 +19,7 @@
 //! depending on the package.
 
 use super::peripheral_clock;
-//use core::intrinsics::abort;
+use core::intrinsics::abort;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 
@@ -80,58 +80,46 @@ pub enum Mode {
   //Analog,
 }
 
-impl Port {
-  fn clock(self) -> peripheral_clock::PeripheralClock {
-    peripheral_clock::ClockAhb(match self {
-      PortA => peripheral_clock::GpioA,
-      PortB => peripheral_clock::GpioB,
-      PortC => peripheral_clock::GpioC,
-      PortD => peripheral_clock::GpioD,
-      PortE => peripheral_clock::GpioE,
-      PortF => peripheral_clock::GpioF,
-      PortG => peripheral_clock::GpioG,
-      PortH => peripheral_clock::GpioH,
-    })
-  }
-}
-
 /// Pin configuration.
-///
-/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
-/// has all possible pin configurations.
-pub struct PinConf {
-  /// Pin port, mcu-specific.
-  pub port: Port,
-  /// Pin number.
-  pub pin: u8,
-  /// Pin mode, mcu-specific.
-  pub mode: Mode,
-  /// Pin pull type.
-  pub pull_type: PullType,
+pub struct Pin {
+  /// Pin index.
+  pub index: u8,
+  /// GPIO register
+  reg: &'static reg::GPIO,
 }
 
-impl PinConf {
+impl Pin {
   /// Setup the pin.
   #[inline(always)]
-  pub fn setup(&self) {
-    self.port.clock().enable();  // TODO(farcaller): should be done once per port
+  pub fn new(port: Port, pin_index: u8, mode: Mode, pull_type: PullType) -> Pin {
+    let (reg, clock) = match port {
+      PortA => (&reg::GPIOA, peripheral_clock::GpioA),
+      PortB => (&reg::GPIOB, peripheral_clock::GpioB),
+      PortC => (&reg::GPIOC, peripheral_clock::GpioC),
+      PortD => (&reg::GPIOD, peripheral_clock::GpioD),
+      PortE => (&reg::GPIOE, peripheral_clock::GpioE),
+      PortF => (&reg::GPIOF, peripheral_clock::GpioF),
+      PortG => (&reg::GPIOG, peripheral_clock::GpioG),
+      PortH => (&reg::GPIOH, peripheral_clock::GpioH),
+    };
+    // TODO(farcaller): should be done once per port
+    peripheral_clock::ClockAhb(clock).enable();
 
-    let offset1 = self.pin as uint;
+    let offset1 = pin_index as uint;
     let mask1 = !(0b1u16 << offset1);
-    let offset2 = self.pin as uint * 2;
+    let offset2 = pin_index as uint * 2;
     let mask2: u32 = !(0b11 << offset2);
-    let gpreg = self.get_reg();
 
-    let fun: u32 = match self.mode {
+    let fun: u32 = match mode {
       GpioIn  => 0b00,
       GpioOut(otype, speed) => {
-          let tv: u16 = gpreg.otyper.otype() & mask1;
-          gpreg.otyper.set_otype(tv | (otype as u16 << offset1));
-          let sv: u32 = gpreg.ospeedr.speed() & mask2;
-          gpreg.ospeedr.set_speed(sv | (speed as u32 << offset2));
+          let tv: u16 = reg.otyper.otype() & mask1;
+          reg.otyper.set_otype(tv | (otype as u16 << offset1));
+          let sv: u32 = reg.ospeedr.speed() & mask2;
+          reg.ospeedr.set_speed(sv | (speed as u32 << offset2));
           0b01
       },
-      /*TODO (kvark): implement this
+      /*TODO (kvark): implement these modes
       AltFunction(_, _) => {
           unsafe { abort() } //TODO
           0b10
@@ -142,52 +130,46 @@ impl PinConf {
       },*/
     };
 
-    let mode: u32 = gpreg.moder.mode() & mask2;
-    gpreg.moder.set_mode(mode | (fun << offset2));
+    let mode: u32 = reg.moder.mode() & mask2;
+    reg.moder.set_mode(mode | (fun << offset2));
 
-    let pull: u32 = gpreg.pupdr.mode() & mask2;
-    let pull_val = (self.pull_type as u32) << offset2;
-    gpreg.pupdr.set_mode(pull | pull_val);
+    let pull: u32 = reg.pupdr.mode() & mask2;
+    let pull_val = (pull_type as u32) << offset2;
+    reg.pupdr.set_mode(pull | pull_val);
+
+    Pin {
+      index: pin_index,
+      reg: reg,
+    }
+  }
+}
+
+impl ::hal::pin::GPIO for Pin {
+  fn set_high(&self) {
+    let bit: u32 = 1 << self.index as uint;
+    self.reg.bsrr.set_reset(bit);
   }
 
-  /// Sets output GPIO value to high.
-  pub fn set_high(&self) {
-    let bit: u32 = 1 << self.pin as uint;
-    self.get_reg().bsrr.set_reset(bit);
+  fn set_low(&self) {
+    let bit: u32 = 1 << (self.index as uint + 16);
+    self.reg.bsrr.set_reset(bit);
   }
 
-  /// Sets output GPIO value to low.
-  pub fn set_low(&self) {
-    let bit: u32 = 1 << (self.pin as uint + 16);
-    self.get_reg().bsrr.set_reset(bit);
-  }
+  fn level(&self) -> ::hal::pin::GPIOLevel {
+    let bit = 1u16 << (self.index as uint);
 
-  /// Returns input GPIO level.
-  pub fn level(&self) -> ::hal::pin::GPIOLevel {
-    let bit = 1u16 << (self.pin as uint);
-    let reg = self.get_reg();
-
-    match reg.idr.input() & bit {
+    match self.reg.idr.input() & bit {
       0 => ::hal::pin::Low,
       _ => ::hal::pin::High,
     }
   }
 
-  fn get_reg(&self) -> &reg::GPIO {
-    match self.port {
-      PortA => &reg::GPIOA,
-      PortB => &reg::GPIOB,
-      PortC => &reg::GPIOC,
-      PortD => &reg::GPIOD,
-      PortE => &reg::GPIOE,
-      PortF => &reg::GPIOF,
-      PortG => &reg::GPIOG,
-      PortH => &reg::GPIOH,
-    }
+  fn set_direction(&self, _new_mode: ::hal::pin::GPIODirection) {
+    //TODO(kvark)
+    unsafe { abort() }
   }
 }
 
-#[allow(dead_code)]
 mod reg {
   use util::volatile_cell::VolatileCell;
   use core::ops::Drop;

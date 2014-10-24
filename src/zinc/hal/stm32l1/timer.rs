@@ -34,15 +34,16 @@ pub struct Timer {
 
 impl Timer {
   /// Create and start a Timer.
-  pub fn new(peripheral: TimerPeripheral, counter: u32) -> Timer {
+  pub fn new(peripheral: TimerPeripheral, counter: u32, div_shift: u16) -> Timer {
     use super::peripheral_clock as pc;
-    let (clock, reg) = match peripheral {
-      Timer2 => (pc::ClockApb1(pc::Tim2), &reg::TIM2),
+    let (reg, clock) = match peripheral {
+      Timer2 => (&reg::TIM2, pc::Tim2),
     };
 
-    clock.enable();
+    pc::ClockApb1(clock).enable();
 
-    reg.cr1.set_control(1);
+    reg.cr1.set_counter_enable(true);
+    reg.cr1.set_divisor_shift(div_shift);
     reg.psc.set_prescaler(counter as u16 - 1);
     reg.egr.set_generate(1);
 
@@ -65,7 +66,14 @@ mod reg {
 
   ioregs!(TIMER = {
     0x00 => reg16 cr1 {      // control 1
-      15..0 => control : rw,
+      0     => counter_enable : rw,
+      1     => update_disable : rw,
+      2     => update_request_source : rw,
+      3     => one_pulse_mode : rw,
+      4     => direction : rw,
+      6..5  => center_alignment_mode : rw,
+      7     => auto_reload_enable : rw,
+      9..8  => divisor_shift : rw,
     },
     0x04 => reg16 cr2 {      // control 2
       15..0 => control : rw,
