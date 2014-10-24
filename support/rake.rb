@@ -94,7 +94,7 @@ def compile_rust(n, h)
        "#{search_paths} #{codegen} " +
        "#{outflags} #{ignore_warnings} #{rust_src} #{fail_wrap}"
     if File.extname(t.name) == '.o' && !should_fail
-      sh "#{:strip.in_toolchain} -N rust_stack_exhausted -N rust_begin_unwind " +
+      sh "#{:strip.in_toolchain} -N rust_stack_exhausted " +
          "-N rust_eh_personality #{t.name}"
     end
   end
