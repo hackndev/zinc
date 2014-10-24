@@ -19,10 +19,61 @@
 //! performing initial peripheral configuration.
 
 //use hal::mem_init::init_data;
-//use core::intrinsics::abort;
+use core::default::Default;
+use core::intrinsics::abort;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
+
+/// Phase-locked loop configuration.
+pub struct PllConfig;
+
+/// Multi-speed internal clock divisor.
+pub enum MsiSpeed {
+  /// 65_536 kHz
+  Msi65   = 0,
+  /// 131_072 kHz
+  Msi131  = 1,
+  /// 262_144 kHz
+  Msi262  = 2,
+  /// 524_288 kHz
+  Msi524  = 3,
+  /// 1048 MHz
+  Msi1048 = 4,
+  /// 2097 MHz
+  Msi2097 = 5,
+  /// 4194 MHz
+  Msi4194 = 6,
+}
+
+/// System clock source.
+pub enum SystemClockSource {
+  /// High-speed internal oscillator, 16MHz.
+  SystemClockHSI,
+  /// High-speed external oscillator with configurable frequency.
+  SystemClockHSE(u32),
+  /// PLL.
+  SystemClockPLL(PllConfig),
+  /// Multi-speed internal clock,
+  SystemClockMSI(MsiSpeed),
+}
+
+impl Default for SystemClockSource {
+  fn default() -> SystemClockSource {
+    SystemClockMSI(Msi2097)
+  }
+}
+
+impl SystemClockSource {
+  /// Get the system clock speed in kHz
+  pub fn to_speed_khz(&self) -> u32 {
+    match *self {
+        SystemClockHSI => 16<<10,
+        SystemClockMSI(Msi2097) => 2097,
+        _ => unsafe { abort() }, //TODO(kvark)
+    }
+  }
+}
 
 // TODO(farcaller): this mod is pub as it's being used in peripheral_clock.rs.
 //                  This is not the best design solution and a good reason to
