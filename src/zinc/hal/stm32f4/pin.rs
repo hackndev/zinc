@@ -108,7 +108,7 @@ impl PinConf {
   }
 
   /// Returns input GPIO level.
-  pub fn level(&self) -> ::hal::pin::GPIOLevel {
+  pub fn level(&self) -> ::hal::pin::GpioLevel {
     let bit: u32 = 1 << (self.pin as uint);
     let reg = self.get_reg();
 

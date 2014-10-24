@@ -16,7 +16,7 @@
 //! HAL for STM32F4 GPIO peripheral.
 
 use hal::stm32f4::pin;
-use hal::pin::{GPIODirection};
+use hal::pin::{GpioDirection};
 
 #[path="../../util/ioreg.rs"]
 mod ioreg;
@@ -27,7 +27,7 @@ pub struct GPIOConf {
   pub pin: pin::PinConf,
 
   /// Direction for GPIO, either `In` or `Out`.
-  pub direction: GPIODirection,
+  pub direction: GpioDirection,
 }
 
 impl GPIOConf {

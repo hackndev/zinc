@@ -16,7 +16,7 @@
 //! Common definitions for pin HAL.
 
 /// GPIO direction.
-pub enum GPIODirection {
+pub enum GpioDirection {
   /// Input mode.
   In,
   /// Output mode.
@@ -25,7 +25,7 @@ pub enum GPIODirection {
 
 /// Logic levels.
 #[deriving(PartialEq)]
-pub enum GPIOLevel {
+pub enum GpioLevel {
   /// Logic low.
   Low,
   /// Logic high.
@@ -33,7 +33,7 @@ pub enum GPIOLevel {
 }
 
 /// General Purpose I/O.
-pub trait GPIO {
+pub trait Gpio {
   /// Set to logic high.
   fn set_high(&self);
 
@@ -41,9 +41,9 @@ pub trait GPIO {
   fn set_low(&self);
 
   /// Read current logic level.
-  fn level(&self) -> GPIOLevel;
+  fn level(&self) -> GpioLevel;
 
   /// Set direction mode to `In` or `Out`,
   /// for reading or writing respectively.
-  fn set_direction(&self, new_mode: GPIODirection);
+  fn set_direction(&self, new_mode: GpioDirection);
 }

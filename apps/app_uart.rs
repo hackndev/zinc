@@ -60,7 +60,7 @@ platformtree!(
 fn run(args: &pt::run_args) {
   use zinc::drivers::chario::CharIO;
   use zinc::hal::timer::Timer;
-  use zinc::hal::pin::GPIO;
+  use zinc::hal::pin::Gpio;
 
   args.uart.puts("Hello, world\n");
 

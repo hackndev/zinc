@@ -47,7 +47,7 @@ pub enum Port {
 #[allow(missing_doc)]
 pub enum Function {
   Analog       = 0,
-  GPIO         = 1,
+  Gpio         = 1,
   AltFunction2 = 2,
   AltFunction3 = 3,
   AltFunction4 = 4,
@@ -81,7 +81,7 @@ pub enum SlewRate {
 impl Pin {
   /// Create and setup a Pin.
   pub fn new(port: Port, pin_index: u8, function: Function,
-      gpiodir: Option<::hal::pin::GPIODirection>) -> Pin {
+      gpiodir: Option<::hal::pin::GpioDirection>) -> Pin {
     let pin = Pin {
       port: port,
       pin: pin_index,
@@ -93,7 +93,7 @@ impl Pin {
   }
 
   fn setup_regs(&self, function: Function,
-      gpiodir: Option<::hal::pin::GPIODirection>,
+      gpiodir: Option<::hal::pin::GpioDirection>,
       pull: PullConf, drive_strength: DriveStrength,
       slew_rate: SlewRate, filter: bool, open_drain: bool) {
     // enable port clock
@@ -122,34 +122,34 @@ impl Pin {
       .set_dse(dse)
       .set_mux(function as u32);
 
-    if function == GPIO {
-      (self as &::hal::pin::GPIO).set_direction(gpiodir.unwrap());
+    if function == Gpio {
+      (self as &::hal::pin::Gpio).set_direction(gpiodir.unwrap());
     }
   }
 
-  fn gpioreg(&self) -> &'static reg::GPIO {
+  fn gpioreg(&self) -> &'static reg::Gpio {
     match self.port {
-      PortA => &reg::GPIOA,
-      PortB => &reg::GPIOB,
-      PortC => &reg::GPIOC,
-      PortD => &reg::GPIOD,
-      PortE => &reg::GPIOE,
+      PortA => &reg::GpioA,
+      PortB => &reg::GpioB,
+      PortC => &reg::GpioC,
+      PortD => &reg::GpioD,
+      PortE => &reg::GpioE,
     }
   }
 
-  fn pcr(&self) -> &'static reg::PORT_pcr {
-    let port: &reg::PORT = match self.port {
-      PortA => &reg::PORTA,
-      PortB => &reg::PORTB,
-      PortC => &reg::PORTC,
-      PortD => &reg::PORTD,
-      PortE => &reg::PORTE,
+  fn pcr(&self) -> &'static reg::Port_pcr {
+    let port: &reg::Port = match self.port {
+      PortA => &reg::PortA,
+      PortB => &reg::PortB,
+      PortC => &reg::PortC,
+      PortD => &reg::PortD,
+      PortE => &reg::PortE,
     };
     return &port.pcr[self.pin as uint];
   }
 }
 
-impl ::hal::pin::GPIO for Pin {
+impl ::hal::pin::Gpio for Pin {
   /// Sets output GPIO value to high.
   fn set_high(&self) {
     self.gpioreg().psor.set_ptso(self.pin as uint, true);
@@ -161,7 +161,7 @@ impl ::hal::pin::GPIO for Pin {
   }
 
   /// Returns input GPIO level.
-  fn level(&self) -> ::hal::pin::GPIOLevel {
+  fn level(&self) -> ::hal::pin::GpioLevel {
     let reg = self.gpioreg();
     match reg.pdir.pdi(self.pin as uint) {
       false => ::hal::pin::Low,
@@ -170,7 +170,7 @@ impl ::hal::pin::GPIO for Pin {
   }
 
   /// Sets output GPIO direction.
-  fn set_direction(&self, new_mode: ::hal::pin::GPIODirection) {
+  fn set_direction(&self, new_mode: ::hal::pin::GpioDirection) {
     let reg = self.gpioreg();
     let val = match new_mode {
       ::hal::pin::In  => reg::INPUT,
@@ -185,7 +185,7 @@ pub mod reg {
   use util::volatile_cell::VolatileCell;
   use core::ops::Drop;
 
-  ioregs!(PORT = {
+  ioregs!(Port = {
     /// Port control register
     0x0    => reg32 pcr[32]
     {
@@ -236,14 +236,14 @@ pub mod reg {
   })
 
   extern {
-    #[link_name="k20_iomem_PORTA"] pub static PORTA: PORT;
-    #[link_name="k20_iomem_PORTB"] pub static PORTB: PORT;
-    #[link_name="k20_iomem_PORTC"] pub static PORTC: PORT;
-    #[link_name="k20_iomem_PORTD"] pub static PORTD: PORT;
-    #[link_name="k20_iomem_PORTE"] pub static PORTE: PORT;
+    #[link_name="k20_iomem_PORTA"] pub static PortA: Port;
+    #[link_name="k20_iomem_PORTB"] pub static PortB: Port;
+    #[link_name="k20_iomem_PORTC"] pub static PortC: Port;
+    #[link_name="k20_iomem_PORTD"] pub static PortD: Port;
+    #[link_name="k20_iomem_PORTE"] pub static PortE: Port;
   }
 
-  ioregs!(GPIO = {
+  ioregs!(Gpio = {
     0x0     => reg32 pdo {  //! port data output register
       0..31   => pdo
     }
@@ -273,10 +273,10 @@ pub mod reg {
   })
 
   extern {
-    #[link_name="k20_iomem_GPIOA"] pub static GPIOA: GPIO;
-    #[link_name="k20_iomem_GPIOB"] pub static GPIOB: GPIO;
-    #[link_name="k20_iomem_GPIOC"] pub static GPIOC: GPIO;
-    #[link_name="k20_iomem_GPIOD"] pub static GPIOD: GPIO;
-    #[link_name="k20_iomem_GPIOE"] pub static GPIOE: GPIO;
+    #[link_name="k20_iomem_GPIOA"] pub static GpioA: Gpio;
+    #[link_name="k20_iomem_GPIOB"] pub static GpioB: Gpio;
+    #[link_name="k20_iomem_GPIOC"] pub static GpioC: Gpio;
+    #[link_name="k20_iomem_GPIOD"] pub static GpioD: Gpio;
+    #[link_name="k20_iomem_GPIOE"] pub static GpioE: Gpio;
   }
 }

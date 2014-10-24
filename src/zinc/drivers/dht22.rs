@@ -18,7 +18,7 @@
 use core::iter::range;
 use core::option::{Option, Some, None};
 
-use hal::pin::{GPIO, Low, High, In, Out, GPIOLevel};
+use hal::pin::{Gpio, Low, High, In, Out, GpioLevel};
 use hal::timer::Timer;
 
 /// Basic DHT22 driver ported over from Arduino example.
@@ -34,7 +34,7 @@ pub struct Measurements {
   pub temperature: f32,
 }
 
-impl<'a, T: Timer, P: GPIO> DHT22<'a, T, P> {
+impl<'a, T: Timer, P: Gpio> DHT22<'a, T, P> {
   /// Creates a new DHT22 driver based on I/O GPIO and a timer with 10us resolution.
   pub fn new(timer: &'a T, gpio: &'a P) -> DHT22<'a, T, P> {
     DHT22 {
@@ -110,7 +110,7 @@ impl<'a, T: Timer, P: GPIO> DHT22<'a, T, P> {
     }
   }
 
-  fn wait_while(&self, level: GPIOLevel, timeout: uint) -> bool {
+  fn wait_while(&self, level: GpioLevel, timeout: uint) -> bool {
     for _ in range(0, timeout / 10) {
       self.timer.wait_us(10);
       if self.gpio.level() != level {

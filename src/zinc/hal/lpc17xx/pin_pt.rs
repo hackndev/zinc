@@ -156,7 +156,7 @@ mod test {
           "let p1 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                1u8,
-               zinc::hal::lpc17xx::pin::GPIO,
+               zinc::hal::lpc17xx::pin::Gpio,
                core::option::Some(zinc::hal::pin::In));");
     });
   }
@@ -178,7 +178,7 @@ mod test {
           "let p2 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port0,
                2u8,
-               zinc::hal::lpc17xx::pin::GPIO,
+               zinc::hal::lpc17xx::pin::Gpio,
                core::option::Some(zinc::hal::pin::Out));");
     });
   }
