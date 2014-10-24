@@ -120,15 +120,15 @@ impl PinConf {
 
   fn get_reg(&self) -> &reg::GPIO {
     match self.port {
-      PortA => &reg::GPIOA,
-      PortB => &reg::GPIOB,
-      PortC => &reg::GPIOC,
-      PortD => &reg::GPIOD,
-      PortE => &reg::GPIOE,
-      PortF => &reg::GPIOF,
-      PortG => &reg::GPIOG,
-      PortH => &reg::GPIOH,
-      PortI => &reg::GPIOI,
+      PortA => &reg::GPIO_A,
+      PortB => &reg::GPIO_B,
+      PortC => &reg::GPIO_C,
+      PortD => &reg::GPIO_D,
+      PortE => &reg::GPIO_E,
+      PortF => &reg::GPIO_F,
+      PortG => &reg::GPIO_G,
+      PortH => &reg::GPIO_H,
+      PortI => &reg::GPIO_I,
     }
   }
 }
@@ -150,15 +150,15 @@ mod reg {
   reg_rw!(GPIO, u32, AFRH,     set_AFRH,     AFRH)
 
   extern {
-    #[link_name="stm32f4_iomem_GPIOA"] pub static GPIOA: GPIO;
-    #[link_name="stm32f4_iomem_GPIOB"] pub static GPIOB: GPIO;
-    #[link_name="stm32f4_iomem_GPIOC"] pub static GPIOC: GPIO;
-    #[link_name="stm32f4_iomem_GPIOD"] pub static GPIOD: GPIO;
-    #[link_name="stm32f4_iomem_GPIOE"] pub static GPIOE: GPIO;
-    #[link_name="stm32f4_iomem_GPIOF"] pub static GPIOF: GPIO;
-    #[link_name="stm32f4_iomem_GPIOG"] pub static GPIOG: GPIO;
-    #[link_name="stm32f4_iomem_GPIOH"] pub static GPIOH: GPIO;
-    #[link_name="stm32f4_iomem_GPIOI"] pub static GPIOI: GPIO;
+    #[link_name="stm32f4_iomem_GPIOA"] pub static GPIO_A: GPIO;
+    #[link_name="stm32f4_iomem_GPIOB"] pub static GPIO_B: GPIO;
+    #[link_name="stm32f4_iomem_GPIOC"] pub static GPIO_C: GPIO;
+    #[link_name="stm32f4_iomem_GPIOD"] pub static GPIO_D: GPIO;
+    #[link_name="stm32f4_iomem_GPIOE"] pub static GPIO_E: GPIO;
+    #[link_name="stm32f4_iomem_GPIOF"] pub static GPIO_F: GPIO;
+    #[link_name="stm32f4_iomem_GPIOG"] pub static GPIO_G: GPIO;
+    #[link_name="stm32f4_iomem_GPIOH"] pub static GPIO_H: GPIO;
+    #[link_name="stm32f4_iomem_GPIOI"] pub static GPIO_I: GPIO;
     // define_reg!(GPIO_J: GPIO @ 0x40022400)
     // define_reg!(GPIO_K: GPIO @ 0x40022800)
   }

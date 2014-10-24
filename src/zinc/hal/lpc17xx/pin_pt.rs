@@ -86,7 +86,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let port_def = pinmap::port_def();
   let function_str = match node.get_string_attr("function") {
-    None => "GPIO".to_string(),
+    None => "Gpio".to_string(),
     Some(fun) => {
       let pins = &port_def[*port_path];
       let maybe_pin_index = from_str(node.path.as_slice()).unwrap();

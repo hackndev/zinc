@@ -40,7 +40,11 @@ pub unsafe fn main() {
   systick::enable();
   loop {
     led1.set_high();
-    wait(10);
+    let a = match led1.level() {
+        High => 1,
+        Low  => 0
+    };
+    wait(10 / a);
     led1.set_low();
     wait(10);
   }

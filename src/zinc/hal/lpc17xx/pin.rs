@@ -84,11 +84,11 @@ impl Pin {
 
   fn gpioreg(&self) -> &reg::Gpio {
     match self.port {
-      Port0 => &reg::Gpio0,
-      Port1 => &reg::Gpio1,
-      Port2 => &reg::Gpio2,
-      Port3 => &reg::Gpio3,
-      Port4 => &reg::Gpio4,
+      Port0 => &reg::GPIO_0,
+      Port1 => &reg::GPIO_1,
+      Port2 => &reg::GPIO_2,
+      Port3 => &reg::GPIO_3,
+      Port4 => &reg::GPIO_4,
     }
   }
 
@@ -188,10 +188,10 @@ mod reg {
   reg_rw!(Gpio, u32, FIOCLR,  set_FIOCLR,  FIOCLR)
 
   extern {
-    #[link_name="lpc17xx_iomem_GPIO0"] pub static Gpio0: Gpio;
-    #[link_name="lpc17xx_iomem_GPIO1"] pub static Gpio1: Gpio;
-    #[link_name="lpc17xx_iomem_GPIO2"] pub static Gpio2: Gpio;
-    #[link_name="lpc17xx_iomem_GPIO3"] pub static Gpio3: Gpio;
-    #[link_name="lpc17xx_iomem_GPIO4"] pub static Gpio4: Gpio;
+    #[link_name="lpc17xx_iomem_GPIO0"] pub static GPIO_0: Gpio;
+    #[link_name="lpc17xx_iomem_GPIO1"] pub static GPIO_1: Gpio;
+    #[link_name="lpc17xx_iomem_GPIO2"] pub static GPIO_2: Gpio;
+    #[link_name="lpc17xx_iomem_GPIO3"] pub static GPIO_3: Gpio;
+    #[link_name="lpc17xx_iomem_GPIO4"] pub static GPIO_4: Gpio;
   }
 }

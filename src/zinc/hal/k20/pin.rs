@@ -129,21 +129,21 @@ impl Pin {
 
   fn gpioreg(&self) -> &'static reg::Gpio {
     match self.port {
-      PortA => &reg::GpioA,
-      PortB => &reg::GpioB,
-      PortC => &reg::GpioC,
-      PortD => &reg::GpioD,
-      PortE => &reg::GpioE,
+      PortA => &reg::GPIO_A,
+      PortB => &reg::GPIO_B,
+      PortC => &reg::GPIO_C,
+      PortD => &reg::GPIO_D,
+      PortE => &reg::GPIO_E,
     }
   }
 
   fn pcr(&self) -> &'static reg::Port_pcr {
     let port: &reg::Port = match self.port {
-      PortA => &reg::PortA,
-      PortB => &reg::PortB,
-      PortC => &reg::PortC,
-      PortD => &reg::PortD,
-      PortE => &reg::PortE,
+      PortA => &reg::PORT_A,
+      PortB => &reg::PORT_B,
+      PortC => &reg::PORT_C,
+      PortD => &reg::PORT_D,
+      PortE => &reg::PORT_E,
     };
     return &port.pcr[self.pin as uint];
   }
@@ -236,11 +236,11 @@ pub mod reg {
   })
 
   extern {
-    #[link_name="k20_iomem_PORTA"] pub static PortA: Port;
-    #[link_name="k20_iomem_PORTB"] pub static PortB: Port;
-    #[link_name="k20_iomem_PORTC"] pub static PortC: Port;
-    #[link_name="k20_iomem_PORTD"] pub static PortD: Port;
-    #[link_name="k20_iomem_PORTE"] pub static PortE: Port;
+    #[link_name="k20_iomem_PORTA"] pub static PORT_A: Port;
+    #[link_name="k20_iomem_PORTB"] pub static PORT_B: Port;
+    #[link_name="k20_iomem_PORTC"] pub static PORT_C: Port;
+    #[link_name="k20_iomem_PORTD"] pub static PORT_D: Port;
+    #[link_name="k20_iomem_PORTE"] pub static PORT_E: Port;
   }
 
   ioregs!(Gpio = {
@@ -273,10 +273,10 @@ pub mod reg {
   })
 
   extern {
-    #[link_name="k20_iomem_GPIOA"] pub static GpioA: Gpio;
-    #[link_name="k20_iomem_GPIOB"] pub static GpioB: Gpio;
-    #[link_name="k20_iomem_GPIOC"] pub static GpioC: Gpio;
-    #[link_name="k20_iomem_GPIOD"] pub static GpioD: Gpio;
-    #[link_name="k20_iomem_GPIOE"] pub static GpioE: Gpio;
+    #[link_name="k20_iomem_GPIOA"] pub static GPIO_A: Gpio;
+    #[link_name="k20_iomem_GPIOB"] pub static GPIO_B: Gpio;
+    #[link_name="k20_iomem_GPIOC"] pub static GPIO_C: Gpio;
+    #[link_name="k20_iomem_GPIOD"] pub static GPIO_D: Gpio;
+    #[link_name="k20_iomem_GPIOE"] pub static GPIO_E: Gpio;
   }
 }
