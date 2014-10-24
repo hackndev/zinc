@@ -59,7 +59,7 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let ty_params = vec!(
       "'a".to_string(),
       "zinc::hal::timer::Timer".to_string(),
-      "zinc::hal::pin::GPIO".to_string());
+      "zinc::hal::pin::Gpio".to_string());
   node.set_type_params(ty_params);
 
   let st = quote_stmt!(&*cx,

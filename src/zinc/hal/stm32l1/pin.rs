@@ -144,7 +144,7 @@ impl Pin {
   }
 }
 
-impl ::hal::pin::GPIO for Pin {
+impl ::hal::pin::Gpio for Pin {
   fn set_high(&self) {
     let bit: u32 = 1 << self.index as uint;
     self.reg.bsrr.set_reset(bit);
@@ -155,7 +155,7 @@ impl ::hal::pin::GPIO for Pin {
     self.reg.bsrr.set_reset(bit);
   }
 
-  fn level(&self) -> ::hal::pin::GPIOLevel {
+  fn level(&self) -> ::hal::pin::GpioLevel {
     let bit = 1u16 << (self.index as uint);
 
     match self.reg.idr.input() & bit {
@@ -164,7 +164,7 @@ impl ::hal::pin::GPIO for Pin {
     }
   }
 
-  fn set_direction(&self, _new_mode: ::hal::pin::GPIODirection) {
+  fn set_direction(&self, _new_mode: ::hal::pin::GpioDirection) {
     //TODO(kvark)
     unsafe { abort() }
   }

@@ -8,7 +8,7 @@ extern crate zinc;
 #[no_mangle]
 pub unsafe fn main() {
   use core::default::Default;
-  use zinc::hal::pin::GPIO;
+  use zinc::hal::pin::Gpio;
   use zinc::hal::stm32l1::{init, pin, timer};
   use zinc::hal::timer::Timer;
   zinc::hal::mem_init::init_stack();

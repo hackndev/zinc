@@ -20,7 +20,7 @@ use core::iter::range;
 use super::LCD;
 use drivers::chario::CharIO;
 use hal::timer::Timer;
-use hal::pin::GPIO;
+use hal::pin::Gpio;
 use hal::spi::SPI;
 
 /// ILI9341 driver.
@@ -33,7 +33,7 @@ pub struct ILI9341<'a, S:'a, T:'a, P:'a> {
   // backlight: gpio::OutGPIO,
 }
 
-impl<'a, S: SPI, T: Timer, P: GPIO> ILI9341<'a, S, T, P> {
+impl<'a, S: SPI, T: Timer, P: Gpio> ILI9341<'a, S, T, P> {
   /// Creates a new ILI9341 driver instance.
   pub fn new(spi: &'a S, timer: &'a T, dc: &'a P, cs: &'a P, reset: &'a P)
     -> ILI9341<'a, S, T, P> {
@@ -295,7 +295,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> ILI9341<'a, S, T, P> {
   }
 }
 
-impl<'a, S: SPI, T: Timer, P: GPIO> LCD for ILI9341<'a, S, T, P> {
+impl<'a, S: SPI, T: Timer, P: Gpio> LCD for ILI9341<'a, S, T, P> {
   fn clear(&self) {
     self.do_clear();
   }
@@ -305,7 +305,7 @@ impl<'a, S: SPI, T: Timer, P: GPIO> LCD for ILI9341<'a, S, T, P> {
   }
 }
 
-impl<'a, S: SPI, T: Timer, P: GPIO> CharIO for ILI9341<'a, S, T, P> {
+impl<'a, S: SPI, T: Timer, P: Gpio> CharIO for ILI9341<'a, S, T, P> {
   fn putc(&self, _: char) {
     // TODO(farcaller): implement
   }

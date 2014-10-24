@@ -159,7 +159,7 @@ mod test {
             let led4 = zinc::hal::lpc17xx::pin::Pin::new(
                 zinc::hal::lpc17xx::pin::Port1,
                 23u8,
-                zinc::hal::lpc17xx::pin::GPIO,
+                zinc::hal::lpc17xx::pin::Gpio,
                 core::option::Some(zinc::hal::pin::Out));
             loop {
               run(&pt::run_args{
