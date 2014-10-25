@@ -14,27 +14,15 @@
 // limitations under the License.
 
 /*!
-HAL provides abstractions for specific MCU hardware.
+Interface to Systick timer.
 
-Each peripheral in `hal` has a `xxxConf` struct that can be defined statically,
-and each such struct has a `setup()` method that configures the hardware
-(returning the object to interact with it where applicable).
+This might be merged into generic timer interface. Systick is a bit specific in
+terms of interrupts, but PT should make the difference negligible.
 */
 
-
-pub mod lpc17xx;
-pub mod stm32f4;
-pub mod stm32l1;
-pub mod k20;
-
-mod cortex_common;
-pub mod cortex_m3;
-pub mod cortex_m4;
-
-pub mod mem_init;
-pub mod pin;
-pub mod spi;
-pub mod stack;
-pub mod timer;
-pub mod uart;
-pub mod systick;
+/// A simple systick interface.
+#[experimental]
+pub trait Systick {
+  /// Starts the systick timer.
+  fn start(&self);
+}
