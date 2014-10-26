@@ -30,19 +30,19 @@ pub struct PllConfig;
 
 /// Multi-speed internal clock divisor.
 pub enum MsiSpeed {
-  /// 65_536 kHz
+  /// 65.536 kHz
   Msi65   = 0,
-  /// 131_072 kHz
+  /// 131.072 kHz
   Msi131  = 1,
-  /// 262_144 kHz
+  /// 262.144 kHz
   Msi262  = 2,
-  /// 524_288 kHz
+  /// 524.288 kHz
   Msi524  = 3,
-  /// 1048 MHz
+  /// 1.048 MHz
   Msi1048 = 4,
-  /// 2097 MHz
+  /// 2.097 MHz
   Msi2097 = 5,
-  /// 4194 MHz
+  /// 4.194 MHz
   Msi4194 = 6,
 }
 
@@ -65,12 +65,19 @@ impl Default for SystemClockSource {
 }
 
 impl SystemClockSource {
-  /// Get the system clock speed in kHz
-  pub fn to_speed_khz(&self) -> u32 {
+  /// Returns the system clock frequency.
+  pub fn frequency(&self) -> u32 {
     match *self {
-        SystemClockHSI => 16<<10,
-        SystemClockMSI(Msi2097) => 2097,
-        _ => unsafe { abort() }, //TODO(kvark)
+        SystemClockHSI => 16_000_000,
+        SystemClockMSI(Msi65) => 65_536,
+        SystemClockMSI(Msi131) => 131_072,
+        SystemClockMSI(Msi262) => 262_144,
+        SystemClockMSI(Msi524) => 524_288,
+        SystemClockMSI(Msi1048) => 1_048_000,
+        SystemClockMSI(Msi2097) => 2_097_000,
+        SystemClockMSI(Msi4194) => 4_194_000,
+        SystemClockHSE(_) => unsafe { abort() }, //TODO(kvark)
+        SystemClockPLL(_) => unsafe { abort() }, //TODO(kvark)
     }
   }
 }

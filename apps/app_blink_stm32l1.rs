@@ -20,7 +20,7 @@ pub unsafe fn main() {
     pin::GpioOut(pin::OutPushPull, pin::VeryLow),
     pin::PullNone);
 
-  let timer = timer::Timer::new(timer::Timer2, sys_clock.to_speed_khz(), 0);
+  let timer = timer::Timer::new(timer::Timer2, sys_clock.frequency()/1000, 0);
 
   loop {
     led1.set_high();
