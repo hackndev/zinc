@@ -25,10 +25,23 @@ use core::intrinsics::abort;
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
-/// Phase-locked loop configuration.
-pub struct PllConfig;
+/// Phase-locked loop clock source.
+#[repr(u8)]
+pub enum PllClockSource {
+  /// Takes base clock from HSI.
+  PllSourceHSI = 0,
+  /// Takes base clock from HSE.
+  PllSourceHSE = 1,
+}
+
+/// PLL multiplier: 3, 4, 6, 8, 12, 16, 24, 32, 48
+pub type PllMultiplier = u8;
+
+/// PLL divisor: 1, 2, 3, 4
+pub type PllDivisor = u8;
 
 /// Multi-speed internal clock divisor.
+#[repr(u8)]
 pub enum MsiSpeed {
   /// 65.536 kHz
   Msi65   = 0,
@@ -48,14 +61,14 @@ pub enum MsiSpeed {
 
 /// System clock source.
 pub enum SystemClockSource {
+  /// Multi-speed internal clock,
+  SystemClockMSI(MsiSpeed),
   /// High-speed internal oscillator, 16MHz.
   SystemClockHSI,
   /// High-speed external oscillator with configurable frequency.
   SystemClockHSE(u32),
   /// PLL.
-  SystemClockPLL(PllConfig),
-  /// Multi-speed internal clock,
-  SystemClockMSI(MsiSpeed),
+  SystemClockPLL(PllClockSource, PllMultiplier, PllDivisor),
 }
 
 impl Default for SystemClockSource {
@@ -68,7 +81,6 @@ impl SystemClockSource {
   /// Returns the system clock frequency.
   pub fn frequency(&self) -> u32 {
     match *self {
-        SystemClockHSI => 16_000_000,
         SystemClockMSI(Msi65) => 65_536,
         SystemClockMSI(Msi131) => 131_072,
         SystemClockMSI(Msi262) => 262_144,
@@ -76,9 +88,60 @@ impl SystemClockSource {
         SystemClockMSI(Msi1048) => 1_048_000,
         SystemClockMSI(Msi2097) => 2_097_000,
         SystemClockMSI(Msi4194) => 4_194_000,
+        SystemClockHSI => 16_000_000,
         SystemClockHSE(_) => unsafe { abort() }, //TODO(kvark)
-        SystemClockPLL(_) => unsafe { abort() }, //TODO(kvark)
+        SystemClockPLL(_, _, _) => unsafe { abort() }, //TODO(kvark)
     }
+  }
+}
+
+/// System clock configuration.
+pub struct ClockConfig {
+  /// System clock source
+  pub source : SystemClockSource,
+  /// Log2(divisor) for Ahb bus.
+  pub ahb_shift : u8,
+  /// Log2(divisor) for Apb1 bus.
+  pub apb1_shift : u8,
+  /// Log2(divisor) for Apb2 bus.
+  pub apb2_shift : u8,
+}
+
+impl ClockConfig {
+  /// Set this configuration on the hardware.
+  pub fn setup(&self) {
+    let r = &reg::RCC.cfgr;
+
+    let source_type = match self.source {
+      SystemClockMSI(_) => 0,
+      SystemClockHSI => 1,
+      SystemClockHSE(_) => 2,
+      SystemClockPLL(pll_source, mul, div) => {
+        r.set_pll_clock_source(pll_source as bool);
+        let factor = match mul {
+          3 => 0,
+          4 => 1,
+          6 => 2,
+          8 => 3,
+          12 => 4,
+          16 => 5,
+          24 => 6,
+          32 => 7,
+          48 => 8,
+          _ => unsafe { abort() } // not supported
+        };
+        r.set_pll_mul_factor(factor);
+        r.set_pll_output_div(div as u32);
+        3
+      }
+    };
+
+    r.set_system_clock(source_type);
+    wait_for!(r.system_clock_status() == source_type);
+
+    r.set_ahb_prescaler(self.ahb_shift as u32);
+    r.set_apb1_prescaler(self.apb1_shift as u32);
+    r.set_apb2_prescaler(self.apb2_shift as u32);
   }
 }
 
@@ -98,7 +161,16 @@ pub mod reg {
       31..0 => clock_calibration : rw,
     },
     0x08 => reg32 cfgr {        // clock configuration
-      31..0 => clock_config : rw,
+      1..0   => system_clock : rw,
+      3..2   => system_clock_status: ro,
+      7..4   => ahb_prescaler : rw,
+      10..8  => apb1_prescaler : rw,
+      13..11 => apb2_prescaler : rw,
+      16     => pll_clock_source : rw,
+      21..18 => pll_mul_factor : rw,
+      23..22 => pll_output_div : rw,
+      26..24 => mco : rw,   // microcontroller clock output
+      30..28 => mco_prescaler : rw,
     },
     0x0C => reg32 cir {         // clock interrupt
       31..0 => clock_interrupt : rw,

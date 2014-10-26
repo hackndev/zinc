@@ -14,13 +14,21 @@ pub unsafe fn main() {
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
 
-  let sys_clock: init::SystemClockSource = Default::default();
+  let sys_clock = init::ClockConfig {
+    source: init::SystemClockMSI(init::Msi2097),
+    ahb_shift: 0,
+    apb1_shift: 0,
+    apb2_shift: 0,
+  };
+  sys_clock.setup();
+
+  let mcu_clock = sys_clock.source.frequency();
 
   let led1 = pin::Pin::new(pin::PortA, 5,
     pin::GpioOut(pin::OutPushPull, pin::VeryLow),
     pin::PullNone);
 
-  let timer = timer::Timer::new(timer::Timer2, sys_clock.frequency()/1000, 0);
+  let timer = timer::Timer::new(timer::Timer2, mcu_clock/1000, 0);
 
   loop {
     led1.set_high();
