@@ -8,6 +8,7 @@ extern crate zinc;
 #[no_mangle]
 pub unsafe fn main() {
   use core::default::Default;
+  use core::option;
   use zinc::hal::pin::Gpio;
   use zinc::hal::stm32l1::{init, pin, timer};
   use zinc::hal::timer::Timer;
@@ -19,6 +20,7 @@ pub unsafe fn main() {
     ahb_shift: 0,
     apb1_shift: 0,
     apb2_shift: 0,
+    mco: option::None,
   };
   sys_clock.setup();
 

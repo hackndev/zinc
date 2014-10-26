@@ -19,8 +19,9 @@
 //! performing initial peripheral configuration.
 
 //use hal::mem_init::init_data;
-use core::default::Default;
+use core::default;
 use core::intrinsics::abort;
+use core::option;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
@@ -71,7 +72,7 @@ pub enum SystemClockSource {
   SystemClockPLL(PllClockSource, PllMultiplier, PllDivisor),
 }
 
-impl Default for SystemClockSource {
+impl default::Default for SystemClockSource {
   fn default() -> SystemClockSource {
     SystemClockMSI(Msi2097)
   }
@@ -95,6 +96,26 @@ impl SystemClockSource {
   }
 }
 
+#[allow(missing_doc)]
+#[repr(u8)]
+pub enum McoSource {
+  McoClockSystem = 1,
+  McoClockHSI = 2,
+  McoClockMSI = 3,
+  McoClockHSE = 4,
+  McoClockPLL = 5,
+  McoClockLSI = 6,
+  McoClockLSE = 7,
+}
+
+/// Microchip clock output configuration.
+pub struct McoConfig {
+  /// MCO clock source
+  source: McoSource,
+  /// Log2(divisor) for MCO.
+  clock_shift: u8,
+}
+
 /// System clock configuration.
 pub struct ClockConfig {
   /// System clock source
@@ -105,6 +126,8 @@ pub struct ClockConfig {
   pub apb1_shift : u8,
   /// Log2(divisor) for Apb2 bus.
   pub apb2_shift : u8,
+  /// Microchip clock output.
+  pub mco : option::Option<McoConfig>,
 }
 
 impl ClockConfig {
@@ -139,9 +162,25 @@ impl ClockConfig {
     r.set_system_clock(source_type);
     wait_for!(r.system_clock_status() == source_type);
 
+    if self.ahb_shift > 9 || self.apb1_shift > 4 || self.apb2_shift > 4 {
+        unsafe { abort() } // not supported
+    }
     r.set_ahb_prescaler(self.ahb_shift as u32);
     r.set_apb1_prescaler(self.apb1_shift as u32);
     r.set_apb2_prescaler(self.apb2_shift as u32);
+
+    match self.mco {
+      option::Some(mco) => {
+        if mco.clock_shift > 4 {
+            unsafe { abort() } // not supported
+        }
+        r.set_mco(mco.source as u32);
+        r.set_mco_prescaler(mco.clock_shift as u32);
+      },
+      option::None => {
+        r.set_mco(0);
+      },
+    }
   }
 }
 
