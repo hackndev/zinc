@@ -133,14 +133,30 @@ pub struct ClockConfig {
 impl ClockConfig {
   /// Set this configuration on the hardware.
   pub fn setup(&self) {
-    let r = &reg::RCC.cfgr;
+    let r = &reg::RCC;
 
     let source_type = match self.source {
-      SystemClockMSI(_) => 0,
-      SystemClockHSI => 1,
-      SystemClockHSE(_) => 2,
+      SystemClockMSI(msi) => {
+        r.cr.set_msi_on(true);
+        wait_for!(r.cr.msi_ready());
+        r.icscr.set_msi_range(msi as u32);
+        0
+      },
+      SystemClockHSI => {
+        r.cr.set_hsi_on(true);
+        wait_for!(r.cr.hsi_ready());
+        1
+      },
+      SystemClockHSE(_) => {
+        r.cr.set_hse_on(true);
+        wait_for!(r.cr.hse_ready());
+        //TODO(kvark): HSE config
+        2
+      },
       SystemClockPLL(pll_source, mul, div) => {
-        r.set_pll_clock_source(pll_source as bool);
+        r.cr.set_pll_on(true);
+        wait_for!(r.cr.pll_ready());
+        r.cfgr.set_pll_clock_source(pll_source as bool);
         let factor = match mul {
           3 => 0,
           4 => 1,
@@ -153,32 +169,32 @@ impl ClockConfig {
           48 => 8,
           _ => unsafe { abort() } // not supported
         };
-        r.set_pll_mul_factor(factor);
-        r.set_pll_output_div(div as u32);
+        r.cfgr.set_pll_mul_factor(factor);
+        r.cfgr.set_pll_output_div(div as u32);
         3
       }
     };
 
-    r.set_system_clock(source_type);
-    wait_for!(r.system_clock_status() == source_type);
+    r.cfgr.set_system_clock(source_type);
+    wait_for!(r.cfgr.system_clock_status() == source_type);
 
     if self.ahb_shift > 9 || self.apb1_shift > 4 || self.apb2_shift > 4 {
-        unsafe { abort() } // not supported
+      unsafe { abort() } // not supported
     }
-    r.set_ahb_prescaler(self.ahb_shift as u32);
-    r.set_apb1_prescaler(self.apb1_shift as u32);
-    r.set_apb2_prescaler(self.apb2_shift as u32);
+    r.cfgr.set_ahb_prescaler(self.ahb_shift as u32);
+    r.cfgr.set_apb1_prescaler(self.apb1_shift as u32);
+    r.cfgr.set_apb2_prescaler(self.apb2_shift as u32);
 
     match self.mco {
       option::Some(mco) => {
         if mco.clock_shift > 4 {
             unsafe { abort() } // not supported
         }
-        r.set_mco(mco.source as u32);
-        r.set_mco_prescaler(mco.clock_shift as u32);
+        r.cfgr.set_mco(mco.source as u32);
+        r.cfgr.set_mco_prescaler(mco.clock_shift as u32);
       },
       option::None => {
-        r.set_mco(0);
+        r.cfgr.set_mco(0);
       },
     }
   }
@@ -194,10 +210,24 @@ pub mod reg {
 
   ioregs!(RCC = {
     0x00 => reg32 cr {          // clock control
-      31..0 => clock_control : rw,
+      0 => hsi_on : rw,
+      1 => hsi_ready : ro,
+      8 => msi_on : rw,
+      9 => msi_ready : ro,
+      16 => hse_on : rw,
+      17 => hse_ready : ro,
+      18 => hse_bypass : rw,
+      24 => pll_on : rw,
+      25 => pll_ready : ro,
+      28 => security_on : rw,
+      30..29 => rtc_prescaler : rw,
     },
     0x04 => reg32 icscr {       // internal clock sources calibration
-      31..0 => clock_calibration : rw,
+      7..0   => hsi_calibration : rw,
+      12..8  => hsi_trimming : rw,
+      15..13 => msi_range : rw,
+      23..16 => msi_calibration : rw,
+      31..24 => msi_trimming : rw,
     },
     0x08 => reg32 cfgr {        // clock configuration
       1..0   => system_clock : rw,

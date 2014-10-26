@@ -7,7 +7,6 @@ extern crate zinc;
 
 #[no_mangle]
 pub unsafe fn main() {
-  use core::default::Default;
   use core::option;
   use zinc::hal::pin::Gpio;
   use zinc::hal::stm32l1::{init, pin, timer};
@@ -16,7 +15,7 @@ pub unsafe fn main() {
   zinc::hal::mem_init::init_data();
 
   let sys_clock = init::ClockConfig {
-    source: init::SystemClockMSI(init::Msi2097),
+    source: init::SystemClockHSI,
     ahb_shift: 0,
     apb1_shift: 0,
     apb2_shift: 0,
