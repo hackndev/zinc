@@ -23,13 +23,13 @@ pub unsafe fn main() {
   };
   sys_clock.setup();
 
-  let mcu_clock = sys_clock.source.frequency();
-
   let led1 = pin::Pin::new(pin::PortA, 5,
     pin::GpioOut(pin::OutPushPull, pin::VeryLow),
     pin::PullNone);
 
-  let timer = timer::Timer::new(timer::Timer2, mcu_clock/1000, 0);
+  // TODO(kvark): why doesn't "sys_clock.get_apb1_frequency()" work better?
+  let timer_clock = sys_clock.source.frequency();
+  let timer = timer::Timer::new(timer::Timer2, timer_clock/1000, 0);
 
   loop {
     led1.set_high();

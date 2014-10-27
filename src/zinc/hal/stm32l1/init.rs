@@ -198,6 +198,21 @@ impl ClockConfig {
       },
     }
   }
+
+  /// Returns AHB clock frequency
+  pub fn get_ahb_frequency(&self) -> u32 {
+    self.source.frequency() >> self.ahb_shift as uint
+  }
+
+  /// Returns APB1 clock frequency
+  pub fn get_apb1_frequency(&self) -> u32 {
+    self.source.frequency() >> self.apb1_shift as uint
+  }
+
+  /// Returns APB2 clock frequency
+  pub fn get_apb2_frequency(&self) -> u32 {
+    self.source.frequency() >> self.apb2_shift as uint
+  }
 }
 
 // TODO(farcaller): this mod is pub as it's being used in peripheral_clock.rs.
@@ -272,7 +287,24 @@ pub mod reg {
       31..0 => enable_low_power : rw,
     },
     0x34 => reg32 csr {         // control/status
-      31..0 => status : rw,
+      0 => lsi_on : rw, // internal low speed oscillator
+      1 => lsi_ready : ro,
+      8 => lse_on : rw, // external low speed oscillator
+      9 => lse_ready : ro,
+      10 => lse_bypass : rw,
+      11 => lse_css_on : rw,
+      12 => lse_css_detected : ro,
+      17..16 => rtc_source : rw,
+      22 => rtc_on : rw,
+      23 => rtc_reset : rw,
+      24 => remove_reset : rw,
+      25 => option_bytes_loader_reset : rw,
+      26 => pin_reset : rw,
+      27 => pop_pdr_reset : rw,
+      28 => software_reset : rw,
+      29 => independent_watchdog_reset : rw,
+      30 => window_watchdog_reset : rw,
+      31 => low_power_reset : rw,
     },
   })
 

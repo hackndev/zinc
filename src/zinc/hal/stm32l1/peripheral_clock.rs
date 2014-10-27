@@ -19,7 +19,7 @@
 //!
 //! Note: this module is used as part of initial setup if PLL is used.
 
-use super::init::reg;
+use super::init::{ClockConfig, reg};
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 
@@ -196,6 +196,15 @@ impl PeripheralClock {
         ClockAhb(ahb)  => ahb.set_reg(enable),
         ClockApb1(apb) => apb.set_reg(enable),
         ClockApb2(apb) => apb.set_reg(enable),
+    }
+  }
+
+  /// Returns the clock freqency
+  pub fn frequency(self, cc: &ClockConfig) -> u32 {
+    match self {
+      ClockAhb(_)  => cc.get_ahb_frequency(),
+      ClockApb1(_) => cc.get_apb1_frequency(),
+      ClockApb2(_) => cc.get_apb2_frequency(),
     }
   }
 }
