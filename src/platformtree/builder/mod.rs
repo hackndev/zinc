@@ -159,11 +159,11 @@ impl Builder {
 
     let body = cx.block(DUMMY_SP, stmts, None);
 
-    let unused_variable = cx.meta_word(DUMMY_SP,
-        InternedString::new("unused_variable"));
+    let unused_variables = cx.meta_word(DUMMY_SP,
+        InternedString::new("unused_variables"));
     let allow = cx.meta_list(
         DUMMY_SP,
-        InternedString::new("allow"), vec!(unused_variable));
+        InternedString::new("allow"), vec!(unused_variables));
     let allow_noncamel = cx.attribute(DUMMY_SP, allow);
 
     self.item_fn(cx, DUMMY_SP, "main", [allow_noncamel], body)

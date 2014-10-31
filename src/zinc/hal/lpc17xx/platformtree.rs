@@ -123,7 +123,7 @@ mod test {
 
       assert_equal_items(items[1].deref(), "
           #[no_mangle]
-          #[allow(unused_variable)]
+          #[allow(unused_variables)]
           pub unsafe fn main() {
             zinc::hal::mem_init::init_stack();
             zinc::hal::mem_init::init_data();
