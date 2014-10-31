@@ -178,7 +178,7 @@ impl<'a> BuildUnionTypes<'a> {
       utils::list_attribute(self.cx, "allow",
                             vec!("non_camel_case_types",
                                  "dead_code",
-                                 "missing_doc")),
+                                 "missing_docs")),
     );
     match reg.docstring {
       Some(docstring) =>

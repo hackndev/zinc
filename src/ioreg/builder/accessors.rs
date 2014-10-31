@@ -133,7 +133,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
   let setter_ty = utils::setter_name(cx, path);
   if field.count.node == 1 {
     quote_method!(cx,
-      #[allow(dead_code, missing_doc)]
+      #[allow(dead_code, missing_docs)]
       pub fn $fn_name<'a>(&'a self, new_value: $field_ty) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name(new_value);
@@ -142,7 +142,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
     )
   } else {
     quote_method!(cx,
-      #[allow(dead_code, missing_doc)]
+      #[allow(dead_code, missing_docs)]
       pub fn $fn_name<'a>(&'a self, idx: uint, new_value: $field_ty) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name(idx, new_value);
@@ -162,14 +162,14 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>,
   let getter_ty = utils::getter_name(cx, path);
   if field.count.node == 1 {
     quote_method!(cx,
-      #[allow(dead_code, missing_doc)]
+      #[allow(dead_code, missing_docs)]
       pub fn $fn_name(&self) -> $field_ty {
         $getter_ty::new(self).$fn_name()
       }
     )
   } else {
     quote_method!(cx,
-      #[allow(dead_code, missing_doc)]
+      #[allow(dead_code, missing_docs)]
       pub fn $fn_name(&self, idx: uint) -> $field_ty {
         $getter_ty::new(self).$fn_name(idx)
       }
@@ -186,7 +186,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
   let setter_ty = utils::setter_name(cx, path);
   if field.count.node == 1 {
     quote_method!(cx,
-      #[allow(dead_code, missing_doc)]
+      #[allow(dead_code, missing_docs)]
       pub fn $fn_name<'a>(&'a self) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name();
@@ -195,7 +195,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
     )
   } else {
     quote_method!(cx,
-      #[allow(dead_code, missing_doc)]
+      #[allow(dead_code, missing_docs)]
       pub fn $fn_name<'a>(&'a self, idx: uint) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name(idx);

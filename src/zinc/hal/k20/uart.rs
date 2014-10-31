@@ -25,7 +25,7 @@ use hal::uart;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Available UART peripherals.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum UARTPeripheral {
   UART0,
   UART1,

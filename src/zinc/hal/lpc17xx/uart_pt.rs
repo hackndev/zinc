@@ -91,7 +91,7 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
         'E' => "Even",
         '1' => "Forced1",
         '0' => "Forced0",
-        _ => fail!(),
+        _ => panic!(),
       }.to_string());
   let stop_bits = mode.as_slice().char_at(2).to_digit(10).unwrap() as u8;
 

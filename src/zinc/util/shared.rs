@@ -24,7 +24,7 @@ use hal::cortex_m3::irq::NoInterrupts;
 
 /// This allows safe sharing of state, ensuring access occurs only
 /// when in a critical section.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub struct Shared<T> {
   pub value: UnsafeCell<T>,
   pub invariant: marker::InvariantType<T>,

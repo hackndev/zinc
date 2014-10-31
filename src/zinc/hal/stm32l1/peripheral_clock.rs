@@ -23,7 +23,7 @@ use super::init::reg;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum BusAhb {
   GpioA,
@@ -73,7 +73,7 @@ impl BusAhb {
   }
 }
 
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum BusApb1 {
   Tim2,
@@ -133,7 +133,7 @@ impl BusApb1 {
   }
 }
 
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum BusApb2 {
   SysCfg,
@@ -172,7 +172,7 @@ impl BusApb2 {
 /// Configures the state of peripheral clock.
 ///
 /// This enum contains all available clocks from both AHB and APB.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum PeripheralClock {
   ClockAhb(BusAhb),
   ClockApb1(BusApb1),

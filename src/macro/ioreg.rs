@@ -46,7 +46,7 @@ pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
       MacItems::new(items)
     },
     None => {
-      fail!();
+      panic!();
     }
   }
 }

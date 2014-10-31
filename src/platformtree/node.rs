@@ -259,7 +259,7 @@ impl Node {
     pp + self.path
   }
 
-  /// Returns attribute by name or fail!()s.
+  /// Returns attribute by name or panic!()s.
   pub fn get_attr(&self, key: &str) -> Rc<Attribute> {
     let ref attr = (*self.attributes.borrow())[key.to_string()];
     attr.clone()
@@ -421,7 +421,7 @@ impl PartialEq for Node {
 impl fmt::Show for Node {
   fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::FormatError> {
     fmt.write_str(format!("<Node {}>", self.full_path()).as_slice())
-        .or_else(|_| { fail!() })
+        .or_else(|_| { panic!() })
   }
 }
 

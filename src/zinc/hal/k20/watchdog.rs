@@ -20,7 +20,7 @@ use util::support::nop;
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Watchdog state
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum State {
   Disabled,
   Enabled,

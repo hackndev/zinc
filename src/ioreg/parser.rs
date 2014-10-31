@@ -14,12 +14,13 @@
 // limitations under the License.
 
 use std::rc::{Rc};
-use syntax::ast;
 use syntax::ast::{Ident, TokenTree};
+use syntax::ast;
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
 use syntax::ext::base::ExtCtxt;
-use syntax::parse;
 use syntax::parse::{token, ParseSess, lexer};
+use syntax::parse;
+use syntax::print::pprust;
 
 use node;
 
@@ -75,12 +76,12 @@ impl<'a> Parser<'a> {
       None => return None,
     };
 
-    if !self.expect(&token::EQ) {
+    if !self.expect(&token::Eq) {
       return None;
     }
 
     let sp_lo = self.span.lo;
-    if !self.expect(&token::LBRACE) {
+    if !self.expect(&token::OpenDelim(token::Brace)) {
       return None;
     }
 
@@ -111,11 +112,11 @@ impl<'a> Parser<'a> {
     loop {
       match self.token.clone() {
         // End of block
-        token::RBRACE => {
+        token::CloseDelim(token::Brace) => {
           self.bump();
 
           // Eat optional comma after closing brace
-          if self.token == token::COMMA {
+          if self.token == token::Comma {
             self.bump();
           }
 
@@ -167,7 +168,7 @@ impl<'a> Parser<'a> {
       Some(offset) => offset,
       None => return None,
     };
-    if !self.expect(&token::FAT_ARROW) {
+    if !self.expect(&token::FatArrow) {
       return None;
     }
 
@@ -181,7 +182,7 @@ impl<'a> Parser<'a> {
       },
       _ => {
         self.error(format!("expected register type but found `{}`",
-                           token::to_string(&self.token)));
+                           pprust::token_to_string(&self.token)));
         return None;
       },
     };
@@ -199,7 +200,7 @@ impl<'a> Parser<'a> {
     let docstring = docstring.or_else(|| self.parse_docstring(Trailing));
 
     // Catch beginning of block and potentially an inner docstring
-    if !self.expect(&token::LBRACE) {
+    if !self.expect(&token::OpenDelim(token::Brace)) {
       return None;
     }
     let docstring = docstring.or_else(|| self.parse_docstring(Inner));
@@ -259,11 +260,11 @@ impl<'a> Parser<'a> {
     // sitting at starting bit number
     let mut fields: Vec<node::Field> = Vec::new();
     loop {
-      if self.token == token::RBRACE {
+      if self.token == token::CloseDelim(token::Brace) {
         self.bump();
 
         // Eat optional comma after closing brace
-        if self.token == token::COMMA {
+        if self.token == token::Comma {
           self.bump();
         }
 
@@ -296,7 +297,7 @@ impl<'a> Parser<'a> {
     };
     let bits_span = self.span;
     let high_bit = match self.token {
-      token::DOTDOT => {
+      token::DotDot => {
         self.bump();
         match self.expect_uint() {
           Some(bit) => bit as uint,
@@ -314,7 +315,7 @@ impl<'a> Parser<'a> {
         (low_bit, high_bit)
       };
 
-    if !self.expect(&token::FAT_ARROW) {
+    if !self.expect(&token::FatArrow) {
       return None;
     }
 
@@ -341,11 +342,11 @@ impl<'a> Parser<'a> {
       };
 
     let access = match self.token.clone() {
-      token::COLON => {
+      token::Colon => {
         self.bump();
         match self.token.clone() {
-          ref t@token::IDENT(_,_) => {
-            match token::to_string(t) {
+          ref t@token::Ident(_,_) => {
+            match pprust::token_to_string(t) {
               ref s if s.equiv(&"rw") => { self.bump(); node::ReadWrite },
               ref s if s.equiv(&"ro") => { self.bump(); node::ReadOnly  },
               ref s if s.equiv(&"wo") => { self.bump(); node::WriteOnly },
@@ -358,7 +359,7 @@ impl<'a> Parser<'a> {
           },
           ref t => {
             self.error(format!("Expected access type, saw `{}`",
-                               token::to_string(t)));
+                               pprust::token_to_string(t)));
             return None;
           },
         }
@@ -367,8 +368,8 @@ impl<'a> Parser<'a> {
     };
 
     let (docstring, ty) = match self.token {
-      token::COMMA | token::RBRACE => {
-        if self.token == token::COMMA {
+      token::Comma | token::CloseDelim(token::Brace) => {
+        if self.token == token::Comma {
           self.bump();
         }
         let docstring = docstring.or_else(|| self.parse_docstring(Trailing));
@@ -379,14 +380,14 @@ impl<'a> Parser<'a> {
         (docstring, respan(name.span, ty))
       },
       // A list of enumeration variants
-      token::LBRACE => {
+      token::OpenDelim(token::Brace) => {
         self.bump();
 
         let sp_lo = self.span.lo;
         let docstring = docstring.or_else(|| self.parse_docstring(Inner));
         match self.parse_enum_variants() {
           Some(variants) => {
-            if self.token == token::COMMA {
+            if self.token == token::Comma {
               self.bump();
             }
             let ty = respan(
@@ -400,7 +401,7 @@ impl<'a> Parser<'a> {
       _ => {
         self.error(format!(
           "Expected `,` enumeration variant list, or `}}`, found `{}`",
-          token::to_string(&self.token)));
+          pprust::token_to_string(&self.token)));
         return None;
       },
     };
@@ -424,17 +425,17 @@ impl<'a> Parser<'a> {
 
     let mut require_comma: bool = false;
     loop {
-      if self.token == token::RBRACE {
+      if self.token == token::CloseDelim(token::Brace) {
         self.bump();
         break;
       }
 
-      if require_comma && !self.expect(&token::COMMA) {
+      if require_comma && !self.expect(&token::Comma) {
         return None;
       }
       require_comma = true;
 
-      if self.token == token::RBRACE {
+      if self.token == token::CloseDelim(token::Brace) {
         self.bump();
         break;
       }
@@ -444,7 +445,7 @@ impl<'a> Parser<'a> {
         _ => return None,
       };
 
-      if !self.expect(&token::FAT_ARROW) {
+      if !self.expect(&token::FatArrow) {
         return None;
       }
 
@@ -455,7 +456,7 @@ impl<'a> Parser<'a> {
 
       // Catch commas before the docstring
       match self.token {
-        token::COMMA => {
+        token::Comma => {
           require_comma = false;
           self.bump();
         }
@@ -479,7 +480,7 @@ impl<'a> Parser<'a> {
     };
     loop {
       match self.token {
-        token::DOC_COMMENT(docstring) => {
+        token::DocComment(docstring) => {
           let s = token::get_ident(docstring.ident());
           if !s.get().starts_with(prefix) {
             break
@@ -504,7 +505,7 @@ impl<'a> Parser<'a> {
 
   fn parse_uint(&mut self) -> Option<uint> {
     match self.token {
-      token::LIT_INTEGER(n) => {
+      token::LitInteger(n) => {
         self.bump();
         let lit = parse::integer_lit(n.as_str(),
                                      &self.sess.span_diagnostic,
@@ -522,7 +523,7 @@ impl<'a> Parser<'a> {
     match self.parse_uint() {
       Some(n) => Some(n),
       None => {
-        let this_token_str = token::to_string(&self.token);
+        let this_token_str = pprust::token_to_string(&self.token);
         self.error(format!("expected integer but found `{}`", this_token_str));
         None
       },
@@ -533,15 +534,15 @@ impl<'a> Parser<'a> {
   /// If no count is given, a default of 1 is used
   fn parse_count(&mut self) -> Option<Spanned<uint>> {
     match self.token {
-      token::LBRACKET => {
+      token::OpenDelim(token::Bracket) => {
         self.bump();
         let ret = match self.expect_uint() {
           Some(count) => respan(self.last_span, count),
           None => return None,
         };
-        if !self.expect(&token::RBRACKET) {
+        if !self.expect(&token::CloseDelim(token::Bracket)) {
           self.error(format!("expected `]` but found `{}`",
-                             token::to_string(&self.token)));
+                             pprust::token_to_string(&self.token)));
           return None;
         }
         Some(ret)
@@ -578,8 +579,8 @@ impl<'a> Parser<'a> {
       self.bump();
       true
     } else {
-      let token_str = token::to_string(t);
-      let this_token_str = token::to_string(&self.token);
+      let token_str = pprust::token_to_string(t);
+      let this_token_str = pprust::token_to_string(&self.token);
       self.error(format!("expected `{}` but found `{}`", token_str,
           this_token_str));
       false
@@ -589,9 +590,9 @@ impl<'a> Parser<'a> {
   /// Expects that the current token is IDENT, returns its string value. Bumps
   /// on success.
   fn expect_ident(&mut self) -> Option<String> {
-    let tok_str = token::to_string(&self.token);
+    let tok_str = pprust::token_to_string(&self.token);
     match self.token {
-      token::IDENT(_, _) => {
+      token::Ident(_, _) => {
         self.bump();
         Some(tok_str)
       },

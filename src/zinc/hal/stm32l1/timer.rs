@@ -22,7 +22,7 @@ use hal::timer;
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Available timer peripherals.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum TimerPeripheral {
   Timer2,
 }

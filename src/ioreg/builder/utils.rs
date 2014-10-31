@@ -88,7 +88,7 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
     node::UIntField => {
       match reg.ty {
         node::RegPrim(width, _) => primitive_type_path(cx, width),
-        _  => fail!("The impossible happened: a union register with fields"),
+        _  => panic!("The impossible happened: a union register with fields"),
       }
     },
     node::BoolField => cx.path_ident(span, cx.ident_of("bool")),

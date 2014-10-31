@@ -263,7 +263,7 @@ impl PLLConf {
 // TODO(farcaller): this mod is pub as it's being used in peripheral_clock.rs.
 //                  This is not the best design solution and a good reason to
 //                  split RCC into distinct registers.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub mod reg {
   use util::volatile_cell::VolatileCell;
 

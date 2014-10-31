@@ -92,7 +92,7 @@ fn get_task(tasks: &Vec<P<ast::MetaItem>>, task: &str) -> Vec<String> {
         for submi in v.iter() {
           match submi.node {
             ast::MetaWord(ref w) => ty_params.push(w.get().to_string()),
-            _ => fail!("unexpected node type"),
+            _ => panic!("unexpected node type"),
           }
         }
         break;
@@ -126,7 +126,7 @@ fn get_task(tasks: &Vec<P<ast::MetaItem>>, task: &str) -> Vec<String> {
 //     }
 //   }).and_then(|i| match i.node {
 //     ast::MetaList(_, ref v) => Some(meta_item_to_meta_args(v)),
-//     _ => fail!(),
+//     _ => panic!(),
 //   })
 // }
 
@@ -139,7 +139,7 @@ fn get_task(tasks: &Vec<P<ast::MetaItem>>, task: &str) -> Vec<String> {
 
 //         args.push(json::decode(s).unwrap());
 //       },
-//       _ => fail!(),
+//       _ => panic!(),
 //     }
 //   }
 

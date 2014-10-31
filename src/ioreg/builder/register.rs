@@ -75,7 +75,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
         utils::list_attribute(cx, "allow",
                               vec!("dead_code",
                                    "non_camel_case_types",
-                                   "missing_doc")));
+                                   "missing_docs")));
       let item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,

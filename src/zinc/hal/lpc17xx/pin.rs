@@ -26,7 +26,7 @@ use core::option::{Option};
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Available port names.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum Port {
   Port0,
   Port1,
@@ -37,7 +37,7 @@ pub enum Port {
 
 /// Pin functions (GPIO or up to three additional functions).
 #[deriving(PartialEq)]
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum Function {
   Gpio         = 0,
   AltFunction1 = 1,
