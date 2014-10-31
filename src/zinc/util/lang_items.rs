@@ -28,7 +28,7 @@ extern fn eh_personality() {}
 extern fn begin_unwind() {}
 
 #[cfg(not(test))]
-#[lang="fail_fmt"]
-pub fn fail_fmt(_fmt: &Arguments, _file_line: &(&'static str, uint)) -> ! {
+#[lang="panic_fmt"]
+pub fn panic_fmt(_fmt: &Arguments, _file_line: &(&'static str, uint)) -> ! {
   loop { }
 }
