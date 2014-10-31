@@ -111,7 +111,7 @@ impl Emitter for CustomEmmiter {
   }
   fn custom_emit(&mut self, _: &codemap::CodeMap, _: RenderSpan, _: &str,
       _: Level) {
-    fail!();
+    panic!();
   }
 }
 

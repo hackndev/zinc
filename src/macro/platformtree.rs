@@ -118,7 +118,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
 
       P(ast::Item {node: new_node, ..it.deref().clone() })
     },
-    _ => fail!(),
+    _ => panic!(),
   }
 }
 

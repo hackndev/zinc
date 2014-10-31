@@ -111,7 +111,7 @@ fn from_primitive(cx: &ExtCtxt, reg: &node::Reg,
             node::Reg16 => "from_u16",
             node::Reg8  => "from_u8",
           },
-        _ => fail!("Can't convert group register to primitive type"),
+        _ => panic!("Can't convert group register to primitive type"),
       };
       cx.expr_method_call(
         DUMMY_SP,

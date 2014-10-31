@@ -109,7 +109,7 @@ impl Builder {
         i = i + 1;
       }
       if index.is_none() {
-        fail!("no index found");
+        panic!("no index found");
       } else {
         deps.remove(index.unwrap());
         if deps.len() == 0 {
