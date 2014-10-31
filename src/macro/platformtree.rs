@@ -15,7 +15,7 @@
 
 #![crate_name="macro_platformtree"]
 #![crate_type="dylib"]
-#![warn(missing_doc)]
+#![warn(missing_docs)]
 
 #![feature(plugin_registrar, quote)]
 

@@ -24,7 +24,7 @@ use core::intrinsics::abort;
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Available port names.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum Port {
   PortA,
   PortB,
@@ -38,7 +38,7 @@ pub enum Port {
 }
 
 /// Pin functions.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum Function {
   GPIOIn      = 0,
   GPIOOut     = 1,

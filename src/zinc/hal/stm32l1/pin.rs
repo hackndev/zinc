@@ -24,7 +24,7 @@ use core::intrinsics::abort;
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Available port names.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum Port {
   PortA,
@@ -38,7 +38,7 @@ pub enum Port {
 }
 
 /// Pin output type.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum OutputType {
   OutPushPull  = 0,
@@ -46,7 +46,7 @@ pub enum OutputType {
 }
 
 /// Pin pull resistors: up, down, or none.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum PullType {
   PullNone = 0,

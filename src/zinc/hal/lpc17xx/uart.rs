@@ -30,7 +30,7 @@ use hal::uart;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Available UART peripherals.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum UARTPeripheral {
   UART0,
   UART2,
@@ -38,7 +38,7 @@ pub enum UARTPeripheral {
 }
 
 /// UART word length.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum WordLen {
   WordLen5bits = 0b00,
   WordLen6bits = 0b01,

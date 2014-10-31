@@ -26,14 +26,14 @@ use super::sim;
 
 
 /// A pin.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub struct Pin {
   pub port: Port,
   pub pin: u8,
 }
 
 /// Available port names.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum Port {
   PortA = 1,
   PortB = 2,
@@ -44,7 +44,7 @@ pub enum Port {
 
 /// Pin functions (GPIO or up to seven additional functions).
 #[deriving(PartialEq)]
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum Function {
   Analog       = 0,
   Gpio         = 1,
@@ -57,7 +57,7 @@ pub enum Function {
 }
 
 /// Pull-up/-down configuration.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum PullConf {
   PullNone   = 0,
   PullUp     = 1,
@@ -65,14 +65,14 @@ pub enum PullConf {
 }
 
 /// Pin output driver strength.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum DriveStrength {
   DriveStrengthHigh   = 0,
   DriveStrengthLow    = 1,
 }
 
 /// Pin output drive slew rate.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum SlewRate {
   SlewFast   = 0,
   SlewSlow   = 1,
