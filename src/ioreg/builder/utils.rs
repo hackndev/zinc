@@ -92,7 +92,7 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
       }
     },
     node::BoolField => cx.path_ident(span, cx.ident_of("bool")),
-    node::EnumField { opt_name: ref opt_name, ..} => {
+    node::EnumField { ref opt_name, ..} => {
       match opt_name {
         &Some(ref name) =>
           cx.path_ident(span, cx.ident_of(name.as_slice())),
