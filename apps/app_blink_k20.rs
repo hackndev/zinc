@@ -7,7 +7,7 @@ extern crate zinc;
 
 use core::option::Some;
 use zinc::hal::k20::{pin, watchdog};
-use zinc::hal::pin::{Gpio, High, Low};
+use zinc::hal::pin::Gpio;
 use zinc::hal::cortex_m4::systick;
 
 /// Wait the given number of SysTick ticks
@@ -26,7 +26,7 @@ pub fn wait(ticks: u32) {
 }
 
 #[no_mangle]
-#[allow(unused_variable)]
+#[allow(unused_variables)]
 #[allow(dead_code)]
 pub unsafe fn main() {
   zinc::hal::mem_init::init_stack();
