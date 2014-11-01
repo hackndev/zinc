@@ -16,7 +16,7 @@
 #![feature(globs, macro_rules, asm, phase, unsafe_destructor, lang_items)]
 #![crate_name="zinc"]
 #![crate_type="rlib"]
-#![allow(ctypes)]
+#![allow(improper_ctypes)]
 #![deny(missing_docs)]
 #![no_std]
 

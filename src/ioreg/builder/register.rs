@@ -60,7 +60,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
                     reg: &node::Reg, field: &node::Field)
                     -> Option<P<ast::Item>> {
   match field.ty.node {
-    node::EnumField { variants: ref variants, .. } => {
+    node::EnumField { ref variants, .. } => {
       // FIXME(bgamari): We construct a path, then only take the last
       // segment, this could be more efficient
       let name: ast::Ident =

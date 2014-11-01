@@ -16,6 +16,7 @@
 //! Disabling and enabling interrupts
 
 use core::ops::Drop;
+#[cfg(not(test))]
 use core::intrinsics::abort;
 
 /// Phantom type to indicate that interrupts are disabled.
@@ -42,6 +43,7 @@ impl Drop for NoInterrupts {
   }
 }
 
+#[cfg(not(test))]
 static mut irq_level : uint = 0;
 
 /// Disables all interrupts except Reset, HardFault, and NMI.

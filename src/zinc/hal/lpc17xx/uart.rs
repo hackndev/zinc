@@ -29,6 +29,7 @@ use hal::uart;
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
+
 /// Available UART peripherals.
 #[allow(missing_docs)]
 pub enum UARTPeripheral {
@@ -101,11 +102,13 @@ enum FIFOEnabled {
   FEDisabled = 0b0,
 }
 
+#[allow(dead_code)]
 enum FIFODmaMode {
   FDEnabled  = 0b1_0_0_0,
   FDDisabled = 0b0_0_0_0,
 }
 
+#[allow(dead_code)]
 enum FIFOTriggerLevel {
   FT1char   = 0b00_00_0_0_0_0,
   FT4chars  = 0b01_00_0_0_0_0,
@@ -268,11 +271,15 @@ impl CharIO for UART {
   }
 }
 
+#[allow(non_upper_case_globals)]
 static FIFOResetRx: u8 = 0b1_0;
+#[allow(non_upper_case_globals)]
 static FIFOResetTx: u8 = 0b1_0_0;
 
+#[allow(non_upper_case_globals)]
 static LCRModeMask: u8 = 0b1_11_1_1_11;
 
+#[allow(non_upper_case_globals)]
 static LSRTHREmpty: u8 = 0x20;
 
 mod reg {

@@ -30,7 +30,7 @@ use rustc::plugin::Registry;
 use syntax::ast;
 use syntax::codemap::DUMMY_SP;
 use syntax::codemap::Span;
-use syntax::ext::base::{ExtCtxt, MacResult, ItemModifier, Modifier};
+use syntax::ext::base::{ExtCtxt, MacResult, Modifier};
 use syntax::ext::build::AstBuilder;
 use syntax::owned_slice::OwnedSlice;
 use syntax::print::pprust;

@@ -53,8 +53,10 @@ extern {
   fn isr_can_activity();
 }
 
+#[allow(non_upper_case_globals)]
 const ISRCount: uint = 35;
 
+#[allow(non_upper_case_globals)]
 #[link_section=".isr_vector_nvic"]
 #[no_mangle]
 pub static NVICVectors: [Option<unsafe extern fn()>, ..ISRCount] = [
