@@ -177,5 +177,5 @@ when 'stm32l1'
 when 'lpc17xx'
   task :build_all => [:build_empty, :build_blink, :build_uart, :build_dht22]
 when 'tiva_c'
-  task :build_all => [:build_blink_tiva_c, :build_uart_tiva_c]
+  task :build_all => [:build_blink_tiva_c, :build_uart_tiva_c, :build_lcd_tiva_c]
 end
