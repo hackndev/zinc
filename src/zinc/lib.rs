@@ -44,7 +44,7 @@ The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
 */
 
-extern crate core;
+#[phase(plugin,link)] extern crate core;
 extern crate rlibc;
 
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
