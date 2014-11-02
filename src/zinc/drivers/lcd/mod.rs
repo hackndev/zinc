@@ -22,6 +22,7 @@ use drivers::chario::CharIO;
 pub mod c12332;
 pub mod ili9341;
 pub mod font_small_7;
+pub mod hd44780u;
 
 /// LCD provides a generic interface to a TFT LCD peripheral.
 ///
