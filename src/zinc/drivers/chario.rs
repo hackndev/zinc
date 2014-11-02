@@ -17,7 +17,6 @@
 
 use core::str::{Str, StrSlice};
 use core::slice::ImmutableSlice;
-use core::collections::Collection;
 use core::iter::range;
 
 use core::mem::zeroed;
