@@ -76,7 +76,7 @@ def compile_rust(n, h)
     flags = :rustcflags.in_env.join(' ')
     flags += ' ' + :rustcflags_cross.in_env.join(' ') unless build_for_host
     flags += ' --test' if is_test
-    flags += ' -g' if h[:debug]
+    flags += ' -g'
     flags += ' -C no-stack-check'
     flags += ' ' + more_flags
 
@@ -136,7 +136,7 @@ end
 
 def rust_tests(n, h)
   h[:test] = true
-  h[:flags] = '-g -C relocation-model=static'
+  h[:flags] = '-C relocation-model=static'
   h[:optimize] = '0'
   compile_rust n, h
   run_task = Rake::Task.define_task("run_#{n}".to_sym => h[:produce]) do |t|
