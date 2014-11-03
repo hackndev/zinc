@@ -76,7 +76,7 @@ def compile_rust(n, h)
     flags = :rustcflags.in_env.join(' ')
     flags += ' ' + :rustcflags_cross.in_env.join(' ') unless build_for_host
     flags += ' --test' if is_test
-    flags += ' -g' if h[:debug]
+    flags += ' -g'
     flags += ' -C no-stack-check'
     flags += ' ' + more_flags
 
