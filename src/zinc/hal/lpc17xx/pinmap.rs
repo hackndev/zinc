@@ -18,7 +18,7 @@
 //! support/pingen.rb <src> <dst>
 //!
 //! This module provides all possible pin configurations for LPC17xx.
-use std::collections::hashmap::HashMap;
+use std::collections::HashMap;
 
 type PinDef = HashMap<String, uint>;
 type PinsDef = Vec<Option<PinDef>>;

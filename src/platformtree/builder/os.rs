@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::hashmap::HashSet;
+use std::collections::HashSet;
 use std::rc::Rc;
 use syntax::ast;
 use syntax::codemap::{respan, DUMMY_SP};

@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use std::cell::{Cell, RefCell};
-use std::collections::hashmap::HashMap;
+use std::collections::HashMap;
 use std::fmt;
 use std::rc::{Rc, Weak};
 use syntax::codemap::{Span, DUMMY_SP};
