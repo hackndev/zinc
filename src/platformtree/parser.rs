@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::collections::hashmap::HashMap;
+use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use syntax::ast::{TokenTree, LitInt, UnsuffixedIntLit};
 use syntax::codemap::{Span, mk_sp};

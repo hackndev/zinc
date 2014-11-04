@@ -169,7 +169,7 @@ end
 LPC_TEMPLATE = <<-EOF
 <%= prelude.join("\n") %>
 
-use std::collections::hashmap::HashMap;
+use std::collections::HashMap;
 
 type PinDef = HashMap<String, uint>;
 type PinsDef = Vec<Option<PinDef>>;
