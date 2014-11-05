@@ -4,6 +4,8 @@ require 'build/helpers'
 require 'build/context'
 require 'build/deps'
 
+ENV["RUST_TARGET_PATH"] = "support/target-specs"
+
 def report_size(n, h)
   fn = h[:source]
   Rake::Task.define_task n => fn do |t|
