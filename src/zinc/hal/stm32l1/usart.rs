@@ -68,7 +68,7 @@ impl Usart {
   /// Create ans setup a USART.
   pub fn new(peripheral: UsartPeripheral, baudrate: u32, word_len: WordLen,
              parity: uart::Parity, stop_bits: StopBit,
-             sys_clock: init::SystemClockSource) -> Usart {
+             config: &init::ClockConfig) -> Usart {
     use hal::stm32l1::peripheral_clock as clock;
 
     let (reg, clock) = match peripheral {
@@ -80,6 +80,7 @@ impl Usart {
     };
 
     clock.enable();
+    reg.cr1.set_usart_enable(true);
 
     reg.cr2.set_stop_bits(stop_bits as u16);
     reg.cr1.set_word_length(word_len as bool);
@@ -96,7 +97,7 @@ impl Usart {
     reg.cr3.set_rts_enable(true);
     reg.cr3.set_cts_enable(true);
 
-    let apb_clock = sys_clock.frequency();
+    let apb_clock = clock.frequency(config);
     let shift = if reg.cr1.oversample_8bit_enable() { 0 } else { 1 };
     let idiv = (25 * apb_clock) / (baudrate << (1 + shift));
     let mantissa = (idiv / 100) << 4;

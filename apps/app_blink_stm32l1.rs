@@ -8,8 +8,10 @@ extern crate zinc;
 #[no_mangle]
 pub unsafe fn main() {
   use core::option;
+  use zinc::drivers::chario::CharIO;
+  use zinc::hal;
   use zinc::hal::pin::Gpio;
-  use zinc::hal::stm32l1::{init, pin, timer};
+  use zinc::hal::stm32l1::{init, pin, timer, usart};
   use zinc::hal::timer::Timer;
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
@@ -30,6 +32,10 @@ pub unsafe fn main() {
   // TODO(kvark): why doesn't "sys_clock.get_apb1_frequency()" work better?
   let timer_clock = sys_clock.source.frequency();
   let timer = timer::Timer::new(timer::Timer2, timer_clock/1000, 0);
+
+  let uart = usart::Usart::new(usart::USART1, 115200, usart::WordLen8bits,
+    hal::uart::Disabled, usart::StopBit1bit, &sys_clock);
+  uart.puts("Hello, world\n");
 
   loop {
     led1.set_high();
