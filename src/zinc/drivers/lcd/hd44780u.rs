@@ -233,7 +233,7 @@ impl<'a> Hd44780u<'a> {
     self.cgram_address_set(pos << 3);
 
     for b in bitmap.iter() {
-      self.data(b & 0b11111);
+      self.data(*b & 0b11111);
     }
 
     // Return the read/write pointer to the Display Data RAM
@@ -251,7 +251,7 @@ impl<'a> Hd44780u<'a> {
     self.cgram_address_set(pos << 4);
 
     for b in bitmap.iter() {
-      self.data(b & 0b11111);
+      self.data(*b & 0b11111);
     }
 
     // Return the read/write pointer to the Display Data RAM
