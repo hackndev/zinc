@@ -5,5 +5,6 @@
     "target-word-size": "32",
     "arch": "arm",
     "os": "none",
-    "morestack": false
+    "morestack": false,
+    "executables": true
 }
