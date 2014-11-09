@@ -21,3 +21,7 @@ stm32l1_iomem_USART2   = 0x40004400;
 stm32l1_iomem_USART3   = 0x40004800;
 stm32l1_iomem_UART4    = 0x40004C00;
 stm32l1_iomem_UART5    = 0x40005000;
+
+stm32l1_iomem_SPI1     = 0x40013000;
+stm32l1_iomem_SPI2     = 0x40003800;
+stm32l1_iomem_SPI3     = 0x40003C00;
