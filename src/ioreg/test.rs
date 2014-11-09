@@ -16,7 +16,7 @@
 //! Tests for ioreg! syntax extension
 
 #![feature(phase)]
-#[phase(plugin)] extern crate macro_ioreg;
+#[phase(plugin)] extern crate ioreg;
 #[phase(plugin,link)] extern crate shiny;
 extern crate core;
 

@@ -46,29 +46,21 @@ compile_rust :core_crate, {
 # ioreg
 compile_rust :ioreg_crate, {
   source:    'ioreg/ioreg.rs'.in_source,
-  produce:   'ioreg/ioreg.rs'.in_source.as_rlib.in_build,
-  out_dir:   true,
-  build_for: :host,
-}
-
-compile_rust :macro_ioreg, {
-  source:    'macro/ioreg.rs'.in_source,
-  deps:      [:ioreg_crate],
-  produce:   'macro/ioreg.rs'.in_source.as_dylib.in_build,
+  produce:   'ioreg/ioreg.rs'.in_source.as_dylib.in_build,
   out_dir:   true,
   build_for: :host,
 }
 
 rust_tests :ioreg_test, {
   source:    'ioreg/test.rs'.in_source,
-  deps:      [:core_crate, :macro_ioreg, :shiny_crate],
+  deps:      [:core_crate, :ioreg_crate, :shiny_crate],
   produce:   'ioreg_test'.in_build,
 }
 
 # zinc crate
 compile_rust :zinc_crate, {
   source:  'zinc/lib.rs'.in_source,
-  deps:    [:core_crate, :rlibc_crate, :macro_ioreg],
+  deps:    [:core_crate, :rlibc_crate, :ioreg_crate],
   produce: 'zinc/lib.rs'.in_source.as_rlib.in_build,
   out_dir: true,
   recompile_on: [:triple, :platform],
@@ -108,7 +100,7 @@ rust_tests :platformtree_test, {
 # zinc test
 rust_tests :zinc_test, {
   source:  'zinc/lib.rs'.in_source,
-  deps:    [:core_crate, :macro_ioreg, :hamcrest_crate, :shiny_crate],
+  deps:    [:core_crate, :ioreg_crate, :hamcrest_crate, :shiny_crate],
   produce: 'zinc_test'.in_build,
   recompile_on: [:platform],
   build_for: :host,
