@@ -19,59 +19,199 @@
 //! performing initial peripheral configuration.
 
 //use hal::mem_init::init_data;
-use core::default::Default;
+use core::default;
 use core::intrinsics::abort;
+use core::option;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
-/// Phase-locked loop configuration.
-pub struct PllConfig;
+/// Phase-locked loop clock source.
+#[repr(u8)]
+pub enum PllClockSource {
+  /// Takes base clock from HSI.
+  PllSourceHSI = 0,
+  /// Takes base clock from HSE.
+  PllSourceHSE = 1,
+}
+
+/// PLL multiplier: 3, 4, 6, 8, 12, 16, 24, 32, 48
+pub type PllMultiplier = u8;
+
+/// PLL divisor: 1, 2, 3, 4
+pub type PllDivisor = u8;
 
 /// Multi-speed internal clock divisor.
+#[repr(u8)]
 pub enum MsiSpeed {
-  /// 65_536 kHz
+  /// 65.536 kHz
   Msi65   = 0,
-  /// 131_072 kHz
+  /// 131.072 kHz
   Msi131  = 1,
-  /// 262_144 kHz
+  /// 262.144 kHz
   Msi262  = 2,
-  /// 524_288 kHz
+  /// 524.288 kHz
   Msi524  = 3,
-  /// 1048 MHz
+  /// 1.048 MHz
   Msi1048 = 4,
-  /// 2097 MHz
+  /// 2.097 MHz
   Msi2097 = 5,
-  /// 4194 MHz
+  /// 4.194 MHz
   Msi4194 = 6,
 }
 
 /// System clock source.
 pub enum SystemClockSource {
+  /// Multi-speed internal clock,
+  SystemClockMSI(MsiSpeed),
   /// High-speed internal oscillator, 16MHz.
   SystemClockHSI,
   /// High-speed external oscillator with configurable frequency.
   SystemClockHSE(u32),
   /// PLL.
-  SystemClockPLL(PllConfig),
-  /// Multi-speed internal clock,
-  SystemClockMSI(MsiSpeed),
+  SystemClockPLL(PllClockSource, PllMultiplier, PllDivisor),
 }
 
-impl Default for SystemClockSource {
+impl default::Default for SystemClockSource {
   fn default() -> SystemClockSource {
     SystemClockMSI(Msi2097)
   }
 }
 
 impl SystemClockSource {
-  /// Get the system clock speed in kHz
-  pub fn to_speed_khz(&self) -> u32 {
+  /// Returns the system clock frequency.
+  pub fn frequency(&self) -> u32 {
     match *self {
-        SystemClockHSI => 16<<10,
-        SystemClockMSI(Msi2097) => 2097,
-        _ => unsafe { abort() }, //TODO(kvark)
+        SystemClockMSI(Msi65) => 65_536,
+        SystemClockMSI(Msi131) => 131_072,
+        SystemClockMSI(Msi262) => 262_144,
+        SystemClockMSI(Msi524) => 524_288,
+        SystemClockMSI(Msi1048) => 1_048_000,
+        SystemClockMSI(Msi2097) => 2_097_000,
+        SystemClockMSI(Msi4194) => 4_194_000,
+        SystemClockHSI => 16_000_000,
+        SystemClockHSE(_) => unsafe { abort() }, //TODO(kvark)
+        SystemClockPLL(_, _, _) => unsafe { abort() }, //TODO(kvark)
     }
+  }
+}
+
+#[allow(missing_docs)]
+#[repr(u8)]
+pub enum McoSource {
+  McoClockSystem = 1,
+  McoClockHSI = 2,
+  McoClockMSI = 3,
+  McoClockHSE = 4,
+  McoClockPLL = 5,
+  McoClockLSI = 6,
+  McoClockLSE = 7,
+}
+
+/// Microchip clock output configuration.
+pub struct McoConfig {
+  /// MCO clock source
+  source: McoSource,
+  /// Log2(divisor) for MCO.
+  clock_shift: u8,
+}
+
+/// System clock configuration.
+pub struct ClockConfig {
+  /// System clock source
+  pub source : SystemClockSource,
+  /// Log2(divisor) for Ahb bus.
+  pub ahb_shift : u8,
+  /// Log2(divisor) for Apb1 bus.
+  pub apb1_shift : u8,
+  /// Log2(divisor) for Apb2 bus.
+  pub apb2_shift : u8,
+  /// Microchip clock output.
+  pub mco : option::Option<McoConfig>,
+}
+
+impl ClockConfig {
+  /// Set this configuration on the hardware.
+  pub fn setup(&self) {
+    let r = &reg::RCC;
+
+    let source_type = match self.source {
+      SystemClockMSI(msi) => {
+        r.cr.set_msi_on(true);
+        wait_for!(r.cr.msi_ready());
+        r.icscr.set_msi_range(msi as u32);
+        0
+      },
+      SystemClockHSI => {
+        r.cr.set_hsi_on(true);
+        wait_for!(r.cr.hsi_ready());
+        1
+      },
+      SystemClockHSE(_) => {
+        r.cr.set_hse_on(true);
+        wait_for!(r.cr.hse_ready());
+        //TODO(kvark): HSE config
+        2
+      },
+      SystemClockPLL(pll_source, mul, div) => {
+        r.cr.set_pll_on(true);
+        wait_for!(r.cr.pll_ready());
+        r.cfgr.set_pll_clock_source(pll_source as bool);
+        let factor = match mul {
+          3 => 0,
+          4 => 1,
+          6 => 2,
+          8 => 3,
+          12 => 4,
+          16 => 5,
+          24 => 6,
+          32 => 7,
+          48 => 8,
+          _ => unsafe { abort() } // not supported
+        };
+        r.cfgr.set_pll_mul_factor(factor);
+        r.cfgr.set_pll_output_div(div as u32);
+        3
+      }
+    };
+
+    r.cfgr.set_system_clock(source_type);
+    wait_for!(r.cfgr.system_clock_status() == source_type);
+
+    if self.ahb_shift > 9 || self.apb1_shift > 4 || self.apb2_shift > 4 {
+      unsafe { abort() } // not supported
+    }
+    r.cfgr.set_ahb_prescaler(self.ahb_shift as u32);
+    r.cfgr.set_apb1_prescaler(self.apb1_shift as u32);
+    r.cfgr.set_apb2_prescaler(self.apb2_shift as u32);
+
+    match self.mco {
+      option::Some(mco) => {
+        if mco.clock_shift > 4 {
+            unsafe { abort() } // not supported
+        }
+        r.cfgr.set_mco(mco.source as u32);
+        r.cfgr.set_mco_prescaler(mco.clock_shift as u32);
+      },
+      option::None => {
+        r.cfgr.set_mco(0);
+      },
+    }
+  }
+
+  /// Returns AHB clock frequency
+  pub fn get_ahb_frequency(&self) -> u32 {
+    self.source.frequency() >> self.ahb_shift as uint
+  }
+
+  /// Returns APB1 clock frequency
+  pub fn get_apb1_frequency(&self) -> u32 {
+    self.source.frequency() >> self.apb1_shift as uint
+  }
+
+  /// Returns APB2 clock frequency
+  pub fn get_apb2_frequency(&self) -> u32 {
+    self.source.frequency() >> self.apb2_shift as uint
   }
 }
 
@@ -85,13 +225,36 @@ pub mod reg {
 
   ioregs!(RCC = {
     0x00 => reg32 cr {          // clock control
-      31..0 => clock_control : rw,
+      0 => hsi_on : rw,
+      1 => hsi_ready : ro,
+      8 => msi_on : rw,
+      9 => msi_ready : ro,
+      16 => hse_on : rw,
+      17 => hse_ready : ro,
+      18 => hse_bypass : rw,
+      24 => pll_on : rw,
+      25 => pll_ready : ro,
+      28 => security_on : rw,
+      30..29 => rtc_prescaler : rw,
     },
     0x04 => reg32 icscr {       // internal clock sources calibration
-      31..0 => clock_calibration : rw,
+      7..0   => hsi_calibration : rw,
+      12..8  => hsi_trimming : rw,
+      15..13 => msi_range : rw,
+      23..16 => msi_calibration : rw,
+      31..24 => msi_trimming : rw,
     },
     0x08 => reg32 cfgr {        // clock configuration
-      31..0 => clock_config : rw,
+      1..0   => system_clock : rw,
+      3..2   => system_clock_status: ro,
+      7..4   => ahb_prescaler : rw,
+      10..8  => apb1_prescaler : rw,
+      13..11 => apb2_prescaler : rw,
+      16     => pll_clock_source : rw,
+      21..18 => pll_mul_factor : rw,
+      23..22 => pll_output_div : rw,
+      26..24 => mco : rw,   // microcontroller clock output
+      30..28 => mco_prescaler : rw,
     },
     0x0C => reg32 cir {         // clock interrupt
       31..0 => clock_interrupt : rw,
@@ -124,7 +287,24 @@ pub mod reg {
       31..0 => enable_low_power : rw,
     },
     0x34 => reg32 csr {         // control/status
-      31..0 => status : rw,
+      0 => lsi_on : rw, // internal low speed oscillator
+      1 => lsi_ready : ro,
+      8 => lse_on : rw, // external low speed oscillator
+      9 => lse_ready : ro,
+      10 => lse_bypass : rw,
+      11 => lse_css_on : rw,
+      12 => lse_css_detected : ro,
+      17..16 => rtc_source : rw,
+      22 => rtc_on : rw,
+      23 => rtc_reset : rw,
+      24 => remove_reset : rw,
+      25 => option_bytes_loader_reset : rw,
+      26 => pin_reset : rw,
+      27 => pop_pdr_reset : rw,
+      28 => software_reset : rw,
+      29 => independent_watchdog_reset : rw,
+      30 => window_watchdog_reset : rw,
+      31 => low_power_reset : rw,
     },
   })
 
