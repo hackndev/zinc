@@ -28,7 +28,7 @@ use hal::stm32l1::init;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Available USART peripherals.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum UsartPeripheral {
   USART1,
@@ -39,7 +39,7 @@ pub enum UsartPeripheral {
 }
 
 /// USART word length.
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum WordLen {
   WordLen8bits = 0,
@@ -81,9 +81,18 @@ impl Usart {
 
     clock.enable();
     reg.cr1.set_usart_enable(true);
-
-    reg.cr2.set_stop_bits(stop_bits as u16);
     reg.cr1.set_word_length(word_len as bool);
+    reg.cr2.set_stop_bits(stop_bits as u16);
+
+    // Standard USART baud rate:
+    // Tx/Rx baud = Fck / (8 * (2 - OVER8) * USARTDIV)
+
+    let bus_clock = clock.frequency(config);
+    let over8 = reg.cr1.oversample_8bit_enable() as uint;
+    let idiv = (bus_clock << 4) / (baudrate << (2 - over8));
+    reg.brr.set_fraction(((idiv & 0xF) >> over8) as u16);
+    reg.brr.set_mantissa((idiv >> 4) as u16);
+
     let (pe_on, pe_select) = match parity {
         uart::Disabled => (false, false),
         uart::Even => (true, false),
@@ -92,19 +101,10 @@ impl Usart {
     };
     reg.cr1.set_parity_control_enable(pe_on);
     reg.cr1.set_parity_selection(pe_select);
+    //reg.cr3.set_rts_enable(true);
+    //reg.cr3.set_cts_enable(true);
     reg.cr1.set_transmitter_enable(true);
     reg.cr1.set_receiver_enable(true);
-    reg.cr3.set_rts_enable(true);
-    reg.cr3.set_cts_enable(true);
-
-    let apb_clock = clock.frequency(config);
-    let shift = if reg.cr1.oversample_8bit_enable() { 0 } else { 1 };
-    let idiv = (25 * apb_clock) / (baudrate << (1 + shift));
-    let mantissa = (idiv / 100) << 4;
-    let fdiv = idiv - (mantissa >> 4) * 100;
-    let fraction = ((fdiv << (3 + shift)) + 50) / 100;
-    reg.brr.set_fraction(fraction as u16);
-    reg.brr.set_mantissa(mantissa as u16);
 
     Usart {
       reg: reg,
@@ -114,8 +114,9 @@ impl Usart {
 
 impl CharIO for Usart {
   fn putc(&self, value: char) {
-    wait_for!(!self.reg.sr.read_data_not_empty());
+    wait_for!(self.reg.sr.transmit_data_empty());
     self.reg.dr.set_data(value as u16);
+    //wait_for!(self.reg.sr.transmission_complete());
   }
 }
 
@@ -158,7 +159,7 @@ mod reg {
       11 => wakeup_method : rw,
       12 => word_length : rw,
       13 => usart_enable : rw,
-      // 14 => missing from CMSIS
+      // 14 => reserved : ro,
       15 => oversample_8bit_enable : rw,
     },
     0x10 => reg16 cr2 { // control 2

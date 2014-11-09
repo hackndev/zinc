@@ -96,7 +96,7 @@ impl SystemClockSource {
   }
 }
 
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 #[repr(u8)]
 pub enum McoSource {
   McoClockSystem = 1,

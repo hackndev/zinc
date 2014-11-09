@@ -67,17 +67,36 @@ pub enum Speed {
   High    = 3,
 }
 
+/// Extended pin modes.
+#[allow(missing_docs, non_camel_case_types)]
+#[repr(u8)]
+pub enum AltMode {
+  AfRtc50Mhz_Mco_RtcAfl_Wakeup_SwJtag_Trace = 0,
+  AfTim2 = 1,
+  AfTim3_Tim4_Tim5 = 2,
+  AfTim9_Tim10_Tim11 = 3,
+  AfI2C1_I2C2 = 4,
+  AfSpi1_Spi2 = 5,
+  AfSpi3 = 6,
+  AfUsart1_Usart2_Usart3 = 7,
+  AfUart4_Uart5 = 8,
+  AfUsb = 10,
+  AfLcd = 11,
+  AfFsmc_Sdio = 12,
+  AfRe = 14,
+  AfEventOut = 15,
+}
+
 /// Pin mode.
 pub enum Mode {
   /// GPIO Input Mode
   GpioIn,
   /// GPIO Output Mode
   GpioOut(OutputType, Speed),
-  //TODO (kvark): implement this
-  // GPIO Alternate function Mode
-  //AltFunction(OutputType, Speed),
-  // GPIO Analog Mode
-  //Analog,
+  /// GPIO Alternate function Mode
+  AltFunction(AltMode, OutputType, Speed),
+  /// GPIO Analog Mode
+  Analog,
 }
 
 /// Pin configuration.
@@ -113,21 +132,37 @@ impl Pin {
     let fun: u32 = match mode {
       GpioIn  => 0b00,
       GpioOut(otype, speed) => {
-          let tv: u16 = reg.otyper.otype() & mask1;
-          reg.otyper.set_otype(tv | (otype as u16 << offset1));
-          let sv: u32 = reg.ospeedr.speed() & mask2;
-          reg.ospeedr.set_speed(sv | (speed as u32 << offset2));
-          0b01
+        // set type and speed
+        let tv: u16 = reg.otyper.otype() & mask1;
+        reg.otyper.set_otype(tv | (otype as u16 << offset1));
+        let sv: u32 = reg.ospeedr.speed() & mask2;
+        reg.ospeedr.set_speed(sv | (speed as u32 << offset2));
+        // done
+        0b01
       },
-      /*TODO (kvark): implement these modes
-      AltFunction(_, _) => {
-          unsafe { abort() } //TODO
-          0b10
+      AltFunction(alt, otype, speed) => {
+        // set type and speed
+        let tv: u16 = reg.otyper.otype() & mask1;
+        reg.otyper.set_otype(tv | (otype as u16 << offset1));
+        let sv: u32 = reg.ospeedr.speed() & mask2;
+        reg.ospeedr.set_speed(sv | (speed as u32 << offset2));
+        // set alt mode
+        let mut off = pin_index as uint << 2;
+        if pin_index < 8 {
+          let v = reg.afrl.alt_fun() & !(0xF << off);
+          reg.afrl.set_alt_fun(v | (alt as u32 << off));
+        }else {
+          off -= 32;
+          let v = reg.afrh.alt_fun() & !(0xF << off);
+          reg.afrh.set_alt_fun(v | (alt as u32 << off));
+        }
+        // done
+        0b10
       },
       Analog => {
-          unsafe { abort() } //TODO
-          0b11
-      },*/
+        //unsafe { abort() } //TODO
+        0b11
+      },
     };
 
     let mode: u32 = reg.moder.mode() & mask2;
