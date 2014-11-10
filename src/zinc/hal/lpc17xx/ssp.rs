@@ -200,7 +200,7 @@ impl SSP {
   }
 }
 
-impl spi::SPI for SSP {
+impl spi::Spi for SSP {
   fn write(&self, value: u8) {
     loop { if self.writeable() {
       break;

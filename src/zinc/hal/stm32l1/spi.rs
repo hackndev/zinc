@@ -17,6 +17,8 @@
 
 use core::intrinsics::abort;
 
+#[path="../../util/wait_for.rs"] mod wait_for;
+
 /// Available SPI peripherals.
 #[allow(missing_docs)]
 #[repr(u8)]
@@ -97,6 +99,7 @@ impl Spi {
     };
 
     clock.enable();
+    reg.cr1.set_spi_enable(true);
 
     // set direction
     reg.cr1.set_receive_only(direction == SpiRxOnly);
@@ -123,11 +126,24 @@ impl Spi {
     reg.cr1.set_clock_polarity(polarity as bool);
 
     reg.i2s_cfgr.set_enable(false);
+    reg.cr1.set_hardware_crc_enable(false);
     reg.crc.set_polynomial(7); //TODO
 
     Spi {
       reg: reg,
     }
+  }
+}
+
+impl ::hal::spi::Spi for Spi {
+  fn write(&self, value: u8) {
+    wait_for!(self.reg.sr.transmit_buffer_empty());
+    self.reg.dr.set_data(value as u16);
+  }
+
+  fn read(&self) -> u8 {
+    wait_for!(self.reg.sr.receive_buffer_not_empty());
+    self.reg.dr.data() as u8
   }
 }
 
