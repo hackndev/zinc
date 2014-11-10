@@ -15,6 +15,122 @@
 
 //! Serial Peripheral Interface for STM32L1.
 
+use core::intrinsics::abort;
+
+/// Available SPI peripherals.
+#[allow(missing_docs)]
+#[repr(u8)]
+pub enum SpiPeripheral {
+  Spi1,
+  Spi2,
+  Spi3,
+}
+
+/// SPI direction modes.
+#[repr(u8)]
+#[deriving(PartialEq)]
+pub enum SpiDirection {
+  /// 2 lines, default mode
+  SpiFullDuplex,
+  /// 2 lines, but read-only
+  SpiRxOnly,
+  /// 1 line, read
+  SpiRx,
+  /// 1 line, transmit
+  SpiTx,
+}
+
+#[allow(missing_docs)]
+#[repr(u8)]
+pub enum SpiRole {
+  SpiSlave = 0,
+  SpiMaster = 1,
+}
+
+#[allow(missing_docs)]
+#[repr(u8)]
+pub enum SpiDataSize {
+  SpiData8b = 0,
+  SpiData16b = 1,
+}
+
+/// SPI data format.
+#[repr(u8)]
+pub enum SpiFormat {
+  /// Most Significant Bit
+  SpiMsbFirst = 0,
+  /// Least Significant Bit
+  SpiLsbFirst = 1,
+}
+
+#[allow(missing_docs)]
+#[repr(u8)]
+pub enum SpiClockPhase {
+  SpiEdge1 = 0,
+  SpiEdge2 = 1,
+}
+
+#[allow(missing_docs)]
+#[repr(u8)]
+pub enum SpiClockPolarity {
+  SpiLowPolarity = 0,
+  SpiHighPolarity = 1,
+}
+
+/// Structure describing a SPI instance.
+pub struct Spi {
+  reg: &'static reg::SPI,
+}
+
+impl Spi {
+  /// Create a new SPI port.
+  pub fn new(peripheral: SpiPeripheral, direction: SpiDirection,
+             role: SpiRole, data_size: SpiDataSize, format: SpiFormat,
+             prescaler_pow2: u8, phase: SpiClockPhase,
+             polarity: SpiClockPolarity) -> Spi {
+    use hal::stm32l1::peripheral_clock as clock;
+
+    let (reg, clock) = match peripheral {
+        Spi1 => (&reg::SPI1, clock::ClockApb2(clock::Spi1)),
+        Spi2 => (&reg::SPI2, clock::ClockApb1(clock::Spi2)),
+        Spi3 => (&reg::SPI3, clock::ClockApb1(clock::Spi3)),
+    };
+
+    clock.enable();
+
+    // set direction
+    reg.cr1.set_receive_only(direction == SpiRxOnly);
+    reg.cr1.set_bidirectional_data_mode(direction == SpiRx || direction == SpiTx);
+    reg.cr1.set_bidirectional_output_enable(direction == SpiTx);
+
+    // set role
+    reg.cr1.set_master(role as bool);
+    reg.cr1.set_internal_slave_select(role as bool);
+    reg.cr1.set_software_slave_management(false); //TODO
+
+    // set data size and format (MSB or LSB)
+    reg.cr1.set_data_frame_format(data_size as bool);
+    reg.cr1.set_frame_format(format as bool);
+
+    // set baud rate
+    if prescaler_pow2<1 || prescaler_pow2>8 {
+      unsafe { abort() }
+    }
+    reg.cr1.set_baud_rate(prescaler_pow2 as u16 - 1);
+
+    // set clock mode
+    reg.cr1.set_clock_phase(phase as bool);
+    reg.cr1.set_clock_polarity(polarity as bool);
+
+    reg.i2s_cfgr.set_enable(false);
+    reg.crc.set_polynomial(7); //TODO
+
+    Spi {
+      reg: reg,
+    }
+  }
+}
+
 mod reg {
   use util::volatile_cell::VolatileCell;
   use core::ops::Drop;
@@ -60,7 +176,7 @@ mod reg {
       15..0 => data : rw,
     },
     0x10 => reg16 crc { // CRC
-      15..0 => crc : rw,
+      15..0 => polynomial : rw,
     },
     0x14 => reg16 rx_crc { // Rx CRC
       15..0 => crc : rw,
@@ -69,10 +185,19 @@ mod reg {
       15..0 => crc : rw,
     },
     0x1C => reg16 i2s_cfgr { // I2S config
-      15..0 => config : rw,
+      0 => channel_length : rw,
+      2..1 => data_length : rw,
+      3 => clock_polarity : rw,
+      5..4 => standard_selection : rw,
+      7 => pcm_frame_sync : rw,
+      9..8 => configuration_mode : rw,
+      10 => enable : rw,
+      11 => mode_selection : rw,
     },
     0x20 => reg16 i2c_pr { // I2S prescaler
-      15..0 => prescaler : rw,
+      7..0 => linear_prescaler : rw,
+      8 => odd_factor : rw,
+      9 => master_clock_output_enable : rw,
     },
   })
 

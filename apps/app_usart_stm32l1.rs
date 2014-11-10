@@ -31,7 +31,7 @@ pub unsafe fn main() {
 
   led1.set_low();
 
-  let uart = usart::Usart::new(usart::USART2, 38400, usart::WordLen8bits,
+  let uart = usart::Usart::new(usart::Usart2, 38400, usart::WordLen8bits,
     hal::uart::Disabled, usart::StopBit1bit, &sys_clock);
   uart.puts("Hello, world\n");
 

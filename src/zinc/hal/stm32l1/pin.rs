@@ -21,8 +21,6 @@
 use super::peripheral_clock;
 use core::intrinsics::abort;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
-
 /// Available port names.
 #[allow(missing_docs)]
 #[repr(u8)]

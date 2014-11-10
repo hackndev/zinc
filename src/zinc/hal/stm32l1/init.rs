@@ -23,7 +23,6 @@ use core::default;
 use core::intrinsics::abort;
 use core::option;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Phase-locked loop clock source.
