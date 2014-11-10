@@ -7,23 +7,15 @@ extern crate zinc;
 
 #[no_mangle]
 pub unsafe fn main() {
-  use core::option;
-  use core::default;
   use zinc::drivers::chario::CharIO;
   use zinc::hal;
-  use zinc::hal::stm32l1::{init, usart};
-  use zinc::hal::pin::Gpio; //temp
-  use zinc::hal::stm32l1::pin; //temp
+  use zinc::hal::pin::Gpio;
+  use zinc::hal::stm32l1::{init, pin, usart};
+
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
 
-  let sys_clock = init::ClockConfig {
-    source: default::Default::default(),
-    ahb_shift: 0,
-    apb1_shift: 0,
-    apb2_shift: 0,
-    mco: option::None,
-  };
+  let sys_clock = init::ClockConfig::new_default();
   sys_clock.setup();
 
   let _pin_tx = pin::Pin::new(pin::PortA, 2,
@@ -39,12 +31,11 @@ pub unsafe fn main() {
 
   led1.set_low();
 
-  let uart = usart::Usart::new(usart::USART2, 38400, usart::WordLen8bits,
+  let uart = usart::Usart::new(usart::Usart2, 38400, usart::WordLen8bits,
     hal::uart::Disabled, usart::StopBit1bit, &sys_clock);
   uart.puts("Hello, world\n");
 
   led1.set_high();
 
-  loop {
-  }
+  loop {}
 }

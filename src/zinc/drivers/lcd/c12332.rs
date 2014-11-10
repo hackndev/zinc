@@ -33,7 +33,7 @@ use super::LCD;
 use drivers::chario::CharIO;
 use hal::timer::Timer;
 use hal::pin::Gpio;
-use hal::spi::SPI;
+use hal::spi::Spi;
 
 /// C12332 driver.
 pub struct C12332<'a, S:'a, T:'a, P:'a> {
@@ -51,7 +51,7 @@ pub struct C12332<'a, S:'a, T:'a, P:'a> {
   char_y: cell::Cell<u32>,
 }
 
-impl<'a, S: SPI, T: Timer, P: Gpio> C12332<'a, S, T, P> {
+impl<'a, S: Spi, T: Timer, P: Gpio> C12332<'a, S, T, P> {
   /// Creates a new C12332 driver instance.
   pub fn new(spi: &'a S, timer: &'a T, dc: &'a P, cs: &'a P,
       reset: &'a P) -> C12332<'a, S, T, P> {
@@ -183,7 +183,7 @@ impl<'a, S: SPI, T: Timer, P: Gpio> C12332<'a, S, T, P> {
   }
 }
 
-impl<'a, S: SPI, T: Timer, P: Gpio> LCD for C12332<'a, S, T, P> {
+impl<'a, S: Spi, T: Timer, P: Gpio> LCD for C12332<'a, S, T, P> {
   fn flush(&self) {
     let mut i: uint = 0;
 
@@ -239,7 +239,7 @@ impl<'a, S: SPI, T: Timer, P: Gpio> LCD for C12332<'a, S, T, P> {
   }
 }
 
-impl<'a, S: SPI, T: Timer, P: Gpio> CharIO for C12332<'a, S, T, P> {
+impl<'a, S: Spi, T: Timer, P: Gpio> CharIO for C12332<'a, S, T, P> {
   fn putc(&self, value: char) {
     let height: u32 = 32;
     if value == '\n' {

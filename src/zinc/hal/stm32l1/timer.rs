@@ -17,8 +17,6 @@
 //!
 //! This code supports only TIM2 at the moment.
 
-use hal::timer;
-
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Available timer peripherals.
@@ -53,7 +51,7 @@ impl Timer {
   }
 }
 
-impl timer::Timer for Timer {
+impl ::hal::timer::Timer for Timer {
   #[inline(always)]
   fn get_counter(&self) -> u32 {
     self.reg.cnt.counter() as u32

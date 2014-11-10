@@ -24,18 +24,17 @@ use drivers::chario::CharIO;
 use hal::uart;
 use hal::stm32l1::init;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Available USART peripherals.
 #[allow(missing_docs)]
 #[repr(u8)]
 pub enum UsartPeripheral {
-  USART1,
-  USART2,
-  USART3,
-  UART4,
-  UART5,
+  Usart1,
+  Usart2,
+  Usart3,
+  Uart4,
+  Uart5,
 }
 
 /// USART word length.
@@ -65,22 +64,23 @@ pub struct Usart {
 }
 
 impl Usart {
-  /// Create ans setup a USART.
+  /// Create a new USART port.
   pub fn new(peripheral: UsartPeripheral, baudrate: u32, word_len: WordLen,
              parity: uart::Parity, stop_bits: StopBit,
              config: &init::ClockConfig) -> Usart {
     use hal::stm32l1::peripheral_clock as clock;
 
     let (reg, clock) = match peripheral {
-        USART1 => (&reg::USART1, clock::ClockApb2(clock::Usart1)),
-        USART2 => (&reg::USART2, clock::ClockApb1(clock::Usart2)),
-        USART3 => (&reg::USART3, clock::ClockApb1(clock::Usart3)),
-        UART4  => (&reg::UART4,  clock::ClockApb1(clock::Uart4)),
-        UART5  => (&reg::UART5,  clock::ClockApb1(clock::Uart5)),
+        Usart1 => (&reg::USART1, clock::ClockApb2(clock::Usart1)),
+        Usart2 => (&reg::USART2, clock::ClockApb1(clock::Usart2)),
+        Usart3 => (&reg::USART3, clock::ClockApb1(clock::Usart3)),
+        Uart4  => (&reg::UART4,  clock::ClockApb1(clock::Uart4)),
+        Uart5  => (&reg::UART5,  clock::ClockApb1(clock::Uart5)),
     };
 
     clock.enable();
     reg.cr1.set_usart_enable(true);
+
     reg.cr1.set_word_length(word_len as bool);
     reg.cr2.set_stop_bits(stop_bits as u16);
 

@@ -24,7 +24,7 @@ peripheral. The best way is to always use `transfer()`.
 */
 
 /// SPI trait.
-pub trait SPI {
+pub trait Spi {
   /// Writes a byte over SPI.
   ///
   /// It's implementation defined what happens if SPI is not configured to 8

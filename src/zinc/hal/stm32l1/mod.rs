@@ -18,5 +18,6 @@
 pub mod init;
 pub mod peripheral_clock;
 pub mod pin;
+pub mod spi;
 pub mod timer;
 pub mod usart;

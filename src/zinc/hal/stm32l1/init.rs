@@ -23,7 +23,6 @@ use core::default;
 use core::intrinsics::abort;
 use core::option;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Phase-locked loop clock source.
@@ -130,7 +129,24 @@ pub struct ClockConfig {
   pub mco : option::Option<McoConfig>,
 }
 
+impl default::Default for ClockConfig {
+  fn default() -> ClockConfig {
+    ClockConfig {
+      source: default::Default::default(),
+      ahb_shift: 0,
+      apb1_shift: 0,
+      apb2_shift: 0,
+      mco: option::None,
+    }
+  }
+}
+
 impl ClockConfig {
+  /// Return the default clock configuration that hardware go to after reset.
+  pub fn new_default() -> ClockConfig {
+    default::Default::default()
+  }
+
   /// Set this configuration on the hardware.
   pub fn setup(&self) {
     let r = &reg::RCC;
