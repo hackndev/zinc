@@ -172,7 +172,8 @@ when 'k20'
 when 'stm32f4'
   task :build_all => [:build_blink_stm32f4]
 when 'stm32l1'
-  task :build_all => [:build_blink_stm32l1, :build_usart_stm32l1]
+  task :build_all => [:build_blink_stm32l1, :build_usart_stm32l1,
+                      :build_bluenrg_stm32l1]
 when 'lpc17xx'
   task :build_all => [:build_empty, :build_blink, :build_uart, :build_dht22]
 end

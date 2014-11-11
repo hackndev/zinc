@@ -101,7 +101,6 @@ impl Spi {
     };
 
     clock.enable();
-    reg.cr1.set_spi_enable(true);
 
     // set direction
     reg.cr1.set_receive_only(direction == SpiRxOnly);
@@ -130,6 +129,8 @@ impl Spi {
     reg.i2s_cfgr.set_enable(false);
     reg.cr1.set_hardware_crc_enable(false);
     reg.crc.set_polynomial(7); //TODO
+
+    reg.cr1.set_spi_enable(true);
 
     Spi {
       reg: reg,

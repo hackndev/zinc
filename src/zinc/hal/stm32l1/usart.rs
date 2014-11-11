@@ -83,7 +83,6 @@ impl Usart {
     };
 
     clock.enable();
-    reg.cr1.set_usart_enable(true);
 
     reg.cr1.set_word_length(word_len as bool);
     reg.cr2.set_stop_bits(stop_bits as u16);
@@ -109,6 +108,8 @@ impl Usart {
     //reg.cr3.set_cts_enable(true);
     reg.cr1.set_transmitter_enable(true);
     reg.cr1.set_receiver_enable(true);
+
+    reg.cr1.set_usart_enable(true);
 
     Usart {
       reg: reg,
