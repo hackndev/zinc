@@ -152,11 +152,11 @@ def provide_stdlibs
   directory 'thirdparty'.in_root
 
   Rake::FileTask.define_task 'thirdparty/rust' do |t|
-    sh "git clone --single-branch --depth 1 https://github.com/mozilla/rust #{t.name}"
+    sh "git clone --single-branch --depth 1 https://github.com/rust-lang/rust #{t.name}"
   end.invoke
 
-  Rake::FileTask.define_task 'thirdparty/librlibc/lib.rs'.in_root do |t|
-    sh "ln -s rust/src/librlibc thirdparty/librlibc"
+  Rake::FileTask.define_task 'thirdparty/librlibc'.in_root do |t|
+    sh "git clone https://github.com/rust-lang/rlibc #{t.name}"
   end.invoke
 
   Rake::FileTask.define_task 'thirdparty/libcore/lib.rs'.in_root do |t|
