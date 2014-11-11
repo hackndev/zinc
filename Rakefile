@@ -29,8 +29,8 @@ compile_rust :hamcrest_crate, {
 
 # cross-compiled librlibc
 compile_rust :rlibc_crate, {
-  source:  'thirdparty/librlibc/lib.rs'.in_root,
-  produce: 'thirdparty/librlibc/lib.rs'.in_root.as_rlib.in_build,
+  source:  'thirdparty/librlibc/src/lib.rs'.in_root,
+  produce: 'thirdparty/librlibc/src/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
   recompile_on: :triple,
 }
