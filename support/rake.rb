@@ -156,7 +156,7 @@ def provide_stdlibs
   end.invoke
 
   Rake::FileTask.define_task 'thirdparty/librlibc'.in_root do |t|
-    sh "git clone https://github.com/rust-lang/rlibc #{t.name}"
+    sh "git clone https://github.com/bharrisau/rust-librlibc #{t.name}"
   end.invoke
 
   Rake::FileTask.define_task 'thirdparty/libcore/lib.rs'.in_root do |t|
