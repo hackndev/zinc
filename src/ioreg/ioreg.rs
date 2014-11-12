@@ -327,13 +327,56 @@ N => NAME
 
 */
 
-#![feature(quote, struct_variant)]
+#![feature(quote, struct_variant, plugin_registrar)]
 #![crate_name="ioreg"]
-#![crate_type="rlib"]
+#![crate_type="dylib"]
 
+extern crate rustc;
 extern crate syntax;
 extern crate serialize;
+
+use rustc::plugin::Registry;
+use syntax::ast;
+use syntax::ptr::P;
+use syntax::codemap::Span;
+use syntax::ext::base::{ExtCtxt, MacResult};
+use syntax::util::small_vector::SmallVector;
 
 pub mod node;
 pub mod parser;
 pub mod builder;
+
+#[plugin_registrar]
+pub fn plugin_registrar(reg: &mut Registry) {
+  reg.register_macro("ioregs", macro_ioregs);
+}
+
+pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
+                    -> Box<MacResult+'static> {
+  match parser::Parser::new(cx, tts).parse_ioregs() {
+    Some(group) => {
+      let mut builder = builder::Builder::new();
+      let items = builder.emit_items(cx, group);
+      MacItems::new(items)
+    },
+    None => {
+      panic!();
+    }
+  }
+}
+
+pub struct MacItems {
+  items: Vec<P<ast::Item>>
+}
+
+impl MacItems {
+  pub fn new(items: Vec<P<ast::Item>>) -> Box<MacResult+'static> {
+    box MacItems { items: items } as Box<MacResult>
+  }
+}
+
+impl MacResult for MacItems {
+  fn make_items(self: Box<MacItems>) -> Option<SmallVector<P<ast::Item>>> {
+    Some(SmallVector::many(self.items.clone()))
+  }
+}
