@@ -1,5 +1,4 @@
 __STACK_BASE = 0x2001FFFF;
-_boot_checksum = 0; /* TODO(farcaller): extract this to lpc code only */
 _data_load = LOADADDR(.data);
 
 INCLUDE ./src/zinc/hal/stm32f4/iomem.ld

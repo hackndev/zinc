@@ -14,20 +14,28 @@
 // limitations under the License.
 
 //! Interface to System Control Block.
+//! 
+//! System Control Block memory location is 0xE000_ED00.
+//! System Control Block ACTLR memory location is 0xE000_E008;
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/CIHFDJCA.html
+
+#[inline(always)]
+fn get_reg() -> &'static reg::SCB {
+  unsafe { &*(0xE000_ED00 as *mut reg::SCB) }
+}
 
 /// Returns the CPUID.
 #[allow(dead_code)]
 pub fn cpuid() -> reg::SCB_cpuid_Get {
-  reg::SCB.cpuid.get()
+  get_reg().cpuid.get()
 }
 
 /// Sets the pending state of the PendSV interrupt.
 pub fn set_pendsv(val: bool) {
   if val {
-    reg::SCB.icsr.set_pendsvset(true);
+    get_reg().icsr.set_pendsvset(true);
   } else {
-    reg::SCB.icsr.set_pendsvclr(true);
+    get_reg().icsr.set_pendsvclr(true);
   }
 }
 
@@ -127,9 +135,4 @@ mod reg {
       0..23   => cp[24],
     }
   })
-
-  #[allow(dead_code)]
-  extern {
-    #[link_name="armmem_SCB"] pub static SCB: SCB;
-  }
 }

@@ -14,46 +14,53 @@
 // limitations under the License.
 
 //! Interface to Nested Vector Interrupt Controller.
+//!
+//! NVIC memory location is 0xE000_E000.
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/CIHIGCIF.html
+
+#[inline(always)]
+fn get_reg() -> &'static reg::NVIC {
+  unsafe { &*(0xE000_E000 as *mut reg::NVIC) }
+}
 
 /// Enable an interrupt
 pub fn enable_irq(irqn: uint) {
-  reg::NVIC.iser[irqn / 32].clear_iser(irqn % 32);
+  get_reg().iser[irqn / 32].clear_iser(irqn % 32);
 }
 
 /// Disable an interrupt
 pub fn disable_irq(irqn: uint) {
-  reg::NVIC.icer[irqn / 32].clear_icer(irqn % 32);
+  get_reg().icer[irqn / 32].clear_icer(irqn % 32);
 }
 
 /// Return whether the given interrupt is enabled
 pub fn is_enabled(irqn: uint) -> bool {
-  reg::NVIC.iser[irqn / 32].iser(irqn % 32)
+  get_reg().iser[irqn / 32].iser(irqn % 32)
 }
 
 /// Clear the pending flag for the given interrupt
 pub fn clear_pending(irqn: uint) {
-  reg::NVIC.icpr[irqn / 32].clear_icpr(irqn % 32);
+  get_reg().icpr[irqn / 32].clear_icpr(irqn % 32);
 }
 
 /// Return whether the given interrupt is pending
 pub fn is_pending(irqn: uint) -> bool {
-  reg::NVIC.ispr[irqn / 32].ispr(irqn % 32)
+  get_reg().ispr[irqn / 32].ispr(irqn % 32)
 }
 
 /// Return whether the given interrupt is active
 pub fn is_active(irqn: uint) -> bool {
-  reg::NVIC.iabr[irqn / 32].iabr(irqn % 32)
+  get_reg().iabr[irqn / 32].iabr(irqn % 32)
 }
 
 /// Set the priority for the given interrupt
 pub fn set_priority(irqn: uint, prio: u8) {
-  reg::NVIC.ipr[irqn / 4].set_ipr(irqn % 4, prio as u32);
+  get_reg().ipr[irqn / 4].set_ipr(irqn % 4, prio as u32);
 }
 
 /// Return the priority for the given interrupt
 pub fn get_priority(irqn: uint) -> u8 {
-  reg::NVIC.ipr[irqn / 4].ipr(irqn % 4) as u8
+  get_reg().ipr[irqn / 4].ipr(irqn % 4) as u8
 }
 
 mod reg {
@@ -83,9 +90,4 @@ mod reg {
       0..8    => stir,
     }
   })
-
-  #[allow(dead_code)]
-  extern {
-    #[link_name="armmem_NVIC"] pub static NVIC: NVIC;
-  }
 }

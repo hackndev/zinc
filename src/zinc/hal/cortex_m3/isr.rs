@@ -18,33 +18,63 @@ use core::option::{Option, Some, None};
 extern {
   fn __STACK_BASE();
   fn main();
-  fn _boot_checksum();
 
   fn isr_nmi();
   fn isr_hardfault();
   fn isr_mmfault();
   fn isr_busfault();
   fn isr_usagefault();
+
   fn isr_svcall();
   fn isr_pendsv();
   fn isr_systick();
+
+  fn isr_debugmon();
+  fn isr_reserved_1();
 }
 
 #[cfg(not(test))]
 #[no_mangle]
-#[no_stack_check]
-pub extern fn isr_default_fault() {
-  unsafe {
-    asm!("mrs r0, psp
-        mrs r1, msp
-        ldr r2, [r0, 0x18]
-        ldr r3, [r1, 0x18]
-        bkpt")
-  }
-}
+pub unsafe extern fn isr_handler_wrapper() {
+  asm!(".weak isr_nmi, isr_hardfault, isr_mmfault, isr_busfault
+      .weak isr_usagefault, isr_svcall, isr_pendsv, isr_systick
+      .weak isr_debugmon
+      .weak isr_reserved_1
 
-#[cfg(test)]
-pub extern fn isr_default_fault() { unimplemented!() }
+      .thumb_func
+      isr_nmi:
+
+      .thumb_func
+      isr_hardfault:
+
+      .thumb_func
+      isr_mmfault:
+
+      .thumb_func
+      isr_busfault:
+
+      .thumb_func
+      isr_usagefault:
+
+      .thumb_func
+      isr_svcall:
+
+      .thumb_func
+      isr_pendsv:
+
+      .thumb_func
+      isr_systick:
+
+      b isr_default_fault
+
+      .thumb_func
+      isr_default_fault:
+      mrs r0, psp
+      mrs r1, msp
+      ldr r2, [r0, 0x18]
+      ldr r3, [r1, 0x18]
+      bkpt" :::: "volatile");
+}  
 
 #[allow(non_upper_case_globals)]
 const ISRCount: uint = 16;
@@ -60,12 +90,12 @@ pub static ISRVectors: [Option<unsafe extern fn()>, ..ISRCount] = [
   Some(isr_mmfault),      // CM3 Memory Management Fault
   Some(isr_busfault),     // CM3 Bus Fault
   Some(isr_usagefault),   // CM3 Usage Fault
-  Some(_boot_checksum),   // NXP Checksum code
+  Some(isr_reserved_1),   // Reserved - Used as NXP Checksum
   None,                   // Reserved
   None,                   // Reserved
   None,                   // Reserved
   Some(isr_svcall),       // SVCall
-  None,                   // Reserved for debug
+  Some(isr_debugmon),     // Reserved for debug
   None,                   // Reserved
   Some(isr_pendsv),       // PendSV
   Some(isr_systick),      // SysTick
