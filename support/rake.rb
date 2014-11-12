@@ -138,7 +138,6 @@ end
 
 def rust_tests(n, h)
   h[:test] = true
-  h[:flags] = '-C relocation-model=static'
   h[:optimize] = '0'
   compile_rust n, h
   run_task = Rake::Task.define_task("run_#{n}".to_sym => h[:produce]) do |t|
