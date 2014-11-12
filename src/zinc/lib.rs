@@ -45,7 +45,7 @@ STM32F403/407).
 */
 
 #[phase(plugin,link)] extern crate core;
-extern crate rlibc;
+#[cfg(not(test))] extern crate rlibc;
 
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
 #[cfg(test)] extern crate native;
