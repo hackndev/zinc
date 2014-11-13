@@ -14,8 +14,15 @@
 // limitations under the License.
 
 //! Interface to SYSTICK timer.
+//!
+//! Systick memory location is 0xE000_E010.
 
 use core::option::{Option,None,Some};
+
+#[inline(always)]
+fn get_reg() -> &'static reg::SYSTICK {
+  unsafe { &*(0xE000_E010 as *mut reg::SYSTICK) }
+}
 
 /// Initialize systick timer.
 ///
@@ -26,15 +33,15 @@ use core::option::{Option,None,Some};
 ///
 ///  * reload: Reload value for the timer
 pub fn setup(reload: u32) {
-  reg::SYSTICK.csr.set_enable(false).set_tickint(false).set_clksource(reg::CPU);
+  get_reg().csr.set_enable(false).set_tickint(false).set_clksource(reg::CPU);
 
-  reg::SYSTICK.rvr.set_reload(reload);
-  reg::SYSTICK.cvr.set_current(0);
+  get_reg().rvr.set_reload(reload);
+  get_reg().cvr.set_current(0);
 }
 
 /// Read ten millisecond calibration value from hardware
 pub fn ten_ms() -> Option<u32> {
-  let calib = reg::SYSTICK.calib.tenms();
+  let calib = get_reg().calib.tenms();
   match calib {
     0 => None,
     val => Some(val)
@@ -43,33 +50,33 @@ pub fn ten_ms() -> Option<u32> {
 
 /// Enables the timer.
 pub fn enable() {
-  reg::SYSTICK.csr.set_enable(true);
+  get_reg().csr.set_enable(true);
 }
 
 /// Disable the timer.
 pub fn disable() {
-  reg::SYSTICK.csr.set_enable(false);
+  get_reg().csr.set_enable(false);
 }
 
 /// Enables interrupts generation for timer.
 pub fn enable_irq() {
-  reg::SYSTICK.csr.set_tickint(true);
+  get_reg().csr.set_tickint(true);
 }
 
 /// Disables interrupts generation for timer, which is still ticking.
 pub fn disable_irq() {
-  reg::SYSTICK.csr.set_tickint(false);
+  get_reg().csr.set_tickint(false);
 }
 
 /// Gets the current 24bit systick value.
 pub fn get_current() -> u32 {
-  reg::SYSTICK.cvr.current()
+  get_reg().cvr.current()
 }
 
 /// Checks if the timer has been triggered since last call.
 /// The flag is cleared when this is called.
 pub fn tick() -> bool {
-  reg::SYSTICK.csr.countflag()
+  get_reg().csr.countflag()
 }
 
 #[allow(dead_code)]
@@ -108,8 +115,4 @@ mod reg {
                               //= If zero calibration value not known
     },
   })
-
-  extern {
-    #[link_name="armmem_SYSTICK"] pub static SYSTICK: SYSTICK;
-  }
 }

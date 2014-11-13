@@ -1,8 +1,6 @@
 /* FIXME(bgamari): Make stack base configurable? */
 __STACK_BASE  = 0x20001FFF;
 
-_boot_checksum = 0;
-
 _data_load = LOADADDR(.data);
 
 INCLUDE ./src/zinc/hal/k20/iomem.ld

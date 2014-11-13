@@ -1,5 +1,3 @@
-INCLUDE ./src/zinc/hal/cortex_m3/armmem.ld
-
 stm32f4_iomem_TIM2  = 0x40000000;
 
 stm32f4_iomem_PWR   = 0x40007000;

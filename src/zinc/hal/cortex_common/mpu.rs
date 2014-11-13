@@ -14,7 +14,16 @@
 // limitations under the License.
 
 //! Interface to Memory Protection Unit.
+//! 
+//! MPU memory location is 0xE000_ED90.
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/BIHJJABA.html
+
+// TODO(bharrisau): Remove dead_code when MPU is implemented.
+#[allow(dead_code)]
+#[inline(always)]
+fn get_reg() -> &'static reg::MPU {
+  unsafe { &*(0xE000_ED90 as *mut reg::MPU) }
+}
 
 mod reg {
   use util::volatile_cell::VolatileCell;
@@ -51,9 +60,4 @@ mod reg {
       28       => xn,
     }
   })
-
-  #[allow(dead_code)]
-  extern {
-    #[link_name="armmem_MPU"] pub static MPU: MPU;
-  }
 }
