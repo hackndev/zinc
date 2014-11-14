@@ -88,6 +88,15 @@ extern {
   fn isr_soft();
 }
 
+#[link_section=".flash_configuration"]
+#[allow(non_upper_case_globals)]
+pub static FlashConfigField: [uint, ..4] = [
+    0xFFFFFFFF,
+    0xFFFFFFFF,
+    0xFFFFFFFF,
+    0xFFFFFFFE,
+];
+
 #[allow(non_upper_case_globals)]
 const ISRCount: uint = 95;
 
