@@ -16,5 +16,6 @@
 //! Drivers for peripherals commonly found outside MCUs.
 
 pub mod lcd;
+pub mod bluenrg;
 pub mod chario;
 pub mod dht22;

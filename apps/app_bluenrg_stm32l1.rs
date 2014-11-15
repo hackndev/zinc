@@ -6,15 +6,61 @@
 //! BlueNRG communication over SPI in
 //! X-NUCLEO-IDB04A1 on NUCLEO-L152RE
 
+#[phase(plugin, link)]
 extern crate core;
 extern crate zinc;
 
+// "curious module hack"
+mod std {
+  pub use core::fmt;
+}
+
+#[repr(u16)]
+enum HciOpCode {
+  HciDisconnect = 0x0406,
+  HciReadRemoteVersionInformation = 0x041D,
+}
+
+#[repr(u16)]
+enum HciEventCode {
+  HciDisconnectComplete = 0x05,
+  HciReadRemoteVersionInformationComplete = 0x0C,
+}
+
+// temporary `u8 -> str` conversion until #235 is resolved
+fn map_byte(s: u8) -> (&'static str, &'static str) {
+  fn map_hex(h: u8) -> &'static str {
+      match h {
+        0x0 => "0",
+        0x1 => "1",
+        0x2 => "2",
+        0x3 => "3",
+        0x4 => "4",
+        0x5 => "5",
+        0x6 => "6",
+        0x7 => "7",
+        0x8 => "8",
+        0x9 => "9",
+        0xA => "A",
+        0xB => "B",
+        0xC => "C",
+        0xD => "D",
+        0xE => "E",
+        0xF => "F",
+        _ => "",
+      }
+  }
+  (map_hex(s>>4), map_hex(s&0xF))
+}
+
 #[no_mangle]
 pub unsafe fn main() {
-  use zinc::drivers::chario::CharIO;
+  //use core::intrinsics::abort;
+  use core::fmt::FormatWriter;
+  use core::result;
+  use zinc::drivers::bluenrg;
   use zinc::hal;
-  //use zinc::hal::pin::Gpio;
-  use zinc::hal::spi::Spi;
+  use zinc::hal::pin::Gpio;
   use zinc::hal::stm32l1::{init, pin, spi, usart};
 
   zinc::hal::mem_init::init_stack();
@@ -30,26 +76,50 @@ pub unsafe fn main() {
       pin::VeryLow),
     pin::PullNone);
 
-  let uart = usart::Usart::new(usart::Usart2, 38400, usart::WordLen8bits,
+  let mut uart = usart::Usart::new(usart::Usart2, 38400, usart::WordLen8bits,
     hal::uart::Disabled, usart::StopBit1bit, &sys_clock);
-  uart.puts("BlueNRG test app for STM32L1\n");
+  let _ = write!(uart, "BlueNRG test app for STM32L1\n");
 
-  let _spi_clock = pin::Pin::new(pin::PortA, 5,
-    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::VeryLow),
-    pin::PullNone);
+  let _spi_clock = pin::Pin::new(pin::PortB, 3,
+    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::Medium),
+    pin::PullDown);
 
   let _spi_in = pin::Pin::new(pin::PortA, 6,
-    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::VeryLow),
+    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::Medium),
     pin::PullNone);
 
   let _spi_out = pin::Pin::new(pin::PortA, 7,
-    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::VeryLow),
+    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::Medium),
     pin::PullNone);
 
-  let _spi = spi::Spi::new(spi::Spi1, spi::SpiFullDuplex, spi::SpiMaster,
-    spi::SpiData8b, spi::SpiMsbFirst, 1, spi::SpiEdge1, spi::SpiLowPolarity);
+  let spi_csn = pin::Pin::new(pin::PortA, 1,
+    pin::GpioOut(pin::OutPushPull, pin::Medium),
+    pin::PullUp);
+  spi_csn.set_high();
 
-  uart.puts("SPI connection established\n");
+  let spi = spi::Spi::new(spi::Spi1, spi::DirFullDuplex, spi::RoleMaster,
+    spi::Data8b, spi::DataMsbFirst, 1); // baud prescaler = 1<<1 = 2
+
+  let bnrg_reset = pin::Pin::new(pin::PortA, 8,
+    pin::GpioOut(pin::OutPushPull, pin::VeryLow),
+    pin::PullUp);
+
+  bnrg_reset.set_low();
+  let _ = write!(uart, "SPI created, status={}\n", map_byte(spi.get_status()));
+  bnrg_reset.set_high();
+
+  let blue = bluenrg::BlueNrg::new(spi_csn, spi);
+
+  let _ = match blue.wakeup(10) {
+    result::Ok((size_write, size_read)) => write!(uart,
+      "BlueNRG is ready, write size = {}<<8, read size = {}<<8\n",
+      map_byte(size_write as u8), map_byte(size_read as u8)),
+    result::Err(bluenrg::SpiSleeping) => write!(uart,
+      "BlueNRG is sleeping\n"),
+    result::Err(bluenrg::SpiUnknown(status)) => write!(uart,
+      "BlueNRG unknown status = {}\n", map_byte(status)),
+    result::Err(bluenrg::SpiBufferSize(_)) => write!(uart, ""),
+  };
 
   loop {}
 }

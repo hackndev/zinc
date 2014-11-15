@@ -33,50 +33,50 @@ pub enum SpiPeripheral {
 #[deriving(PartialEq)]
 pub enum SpiDirection {
   /// 2 lines, default mode
-  SpiFullDuplex,
+  DirFullDuplex,
   /// 2 lines, but read-only
-  SpiRxOnly,
+  DirRxOnly,
   /// 1 line, read
-  SpiRx,
+  DirRx,
   /// 1 line, transmit
-  SpiTx,
+  DirTx,
 }
 
 #[allow(missing_docs)]
 #[repr(u8)]
 pub enum SpiRole {
-  SpiSlave = 0,
-  SpiMaster = 1,
+  RoleSlave = 0,
+  RoleMaster = 1,
 }
 
 #[allow(missing_docs)]
 #[repr(u8)]
 pub enum SpiDataSize {
-  SpiData8b = 0,
-  SpiData16b = 1,
+  Data8b = 0,
+  Data16b = 1,
 }
 
 /// SPI data format.
 #[repr(u8)]
-pub enum SpiFormat {
+pub enum SpiDataFormat {
   /// Most Significant Bit
-  SpiMsbFirst = 0,
+  DataMsbFirst = 0,
   /// Least Significant Bit
-  SpiLsbFirst = 1,
+  DataLsbFirst = 1,
 }
 
 #[allow(missing_docs)]
 #[repr(u8)]
 pub enum SpiClockPhase {
-  SpiEdge1 = 0,
-  SpiEdge2 = 1,
+  PhaseEdge1 = 0,
+  PhaseEdge2 = 1,
 }
 
 #[allow(missing_docs)]
 #[repr(u8)]
 pub enum SpiClockPolarity {
-  SpiLowPolarity = 0,
-  SpiHighPolarity = 1,
+  PolarityLow = 0,
+  PolarityHigh = 1,
 }
 
 /// Structure describing a SPI instance.
@@ -87,9 +87,8 @@ pub struct Spi {
 impl Spi {
   /// Create a new SPI port.
   pub fn new(peripheral: SpiPeripheral, direction: SpiDirection,
-             role: SpiRole, data_size: SpiDataSize, format: SpiFormat,
-             prescaler_pow2: u8, phase: SpiClockPhase,
-             polarity: SpiClockPolarity) -> Spi {
+             role: SpiRole, data_size: SpiDataSize, format: SpiDataFormat,
+             prescaler_pow2: u8) -> Spi {
     use hal::stm32l1::peripheral_clock as clock;
     use self::SpiDirection::*;
     use self::SpiPeripheral::*;
@@ -103,14 +102,15 @@ impl Spi {
     clock.enable();
 
     // set direction
-    reg.cr1.set_receive_only(direction == SpiRxOnly);
-    reg.cr1.set_bidirectional_data_mode(direction == SpiRx || direction == SpiTx);
-    reg.cr1.set_bidirectional_output_enable(direction == SpiTx);
+    reg.cr1.set_receive_only(direction == DirRxOnly);
+    reg.cr1.set_bidirectional_data_mode(direction == DirRx || direction == DirTx);
+    reg.cr1.set_bidirectional_output_enable(direction == DirTx);
 
     // set role
     reg.cr1.set_master(role as bool);
     reg.cr1.set_internal_slave_select(role as bool);
-    reg.cr1.set_software_slave_management(false); //TODO
+    reg.cr1.set_software_slave_management(true);
+    reg.cr2.set_ss_output_enable(false);
 
     // set data size and format (MSB or LSB)
     reg.cr1.set_data_frame_format(data_size as bool);
@@ -123,18 +123,53 @@ impl Spi {
     reg.cr1.set_baud_rate(prescaler_pow2 as u16 - 1);
 
     // set clock mode
-    reg.cr1.set_clock_phase(phase as bool);
-    reg.cr1.set_clock_polarity(polarity as bool);
+    reg.cr1.set_clock_phase(PhaseEdge1 as bool);
+    reg.cr1.set_clock_polarity(PolarityLow as bool);
 
     reg.i2s_cfgr.set_enable(false);
     reg.cr1.set_hardware_crc_enable(false);
-    reg.crc.set_polynomial(7); //TODO
+    reg.crc.set_polynomial(0); //TODO
 
     reg.cr1.set_spi_enable(true);
 
     Spi {
       reg: reg,
     }
+  }
+
+  /// Returns the status byte.
+  pub fn get_status(&self) -> u8 {
+    let mut r = 0u8;
+    if self.reg.sr.receive_buffer_not_empty() {
+      r |= 1u8<<0;
+    }
+    if self.reg.sr.transmit_buffer_empty() {
+      r |= 1u8<<1;
+    }
+    if self.reg.sr.channel_side() {
+      r |= 1u8<<2;
+    }
+    if self.reg.sr.underrun_flag() {
+      r |= 1u8<<3;
+    }
+    if self.reg.sr.crc_error() {
+      r |= 1u8<<4;
+    }
+    if self.reg.sr.mode_fault() {
+      r |= 1u8<<5;
+    }
+    if self.reg.sr.overrun_flag() {
+      r |= 1u8<<6;
+    }
+    if self.reg.sr.busy_flag() {
+      r |= 1u8<<7;
+    }
+    r
+  }
+
+  /// Returns true if there is more data to read.
+  pub fn has_more_data(&self) -> bool {
+    self.reg.sr.receive_buffer_not_empty()
   }
 }
 
@@ -213,7 +248,7 @@ mod reg {
       10 => enable : rw,
       11 => mode_selection : rw,
     },
-    0x20 => reg16 i2c_pr { // I2S prescaler
+    0x20 => reg16 i2s_pr { // I2S prescaler
       7..0 => linear_prescaler : rw,
       8 => odd_factor : rw,
       9 => master_clock_output_enable : rw,
