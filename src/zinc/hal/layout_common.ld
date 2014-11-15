@@ -51,6 +51,7 @@ SECTIONS
         *(.vfp11_veneer)  /* VFP11 bugfixes s.a. http://sourceware.org/ml/binutils/2006-12/msg00196.html */
         *(.iplt .igot.plt)  /* STT_GNU_IFUNC symbols */
         *(.rel.*)  /* dynamic relocations */
-        *(.ARM.exidx*) /* exception handling */
+        *(.ARM.exidx*) /* index entries for section unwinding */
+        *(.ARM.extab*) /* exception unwinding information */
     }
 }
