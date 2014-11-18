@@ -15,12 +15,12 @@ pub unsafe fn main() {
   zinc::hal::mem_init::init_data();
 
   let led1 = pin::PinConf{
-    port: pin::PortG,
+    port: pin::PortD,
     pin: 13u8,
     function: pin::GPIOOut
   };
   let led2 = pin::PinConf{
-    port: pin::PortG,
+    port: pin::PortD,
     pin: 14u8,
     function: pin::GPIOOut
   };
