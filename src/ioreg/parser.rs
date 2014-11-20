@@ -506,9 +506,10 @@ impl<'a> Parser<'a> {
 
   fn parse_uint(&mut self) -> Option<uint> {
     match self.token {
-      token::LitInteger(n) => {
+      token::Literal(token::Integer(n), suf) => {
         self.bump();
         let lit = parse::integer_lit(n.as_str(),
+                                     suf.as_ref().map(|n| n.as_str()),
                                      &self.sess.span_diagnostic,
                                      self.span);
         match lit {
