@@ -42,7 +42,7 @@ impl<'a> node::RegVisitor for BuildSetters<'a> {
   fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>,
       reg: &'a node::Reg, _width: node::RegWidth, fields: &Vec<node::Field>)
   {
-    if fields.iter().any(|f| f.access != node::ReadOnly) {
+    if fields.iter().any(|f| f.access != node::Access::ReadOnly) {
       let it = build_type(self.cx, path, reg, fields);
       self.builder.push_item(it);
 
@@ -116,7 +116,7 @@ fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
   let mut clear: u32 = 0;
   for f in fields.iter() {
     match f.access {
-      node::SetToClear => {
+      node::Access::SetToClear => {
         let mask = 1 << (f.count.node * f.width) - 1;
         clear |= mask;
       },
@@ -125,7 +125,7 @@ fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
   }
 
   // no need to read write-only registers
-  let wo_reg: bool = fields.iter().all(|f| f.access == node::WriteOnly);
+  let wo_reg: bool = fields.iter().all(|f| f.access == node::Access::WriteOnly);
   let initial_value =
     if wo_reg {
       quote_expr!(cx, 0)
@@ -185,8 +185,8 @@ fn build_field_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
                   field: &node::Field) -> Option<P<ast::Method>>
 {
   match field.access {
-    node::ReadOnly => None,
-    node::SetToClear => Some(build_field_clear_fn(cx, path, reg, field)),
+    node::Access::ReadOnly => None,
+    node::Access::SetToClear => Some(build_field_clear_fn(cx, path, reg, field)),
     _ => Some(build_field_set_fn(cx, path, reg, field)),
   }
 }

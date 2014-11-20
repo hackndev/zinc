@@ -18,7 +18,12 @@
 use core::iter::range;
 use core::option::{Option, Some, None};
 
-use hal::pin::{Gpio, Low, High, In, Out, GpioLevel};
+use hal::pin::Gpio;
+use hal::pin::GpioLevel::Low;
+use hal::pin::GpioLevel::High;
+use hal::pin::GpioDirection::In;
+use hal::pin::GpioDirection::Out;
+use hal::pin::GpioLevel;
 use hal::timer::Timer;
 
 /// Basic DHT22 driver ported over from Arduino example.

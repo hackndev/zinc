@@ -22,7 +22,10 @@ than other UARTs in MCU).
 
 use core::intrinsics::abort;
 
-use hal::lpc17xx::peripheral_clock::{PeripheralClock, UART0Clock, UART2Clock, UART3Clock};
+use hal::lpc17xx::peripheral_clock::PeripheralClock;
+use hal::lpc17xx::peripheral_clock::PeripheralClock::UART0Clock;
+use hal::lpc17xx::peripheral_clock::PeripheralClock::UART2Clock;
+use hal::lpc17xx::peripheral_clock::PeripheralClock::UART3Clock;
 use drivers::chario::CharIO;
 use hal::uart;
 

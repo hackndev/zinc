@@ -58,9 +58,9 @@ pub fn doc_attribute(cx: &ExtCtxt, docstring: token::InternedString)
 pub fn primitive_type_path(cx: &ExtCtxt, width: node::RegWidth)
                            -> ast::Path {
   let name = match width {
-    node::Reg8  => "u8",
-    node::Reg16 => "u16",
-    node::Reg32 => "u32",
+    node::RegWidth::Reg8  => "u8",
+    node::RegWidth::Reg16 => "u16",
+    node::RegWidth::Reg32 => "u32",
   };
   cx.path_ident(DUMMY_SP, cx.ident_of(name))
 }
@@ -70,7 +70,7 @@ pub fn primitive_type_path(cx: &ExtCtxt, width: node::RegWidth)
 pub fn reg_primitive_type_path(cx: &ExtCtxt, reg: &node::Reg)
                                -> Option<ast::Path> {
   match reg.ty {
-    node::RegPrim(width, _) => Some(primitive_type_path(cx, width)),
+    node::RegType::RegPrim(width, _) => Some(primitive_type_path(cx, width)),
     _ => None,
   }
 }
@@ -85,14 +85,14 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
     reg: &node::Reg, field: &node::Field) -> ast::Path {
   let span = field.ty.span;
   match field.ty.node {
-    node::UIntField => {
+    node::FieldType::UIntField => {
       match reg.ty {
-        node::RegPrim(width, _) => primitive_type_path(cx, width),
+        node::RegType::RegPrim(width, _) => primitive_type_path(cx, width),
         _  => panic!("The impossible happened: a union register with fields"),
       }
     },
-    node::BoolField => cx.path_ident(span, cx.ident_of("bool")),
-    node::EnumField { ref opt_name, ..} => {
+    node::FieldType::BoolField => cx.path_ident(span, cx.ident_of("bool")),
+    node::FieldType::EnumField { ref opt_name, ..} => {
       match opt_name {
         &Some(ref name) =>
           cx.path_ident(span, cx.ident_of(name.as_slice())),

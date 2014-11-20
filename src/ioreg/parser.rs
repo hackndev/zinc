@@ -23,6 +23,7 @@ use syntax::parse;
 use syntax::print::pprust;
 
 use node;
+use node::RegType;
 
 /// The scope of a doc comment
 enum Scope {
@@ -85,7 +86,7 @@ impl<'a> Parser<'a> {
       return None;
     }
 
-    let docstring = self.parse_docstring(Inner);
+    let docstring = self.parse_docstring(Scope::Inner);
 
     let regs = match self.parse_regs() {
       Some(regs) => regs,
@@ -95,7 +96,7 @@ impl<'a> Parser<'a> {
     let group = node::Reg {
       offset: 0,
       name: name,
-      ty: node::RegUnion(Rc::new(regs)),
+      ty: RegType::RegUnion(Rc::new(regs)),
       count: respan(mk_sp(sp_lo, self.span.hi), 1),
       docstring: docstring,
     };
@@ -161,7 +162,7 @@ impl<'a> Parser<'a> {
   /// Parse the introduction of a register
   fn parse_reg(&mut self) -> Option<node::Reg> {
     // We might have an outer docstring
-    let docstring = self.parse_docstring(Outer);
+    let docstring = self.parse_docstring(Scope::Outer);
 
     // we are still sitting at the offset
     let offset = match self.expect_uint() {
@@ -173,12 +174,12 @@ impl<'a> Parser<'a> {
     }
 
     let ty = match self.expect_ident() {
-      Some(ref i) if i.equiv(&"reg32") => node::RegPrim(node::Reg32, Vec::new()),
-      Some(ref i) if i.equiv(&"reg16") => node::RegPrim(node::Reg16, Vec::new()),
-      Some(ref i) if i.equiv(&"reg8")  => node::RegPrim(node::Reg8, Vec::new()),
+      Some(ref i) if i.equiv(&"reg32") => RegType::RegPrim(node::RegWidth::Reg32, Vec::new()),
+      Some(ref i) if i.equiv(&"reg16") => RegType::RegPrim(node::RegWidth::Reg16, Vec::new()),
+      Some(ref i) if i.equiv(&"reg8")  => RegType::RegPrim(node::RegWidth::Reg8, Vec::new()),
       Some(ref i) if i.equiv(&"group") => {
         // registers will get filled in later
-        node::RegUnion(Rc::new(Vec::new()))
+        RegType::RegUnion(Rc::new(Vec::new()))
       },
       _ => {
         self.error(format!("expected register type but found `{}`",
@@ -197,16 +198,16 @@ impl<'a> Parser<'a> {
     };
 
     // Potentially a trailing docstring before the block
-    let docstring = docstring.or_else(|| self.parse_docstring(Trailing));
+    let docstring = docstring.or_else(|| self.parse_docstring(Scope::Trailing));
 
     // Catch beginning of block and potentially an inner docstring
     if !self.expect(&token::OpenDelim(token::Brace)) {
       return None;
     }
-    let docstring = docstring.or_else(|| self.parse_docstring(Inner));
+    let docstring = docstring.or_else(|| self.parse_docstring(Scope::Inner));
 
     let ty = match ty {
-      node::RegPrim(width, _) => {
+      RegType::RegPrim(width, _) => {
         match self.parse_fields() {
           None => return None,
           Some(mut fields) => {
@@ -235,13 +236,13 @@ impl<'a> Parser<'a> {
               _ => {}
             }
 
-            node::RegPrim(width, fields)
+            RegType::RegPrim(width, fields)
           },
         }
       },
-      node::RegUnion(_) => {
+      RegType::RegUnion(_) => {
         match self.parse_regs() {
-          Some(regs) => node::RegUnion(Rc::new(regs)),
+          Some(regs) => RegType::RegUnion(Rc::new(regs)),
           None => return None,
         }
       },
@@ -288,7 +289,7 @@ impl<'a> Parser<'a> {
   ///
   fn parse_field(&mut self) -> Option<node::Field> {
     // potentially an initial outer docstring
-    let docstring = self.parse_docstring(Outer);
+    let docstring = self.parse_docstring(Scope::Outer);
 
     // sitting at starting bit number
     let low_bit = match self.expect_uint() {
@@ -347,10 +348,10 @@ impl<'a> Parser<'a> {
         match self.token.clone() {
           ref t@token::Ident(_,_) => {
             match pprust::token_to_string(t) {
-              ref s if s.equiv(&"rw") => { self.bump(); node::ReadWrite },
-              ref s if s.equiv(&"ro") => { self.bump(); node::ReadOnly  },
-              ref s if s.equiv(&"wo") => { self.bump(); node::WriteOnly },
-              ref s if s.equiv(&"set_to_clear") => { self.bump(); node::SetToClear },
+              ref s if s.equiv(&"rw") => { self.bump(); node::Access::ReadWrite },
+              ref s if s.equiv(&"ro") => { self.bump(); node::Access::ReadOnly  },
+              ref s if s.equiv(&"wo") => { self.bump(); node::Access::WriteOnly },
+              ref s if s.equiv(&"set_to_clear") => { self.bump(); node::Access::SetToClear },
               s => {
                 self.error(format!("Expected access type, saw `{}`", s));
                 return None;
@@ -364,7 +365,7 @@ impl<'a> Parser<'a> {
           },
         }
       },
-      _ => node::ReadWrite,
+      _ => node::Access::ReadWrite,
     };
 
     let (docstring, ty) = match self.token {
@@ -372,10 +373,10 @@ impl<'a> Parser<'a> {
         if self.token == token::Comma {
           self.bump();
         }
-        let docstring = docstring.or_else(|| self.parse_docstring(Trailing));
+        let docstring = docstring.or_else(|| self.parse_docstring(Scope::Trailing));
         let ty = match width {
-          1 => node::BoolField,
-          _ => node::UIntField,
+          1 => node::FieldType::BoolField,
+          _ => node::FieldType::UIntField,
         };
         (docstring, respan(name.span, ty))
       },
@@ -384,7 +385,7 @@ impl<'a> Parser<'a> {
         self.bump();
 
         let sp_lo = self.span.lo;
-        let docstring = docstring.or_else(|| self.parse_docstring(Inner));
+        let docstring = docstring.or_else(|| self.parse_docstring(Scope::Inner));
         match self.parse_enum_variants() {
           Some(variants) => {
             if self.token == token::Comma {
@@ -392,7 +393,7 @@ impl<'a> Parser<'a> {
             }
             let ty = respan(
               mk_sp(sp_lo, self.span.hi),
-              node::EnumField {opt_name: None, variants: variants});
+              node::FieldType::EnumField {opt_name: None, variants: variants});
             (docstring, ty)
           },
           None => return None,
@@ -463,7 +464,7 @@ impl<'a> Parser<'a> {
         _ => {}
       }
 
-      let docstring = self.parse_docstring(Trailing);
+      let docstring = self.parse_docstring(Scope::Trailing);
 
       let value: node::Variant = node::Variant { name: name, value: value, docstring: docstring };
       variants.push(value);
@@ -474,9 +475,9 @@ impl<'a> Parser<'a> {
   fn parse_docstring(&mut self, scope: Scope) -> Option<Spanned<Ident>> {
     let mut docs: Vec<String> = Vec::new();
     let prefix = match scope {
-      Inner => "//!",
-      Trailing => "//=",
-      Outer => "///",
+      Scope::Inner => "//!",
+      Scope::Trailing => "//=",
+      Scope::Outer => "///",
     };
     loop {
       match self.token {

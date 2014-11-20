@@ -62,11 +62,11 @@ impl<'a> Iterator<RegOrPadding<'a>> for PaddedRegsIterator<'a> {
       if reg.offset > self.last_offset {
         let pad_length = reg.offset - self.last_offset;
         self.last_offset = reg.offset;
-        Some(Pad(pad_length))
+        Some(RegOrPadding::Pad(pad_length))
       } else {
         self.index += 1;
         self.last_offset += reg.size();
-        Some(Reg(reg))
+        Some(RegOrPadding::Reg(reg))
       }
     }
   }
@@ -135,8 +135,8 @@ impl<'a> BuildUnionTypes<'a> {
   fn build_pad_or_reg(&self, path: &Vec<String>, reg_or_pad: RegOrPadding,
                       index: uint) -> ast::StructField {
     match reg_or_pad {
-      Reg(reg) => self.build_reg_union_field(path, reg),
-      Pad(length) => {
+      RegOrPadding::Reg(reg) => self.build_reg_union_field(path, reg),
+      RegOrPadding::Pad(length) => {
         let u8_path = self.cx.path_ident(
           DUMMY_SP,
           self.cx.ident_of("u8"));
