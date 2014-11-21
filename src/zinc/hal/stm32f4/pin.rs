@@ -20,6 +20,7 @@
 
 use super::peripheral_clock;
 use core::intrinsics::abort;
+use self::Port::*;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 
@@ -48,16 +49,17 @@ pub enum Function {
 
 impl Port {
   fn clock(self) -> peripheral_clock::PeripheralClock {
+    use hal::stm32f4::peripheral_clock::PeripheralClock::*;
     match self {
-      PortA => peripheral_clock::GPIOAClock,
-      PortB => peripheral_clock::GPIOBClock,
-      PortC => peripheral_clock::GPIOCClock,
-      PortD => peripheral_clock::GPIODClock,
-      PortE => peripheral_clock::GPIOEClock,
-      PortF => peripheral_clock::GPIOFClock,
-      PortG => peripheral_clock::GPIOGClock,
-      PortH => peripheral_clock::GPIOHClock,
-      PortI => peripheral_clock::GPIOIClock,
+      PortA => GPIOAClock,
+      PortB => GPIOBClock,
+      PortC => GPIOCClock,
+      PortD => GPIODClock,
+      PortE => GPIOEClock,
+      PortF => GPIOFClock,
+      PortG => GPIOGClock,
+      PortH => GPIOHClock,
+      PortI => GPIOIClock,
     }
   }
 }

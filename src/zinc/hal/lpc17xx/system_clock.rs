@@ -72,6 +72,7 @@ pub fn system_clock() -> u32 {
 /// Initialise the system clock.
 #[inline(always)]
 pub fn init_clock(clock: &Clock) {
+  use self::ClockSource::*;
   let src_clock: u32 = match clock.source {
     Internal =>   4_000_000,
     Main(freq) => freq,
@@ -130,6 +131,7 @@ fn write_pll0_changes() {
 
 #[inline(always)]
 fn init_pll(pll: &PLL0, source: ClockSource) {
+  use self::ClockSource::*;
   match source {
     Internal => reg::CLKSRCSEL.set_value(0),
     Main(_)  => reg::CLKSRCSEL.set_value(1),

@@ -24,6 +24,11 @@ use core::option::Option;
 
 use super::sim;
 
+use self::Port::*;
+use self::Function::*;
+use self::PullConf::*;
+use self::DriveStrength::*;
+use self::SlewRate::*;
 
 /// A pin.
 #[allow(missing_docs)]
@@ -96,21 +101,25 @@ impl Pin {
       gpiodir: Option<::hal::pin::GpioDirection>,
       pull: PullConf, drive_strength: DriveStrength,
       slew_rate: SlewRate, filter: bool, open_drain: bool) {
+    use self::reg::Port_pcr_ps as ps;
+    use self::reg::Port_pcr_sre as sre;
+    use self::reg::Port_pcr_dse as dse;
+
     // enable port clock
     sim::enable_PORT(self.port);
 
     let (pe, ps) = match pull {
-      PullNone => (false, reg::PULL_DOWN),
-      PullDown => (true,  reg::PULL_DOWN),
-      PullUp   => (true,  reg::PULL_UP),
+      PullNone => (false, ps::PULL_DOWN),
+      PullDown => (true,  ps::PULL_DOWN),
+      PullUp   => (true,  ps::PULL_UP),
     };
     let sre = match slew_rate {
-      SlewFast => reg::FAST,
-      SlewSlow => reg::SLOW,
+      SlewFast => sre::FAST,
+      SlewSlow => sre::SLOW,
     };
     let dse = match drive_strength {
-      DriveStrengthHigh => reg::HIGH_DRIVE,
-      DriveStrengthLow  => reg::LOW_DRIVE,
+      DriveStrengthHigh => dse::HIGH_DRIVE,
+      DriveStrengthLow  => dse::LOW_DRIVE,
     };
 
     self.pcr()
@@ -171,10 +180,11 @@ impl ::hal::pin::Gpio for Pin {
 
   /// Sets output GPIO direction.
   fn set_direction(&self, new_mode: ::hal::pin::GpioDirection) {
+    use self::reg::Gpio_pddr_pdd as pdd;
     let reg = self.gpioreg();
     let val = match new_mode {
-      ::hal::pin::In  => reg::INPUT,
-      ::hal::pin::Out => reg::OUTPUT,
+      ::hal::pin::In  => pdd::INPUT,
+      ::hal::pin::Out => pdd::OUTPUT,
     };
     reg.pddr.set_pdd(self.pin as uint, val);
   }

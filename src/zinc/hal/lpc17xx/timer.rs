@@ -51,11 +51,12 @@ pub struct Timer {
 impl Timer {
   /// Create an start a timer.
   pub fn new(peripheral: TimerPeripheral, counter: u32, divisor: u8) -> Timer {
+    use hal::lpc17xx::peripheral_clock::PeripheralClock as Clock;
     let (clock, reg) = match peripheral {
-      Timer0 => (peripheral_clock::TIM0Clock, &reg::TIMER0),
-      Timer1 => (peripheral_clock::TIM1Clock, &reg::TIMER1),
-      Timer2 => (peripheral_clock::TIM2Clock, &reg::TIMER2),
-      Timer3 => (peripheral_clock::TIM3Clock, &reg::TIMER3),
+      Timer0 => (Clock::TIM0Clock, &reg::TIMER0),
+      Timer1 => (Clock::TIM1Clock, &reg::TIMER1),
+      Timer2 => (Clock::TIM2Clock, &reg::TIMER2),
+      Timer3 => (Clock::TIM3Clock, &reg::TIMER3),
     };
 
     clock.enable();

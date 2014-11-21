@@ -99,7 +99,7 @@ impl<'a> Hd44780u<'a> {
     self.clear();
 
     // Set default mode
-    self.mode_set(MoveRight, false);
+    self.mode_set(MoveDir::MoveRight, false);
   }
 
   /// Set cursor position to (`col`, `row`). (0, 0) is the top left.

@@ -20,12 +20,13 @@ use super::pin;
 /// Enable clock to a PORTx peripheral
 #[allow(non_snake_case)]
 pub fn enable_PORT(port: pin::Port) {
+  use hal::k20::pin::Port::*;
   match port {
-    pin::PortA => {reg::SIM.scgc5.set_porta(true);},
-    pin::PortB => {reg::SIM.scgc5.set_portb(true);},
-    pin::PortC => {reg::SIM.scgc5.set_portc(true);},
-    pin::PortD => {reg::SIM.scgc5.set_portd(true);},
-    pin::PortE => {reg::SIM.scgc5.set_porte(true);},
+    PortA => {reg::SIM.scgc5.set_porta(true);},
+    PortB => {reg::SIM.scgc5.set_portb(true);},
+    PortC => {reg::SIM.scgc5.set_portc(true);},
+    PortD => {reg::SIM.scgc5.set_portd(true);},
+    PortE => {reg::SIM.scgc5.set_porte(true);},
   }
 }
 
