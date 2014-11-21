@@ -41,7 +41,7 @@ impl Builder {
   pub fn build(cx: &mut ExtCtxt, pt: Rc<node::PlatformTree>) -> Option<Builder> {
     let mut builder = Builder::new(pt.clone());
 
-    if !pt.expect_subnodes(cx, ["mcu", "os", "drivers"]) {
+    if !pt.expect_subnodes(cx, &["mcu", "os", "drivers"]) {
       return None;
     }
 
@@ -166,7 +166,7 @@ impl Builder {
         InternedString::new("allow"), vec!(unused_variables));
     let allow_noncamel = cx.attribute(DUMMY_SP, allow);
 
-    self.item_fn(cx, DUMMY_SP, "main", [allow_noncamel], body)
+    self.item_fn(cx, DUMMY_SP, "main", &[allow_noncamel], body)
   }
 
   fn emit_morestack(&self, cx: &ExtCtxt) -> P<ast::Item> {
@@ -177,7 +177,7 @@ impl Builder {
     ));
     let empty_span = DUMMY_SP;
     let body = cx.block(empty_span, vec!(stmt), None);
-    self.item_fn(cx, empty_span, "__morestack", [], body)
+    self.item_fn(cx, empty_span, "__morestack", &[], body)
   }
 
   pub fn emit_items(&self, cx: &ExtCtxt) -> Vec<P<ast::Item>> {
@@ -212,7 +212,7 @@ impl Builder {
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
       node: ast::ItemFn(
-          cx.fn_decl(Vec::new(), cx.ty_nil()),
+          cx.fn_decl(Vec::new(), cx.ty(DUMMY_SP, ast::Ty_::TyTup(Vec::new()))),
           ast::UnsafeFn,
           abi::Rust, // TODO(farcaller): should this be abi::C?
           empty_generics(),

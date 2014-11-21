@@ -43,7 +43,7 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   if !node.expect_no_subnodes(cx) {return}
 
   if !node.expect_attributes(cx,
-      [("pin", node::RefAttribute), ("timer", node::RefAttribute)]) {
+      &[("pin", node::RefAttribute), ("timer", node::RefAttribute)]) {
     return
   }
 

@@ -183,7 +183,7 @@ impl<'a> Parser<'a> {
       Token::Literal(token::Lit::Integer(intname), _) => {
         self.bump();
 
-        let lit = integer_lit(intname.as_str(), &self.sess.span_diagnostic, self.span);
+        let lit = integer_lit(intname.as_str(), None, &self.sess.span_diagnostic, self.span);
         match lit {
           LitInt(i, _) => {
             format!("{}", i)
@@ -339,7 +339,7 @@ impl<'a> Parser<'a> {
         Some(node::StrValue(string_val.as_str().to_string()))
       },
       Token::Literal(Lit::Integer(intname), _) => {
-        let lit = integer_lit(intname.as_str(), &self.sess.span_diagnostic, self.span);
+        let lit = integer_lit(intname.as_str(), None, &self.sess.span_diagnostic, self.span);
         match lit {
           LitInt(i, UnsuffixedIntLit(_)) => {
             self.bump();

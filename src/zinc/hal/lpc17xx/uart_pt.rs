@@ -72,7 +72,7 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
     return
   }
 
-  if !sub.expect_attributes(cx, [
+  if !sub.expect_attributes(cx, &[
       ("baud_rate", node::IntAttribute),
       ("mode", node::StrAttribute),
       ("tx", node::RefAttribute),

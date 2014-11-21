@@ -35,5 +35,5 @@ pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
 fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   node.expect_no_attributes(cx);
-  node.expect_subnodes(cx, ["dht22"]);
+  node.expect_subnodes(cx, &["dht22"]);
 }
