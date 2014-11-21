@@ -271,7 +271,7 @@ impl Node {
   /// Returns a string attribute by name or None, if it's not present or not of
   /// a StrAttribute type.
   pub fn get_string_attr(&self, key: &str) -> Option<String> {
-    self.attributes.borrow().find(&key.to_string()).and_then(|av| match av.value {
+    self.attributes.borrow().get(&key.to_string()).and_then(|av| match av.value {
       StrValue(ref s) => Some(s.clone()),
       _ => None,
     })
@@ -280,7 +280,7 @@ impl Node {
   /// Returns an integer attribute by name or None, if it's not present or not
   /// of an IntAttribute type.
   pub fn get_int_attr(&self, key: &str) -> Option<uint> {
-    self.attributes.borrow().find(&key.to_string()).and_then(|av| match av.value {
+    self.attributes.borrow().get(&key.to_string()).and_then(|av| match av.value {
       IntValue(ref u) => Some(*u),
       _ => None,
     })
@@ -289,7 +289,7 @@ impl Node {
   /// Returns a reference attribute by name or None, if it's not present or not
   /// of a RefAttribute type.
   pub fn get_ref_attr(&self, key: &str) -> Option<String> {
-    self.attributes.borrow().find(&key.to_string()).and_then(|av| match av.value {
+    self.attributes.borrow().get(&key.to_string()).and_then(|av| match av.value {
       RefValue(ref s) => Some(s.clone()),
       _ => None,
     })
@@ -405,7 +405,7 @@ impl Node {
 
   /// Returns a subnode by path or None, if not found.
   pub fn get_by_path(&self, path: &str) -> Option<Rc<Node>> {
-    self.subnodes.borrow().as_map().find(&path.to_string()).and_then(|node| {
+    self.subnodes.borrow().as_map().get(&path.to_string()).and_then(|node| {
       Some(node.clone().upgrade().unwrap())
     })
   }
@@ -459,12 +459,12 @@ impl PlatformTree {
 
   /// Returns a node by name or None, if not found.
   pub fn get_by_name(&self, name: &str) -> Option<Rc<Node>> {
-    self.named.find(&name.to_string()).and_then(|node| { Some(node.upgrade().unwrap().clone()) })
+    self.named.get(&name.to_string()).and_then(|node| { Some(node.upgrade().unwrap().clone()) })
   }
 
   /// Returns a root node by path or None, if not found.
   pub fn get_by_path(&self, name: &str) -> Option<Rc<Node>> {
-    self.nodes.find(&name.to_string()).and_then(|node| { Some(node.clone()) })
+    self.nodes.get(&name.to_string()).and_then(|node| { Some(node.clone()) })
   }
 
   /// Returns true if PT has all of the requested root odes matched by path.

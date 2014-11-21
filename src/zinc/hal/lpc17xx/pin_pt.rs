@@ -99,7 +99,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
           return;
         }
         Some(ref pin_funcs) => {
-          let maybe_func = pin_funcs.find(&fun);
+          let maybe_func = pin_funcs.get(&fun);
           match maybe_func {
             None => {
               let avaliable: Vec<String> = pin_funcs.keys().map(|k|{k.to_string()}).collect();
