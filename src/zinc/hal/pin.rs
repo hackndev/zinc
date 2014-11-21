@@ -15,6 +15,9 @@
 
 //! Common definitions for pin HAL.
 
+pub use self::GpioDirection::*;
+pub use self::GpioLevel::*;
+
 /// GPIO direction.
 pub enum GpioDirection {
   /// Input mode.

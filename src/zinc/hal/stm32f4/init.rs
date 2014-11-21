@@ -104,6 +104,9 @@ impl SysConf {
 
 impl ClockConf {
   fn setup(&self) {
+    use self::SystemClockSource::*;
+    use self::PLLClockSource::*;
+
     match self.source {
       SystemClockHSI => {
         // HSI is default boot mode, do nothing
@@ -119,7 +122,7 @@ impl ClockConf {
           unsafe { abort() };
         } else {
           self.enable_hse();
-          self.set_system_clock(reg::SystemClockHSE);
+          self.set_system_clock(reg::SystemClockSwitch::SystemClockHSE);
           unsafe {
             SystemClock = freq;
             APBLowClock = freq;  // no divisor
@@ -147,7 +150,7 @@ impl ClockConf {
         pll_conf.setup();
         // TODO(farcaller): this doesn't really belong here.
         self.setup_flash(sysfreq);
-        self.set_system_clock(reg::SystemClockPLL);
+        self.set_system_clock(reg::SystemClockSwitch::SystemClockPLL);
         unsafe {
           SystemClock = sysfreq;
           APBLowClock = sysfreq / apb_low_divisor as u32;
@@ -226,6 +229,8 @@ impl ClockConf {
 
 impl PLLConf {
   fn setup(&self) {
+    use self::PLLClockSource::*;
+
     // TODO(farcaller): cmsis code overrides reserved bits in here, is that ok?
     let val = reg::RCC.PLLCFGR();
     let mask: u32 = !0b0000_1111_0_1_0000_11_0_111111111_111111;

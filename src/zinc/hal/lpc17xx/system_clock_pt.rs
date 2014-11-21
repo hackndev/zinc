@@ -26,7 +26,7 @@ pub fn attach(_: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
 
 fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
     node: Rc<node::Node>) {
-  if !node.expect_attributes(cx, [("source", node::StrAttribute)]) {
+  if !node.expect_attributes(cx, &[("source", node::StrAttribute)]) {
     return;
   }
 
@@ -63,7 +63,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let some_pll_conf = node.get_by_path("pll").and_then(|sub|
       -> Option<(uint, uint, uint)> {
-    if !sub.expect_no_subnodes(cx) || !sub.expect_attributes(cx, [
+    if !sub.expect_no_subnodes(cx) || !sub.expect_attributes(cx, &[
         ("m", node::IntAttribute),
         ("n", node::IntAttribute),
         ("divisor", node::IntAttribute)]) {

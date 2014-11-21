@@ -57,7 +57,7 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
 
 pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   node.expect_no_attributes(cx);
-  node.expect_subnodes(cx, ["single_task"]);
+  node.expect_subnodes(cx, &["single_task"]);
   if node.get_by_path("single_task").is_none() {
     cx.parse_sess().span_diagnostic.span_err(node.name_span,
         "subnode `single_task` must be present");

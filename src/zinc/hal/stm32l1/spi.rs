@@ -91,11 +91,13 @@ impl Spi {
              prescaler_pow2: u8, phase: SpiClockPhase,
              polarity: SpiClockPolarity) -> Spi {
     use hal::stm32l1::peripheral_clock as clock;
+    use self::SpiDirection::*;
+    use self::SpiPeripheral::*;
 
     let (reg, clock) = match peripheral {
-        Spi1 => (&reg::SPI1, clock::ClockApb2(clock::Spi1)),
-        Spi2 => (&reg::SPI2, clock::ClockApb1(clock::Spi2)),
-        Spi3 => (&reg::SPI3, clock::ClockApb1(clock::Spi3)),
+        Spi1 => (&reg::SPI1, clock::PeripheralClock::Apb2(clock::BusApb2::Spi1)),
+        Spi2 => (&reg::SPI2, clock::PeripheralClock::Apb1(clock::BusApb1::Spi2)),
+        Spi3 => (&reg::SPI3, clock::PeripheralClock::Apb1(clock::BusApb1::Spi3)),
     };
 
     clock.enable();

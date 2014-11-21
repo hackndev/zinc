@@ -20,6 +20,7 @@
 
 use super::peripheral_clock;
 use core::intrinsics::abort;
+use self::Port::*;
 
 /// Available port names.
 #[allow(missing_docs)]
@@ -109,18 +110,20 @@ impl Pin {
   /// Setup the pin.
   #[inline(always)]
   pub fn new(port: Port, pin_index: u8, mode: Mode, pull_type: PullType) -> Pin {
+    use hal::stm32l1::peripheral_clock::BusAhb as clock;
+    use self::Mode::*;
     let (reg, clock) = match port {
-      PortA => (&reg::GPIOA, peripheral_clock::GpioA),
-      PortB => (&reg::GPIOB, peripheral_clock::GpioB),
-      PortC => (&reg::GPIOC, peripheral_clock::GpioC),
-      PortD => (&reg::GPIOD, peripheral_clock::GpioD),
-      PortE => (&reg::GPIOE, peripheral_clock::GpioE),
-      PortF => (&reg::GPIOF, peripheral_clock::GpioF),
-      PortG => (&reg::GPIOG, peripheral_clock::GpioG),
-      PortH => (&reg::GPIOH, peripheral_clock::GpioH),
+      PortA => (&reg::GPIOA, clock::GpioA),
+      PortB => (&reg::GPIOB, clock::GpioB),
+      PortC => (&reg::GPIOC, clock::GpioC),
+      PortD => (&reg::GPIOD, clock::GpioD),
+      PortE => (&reg::GPIOE, clock::GpioE),
+      PortF => (&reg::GPIOF, clock::GpioF),
+      PortG => (&reg::GPIOG, clock::GpioG),
+      PortH => (&reg::GPIOH, clock::GpioH),
     };
     // TODO(farcaller): should be done once per port
-    peripheral_clock::ClockAhb(clock).enable();
+    peripheral_clock::PeripheralClock::Ahb(clock).enable();
 
     let offset1 = pin_index as uint;
     let mask1 = !(0b1u16 << offset1);

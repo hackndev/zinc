@@ -21,6 +21,8 @@
 
 use super::init::{ClockConfig, reg};
 
+use self::PeripheralClock::*;
+
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 #[allow(missing_docs)]
@@ -45,6 +47,7 @@ pub enum BusAhb {
 
 impl BusAhb {
   fn to_reg_bit(self) -> u32 {
+    use self::BusAhb::*;
     1 << match self {
       GpioA      => 0,
       GpioB      => 1,
@@ -100,6 +103,7 @@ pub enum BusApb1 {
 
 impl BusApb1 {
   fn to_reg_bit(self) -> u32 {
+    use self::BusApb1::*;
     1 << match self {
       Tim2       => 0,
       Tim3       => 1,
@@ -148,6 +152,7 @@ pub enum BusApb2 {
 
 impl BusApb2 {
   fn to_reg_bit(self) -> u32 {
+    use self::BusApb2::*;
     1 << match self {
       SysCfg     => 0,
       Tim9       => 2,
@@ -174,9 +179,9 @@ impl BusApb2 {
 /// This enum contains all available clocks from both AHB and APB.
 #[allow(missing_docs)]
 pub enum PeripheralClock {
-  ClockAhb(BusAhb),
-  ClockApb1(BusApb1),
-  ClockApb2(BusApb2),
+  Ahb(BusAhb),
+  Apb1(BusApb1),
+  Apb2(BusApb2),
 }
 
 impl PeripheralClock {
@@ -193,18 +198,18 @@ impl PeripheralClock {
   /// Enables or disables the clock.
   fn set_enable(self, enable: bool) {
     match self {
-        ClockAhb(ahb)  => ahb.set_reg(enable),
-        ClockApb1(apb) => apb.set_reg(enable),
-        ClockApb2(apb) => apb.set_reg(enable),
+        Ahb(ahb)  => ahb.set_reg(enable),
+        Apb1(apb) => apb.set_reg(enable),
+        Apb2(apb) => apb.set_reg(enable),
     }
   }
 
   /// Returns the clock freqency
   pub fn frequency(self, cc: &ClockConfig) -> u32 {
     match self {
-      ClockAhb(_)  => cc.get_ahb_frequency(),
-      ClockApb1(_) => cc.get_apb1_frequency(),
-      ClockApb2(_) => cc.get_apb2_frequency(),
+      Ahb(_)  => cc.get_ahb_frequency(),
+      Apb1(_) => cc.get_apb1_frequency(),
+      Apb2(_) => cc.get_apb2_frequency(),
     }
   }
 }

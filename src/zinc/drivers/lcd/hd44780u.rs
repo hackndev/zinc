@@ -37,9 +37,9 @@ pub struct Hd44780u<'a> {
 /// languages.
 pub enum MoveDir {
   /// Cursor moves right after write
-  MoveRight,
+  Right,
   /// Cursor moves left after write
-  MoveLeft,
+  Left,
 }
 
 /// The controller supports 5x8 and 5x10 dot fonts depending on the LCD used.
@@ -99,7 +99,7 @@ impl<'a> Hd44780u<'a> {
     self.clear();
 
     // Set default mode
-    self.mode_set(MoveRight, false);
+    self.mode_set(MoveDir::Right, false);
   }
 
   /// Set cursor position to (`col`, `row`). (0, 0) is the top left.
@@ -132,14 +132,14 @@ impl<'a> Hd44780u<'a> {
   /// same place on the display and "pushes" existing data in the direction
   /// specified by dir.
   ///
-  /// Calling `clear` resets the writing direction MoveRight but does not change
+  /// Calling `clear` resets the writing direction Right but does not change
   /// the display shift setting.
   pub fn mode_set(&self, dir: MoveDir, shift_display: bool) {
     let mut cmd = 0b100;
 
     let d = match dir {
-      MoveRight => 1,
-      MoveLeft  => 0,
+      MoveDir::Right => 1,
+      MoveDir::Left  => 0,
     };
 
     cmd |= d                     << 1;
@@ -166,8 +166,8 @@ impl<'a> Hd44780u<'a> {
     let mut cmd = 0b10000;
 
     let d = match dir {
-      MoveRight => 1,
-      MoveLeft  => 0,
+      MoveDir::Right => 1,
+      MoveDir::Left  => 0,
     };
 
     cmd |= (shift_display as u8) << 3;
@@ -187,6 +187,7 @@ impl<'a> Hd44780u<'a> {
   /// If each display character is a matrix of 5x10 dots `char_5x10` should be
   /// `true`. If it's 5x8 dots set it to `false`.
   fn function_set(&self, two_lines: bool, font: Font) {
+    use self::Font::*;
     let mut cmd = 0b100000;
 
     // Only 4bit interface is supported at the moment

@@ -34,7 +34,7 @@ pub struct BuildAccessors<'a> {
 impl<'a> node::RegVisitor for BuildAccessors<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
                     _width: node::RegWidth, fields: &Vec<node::Field>) {
-    if fields.iter().any(|f| f.access != node::WriteOnly) {
+    if fields.iter().any(|f| f.access != node::Access::WriteOnly) {
       let item = build_get_fn(self.cx, path, reg);
       self.builder.push_item(item);
     }
@@ -63,19 +63,19 @@ fn build_field_accessors(cx: &ExtCtxt, path: &Vec<String>,
     cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
 
   let items = match field.access {
-    node::ReadWrite => vec!(build_field_set_fn(cx, path, reg, field),
+    node::Access::ReadWrite => vec!(build_field_set_fn(cx, path, reg, field),
                             build_field_get_fn(cx, path, reg, field)),
-    node::ReadOnly  => vec!(build_field_get_fn(cx, path, reg, field)),
-    node::WriteOnly => vec!(build_field_set_fn(cx, path, reg, field)),
-    node::SetToClear => vec!(build_field_clear_fn(cx, path, reg, field),
+    node::Access::ReadOnly  => vec!(build_field_get_fn(cx, path, reg, field)),
+    node::Access::WriteOnly => vec!(build_field_set_fn(cx, path, reg, field)),
+    node::Access::SetToClear => vec!(build_field_clear_fn(cx, path, reg, field),
                              build_field_get_fn(cx, path, reg, field)),
   };
 
   let access_tag = match field.access {
-    node::ReadWrite => "read/write",
-    node::ReadOnly  => "read-only",
-    node::WriteOnly => "write-only",
-    node::SetToClear => "set-to-clear",
+    node::Access::ReadWrite => "read/write",
+    node::Access::ReadOnly  => "read-only",
+    node::Access::WriteOnly => "write-only",
+    node::Access::SetToClear => "set-to-clear",
   };
 
   let field_doc = match field.docstring {

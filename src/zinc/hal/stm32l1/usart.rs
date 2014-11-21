@@ -24,6 +24,8 @@ use drivers::chario::CharIO;
 use hal::uart;
 use hal::stm32l1::init;
 
+use self::UsartPeripheral::*;
+
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Available USART peripherals.
@@ -68,14 +70,16 @@ impl Usart {
   pub fn new(peripheral: UsartPeripheral, baudrate: u32, word_len: WordLen,
              parity: uart::Parity, stop_bits: StopBit,
              config: &init::ClockConfig) -> Usart {
+    use hal::stm32l1::peripheral_clock::PeripheralClock;
     use hal::stm32l1::peripheral_clock as clock;
+    use hal::uart::Parity::*;
 
     let (reg, clock) = match peripheral {
-        Usart1 => (&reg::USART1, clock::ClockApb2(clock::Usart1)),
-        Usart2 => (&reg::USART2, clock::ClockApb1(clock::Usart2)),
-        Usart3 => (&reg::USART3, clock::ClockApb1(clock::Usart3)),
-        Uart4  => (&reg::UART4,  clock::ClockApb1(clock::Uart4)),
-        Uart5  => (&reg::UART5,  clock::ClockApb1(clock::Uart5)),
+        Usart1 => (&reg::USART1, PeripheralClock::Apb2(clock::BusApb2::Usart1)),
+        Usart2 => (&reg::USART2, PeripheralClock::Apb1(clock::BusApb1::Usart2)),
+        Usart3 => (&reg::USART3, PeripheralClock::Apb1(clock::BusApb1::Usart3)),
+        Uart4  => (&reg::UART4,  PeripheralClock::Apb1(clock::BusApb1::Uart4)),
+        Uart5  => (&reg::UART5,  PeripheralClock::Apb1(clock::BusApb1::Uart5)),
     };
 
     clock.enable();
@@ -94,9 +98,9 @@ impl Usart {
     reg.brr.set_mantissa((idiv >> 4) as u16);
 
     let (pe_on, pe_select) = match parity {
-        uart::Disabled => (false, false),
-        uart::Even => (true, false),
-        uart::Odd => (true, true),
+        Disabled => (false, false),
+        Even => (true, false),
+        Odd => (true, true),
         _ => unsafe { abort() }, // not supported
     };
     reg.cr1.set_parity_control_enable(pe_on);

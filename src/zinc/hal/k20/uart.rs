@@ -22,6 +22,8 @@ use core::intrinsics::abort;
 use drivers::chario::CharIO;
 use hal::uart;
 
+use self::UARTPeripheral::*;
+
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Available UART peripherals.
@@ -48,7 +50,7 @@ impl StopBit {
   /// Convert from number to StopBit.
   pub fn from_u8(val: u8) -> StopBit {
     match val {
-      1 => StopBit1bit,
+      1 => StopBit::StopBit1bit,
       _ => unsafe { abort() },
     }
   }
@@ -92,13 +94,14 @@ impl UART {
 
   fn set_mode(&self, word_len: reg::UART_c1_m, parity: uart::Parity,
               _stop_bits: StopBit) {
+    use hal::uart::Parity::*;
     let mut c1 = (*self.reg).c1.set_m(word_len);
     match parity {
-      uart::Disabled => {c1.set_pe(false);}
-      uart::Odd      => {c1.set_pe(true).set_pt(reg::Odd);}
-      uart::Even     => {c1.set_pe(true).set_pt(reg::Even);}
-      uart::Forced1  => unsafe { abort() },
-      uart::Forced0  => unsafe { abort() },
+      Disabled => {c1.set_pe(false);}
+      Odd      => {c1.set_pe(true).set_pt(reg::UART_c1_pt::Odd);}
+      Even     => {c1.set_pe(true).set_pt(reg::UART_c1_pt::Even);}
+      Forced1  => unsafe { abort() },
+      Forced0  => unsafe { abort() },
     };
     (*self.reg).c2.set_te(true).set_re(true);
   }
@@ -296,6 +299,7 @@ pub mod reg {
   impl UART_c1_m {
     /// UART data word length flag value from bit count
     pub fn from_u8(val: u8) -> UART_c1_m {
+      use self::UART_c1_m::*;
       match val {
         8 => DataBits8,
         9 => DataBits9,

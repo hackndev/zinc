@@ -36,8 +36,9 @@ pub struct Timer {
 impl Timer {
   /// Create and start a Timer.
   pub fn new(peripheral: TimerPeripheral, counter: u32) -> Timer {
+    use self::TimerPeripheral::*;
     let (clock, reg) = match peripheral {
-      Timer2 => (peripheral_clock::TIM2Clock, &reg::TIM2),
+      Timer2 => (peripheral_clock::PeripheralClock::TIM2Clock, &reg::TIM2),
     };
 
     clock.enable();

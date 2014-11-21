@@ -33,7 +33,7 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 }
 
 fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
-  if !node.expect_attributes(cx, [
+  if !node.expect_attributes(cx, &[
       ("counter", node::IntAttribute),
       ("divisor", node::IntAttribute)]) {
     return

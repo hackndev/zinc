@@ -34,11 +34,12 @@ impl Timer {
   /// Create and start a Timer.
   pub fn new(peripheral: TimerPeripheral, counter: u32, div_shift: u16) -> Timer {
     use super::peripheral_clock as pc;
+    use self::TimerPeripheral::*;
     let (reg, clock) = match peripheral {
-      Timer2 => (&reg::TIM2, pc::Tim2),
+      Timer2 => (&reg::TIM2, pc::BusApb1::Tim2),
     };
 
-    pc::ClockApb1(clock).enable();
+    pc::PeripheralClock::Apb1(clock).enable();
 
     reg.cr1.set_counter_enable(true);
     reg.cr1.set_divisor_shift(div_shift);

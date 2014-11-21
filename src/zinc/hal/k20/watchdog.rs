@@ -28,6 +28,7 @@ pub enum State {
 
 /// Init watchdog
 pub fn init(state : State) {
+  use self::State::*;
   unlock();
   match state {
     Disabled => {
@@ -40,8 +41,9 @@ pub fn init(state : State) {
 }
 
 fn unlock() {
-  reg::WDOG.unlock.set_unlock(reg::UnlockSeq1);
-  reg::WDOG.unlock.set_unlock(reg::UnlockSeq2);
+  use self::reg::WDOG_unlock_unlock::*;
+  reg::WDOG.unlock.set_unlock(UnlockSeq1);
+  reg::WDOG.unlock.set_unlock(UnlockSeq2);
 
   // Enforce one cycle delay
   nop();
@@ -49,8 +51,9 @@ fn unlock() {
 
 /// Write refresh sequence to refresh watchdog
 pub fn refresh() {
-  reg::WDOG.refresh.set_refresh(reg::RefreshSeq1);
-  reg::WDOG.refresh.set_refresh(reg::RefreshSeq2);
+  use self::reg::WDOG_refresh_refresh::*;
+  reg::WDOG.refresh.set_refresh(RefreshSeq1);
+  reg::WDOG.refresh.set_refresh(RefreshSeq2);
 }
 
 #[allow(dead_code)]

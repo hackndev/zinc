@@ -35,8 +35,8 @@ pub enum FieldType {
   BoolField,
   /// A enum
   EnumField {
-    pub opt_name: Option<String>,
-    pub variants: Vec<Variant>,
+    opt_name: Option<String>,
+    variants: Vec<Variant>,
   },
 }
 
@@ -85,9 +85,9 @@ impl RegWidth {
   /// Size of register type in bytes
   pub fn size(&self) -> uint {
     match *self {
-      Reg32 => 4,
-      Reg16 => 2,
-      Reg8  => 1,
+      RegWidth::Reg32 => 4,
+      RegWidth::Reg16 => 2,
+      RegWidth::Reg8  => 1,
     }
   }
 }
@@ -104,8 +104,8 @@ impl RegType {
   /// Size of register type in bytes
   pub fn size(&self) -> uint {
     match self {
-      &RegPrim(width, _)  => width.size(),
-      &RegUnion(ref regs) => regs_size(regs.deref()),
+      &RegType::RegPrim(width, _)  => width.size(),
+      &RegType::RegUnion(ref regs) => regs_size(regs.deref()),
     }
   }
 }
@@ -153,7 +153,7 @@ pub fn visit_reg<T: RegVisitor>(reg: &Reg, visitor: &mut T) {
 
 fn visit_reg_<T: RegVisitor>(reg: &Reg, visitor: &mut T, path: Vec<String>) {
   match reg.ty {
-    RegUnion(ref regs) => {
+    RegType::RegUnion(ref regs) => {
       visitor.visit_union_reg(&path, reg, regs.clone());
       for r in regs.iter() {
         let mut new_path = path.clone();
@@ -161,7 +161,7 @@ fn visit_reg_<T: RegVisitor>(reg: &Reg, visitor: &mut T, path: Vec<String>) {
         visit_reg_(r, visitor, new_path);
       }
     },
-    RegPrim(width, ref fields) =>
+    RegType::RegPrim(width, ref fields) =>
       visitor.visit_prim_reg(&path, reg, width, fields)
   }
 }

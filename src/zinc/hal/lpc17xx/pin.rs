@@ -23,6 +23,8 @@ on the package.
 use core::intrinsics::abort;
 use core::option::{Option};
 
+use self::Port::*;
+
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Available port names.
@@ -77,7 +79,7 @@ impl Pin {
     let new_val = (val & mask_bits) | fun_bits;
     reg.set_value(new_val);
 
-    if function == Gpio {
+    if function == Function::Gpio {
       (self as &::hal::pin::Gpio).set_direction(gpiodir.unwrap());
     }
   }

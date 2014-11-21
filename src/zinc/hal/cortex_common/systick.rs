@@ -33,7 +33,8 @@ fn get_reg() -> &'static reg::SYSTICK {
 ///
 ///  * reload: Reload value for the timer
 pub fn setup(reload: u32) {
-  get_reg().csr.set_enable(false).set_tickint(false).set_clksource(reg::CPU);
+  use self::reg::SYSTICK_csr_clksource as clksource;
+  get_reg().csr.set_enable(false).set_tickint(false).set_clksource(clksource::CPU);
 
   get_reg().rvr.set_reload(reload);
   get_reg().cvr.set_current(0);

@@ -136,6 +136,7 @@ impl<'a> Parser<'a> {
 
   fn parse_node(&mut self, parent: Option<Weak<node::Node>>)
       -> Option<Rc<node::Node>> {
+    use syntax::parse::token::Token;
     let name_span: Option<Span>;
     let node_name: Option<String>;
 
@@ -176,13 +177,13 @@ impl<'a> Parser<'a> {
     }
 
     let node_path = match self.token {
-      token::Ident(_, _) => {
+      Token::Ident(_, _) => {
         pprust::token_to_string(&self.bump())
       },
-      token::LitInteger(intname) => {
+      Token::Literal(token::Lit::Integer(intname), _) => {
         self.bump();
 
-        let lit = integer_lit(intname.as_str(), &self.sess.span_diagnostic, self.span);
+        let lit = integer_lit(intname.as_str(), None, &self.sess.span_diagnostic, self.span);
         match lit {
           LitInt(i, _) => {
             format!("{}", i)
@@ -331,13 +332,14 @@ impl<'a> Parser<'a> {
   }
 
   fn parse_attribute_value(&mut self) -> Option<node::AttributeValue> {
+    use syntax::parse::token::{Token, Lit};
     match self.token {
-      token::LitStr(string_val) => {
+      Token::Literal(Lit::Str_(string_val), _) => {
         self.bump();
         Some(node::StrValue(string_val.as_str().to_string()))
       },
-      token::LitInteger(intname) => {
-        let lit = integer_lit(intname.as_str(), &self.sess.span_diagnostic, self.span);
+      Token::Literal(Lit::Integer(intname), _) => {
+        let lit = integer_lit(intname.as_str(), None, &self.sess.span_diagnostic, self.span);
         match lit {
           LitInt(i, UnsuffixedIntLit(_)) => {
             self.bump();
@@ -350,7 +352,7 @@ impl<'a> Parser<'a> {
           }
         }
       },
-      token::BinOp(token::And) => {
+      Token::BinOp(token::And) => {
         self.bump();
         let name = match self.expect_ident() {
           Some(name) => name,

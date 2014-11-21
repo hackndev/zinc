@@ -22,6 +22,8 @@ This module should be considered private until further notice.
 use core::intrinsics::abort;
 
 use super::system_clock::system_clock;
+use self::PeripheralClock::*;
+use self::PeripheralDivisor::*;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 

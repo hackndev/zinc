@@ -22,6 +22,8 @@
 use core::default;
 use core::intrinsics::abort;
 use core::option;
+use self::MsiSpeed::*;
+use self::SystemClockSource::*;
 
 #[path="../../util/wait_for.rs"] mod wait_for;
 
