@@ -338,18 +338,24 @@ impl<'a> Parser<'a> {
         self.bump();
         Some(node::StrValue(string_val.as_str().to_string()))
       },
-      Token::Literal(Lit::Integer(intname), _) => {
-        let lit = integer_lit(intname.as_str(), None, &self.sess.span_diagnostic, self.span);
-        match lit {
-          LitInt(i, UnsuffixedIntLit(_)) => {
-            self.bump();
-            Some(node::IntValue(i as uint))
-          },
-          _ => {
-            self.error(format!("expected unsuffixed integer but found `{}`",
-                pprust::token_to_string(&self.token)));
-            None
+      Token::Literal(Lit::Integer(intname), suffix) => {
+        if suffix.is_none() {
+          let lit = integer_lit(intname.as_str(), None, &self.sess.span_diagnostic, self.span);
+          match lit {
+            LitInt(i, UnsuffixedIntLit(_)) => {
+              self.bump();
+              Some(node::IntValue(i as uint))
+            },
+            _ => {
+              self.error(format!("expected unsuffixed positive integer but found `{}`",
+                  pprust::token_to_string(&self.token)));
+              None
+            }
           }
+        } else {
+          self.error(format!("expected unsuffixed integer but found `{}`",
+              pprust::token_to_string(&self.token)));
+          None
         }
       },
       Token::BinOp(token::And) => {
