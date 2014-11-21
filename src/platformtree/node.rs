@@ -22,6 +22,9 @@ use syntax::ext::base::ExtCtxt;
 
 use builder::Builder;
 
+pub use self::AttributeValue::*;
+pub use self::AttributeType::*;
+
 /// Holds a value for an attribute.
 ///
 /// The value can be an unsigned integer, string or reference.
