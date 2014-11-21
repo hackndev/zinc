@@ -81,6 +81,8 @@ impl PinConf {
   /// Setup the pin.
   #[inline(always)]
   pub fn setup(&self) {
+    use self::Function::*;
+
     self.port.clock().enable();  // TODO(farcaller): should be done once per port
 
     let offset: u32 = self.pin as u32 * 2;

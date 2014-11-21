@@ -28,6 +28,7 @@ pub enum State {
 
 /// Init watchdog
 pub fn init(state : State) {
+  use self::State::*;
   unlock();
   match state {
     Disabled => {

@@ -23,6 +23,8 @@ on the package.
 use core::intrinsics::abort;
 use core::option::{Option};
 
+use self::Port::*;
+
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Available port names.

@@ -19,8 +19,9 @@ Timer configuration.
 This code supports all four primary timers of the MCU.
 */
 
-use super::peripheral_clock;
 use hal::timer;
+
+use self::TimerPeripheral::*;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 

@@ -29,6 +29,8 @@ use hal::lpc17xx::peripheral_clock::PeripheralClock::UART3Clock;
 use drivers::chario::CharIO;
 use hal::uart;
 
+use self::UARTPeripheral::*;
+
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 

@@ -21,6 +21,8 @@
 
 use super::init::reg;
 
+use self::PeripheralClock::*;
+
 #[path="../../util/ioreg.rs"] mod ioreg;
 
 /// Configures the state of peripheral clock.
@@ -183,7 +185,6 @@ impl PeripheralClock {
   }
 
   fn set_reg(self, enable: bool) {
-    use self::PeripheralClock::*;
     let reg_bit = self.to_reg_bit();
     let mask: u32 = !reg_bit;
     let bit: u32 = if enable {reg_bit} else {0};

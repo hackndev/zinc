@@ -92,6 +92,7 @@ impl Spi {
              polarity: SpiClockPolarity) -> Spi {
     use hal::stm32l1::peripheral_clock as clock;
     use self::SpiDirection::*;
+    use self::SpiPeripheral::*;
 
     let (reg, clock) = match peripheral {
         Spi1 => (&reg::SPI1, clock::PeripheralClock::Apb2(clock::BusApb2::Spi1)),

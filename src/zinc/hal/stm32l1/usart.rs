@@ -24,6 +24,8 @@ use drivers::chario::CharIO;
 use hal::uart;
 use hal::stm32l1::init;
 
+use self::UsartPeripheral::*;
+
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// Available USART peripherals.
