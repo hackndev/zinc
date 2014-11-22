@@ -14,6 +14,7 @@
 // limitations under the License.
 
 //! BlueNRG low-level SPI communication.
+// http://www.st.com/st-web-ui/static/active/en/resource/technical/document/user_manual/DM00114498.pdf
 
 use core::result::{Result, Ok, Err};
 use core::slice::SlicePrelude;
@@ -43,33 +44,36 @@ pub struct BlueNrg<G, S> {
   active: G,
   //input: G,
   //output: G,
-  serial: S,
+  spi: S,
 }
 
 impl<G: Gpio, S: Spi> BlueNrg<G, S> {
   /// Create a new BlueNRG driver instance.
-  pub fn new(active: G, serial: S) -> BlueNrg<G, S> {
+  pub fn new(active: G, spi: S) -> BlueNrg<G, S> {
     active.set_high();
     BlueNrg {
       active: active,
-      serial: serial,
+      spi: spi,
     }
   }
 
   /// Check device status and return the maximum write/read data sizes.
   pub fn check(&self) -> Result<(u16, u16), SpiError> {
     self.active.set_low();
-    let status = self.serial.transfer(SpiRead as u8);
-    let w0 = self.serial.transfer(0);
-    let w1 = self.serial.transfer(0);
-    let r0 = self.serial.transfer(0);
-    let r1 = self.serial.transfer(0);
+    // A return frame is 5 bytes, where the 1st byte is a status,
+    // then 2 bytes of the maximum write buffer size,
+    // and then 2 bytes for the maximum read buffer.
+    let status = self.spi.transfer(SpiRead as u8);
+    let w0 = self.spi.transfer(0);
+    let w1 = self.spi.transfer(0);
+    let r0 = self.spi.transfer(0);
+    let r1 = self.spi.transfer(0);
     self.active.set_high();
 
     match status {
       0x02 => Ok((
-        (w0 as u16 << 8) | (w1 as u16),
-        (r0 as u16 << 8) | (r1 as u16),
+        (w0 as u16 << 8) | (w1 as u16), // write buffer size
+        (r0 as u16 << 8) | (r1 as u16), // read buffer size
       )),
       0x00 | 0xFF => Err(SpiSleeping),
       other => Err(SpiUnknown(other)),
@@ -91,11 +95,11 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
   /// Receive data into the given buffer.
   pub fn receive(&self, buf: &mut [u8]) -> Result<(), SpiError> {
     self.active.set_low();
-    let status = self.serial.transfer(SpiRead as u8);
-    self.serial.transfer(0);
-    self.serial.transfer(0);
-    let r0 = self.serial.transfer(0);
-    let r1 = self.serial.transfer(0);
+    let status = self.spi.transfer(SpiRead as u8);
+    self.spi.transfer(0);
+    self.spi.transfer(0);
+    let r0 = self.spi.transfer(0);
+    let r1 = self.spi.transfer(0);
     let size = (r0 as u16 << 8) | (r1 as u16);
     if status != 0x02 {
       self.active.set_high();
@@ -105,8 +109,9 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
       Err(SpiBufferSize(size))
     }else {
       for b in buf.iter_mut() {
-        *b = self.serial.transfer(0);
+        *b = self.spi.transfer(0);
       }
+      self.active.set_high();
       Ok(())
     }
   }
@@ -114,11 +119,11 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
   /// Send data from the given buffer.
   pub fn send(&self, buf: &[u8]) -> Result<(), SpiError> {
     self.active.set_low();
-    let status = self.serial.transfer(SpiWrite as u8);
-    let w0 = self.serial.transfer(0);
-    let w1 = self.serial.transfer(0);
-    self.serial.transfer(0);
-    self.serial.transfer(0);
+    let status = self.spi.transfer(SpiWrite as u8);
+    let w0 = self.spi.transfer(0);
+    let w1 = self.spi.transfer(0);
+    self.spi.transfer(0);
+    self.spi.transfer(0);
     let size = (w0 as u16 << 8) | (w1 as u16);
     if status != 0x02 {
       self.active.set_high();
@@ -128,8 +133,9 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
       Err(SpiBufferSize(size))
     }else {
       for b in buf.iter() {
-        self.serial.transfer(*b);
+        self.spi.transfer(*b);
       }
+      self.active.set_high();
       Ok(())
     }
   }

@@ -2,15 +2,15 @@
 #![crate_type="staticlib"]
 #![no_std]
 
-//! Sample application for
-//! BlueNRG communication over SPI in
-//! X-NUCLEO-IDB04A1 on NUCLEO-L152RE
+//! Sample application for BlueNRG communication over SPI in X-NUCLEO-IDB04A1
+//! extension board for NUCLEO-L152RE
 
 #[phase(plugin, link)]
 extern crate core;
 extern crate zinc;
 
-// "curious module hack"
+// "curious module hack" - a workaround for `fmt` module being looked in `std`
+// by the `write!` macro
 mod std {
   pub use core::fmt;
 }
