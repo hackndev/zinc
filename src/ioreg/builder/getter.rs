@@ -138,11 +138,21 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
       fields.iter()
         .map(|field| build_field_get_fn(cx, path, reg, field)));
 
+  let packed_ty = utils::reg_primitive_type(cx, reg)
+    .expect("Unexpected non-primitive register");
+  let get_raw: P<ast::Method> = quote_method!(cx,
+    #[doc = "Get the raw value of the register."]
+    pub fn raw(&self) -> $packed_ty {
+      self.value
+    }
+  );
+
   let it = quote_item!(cx,
     #[allow(dead_code)]
     impl $getter_ty {
       $new
       $getters
+      $get_raw
     }
   );
   it.unwrap()
