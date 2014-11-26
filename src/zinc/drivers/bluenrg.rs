@@ -23,20 +23,22 @@ use hal::pin::Gpio;
 use hal::spi::Spi;
 
 #[repr(u8)]
-enum SpiControl {
-  SpiWrite = 0x0A,
-  SpiRead = 0x0B,
+enum Control {
+  Write = 0x0A,
+  Read = 0x0B,
 }
 
 /// Spi error codes.
 #[repr(u8)]
-pub enum SpiError {
+pub enum Error {
   /// Device is sleeping.
-  SpiSleeping,
+  Sleeping,
+  /// Device is allocating buffers.
+  Allocating,
   /// Status is unlnown.
-  SpiUnknown(u8),
+  Unknown(u8),
   /// Given buffer is too large.
-  SpiBufferSize(u16),
+  BufferSize(u16),
 }
 
 /// BlueNRG driver.
@@ -58,12 +60,12 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
   }
 
   /// Check device status and return the maximum write/read data sizes.
-  pub fn check(&self) -> Result<(u16, u16), SpiError> {
+  pub fn check(&self) -> Result<(u16, u16), Error> {
     self.active.set_low();
     // A return frame is 5 bytes, where the 1st byte is a status,
     // then 2 bytes of the maximum write buffer size,
     // and then 2 bytes for the maximum read buffer.
-    let status = self.spi.transfer(SpiRead as u8);
+    let status = self.spi.transfer(Control::Read as u8);
     let w0 = self.spi.transfer(0);
     let w1 = self.spi.transfer(0);
     let r0 = self.spi.transfer(0);
@@ -71,20 +73,24 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
     self.active.set_high();
 
     match status {
+      0x02 if ((w0 | w1 == 0) | (r0 | r1 == 0)) => Err(Error::Allocating),
       0x02 => Ok((
-        (w0 as u16 << 8) | (w1 as u16), // write buffer size
-        (r0 as u16 << 8) | (r1 as u16), // read buffer size
+        (w1 as u16 << 8) | (w0 as u16), // write buffer size
+        (r1 as u16 << 8) | (r0 as u16), // read buffer size
       )),
-      0x00 | 0xFF => Err(SpiSleeping),
-      other => Err(SpiUnknown(other)),
+      0x00 | 0xFF => Err(Error::Sleeping),
+      other => Err(Error::Unknown(other)),
     }
   }
 
   /// Poll the device until it wakes up.
-  pub fn wakeup(&self, mut num_tries: u32) -> Result<(u16, u16), SpiError> {
+  pub fn wakeup(&self, mut num_tries: u32) -> Result<(u16, u16), Error> {
     loop {
       match self.check() {
-        Err(SpiSleeping) if num_tries > 0 => {
+        Err(Error::Sleeping)   if num_tries > 0 => {
+          num_tries -= 1;
+        },
+        Err(Error::Allocating) if num_tries > 0 => {
           num_tries -= 1;
         },
         other => return other,
@@ -93,20 +99,20 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
   }
 
   /// Receive data into the given buffer.
-  pub fn receive(&self, buf: &mut [u8]) -> Result<(), SpiError> {
+  pub fn receive(&self, buf: &mut [u8]) -> Result<(), Error> {
     self.active.set_low();
-    let status = self.spi.transfer(SpiRead as u8);
+    let status = self.spi.transfer(Control::Read as u8);
     self.spi.transfer(0);
     self.spi.transfer(0);
     let r0 = self.spi.transfer(0);
     let r1 = self.spi.transfer(0);
-    let size = (r0 as u16 << 8) | (r1 as u16);
+    let size = (r1 as u16 << 8) | (r0 as u16);
     if status != 0x02 {
       self.active.set_high();
-      Err(SpiUnknown(status))
+      Err(Error::Unknown(status))
     }else if size < buf.len() as u16 {
       self.active.set_high();
-      Err(SpiBufferSize(size))
+      Err(Error::BufferSize(size))
     }else {
       for b in buf.iter_mut() {
         *b = self.spi.transfer(0);
@@ -117,20 +123,20 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
   }
 
   /// Send data from the given buffer.
-  pub fn send(&self, buf: &[u8]) -> Result<(), SpiError> {
+  pub fn send(&self, buf: &[u8]) -> Result<(), Error> {
     self.active.set_low();
-    let status = self.spi.transfer(SpiWrite as u8);
+    let status = self.spi.transfer(Control::Write as u8);
     let w0 = self.spi.transfer(0);
     let w1 = self.spi.transfer(0);
     self.spi.transfer(0);
     self.spi.transfer(0);
-    let size = (w0 as u16 << 8) | (w1 as u16);
+    let size = (w1 as u16 << 8) | (w0 as u16);
     if status != 0x02 {
       self.active.set_high();
-      Err(SpiUnknown(status))
+      Err(Error::Unknown(status))
     }else if size < buf.len() as u16 {
       self.active.set_high();
-      Err(SpiBufferSize(size))
+      Err(Error::BufferSize(size))
     }else {
       for b in buf.iter() {
         self.spi.transfer(*b);

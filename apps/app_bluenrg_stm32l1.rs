@@ -9,22 +9,11 @@
 extern crate core;
 extern crate zinc;
 
+use core::intrinsics::abort;
 // "curious module hack" - a workaround for `fmt` module being looked in `std`
 // by the `write!` macro
 mod std {
   pub use core::fmt;
-}
-
-#[repr(u16)]
-enum HciOpCode {
-  HciDisconnect = 0x0406,
-  HciReadRemoteVersionInformation = 0x041D,
-}
-
-#[repr(u16)]
-enum HciEventCode {
-  HciDisconnectComplete = 0x05,
-  HciReadRemoteVersionInformationComplete = 0x0C,
 }
 
 // temporary `u8 -> str` conversion until #235 is resolved
@@ -55,7 +44,6 @@ fn map_byte(s: u8) -> (&'static str, &'static str) {
 
 #[no_mangle]
 pub unsafe fn main() {
-  //use core::intrinsics::abort;
   use core::fmt::FormatWriter;
   use core::result;
   use zinc::drivers::bluenrg;
@@ -78,7 +66,7 @@ pub unsafe fn main() {
 
   let mut uart = usart::Usart::new(usart::Usart2, 38400, usart::WordLen8bits,
     hal::uart::Disabled, usart::StopBit1bit, &sys_clock);
-  let _ = write!(uart, "BlueNRG test app for STM32L1\n");
+  let _ = write!(&mut uart, "BlueNRG test app for STM32L1\n");
 
   let _spi_clock = pin::Pin::new(pin::PortB, 3,
     pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::Medium),
@@ -97,28 +85,37 @@ pub unsafe fn main() {
     pin::PullUp);
   spi_csn.set_high();
 
-  let spi = spi::Spi::new(spi::Spi1, spi::DirFullDuplex, spi::RoleMaster,
-    spi::Data8b, spi::DataMsbFirst, 1); // baud prescaler = 1<<1 = 2
+  let spi = match spi::Spi::new(spi::Spi1, spi::Direction::FullDuplex,
+    spi::Role::Master, spi::DataSize::U8, spi::DataFormat::MsbFirst, 1) {
+    result::Ok(s) => s,
+    result::Err(_) => {
+      let _ = write!(&mut uart, "SPI failed to initialize");
+      abort()
+    }
+  }; // baud prescaler = 1<<1 = 2
 
   let bnrg_reset = pin::Pin::new(pin::PortA, 8,
     pin::GpioOut(pin::OutPushPull, pin::VeryLow),
     pin::PullUp);
 
   bnrg_reset.set_low();
-  let _ = write!(uart, "SPI created, status={}\n", map_byte(spi.get_status()));
+  let _ = write!(&mut uart, "SPI created, status = {}\n",
+    map_byte(spi.get_status()));
   bnrg_reset.set_high();
 
   let blue = bluenrg::BlueNrg::new(spi_csn, spi);
 
-  let _ = match blue.wakeup(10) {
-    result::Ok((size_write, size_read)) => write!(uart,
-      "BlueNRG is ready, write size = {}<<8, read size = {}<<8\n",
+  let _ = match blue.wakeup(100) {
+    result::Ok((size_write, size_read)) => write!(&mut uart,
+      "BlueNRG is ready, write size = {}, read size = {}\n",
       map_byte(size_write as u8), map_byte(size_read as u8)),
-    result::Err(bluenrg::SpiSleeping) => write!(uart,
+    result::Err(bluenrg::Error::Sleeping) => write!(&mut uart,
       "BlueNRG is sleeping\n"),
-    result::Err(bluenrg::SpiUnknown(status)) => write!(uart,
+    result::Err(bluenrg::Error::Allocating) => write!(&mut uart,
+      "BlueNRG is allocating buffers\n"),
+    result::Err(bluenrg::Error::Unknown(status)) => write!(&mut uart,
       "BlueNRG unknown status = {}\n", map_byte(status)),
-    result::Err(bluenrg::SpiBufferSize(_)) => write!(uart, ""),
+    result::Err(bluenrg::Error::BufferSize(_)) => write!(&mut uart, ""),
   };
 
   loop {}
