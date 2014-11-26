@@ -150,7 +150,7 @@ impl Spi {
 
   /// Returns the status byte.
   pub fn get_status(&self) -> u8 {
-    //self.reg.sr.raw() //TODO (related to #245)
+    //self.reg.sr.raw() //TODO(kvark): #245 doesn't work
     let mut r = 0u8;
     if self.reg.sr.receive_buffer_not_empty() {
       r |= 1u8<<0;

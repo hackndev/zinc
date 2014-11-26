@@ -16,7 +16,7 @@ mod std {
   pub use core::fmt;
 }
 
-// temporary `u8 -> str` conversion until #235 is resolved
+//TODO(kvark): temporary `u8 -> str` conversion until #235 is resolved
 fn map_byte(s: u8) -> (&'static str, &'static str) {
   fn map_hex(h: u8) -> &'static str {
       match h {
@@ -85,14 +85,12 @@ pub unsafe fn main() {
     pin::PullUp);
   spi_csn.set_high();
 
-  let spi = match spi::Spi::new(spi::Spi1, spi::Direction::FullDuplex,
-    spi::Role::Master, spi::DataSize::U8, spi::DataFormat::MsbFirst, 1) {
-    result::Ok(s) => s,
-    result::Err(_) => {
+  let spi = spi::Spi::new(spi::Spi1, spi::Direction::FullDuplex,
+    spi::Role::Master, spi::DataSize::U8, spi::DataFormat::MsbFirst, 1).
+    unwrap_or_else(|_| {
       let _ = write!(&mut uart, "SPI failed to initialize");
       abort()
-    }
-  }; // baud prescaler = 1<<1 = 2
+    });
 
   let bnrg_reset = pin::Pin::new(pin::PortA, 8,
     pin::GpioOut(pin::OutPushPull, pin::VeryLow),
