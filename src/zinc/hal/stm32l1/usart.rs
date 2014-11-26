@@ -18,6 +18,7 @@ Universal synchronous asynchronous receiver transmitter (USART).
 
 */
 
+use core::{fmt, result};
 use core::intrinsics::abort;
 
 use drivers::chario::CharIO;
@@ -83,7 +84,6 @@ impl Usart {
     };
 
     clock.enable();
-    reg.cr1.set_usart_enable(true);
 
     reg.cr1.set_word_length(word_len as bool);
     reg.cr2.set_stop_bits(stop_bits as u16);
@@ -110,6 +110,8 @@ impl Usart {
     reg.cr1.set_transmitter_enable(true);
     reg.cr1.set_receiver_enable(true);
 
+    reg.cr1.set_usart_enable(true);
+
     Usart {
       reg: reg,
     }
@@ -120,7 +122,17 @@ impl CharIO for Usart {
   fn putc(&self, value: char) {
     wait_for!(self.reg.sr.transmit_data_empty());
     self.reg.dr.set_data(value as u16);
-    //wait_for!(self.reg.sr.transmission_complete());
+  }
+}
+
+impl fmt::FormatWriter for Usart {
+  fn write(&mut self, bytes: &[u8]) -> fmt::Result {
+    use core::slice::SlicePrelude;
+    for b in bytes.iter() {
+      wait_for!(self.reg.sr.transmit_data_empty());
+      self.reg.dr.set_data(*b as u16);
+    }
+    result::Ok(())
   }
 }
 

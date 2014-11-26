@@ -21,7 +21,7 @@
 
 use super::init::{ClockConfig, reg};
 
-use self::PeripheralClock::*;
+pub use self::PeripheralClock::*;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 
