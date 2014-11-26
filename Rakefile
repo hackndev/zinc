@@ -52,7 +52,7 @@ compile_rust :ioreg_crate, {
 }
 
 rust_tests :ioreg_test, {
-  source:    'ioreg/test.rs'.in_source,
+  source:    'ioreg/tests/ioreg.rs'.in_source,
   deps:      [:core_crate, :ioreg_crate, :shiny_crate],
   produce:   'ioreg_test'.in_build,
 }
