@@ -48,7 +48,6 @@ STM32F403/407).
 #[cfg(not(test))] extern crate rlibc;
 
 #[cfg(test)] #[phase(plugin,link)] extern crate std;
-#[cfg(test)] extern crate native;
 #[phase(plugin)] extern crate ioreg;
 
 pub mod drivers;
