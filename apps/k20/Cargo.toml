@@ -1,0 +1,14 @@
+[package]
+name = "empty"
+version = "0.0.1"
+authors = ["Ben Harris <mail@bharr.is>"]
+
+[dependencies.core]
+git = "https://github.com/bharrisau/rust-libcore.git"
+
+[dependencies.zinc]
+path = "../.."
+
+[[bin]]
+name = "empty"
+path = "src/empty.rs"

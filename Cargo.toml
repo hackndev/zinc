@@ -1,0 +1,21 @@
+[package]
+name = "zinc"
+version = "0.0.1"
+authors = ["farcaller@gmail.com"]
+#build = ["rake target_deps", "support/cargo_deps"]
+
+[lib]
+name = "zinc"
+path = "src/zinc/lib.rs"
+
+[dependencies.rlibc]
+git = "https://github.com/bharrisau/rust-librlibc.git"
+
+[dependencies.core]
+git = "https://github.com/bharrisau/rust-libcore.git"
+
+[dependencies.ioreg]
+path = "src/ioreg"
+
+[dev-dependencies.hamcrest]
+git = "https://github.com/carllerche/hamcrest-rust.git"

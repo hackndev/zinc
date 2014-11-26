@@ -6,5 +6,12 @@
     "arch": "arm",
     "os": "none",
     "morestack": false,
-    "executables": true
+    "executables": true,
+    "linker": "arm-none-eabi-gcc",
+    "no-compiler-rt": true,
+    "relocation_model": "static",
+    "pre-link-args": [
+      "-Wl,-Map,app.map",
+      "-Wl,-T,layout.ld"
+    ]
 }
