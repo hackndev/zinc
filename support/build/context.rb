@@ -106,8 +106,6 @@ class Context
 
     @env[:rustcflags_cross] = [
       "--target #{@platform.arch.target}",
-      "-Ctarget-cpu=#{@platform.arch.cpu}",
-      '-C relocation_model=static',
     ]
 
     @env[:rustcflags] = [
