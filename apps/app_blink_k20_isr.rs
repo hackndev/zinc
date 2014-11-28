@@ -32,10 +32,10 @@ pub unsafe extern fn isr_systick() {
 pub fn main() {
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
-  watchdog::init(watchdog::Disabled);
+  watchdog::init(watchdog::State::Disabled);
 
   // Pins for MC HCK (http://www.mchck.org/)
-  let led1 = pin::Pin::new(pin::PortB, 16, pin::Gpio, Some(zinc::hal::pin::Out));
+  let led1 = pin::Pin::new(pin::Port::PortB, 16, pin::Function::Gpio, Some(zinc::hal::pin::Out));
 
   systick::setup(systick::ten_ms().unwrap_or(480000));
   systick::enable();
