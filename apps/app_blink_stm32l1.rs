@@ -15,7 +15,7 @@ pub unsafe fn main() {
   zinc::hal::mem_init::init_data();
 
   let sys_clock = init::ClockConfig {
-    source: init::SystemClockHSI,
+    source: init::SystemClockSource::SystemClockHSI,
     ahb_shift: 0,
     apb1_shift: 0,
     apb2_shift: 0,
@@ -23,13 +23,13 @@ pub unsafe fn main() {
   };
   sys_clock.setup();
 
-  let led1 = pin::Pin::new(pin::PortA, 5,
-    pin::GpioOut(pin::OutPushPull, pin::VeryLow),
-    pin::PullNone);
+  let led1 = pin::Pin::new(pin::Port::PortA, 5,
+    pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
+    pin::PullType::PullNone);
 
   // TODO(kvark): why doesn't "sys_clock.get_apb1_frequency()" work better?
   let timer_clock = sys_clock.source.frequency();
-  let timer = timer::Timer::new(timer::Timer2, timer_clock/1000, 0);
+  let timer = timer::Timer::new(timer::TimerPeripheral::Timer2, timer_clock/1000, 0);
 
   loop {
     led1.set_high();
