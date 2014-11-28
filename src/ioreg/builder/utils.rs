@@ -78,7 +78,7 @@ pub fn reg_primitive_type_path(cx: &ExtCtxt, reg: &node::Reg)
 pub fn reg_primitive_type(cx: &ExtCtxt, reg: &node::Reg)
                           -> Option<P<ast::Ty>> {
   let path = reg_primitive_type_path(cx, reg);
-  path.map(|p| cx.ty_path(p, None))
+  path.map(|p| cx.ty_path(p))
 }
 
 pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
