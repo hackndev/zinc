@@ -130,7 +130,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
         let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
         (cx.ty_rptr(
           DUMMY_SP,
-          cx.ty_path(type_name_as_path(cx, reftype.as_slice(), refparams), None),
+          cx.ty_path(type_name_as_path(cx, reftype.as_slice(), refparams)),
           Some(a_lifetime),
           ast::MutImmutable), quote_expr!(&*cx, &$val_slice))
       },
@@ -200,7 +200,7 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
       let lifetime = cx.lifetime(DUMMY_SP, intern(slice));
       lifetimes.push(lifetime);
     } else {
-      let path = cx.ty_path(type_name_as_path(cx, p.to_tyhash().as_slice(), vec!()), None);
+      let path = cx.ty_path(type_name_as_path(cx, p.to_tyhash().as_slice(), vec!()));
       types.push(path);
     }
   }
