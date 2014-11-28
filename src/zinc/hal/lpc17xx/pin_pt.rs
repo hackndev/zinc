@@ -198,9 +198,9 @@ mod test {
 
       assert_equal_source(builder.main_stmts()[0].deref(),
           "let p3 = zinc::hal::lpc17xx::pin::Pin::new(
-               zinc::hal::lpc17xx::pin::Port0,
+               zinc::hal::lpc17xx::pin::Port::Port0,
                3u8,
-               zinc::hal::lpc17xx::pin::AltFunction2,
+               zinc::hal::lpc17xx::pin::Function::AltFunction2,
                core::option::None);");
     });
   }

@@ -130,7 +130,7 @@ mod test {
             {
                 use zinc::hal::lpc17xx::system_clock;
                 system_clock::init_clock(&system_clock::Clock{
-                  source: system_clock::Main(12000000),
+                  source: system_clock::ClockSource::Main(12000000),
                   pll: core::option::Some(system_clock::PLL0{
                     m: 50u8,
                     n: 3u8,
@@ -139,22 +139,22 @@ mod test {
                 });
             };
             let timer = zinc::hal::lpc17xx::timer::Timer::new(
-                zinc::hal::lpc17xx::timer::Timer1, 25u32, 4u8);
+                zinc::hal::lpc17xx::timer::TimerPeripheral::Timer1, 25u32, 4u8);
             let uart_tx = zinc::hal::lpc17xx::pin::Pin::new(
-                zinc::hal::lpc17xx::pin::Port0,
+                zinc::hal::lpc17xx::pin::Port::Port0,
                 2u8,
-                zinc::hal::lpc17xx::pin::AltFunction1,
+                zinc::hal::lpc17xx::pin::Function::AltFunction1,
                 core::option::None);
             let uart_rx = zinc::hal::lpc17xx::pin::Pin::new(
-                zinc::hal::lpc17xx::pin::Port0,
+                zinc::hal::lpc17xx::pin::Port::Port0,
                 3u8,
-                zinc::hal::lpc17xx::pin::AltFunction1,
+                zinc::hal::lpc17xx::pin::Function::AltFunction1,
                 core::option::None);
             let uart = zinc::hal::lpc17xx::uart::UART::new(
-                zinc::hal::lpc17xx::uart::UART0,
+                zinc::hal::lpc17xx::uart::UARTPeripheral::UART0,
                 115200u32,
                 8u8,
-                zinc::hal::uart::Disabled,
+                zinc::hal::uart::Parity::Disabled,
                 1u8);
             let led4 = zinc::hal::lpc17xx::pin::Pin::new(
                 zinc::hal::lpc17xx::pin::Port::Port1,

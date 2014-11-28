@@ -153,7 +153,7 @@ mod test {
       assert!(builder.main_stmts().len() == 1);
 
       assert_equal_source(builder.main_stmts()[0].deref(),
-          "let uart = zinc::hal::lpc17xx::uart::UARTPeripheral::UART::new(
+          "let uart = zinc::hal::lpc17xx::uart::UART::new(
                zinc::hal::lpc17xx::uart::UARTPeripheral::UART0,
                9600u32,
                8u8,

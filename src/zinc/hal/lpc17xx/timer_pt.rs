@@ -90,8 +90,8 @@ mod test {
       assert!(builder.main_stmts().len() == 1);
 
       assert_equal_source(builder.main_stmts()[0].deref(),
-          "let tim = zinc::hal::lpc17xx::timer::TimerPeripheral::Timer::new(
-              zinc::hal::lpc17xx::timer::Timer1, 25u32, 4u8);");
+          "let tim = zinc::hal::lpc17xx::timer::Timer::new(
+              zinc::hal::lpc17xx::timer::TimerPeripheral::Timer1, 25u32, 4u8);");
     });
   }
 }
