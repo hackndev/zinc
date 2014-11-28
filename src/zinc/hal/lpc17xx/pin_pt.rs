@@ -126,9 +126,9 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let st = quote_stmt!(&*cx,
       let $pin_name = zinc::hal::lpc17xx::pin::Pin::new(
-          zinc::hal::lpc17xx::pin::$port,
+          zinc::hal::lpc17xx::pin::Port::$port,
           $pin,
-          zinc::hal::lpc17xx::pin::$function,
+          zinc::hal::lpc17xx::pin::Function::$function,
           $direction);
   );
   builder.add_main_statement(st);
@@ -154,9 +154,9 @@ mod test {
 
       assert_equal_source(builder.main_stmts()[0].deref(),
           "let p1 = zinc::hal::lpc17xx::pin::Pin::new(
-               zinc::hal::lpc17xx::pin::Port0,
+               zinc::hal::lpc17xx::pin::Port::Port0,
                1u8,
-               zinc::hal::lpc17xx::pin::Gpio,
+               zinc::hal::lpc17xx::pin::Function::Gpio,
                core::option::Some(zinc::hal::pin::In));");
     });
   }
@@ -176,9 +176,9 @@ mod test {
 
       assert_equal_source(builder.main_stmts()[0].deref(),
           "let p2 = zinc::hal::lpc17xx::pin::Pin::new(
-               zinc::hal::lpc17xx::pin::Port0,
+               zinc::hal::lpc17xx::pin::Port::Port0,
                2u8,
-               zinc::hal::lpc17xx::pin::Gpio,
+               zinc::hal::lpc17xx::pin::Function::Gpio,
                core::option::Some(zinc::hal::pin::Out));");
     });
   }

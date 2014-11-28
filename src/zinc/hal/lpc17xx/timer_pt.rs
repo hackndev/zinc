@@ -52,7 +52,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let timer_name = match timer_index {
     0...3 => TokenString(format!(
-        "zinc::hal::lpc17xx::timer::Timer{}", timer_index)),
+        "zinc::hal::lpc17xx::timer::TimerPeripheral::Timer{}", timer_index)),
     other => {
       cx.parse_sess().span_diagnostic.span_err(node.path_span,
           format!("unknown timer index `{}`, allowed indexes: 0, 1, 2, 3",
@@ -90,7 +90,7 @@ mod test {
       assert!(builder.main_stmts().len() == 1);
 
       assert_equal_source(builder.main_stmts()[0].deref(),
-          "let tim = zinc::hal::lpc17xx::timer::Timer::new(
+          "let tim = zinc::hal::lpc17xx::timer::TimerPeripheral::Timer::new(
               zinc::hal::lpc17xx::timer::Timer1, 25u32, 4u8);");
     });
   }
