@@ -18,21 +18,21 @@ pub unsafe fn main() {
   let sys_clock = init::ClockConfig::new_default();
   sys_clock.setup();
 
-  let _pin_tx = pin::Pin::new(pin::PortA, 2,
-    pin::AltFunction(
-      pin::AfUsart1_Usart2_Usart3,
-      pin::OutPushPull,
-      pin::VeryLow),
-    pin::PullNone);
+  let _pin_tx = pin::Pin::new(pin::Port::PortA, 2,
+    pin::Mode::AltFunction(
+      pin::AltMode::AfUsart1_Usart2_Usart3,
+      pin::OutputType::OutPushPull,
+      pin::Speed::VeryLow),
+    pin::PullType::PullNone);
 
-  let led1 = pin::Pin::new(pin::PortA, 5,
-    pin::GpioOut(pin::OutPushPull, pin::VeryLow),
-    pin::PullNone);
+  let led1 = pin::Pin::new(pin::Port::PortA, 5,
+    pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
+    pin::PullType::PullNone);
 
   led1.set_low();
 
-  let uart = usart::Usart::new(usart::Usart2, 38400, usart::WordLen8bits,
-    hal::uart::Disabled, usart::StopBit1bit, &sys_clock);
+  let uart = usart::Usart::new(usart::UsartPeripheral::Usart2, 38400, usart::WordLen::WordLen8bits,
+    hal::uart::Parity::Disabled, usart::StopBit::StopBit1bit, &sys_clock);
   uart.puts("Hello, world\n");
 
   led1.set_high();

@@ -24,13 +24,13 @@ use hal::timer::Timer;
 /// HD44780U driver context
 pub struct Hd44780u<'a> {
   /// Timer used for protocol delays
-  timer: &'a Timer + 'a,
+  timer: &'a (Timer + 'a),
   /// Register Selector wire
-  rs:    &'a Gpio + 'a,
+  rs:    &'a (Gpio + 'a),
   /// Enable wire
-  en:    &'a Gpio + 'a,
+  en:    &'a (Gpio + 'a),
   /// The 4 data wires. Those must be wired to [d4, d5, d6, d7] in 4bit mode.
-  data: [&'a Gpio + 'a, ..4],
+  data: [&'a (Gpio + 'a), ..4],
 }
 
 /// The controller supports writing in either direction to accomodate various
@@ -52,10 +52,10 @@ pub enum Font {
 
 impl<'a> Hd44780u<'a> {
   /// Construct an Hd44780u instance
-  pub fn new<'a>(timer: &'a Timer + 'a,
-                 rs:    &'a Gpio  + 'a,
-                 en:    &'a Gpio  + 'a,
-                 data: [&'a Gpio  + 'a, ..4]) -> Hd44780u<'a> {
+  pub fn new<'a>(timer: &'a (Timer + 'a),
+                 rs:    &'a (Gpio  + 'a),
+                 en:    &'a (Gpio  + 'a),
+                 data: [&'a (Gpio  + 'a), ..4]) -> Hd44780u<'a> {
     Hd44780u { timer: timer, rs: rs, en: en, data: data }
   }
 

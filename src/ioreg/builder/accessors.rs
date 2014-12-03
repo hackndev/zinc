@@ -129,7 +129,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
   let fn_name =
     cx.ident_of((String::from_str("set_")+field.name.node).as_slice());
   let field_ty: P<ast::Ty> =
-    cx.ty_path(utils::field_type_path(cx, path, reg, field), None);
+    cx.ty_path(utils::field_type_path(cx, path, reg, field));
   let setter_ty = utils::setter_name(cx, path);
   if field.count.node == 1 {
     quote_method!(cx,
@@ -158,7 +158,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>,
 {
   let fn_name = cx.ident_of(field.name.node.as_slice());
   let field_ty: P<ast::Ty> =
-    cx.ty_path(utils::field_type_path(cx, path, reg, field), None);
+    cx.ty_path(utils::field_type_path(cx, path, reg, field));
   let getter_ty = utils::getter_name(cx, path);
   if field.count.node == 1 {
     quote_method!(cx,

@@ -49,7 +49,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
         "BAD".to_string()
       } else {
         source_freq = some_source_frequency.unwrap();
-        format!("system_clock::Main({})", source_freq)
+        format!("system_clock::ClockSource::Main({})", source_freq)
       }
     },
     other => {
@@ -136,7 +136,7 @@ mod test {
             use zinc::hal::lpc17xx::system_clock;
             system_clock::init_clock(
                 &system_clock::Clock {
-                  source: system_clock::Main(12000000),
+                  source: system_clock::ClockSource::Main(12000000),
                   pll: core::option::Some(system_clock::PLL0 {
                     m: 50u8,
                     n: 3u8,

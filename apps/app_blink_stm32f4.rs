@@ -15,19 +15,19 @@ pub unsafe fn main() {
   zinc::hal::mem_init::init_data();
 
   let led1 = pin::PinConf{
-    port: pin::PortD,
+    port: pin::Port::PortD,
     pin: 13u8,
-    function: pin::GPIOOut
+    function: pin::Function::GPIOOut
   };
   let led2 = pin::PinConf{
-    port: pin::PortD,
+    port: pin::Port::PortD,
     pin: 14u8,
-    function: pin::GPIOOut
+    function: pin::Function::GPIOOut
   };
   led1.setup();
   led2.setup();
 
-  let timer = timer::Timer::new(timer::Timer2, 25u32);
+  let timer = timer::Timer::new(timer::TimerPeripheral::Timer2, 25u32);
 
   loop {
     led1.set_high();

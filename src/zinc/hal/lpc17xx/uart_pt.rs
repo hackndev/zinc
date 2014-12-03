@@ -54,7 +54,7 @@ pub fn mutate_pins(builder: &mut Builder, _: &mut ExtCtxt, sub: Rc<node::Node>) 
 
 pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
     sub: Rc<node::Node>) {
-  let uart_peripheral_str = format!("UART{}",
+  let uart_peripheral_str = format!("UARTPeripheral::UART{}",
       match from_str::<uint>(sub.path.as_slice()).unwrap() {
         0|2|3 => sub.path.clone(),
         other => {
@@ -86,11 +86,11 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
   let word_len = mode.as_slice().char_at(0).to_digit(10).unwrap() as u8;
   let parity = TokenString(
       match mode.as_slice().char_at(1) {
-        'N' => "Disabled",
-        'O' => "Odd",
-        'E' => "Even",
-        '1' => "Forced1",
-        '0' => "Forced0",
+        'N' => "Parity::Disabled",
+        'O' => "Parity::Odd",
+        'E' => "Parity::Even",
+        '1' => "Parity::Forced1",
+        '0' => "Parity::Forced0",
         _ => panic!(),
       }.to_string());
   let stop_bits = mode.as_slice().char_at(2).to_digit(10).unwrap() as u8;
@@ -154,10 +154,10 @@ mod test {
 
       assert_equal_source(builder.main_stmts()[0].deref(),
           "let uart = zinc::hal::lpc17xx::uart::UART::new(
-               zinc::hal::lpc17xx::uart::UART0,
+               zinc::hal::lpc17xx::uart::UARTPeripheral::UART0,
                9600u32,
                8u8,
-               zinc::hal::uart::Disabled,
+               zinc::hal::uart::Parity::Disabled,
                1u8);");
 
       let tx_node = pt.get_by_name("uart_tx").unwrap();

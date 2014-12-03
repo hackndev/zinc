@@ -57,44 +57,44 @@ pub unsafe fn main() {
   let sys_clock = init::ClockConfig::new_default();
   sys_clock.setup();
 
-  let _usart_tx = pin::Pin::new(pin::PortA, 2,
-    pin::AltFunction(
-      pin::AfUsart1_Usart2_Usart3,
-      pin::OutPushPull,
-      pin::VeryLow),
-    pin::PullNone);
+  let _usart_tx = pin::Pin::new(pin::Port::PortA, 2,
+    pin::Mode::AltFunction(
+      pin::AltMode::AfUsart1_Usart2_Usart3,
+      pin::OutputType::OutPushPull,
+      pin::Speed::VeryLow),
+    pin::PullType::PullNone);
 
-  let mut uart = usart::Usart::new(usart::Usart2, 38400, usart::WordLen8bits,
-    hal::uart::Disabled, usart::StopBit1bit, &sys_clock);
+  let mut uart = usart::Usart::new(usart::UsartPeripheral::Usart2, 38400, usart::WordLen::WordLen8bits,
+    hal::uart::Parity::Disabled, usart::StopBit::StopBit1bit, &sys_clock);
   let _ = write!(&mut uart, "BlueNRG test app for STM32L1\n");
 
-  let _spi_clock = pin::Pin::new(pin::PortB, 3,
-    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::Medium),
-    pin::PullDown);
+  let _spi_clock = pin::Pin::new(pin::Port::PortB, 3,
+    pin::Mode::AltFunction(pin::AltMode::AfSpi1_Spi2, pin::OutputType::OutPushPull, pin::Speed::Medium),
+    pin::PullType::PullDown);
 
-  let _spi_in = pin::Pin::new(pin::PortA, 6,
-    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::Medium),
-    pin::PullNone);
+  let _spi_in = pin::Pin::new(pin::Port::PortA, 6,
+    pin::Mode::AltFunction(pin::AltMode::AfSpi1_Spi2, pin::OutputType::OutPushPull, pin::Speed::Medium),
+    pin::PullType::PullNone);
 
-  let _spi_out = pin::Pin::new(pin::PortA, 7,
-    pin::AltFunction(pin::AfSpi1_Spi2, pin::OutPushPull, pin::Medium),
-    pin::PullNone);
+  let _spi_out = pin::Pin::new(pin::Port::PortA, 7,
+    pin::Mode::AltFunction(pin::AltMode::AfSpi1_Spi2, pin::OutputType::OutPushPull, pin::Speed::Medium),
+    pin::PullType::PullNone);
 
-  let spi_csn = pin::Pin::new(pin::PortA, 1,
-    pin::GpioOut(pin::OutPushPull, pin::Medium),
-    pin::PullUp);
+  let spi_csn = pin::Pin::new(pin::Port::PortA, 1,
+    pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::Medium),
+    pin::PullType::PullUp);
   spi_csn.set_high();
 
-  let spi = spi::Spi::new(spi::Spi1, spi::Direction::FullDuplex,
+  let spi = spi::Spi::new(spi::Peripheral::Spi1, spi::Direction::FullDuplex,
     spi::Role::Master, spi::DataSize::U8, spi::DataFormat::MsbFirst, 1).
     unwrap_or_else(|_| {
       let _ = write!(&mut uart, "SPI failed to initialize");
       abort()
     });
 
-  let bnrg_reset = pin::Pin::new(pin::PortA, 8,
-    pin::GpioOut(pin::OutPushPull, pin::VeryLow),
-    pin::PullUp);
+  let bnrg_reset = pin::Pin::new(pin::Port::PortA, 8,
+    pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
+    pin::PullType::PullUp);
 
   bnrg_reset.set_low();
   let _ = write!(&mut uart, "SPI created, status = {}\n",

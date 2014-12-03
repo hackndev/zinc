@@ -90,7 +90,7 @@ impl<'a> BuildUnionTypes<'a> {
 fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
                    -> P<ast::Ty> {
   let base_ty_path = cx.path_ident(DUMMY_SP, utils::path_ident(cx, path));
-  let base_ty: P<ast::Ty> = cx.ty_path(base_ty_path, None);
+  let base_ty: P<ast::Ty> = cx.ty_path(base_ty_path);
   match reg.count.node {
     1 => base_ty,
     n =>
@@ -140,7 +140,7 @@ impl<'a> BuildUnionTypes<'a> {
         let u8_path = self.cx.path_ident(
           DUMMY_SP,
           self.cx.ident_of("u8"));
-        let u8_ty: P<ast::Ty> = self.cx.ty_path(u8_path, None);
+        let u8_ty: P<ast::Ty> = self.cx.ty_path(u8_path);
         let ty: P<ast::Ty> =
           self.cx.ty(
             DUMMY_SP,
