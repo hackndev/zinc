@@ -31,6 +31,7 @@ pub use self::AttributeType::*;
 #[deriving(Clone)]
 pub enum AttributeValue {
   IntValue(uint),
+  BoolValue(bool),
   StrValue(String),
   RefValue(String),
 }
@@ -41,6 +42,7 @@ pub enum AttributeValue {
 /// attribute.
 pub enum AttributeType {
   IntAttribute,
+  BoolAttribute,
   StrAttribute,
   RefAttribute,
 }
@@ -286,6 +288,15 @@ impl Node {
     })
   }
 
+  /// Returns a bool attribute by name or None, if it's not present or not
+  /// of an BoolAttribute type.
+  pub fn get_bool_attr(&self, key: &str) -> Option<bool> {
+    self.attributes.borrow().get(&key.to_string()).and_then(|av| match av.value {
+      BoolValue(ref b) => Some(*b),
+      _ => None,
+    })
+  }
+
   /// Returns a reference attribute by name or None, if it's not present or not
   /// of a RefAttribute type.
   pub fn get_ref_attr(&self, key: &str) -> Option<String> {
@@ -321,6 +332,22 @@ impl Node {
       None => {
         cx.parse_sess().span_diagnostic.span_err(self.name_span,
             format!("required integer attribute `{}` is missing", key)
+            .as_slice());
+        None
+      }
+    }
+  }
+
+  /// Returns a boolean attribute by name or None if it's not present or not
+  /// of an BoolAttribute type. Reports a parser error if an attribute is
+  /// missing.
+  pub fn get_required_bool_attr(&self, cx: &ExtCtxt, key: &str)
+      -> Option<bool> {
+    match self.get_bool_attr(key) {
+      Some(val) => Some(val),
+      None => {
+        cx.parse_sess().span_diagnostic.span_err(self.name_span,
+            format!("required boolean attribute `{}` is missing", key)
             .as_slice());
         None
       }
@@ -379,6 +406,9 @@ impl Node {
         },
         &IntAttribute => {
           if self.get_required_int_attr(cx, n).is_none() {ok = false}
+        },
+        &BoolAttribute => {
+          if self.get_required_bool_attr(cx, n).is_none() {ok = false}
         },
         &RefAttribute => {
           if self.get_required_ref_attr(cx, n).is_none() {ok = false}

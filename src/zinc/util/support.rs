@@ -93,3 +93,11 @@ pub fn wfi() {
 /// WFI instruction (mock)
 pub fn wfi() {
 }
+
+/// Hack to get a static 'ioreg' reference from a raw pointer to the register
+/// base
+pub fn get_reg_ref<T>(t: *const T) -> &'static T {
+  unsafe {
+    &*t
+  }
+}

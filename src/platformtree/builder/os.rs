@@ -108,6 +108,9 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       node::IntValue(i) =>
         (cx.ty_ident(DUMMY_SP, cx.ident_of("u32")),
             quote_expr!(&*cx, $i)),
+      node::BoolValue(b) =>
+        (cx.ty_ident(DUMMY_SP, cx.ident_of("bool")),
+            quote_expr!(&*cx, $b)),
       node::StrValue(ref string)  => {
         let static_lifetime = cx.lifetime(DUMMY_SP, intern("'static"));
         let val_slice = string.as_slice();
