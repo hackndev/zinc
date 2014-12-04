@@ -14,3 +14,4 @@ env:
     - PLATFORM=stm32f4
     - PLATFORM=stm32l1
     - PLATFORM=k20
+    - PLATFORM=tiva_c
