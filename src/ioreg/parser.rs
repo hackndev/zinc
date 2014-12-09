@@ -174,10 +174,10 @@ impl<'a> Parser<'a> {
     }
 
     let ty = match self.expect_ident() {
-      Some(ref i) if i.equiv(&"reg32") => RegType::RegPrim(node::RegWidth::Reg32, Vec::new()),
-      Some(ref i) if i.equiv(&"reg16") => RegType::RegPrim(node::RegWidth::Reg16, Vec::new()),
-      Some(ref i) if i.equiv(&"reg8")  => RegType::RegPrim(node::RegWidth::Reg8, Vec::new()),
-      Some(ref i) if i.equiv(&"group") => {
+      Some(ref i) if i.eq(&"reg32") => RegType::RegPrim(node::RegWidth::Reg32, Vec::new()),
+      Some(ref i) if i.eq(&"reg16") => RegType::RegPrim(node::RegWidth::Reg16, Vec::new()),
+      Some(ref i) if i.eq(&"reg8")  => RegType::RegPrim(node::RegWidth::Reg8, Vec::new()),
+      Some(ref i) if i.eq(&"group") => {
         // registers will get filled in later
         RegType::RegUnion(Rc::new(Vec::new()))
       },
@@ -348,10 +348,10 @@ impl<'a> Parser<'a> {
         match self.token.clone() {
           ref t@token::Ident(_,_) => {
             match pprust::token_to_string(t) {
-              ref s if s.equiv(&"rw") => { self.bump(); node::Access::ReadWrite },
-              ref s if s.equiv(&"ro") => { self.bump(); node::Access::ReadOnly  },
-              ref s if s.equiv(&"wo") => { self.bump(); node::Access::WriteOnly },
-              ref s if s.equiv(&"set_to_clear") => { self.bump(); node::Access::SetToClear },
+              ref s if s.eq(&"rw") => { self.bump(); node::Access::ReadWrite },
+              ref s if s.eq(&"ro") => { self.bump(); node::Access::ReadOnly  },
+              ref s if s.eq(&"wo") => { self.bump(); node::Access::WriteOnly },
+              ref s if s.eq(&"set_to_clear") => { self.bump(); node::Access::SetToClear },
               s => {
                 self.error(format!("Expected access type, saw `{}`", s));
                 return None;
