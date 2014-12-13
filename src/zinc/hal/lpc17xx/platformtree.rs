@@ -131,7 +131,7 @@ mod test {
                 use zinc::hal::lpc17xx::system_clock;
                 system_clock::init_clock(&system_clock::Clock{
                   source: system_clock::ClockSource::Main(12000000),
-                  pll: core::option::Some(system_clock::PLL0{
+                  pll: core::option::Option::Some(system_clock::PLL0{
                     m: 50u8,
                     n: 3u8,
                     divisor: 4u8,
@@ -144,12 +144,12 @@ mod test {
                 zinc::hal::lpc17xx::pin::Port::Port0,
                 2u8,
                 zinc::hal::lpc17xx::pin::Function::AltFunction1,
-                core::option::None);
+                core::option::Option::None);
             let uart_rx = zinc::hal::lpc17xx::pin::Pin::new(
                 zinc::hal::lpc17xx::pin::Port::Port0,
                 3u8,
                 zinc::hal::lpc17xx::pin::Function::AltFunction1,
-                core::option::None);
+                core::option::Option::None);
             let uart = zinc::hal::lpc17xx::uart::UART::new(
                 zinc::hal::lpc17xx::uart::UARTPeripheral::UART0,
                 115200u32,
@@ -160,7 +160,7 @@ mod test {
                 zinc::hal::lpc17xx::pin::Port::Port1,
                 23u8,
                 zinc::hal::lpc17xx::pin::Function::Gpio,
-                core::option::Some(zinc::hal::pin::Out));
+                core::option::Option::Some(zinc::hal::pin::Out));
             loop {
               run(&pt::run_args{
                 timer: &timer,

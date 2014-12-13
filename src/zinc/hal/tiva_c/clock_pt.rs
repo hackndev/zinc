@@ -41,7 +41,7 @@ fn build_clock(builder: &mut Builder,
   let ex = quote_expr!(&*cx,
       {
         use zinc::hal::tiva_c::sysctl::clock;
-        use core::option::Some;
+        use core::option::Option::Some;
 
         clock::sysclk_configure(
           zinc::hal::tiva_c::sysctl::clock::ClockSource::$source,

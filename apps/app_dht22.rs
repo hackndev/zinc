@@ -6,7 +6,7 @@ extern crate core;
 extern crate zinc;
 #[phase(plugin)] extern crate macro_platformtree;
 
-use core::option::{Some, None};
+use core::option::Option::{Some, None};
 
 platformtree!(
   lpc17xx@mcu {

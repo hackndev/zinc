@@ -19,7 +19,7 @@ pub unsafe fn main() {
     ahb_shift: 0,
     apb1_shift: 0,
     apb2_shift: 0,
-    mco: option::None,
+    mco: option::Option::None,
   };
   sys_clock.setup();
 
