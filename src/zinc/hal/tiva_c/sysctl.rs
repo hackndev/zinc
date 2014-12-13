@@ -14,6 +14,7 @@
 // limitations under the License.
 
 //! Low level system control (PLL, clock gating, ...)
+use core::kinds::Copy;
 
 use util::support::get_reg_ref;
 
@@ -245,6 +246,8 @@ pub mod clock {
     div_freq / sysdiv as uint
   }
 }
+
+impl Copy for clock::ClockSource {}
 
 pub mod periph {
   //! peripheral system control

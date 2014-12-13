@@ -22,6 +22,8 @@
 use core::default;
 use core::intrinsics::abort;
 use core::option::Option;
+use core::kinds::Copy;
+
 use self::MsiSpeed::*;
 use self::SystemClockSource::*;
 
@@ -35,6 +37,8 @@ pub enum PllClockSource {
   /// Takes base clock from HSE.
   PllSourceHSE = 1,
 }
+
+impl Copy for PllClockSource {}
 
 /// PLL multiplier: 3, 4, 6, 8, 12, 16, 24, 32, 48
 pub type PllMultiplier = u8;
@@ -60,6 +64,8 @@ pub enum MsiSpeed {
   /// 4.194 MHz
   Msi4194 = 6,
 }
+
+impl Copy for MsiSpeed {}
 
 /// System clock source.
 pub enum SystemClockSource {
@@ -97,6 +103,8 @@ impl SystemClockSource {
   }
 }
 
+impl Copy for SystemClockSource {}
+
 #[allow(missing_docs)]
 #[repr(u8)]
 pub enum McoSource {
@@ -109,6 +117,8 @@ pub enum McoSource {
   McoClockLSE = 7,
 }
 
+impl Copy for McoSource {}
+
 /// Microchip clock output configuration.
 pub struct McoConfig {
   /// MCO clock source
@@ -116,6 +126,8 @@ pub struct McoConfig {
   /// Log2(divisor) for MCO.
   clock_shift: u8,
 }
+
+impl Copy for McoConfig {}
 
 /// System clock configuration.
 pub struct ClockConfig {
@@ -130,6 +142,8 @@ pub struct ClockConfig {
   /// Microchip clock output.
   pub mco : Option<McoConfig>,
 }
+
+impl Copy for ClockConfig {}
 
 impl default::Default for ClockConfig {
   fn default() -> ClockConfig {

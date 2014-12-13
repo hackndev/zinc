@@ -21,6 +21,7 @@ on the package.
 */
 
 use core::option::Option;
+use core::kinds::Copy;
 
 use super::sim;
 
@@ -47,6 +48,8 @@ pub enum Port {
   PortE = 5,
 }
 
+impl Copy for Port {}
+
 /// Pin functions (GPIO or up to seven additional functions).
 #[deriving(PartialEq)]
 #[allow(missing_docs)]
@@ -60,6 +63,8 @@ pub enum Function {
   AltFunction6 = 6,
   AltFunction7 = 7,
 }
+
+impl Copy for Function {}
 
 /// Pull-up/-down configuration.
 #[allow(missing_docs)]

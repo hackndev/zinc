@@ -17,6 +17,7 @@
 
 use core::result::Result;
 use core::result::Result::{Ok, Err};
+use core::kinds::Copy;
 
 #[path="../../util/wait_for.rs"] mod wait_for;
 
@@ -49,6 +50,8 @@ pub enum Role {
   Slave = 0,
   Master = 1,
 }
+
+impl Copy for Role {}
 
 #[allow(missing_docs)]
 #[repr(u8)]
