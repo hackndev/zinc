@@ -18,7 +18,8 @@ Universal synchronous asynchronous receiver transmitter (USART).
 
 */
 
-use core::{fmt, result};
+use core::fmt;
+use core::result::Result;
 use core::intrinsics::abort;
 
 use drivers::chario::CharIO;
@@ -132,7 +133,7 @@ impl fmt::FormatWriter for Usart {
       wait_for!(self.reg.sr.transmit_data_empty());
       self.reg.dr.set_data(*b as u16);
     }
-    result::Ok(())
+    Result::Ok(())
   }
 }
 

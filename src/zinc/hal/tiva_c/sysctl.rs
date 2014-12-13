@@ -25,7 +25,8 @@ fn sysctl_get() -> &'static reg::SysCtl {
 
 pub mod clock {
   //! Clock tree configuration
-  use core::option::{Option, Some, None};
+  use core::option::Option;
+  use core::option::Option::{Some, None};
   use core::num::from_u32;
 
   /// Clock sources available on the system. The values are the RCC/RCC2 OSCSRC

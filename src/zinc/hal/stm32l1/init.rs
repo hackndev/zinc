@@ -21,7 +21,7 @@
 //use hal::mem_init::init_data;
 use core::default;
 use core::intrinsics::abort;
-use core::option;
+use core::option::Option;
 use self::MsiSpeed::*;
 use self::SystemClockSource::*;
 
@@ -128,7 +128,7 @@ pub struct ClockConfig {
   /// Log2(divisor) for Apb2 bus.
   pub apb2_shift : u8,
   /// Microchip clock output.
-  pub mco : option::Option<McoConfig>,
+  pub mco : Option<McoConfig>,
 }
 
 impl default::Default for ClockConfig {
@@ -138,7 +138,7 @@ impl default::Default for ClockConfig {
       ahb_shift: 0,
       apb1_shift: 0,
       apb2_shift: 0,
-      mco: option::None,
+      mco: Option::None,
     }
   }
 }
@@ -204,14 +204,14 @@ impl ClockConfig {
     r.cfgr.set_apb2_prescaler(self.apb2_shift as u32);
 
     match self.mco {
-      option::Some(mco) => {
+      Option::Some(mco) => {
         if mco.clock_shift > 4 {
             unsafe { abort() } // not supported
         }
         r.cfgr.set_mco(mco.source as u32);
         r.cfgr.set_mco_prescaler(mco.clock_shift as u32);
       },
-      option::None => {
+      Option::None => {
         r.cfgr.set_mco(0);
       },
     }

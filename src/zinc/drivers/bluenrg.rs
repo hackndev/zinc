@@ -16,7 +16,8 @@
 //! BlueNRG low-level SPI communication.
 // http://www.st.com/st-web-ui/static/active/en/resource/technical/document/user_manual/DM00114498.pdf
 
-use core::result::{Result, Ok, Err};
+use core::result::Result::{Ok, Err};
+use core::result::Result;
 use core::slice::SlicePrelude;
 
 use hal::pin::Gpio;

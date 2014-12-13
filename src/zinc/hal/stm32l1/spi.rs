@@ -15,7 +15,8 @@
 
 //! Serial Peripheral Interface for STM32L1.
 
-use core::result;
+use core::result::Result;
+use core::result::Result::{Ok, Err};
 
 #[path="../../util/wait_for.rs"] mod wait_for;
 
@@ -97,7 +98,7 @@ impl Spi {
   /// Create a new SPI port.
   pub fn new(peripheral: Peripheral, direction: Direction,
              role: Role, data_size: DataSize, format: DataFormat,
-             prescaler_shift: u8) -> result::Result<Spi, Error> {
+             prescaler_shift: u8) -> Result<Spi, Error> {
     use hal::stm32l1::peripheral_clock as clock;
 
     let (reg, clock) = match peripheral {
@@ -126,7 +127,7 @@ impl Spi {
 
     // set baud rate
     if prescaler_shift<1 || prescaler_shift>8 {
-      return result::Err(Error::BaudRate)
+      return Err(Error::BaudRate)
     }
     reg.cr1.set_baud_rate(prescaler_shift as u16 - 1);
 
@@ -139,10 +140,10 @@ impl Spi {
     reg.crc.set_polynomial(0); //TODO
 
     if reg.sr.mode_fault() {
-      result::Err(Error::Mode)
+      Err(Error::Mode)
     }else {
       reg.cr1.set_spi_enable(true);
-      result::Ok(Spi {
+      Ok(Spi {
         reg: reg,
       })
     }
