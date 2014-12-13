@@ -5,7 +5,7 @@
 extern crate core;
 extern crate zinc;
 
-use core::option::Some;
+use core::option::Option::Some;
 use zinc::hal::k20::{pin, watchdog};
 use zinc::hal::pin::Gpio;
 use zinc::hal::cortex_m4::systick;
