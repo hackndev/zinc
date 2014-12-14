@@ -174,3 +174,6 @@ mod test {
     }
   )
 }
+
+impl Copy for test::BASIC_TEST {}
+impl Copy for test::GAP_TEST {}
