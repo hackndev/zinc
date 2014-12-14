@@ -55,12 +55,12 @@ pub fn doc_attribute(cx: &ExtCtxt, docstring: token::InternedString)
   cx.attribute(DUMMY_SP, attr)
 }
 
-pub fn primitive_type_path(cx: &ExtCtxt, width: node::RegWidth)
+pub fn primitive_type_path(cx: &ExtCtxt, width: &node::RegWidth)
                            -> ast::Path {
   let name = match width {
-    node::RegWidth::Reg8  => "u8",
-    node::RegWidth::Reg16 => "u16",
-    node::RegWidth::Reg32 => "u32",
+    &node::RegWidth::Reg8  => "u8",
+    &node::RegWidth::Reg16 => "u16",
+    &node::RegWidth::Reg32 => "u32",
   };
   cx.path_ident(DUMMY_SP, cx.ident_of(name))
 }
@@ -70,7 +70,7 @@ pub fn primitive_type_path(cx: &ExtCtxt, width: node::RegWidth)
 pub fn reg_primitive_type_path(cx: &ExtCtxt, reg: &node::Reg)
                                -> Option<ast::Path> {
   match reg.ty {
-    node::RegType::RegPrim(width, _) => Some(primitive_type_path(cx, width)),
+    node::RegType::RegPrim(ref width, _) => Some(primitive_type_path(cx, width)),
     _ => None,
   }
 }
@@ -87,7 +87,7 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
   match field.ty.node {
     node::FieldType::UIntField => {
       match reg.ty {
-        node::RegType::RegPrim(width, _) => primitive_type_path(cx, width),
+        node::RegType::RegPrim(ref width, _) => primitive_type_path(cx, width),
         _  => panic!("The impossible happened: a union register with fields"),
       }
     },

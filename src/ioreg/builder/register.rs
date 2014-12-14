@@ -35,7 +35,7 @@ pub struct BuildRegStructs<'a> {
 
 impl<'a> node::RegVisitor for BuildRegStructs<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
-                    width: node::RegWidth, fields: &Vec<node::Field>) {
+                    width: &node::RegWidth, fields: &Vec<node::Field>) {
     for field in fields.iter() {
       match build_field_type(self.cx, path, reg, field) {
         Some(item) => self.builder.push_item(item),
@@ -96,7 +96,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
 ///
 ///     pub struct REG {_value: u32}
 fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
-    reg: &node::Reg, _width: node::RegWidth) -> P<ast::Item> {
+    reg: &node::Reg, _width: &node::RegWidth) -> P<ast::Item> {
   let packed_ty =
     utils::reg_primitive_type(cx, reg)
     .expect("Unexpected non-primitive reg");

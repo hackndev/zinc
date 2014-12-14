@@ -58,11 +58,11 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 
   let direction_str = if node.get_string_attr("function").is_some() {
-    "core::option::None"
+    "core::option::Option::None"
   } else {
     match node.get_string_attr("direction").unwrap().as_slice() {
-      "out" => "core::option::Some(zinc::hal::pin::Out)",
-      "in"  => "core::option::Some(zinc::hal::pin::In)",
+      "out" => "core::option::Option::Some(zinc::hal::pin::Out)",
+      "in"  => "core::option::Option::Some(zinc::hal::pin::In)",
       other => {
         let attr = node.get_attr("direction");
         cx.parse_sess().span_diagnostic.span_err(attr.value_span,
@@ -157,7 +157,7 @@ mod test {
                zinc::hal::lpc17xx::pin::Port::Port0,
                1u8,
                zinc::hal::lpc17xx::pin::Function::Gpio,
-               core::option::Some(zinc::hal::pin::In));");
+               core::option::Option::Some(zinc::hal::pin::In));");
     });
   }
 
@@ -179,7 +179,7 @@ mod test {
                zinc::hal::lpc17xx::pin::Port::Port0,
                2u8,
                zinc::hal::lpc17xx::pin::Function::Gpio,
-               core::option::Some(zinc::hal::pin::Out));");
+               core::option::Option::Some(zinc::hal::pin::Out));");
     });
   }
 
@@ -201,7 +201,7 @@ mod test {
                zinc::hal::lpc17xx::pin::Port::Port0,
                3u8,
                zinc::hal::lpc17xx::pin::Function::AltFunction2,
-               core::option::None);");
+               core::option::Option::None);");
     });
   }
 }

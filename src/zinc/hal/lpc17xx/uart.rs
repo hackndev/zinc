@@ -21,6 +21,7 @@ than other UARTs in MCU).
 */
 
 use core::intrinsics::abort;
+use core::kinds::Copy;
 
 use hal::lpc17xx::peripheral_clock::PeripheralClock;
 use hal::lpc17xx::peripheral_clock::PeripheralClock::UART0Clock;
@@ -146,6 +147,8 @@ impl UARTPeripheral {
     }
   }
 }
+
+impl Copy for UARTPeripheral {}
 
 impl UART {
   /// Create ans setup a UART.

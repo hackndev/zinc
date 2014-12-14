@@ -40,7 +40,7 @@ impl<'a> BuildSetters<'a> {
 
 impl<'a> node::RegVisitor for BuildSetters<'a> {
   fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>,
-      reg: &'a node::Reg, _width: node::RegWidth, fields: &Vec<node::Field>)
+      reg: &'a node::Reg, _width: &node::RegWidth, fields: &Vec<node::Field>)
   {
     if fields.iter().any(|f| f.access != node::Access::ReadOnly) {
       let it = build_type(self.cx, path, reg, fields);

@@ -197,6 +197,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
 fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
   let mut lifetimes = vec!();
   let mut types = vec!();
+  let mut bindings = vec!();
   for p in params.iter() {
     let slice = p.as_slice();
     if slice.starts_with("'") {
@@ -210,7 +211,8 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
   cx.path_all(DUMMY_SP, false,
       ty.split_str("::").map(|t| cx.ident_of(t)).collect(),
       lifetimes,
-      types)
+      types,
+      bindings)
 }
 
 #[cfg(test)]

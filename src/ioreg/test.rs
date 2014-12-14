@@ -35,7 +35,7 @@ mod test {
     }
   }
 
-  fn zeroed_safe<T: Copy>() -> T {
+  fn zeroed_safe<T>() -> T {
     unsafe {
       return zeroed();
     }

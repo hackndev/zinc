@@ -33,7 +33,7 @@ pub struct BuildAccessors<'a> {
 
 impl<'a> node::RegVisitor for BuildAccessors<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
-                    _width: node::RegWidth, fields: &Vec<node::Field>) {
+                    _width: &node::RegWidth, fields: &Vec<node::Field>) {
     if fields.iter().any(|f| f.access != node::Access::WriteOnly) {
       let item = build_get_fn(self.cx, path, reg);
       self.builder.push_item(item);

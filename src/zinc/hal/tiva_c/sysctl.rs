@@ -14,6 +14,7 @@
 // limitations under the License.
 
 //! Low level system control (PLL, clock gating, ...)
+use core::kinds::Copy;
 
 use util::support::get_reg_ref;
 
@@ -25,7 +26,8 @@ fn sysctl_get() -> &'static reg::SysCtl {
 
 pub mod clock {
   //! Clock tree configuration
-  use core::option::{Option, Some, None};
+  use core::option::Option;
+  use core::option::Option::{Some, None};
   use core::num::from_u32;
 
   /// Clock sources available on the system. The values are the RCC/RCC2 OSCSRC
@@ -244,6 +246,8 @@ pub mod clock {
     div_freq / sysdiv as uint
   }
 }
+
+impl Copy for clock::ClockSource {}
 
 pub mod periph {
   //! peripheral system control

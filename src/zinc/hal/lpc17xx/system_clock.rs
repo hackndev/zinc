@@ -19,8 +19,8 @@ MCU initialication and clock configuration.
 This module includes code for setting up the clock, flash, access time and
 performing initial peripheral configuration.
 */
-
-use core::option::{Option, Some, None};
+use core::option::Option;
+use core::option::Option::{Some, None};
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
@@ -88,7 +88,7 @@ pub fn init_clock(clock: &Clock) {
       }
       dst_clock = (src_clock * pll.m as u32 * 2) / pll.n as u32 / pll.divisor as u32;
       init_flash_access(dst_clock);
-      init_pll(pll, clock.source);
+      init_pll(pll, &clock.source);
     },
     None => { dst_clock = src_clock; },
   }
@@ -130,12 +130,12 @@ fn write_pll0_changes() {
 }
 
 #[inline(always)]
-fn init_pll(pll: &PLL0, source: ClockSource) {
+fn init_pll(pll: &PLL0, source: &ClockSource) {
   use self::ClockSource::*;
   match source {
-    Internal => reg::CLKSRCSEL.set_value(0),
-    Main(_)  => reg::CLKSRCSEL.set_value(1),
-    RTC =>      reg::CLKSRCSEL.set_value(2),
+    &Internal => reg::CLKSRCSEL.set_value(0),
+    &Main(_)  => reg::CLKSRCSEL.set_value(1),
+    &RTC =>      reg::CLKSRCSEL.set_value(2),
   }
 
   let val: u32 = ((pll.n as u32 - 1) << 16) | ((pll.m as u32 - 1) << 0);

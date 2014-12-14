@@ -20,6 +20,8 @@
 
 use super::peripheral_clock;
 use core::intrinsics::abort;
+use core::kinds::Copy;
+
 use self::Port::*;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
@@ -47,6 +49,8 @@ pub enum Function {
   Analog      = 3,
 }
 
+impl Copy for Function {}
+
 impl Port {
   fn clock(self) -> peripheral_clock::PeripheralClock {
     use hal::stm32f4::peripheral_clock::PeripheralClock::*;
@@ -64,6 +68,8 @@ impl Port {
   }
 }
 
+impl Copy for Port {}
+
 /// Pin configuration.
 ///
 /// This structure shouldn't be used directly, pinmap.rs, available via pin::map
@@ -76,6 +82,8 @@ pub struct PinConf {
   /// Pin function, mcu-specific.
   pub function: Function,
 }
+
+impl Copy for PinConf {}
 
 impl PinConf {
   /// Setup the pin.

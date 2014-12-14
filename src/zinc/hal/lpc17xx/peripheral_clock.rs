@@ -24,6 +24,7 @@ use core::intrinsics::abort;
 use super::system_clock::system_clock;
 use self::PeripheralClock::*;
 use self::PeripheralDivisor::*;
+use core::kinds::Copy;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 
@@ -63,6 +64,8 @@ pub enum PeripheralClock {
   ENETClock  = 30,
   USBClock   = 31,
 }
+
+impl Copy for PeripheralClock {}
 
 /// Configures the divisor of peripheral clock based on core clock.
 #[allow(missing_docs)]
