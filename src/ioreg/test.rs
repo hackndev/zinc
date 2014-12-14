@@ -35,7 +35,7 @@ mod test {
     }
   }
 
-  fn zeroed_safe<T: Copy>() -> T {
+  fn zeroed_safe<T>() -> T {
     unsafe {
       return zeroed();
     }
@@ -174,6 +174,3 @@ mod test {
     }
   )
 }
-
-impl Copy for test::BASIC_TEST {}
-impl Copy for test::GAP_TEST {}
