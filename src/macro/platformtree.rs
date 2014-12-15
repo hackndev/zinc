@@ -97,7 +97,8 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
                   vec!(),
                   ty_params.iter().map(|ty| {
                     cx.ty_path(cx.path_ident(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice())))
-                  }).collect())),
+                  }).collect(),
+                  vec!())),
           None,
           ast::MutImmutable));
       let new_decl = P(ast::FnDecl {
