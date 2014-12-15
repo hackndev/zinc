@@ -105,7 +105,12 @@ impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
   fn visit_union_reg<'a>(&'a mut self, path: &Vec<String>, reg: &'a node::Reg,
                          subregs: Rc<Vec<node::Reg>>) {
     let union_type = self.build_union_type(path, reg, &*subregs);
+    let ty_name = union_type.ident.clone();
     self.builder.push_item(union_type);
+
+    let copy_impl = quote_item!(self.cx,
+                                impl ::core::kinds::Copy for $ty_name {});
+    self.builder.push_item(copy_impl.unwrap());
   }
 }
 
