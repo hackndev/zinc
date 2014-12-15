@@ -40,7 +40,7 @@ pub enum FieldType {
   },
 }
 
-#[deriving(PartialEq, Eq, Clone, Decodable, Encodable)]
+#[deriving(Copy, PartialEq, Eq, Clone, Decodable, Encodable)]
 pub enum Access {
   ReadWrite,
   ReadOnly,
@@ -71,7 +71,7 @@ impl Field {
   }
 }
 
-#[deriving(Clone, Decodable, Encodable)]
+#[deriving(Copy, Clone, Decodable, Encodable)]
 pub enum RegWidth {
   /// A 32-bit wide register
   Reg32,
