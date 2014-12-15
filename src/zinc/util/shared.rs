@@ -53,7 +53,7 @@ impl<T> Shared<T> {
 }
 
 impl<'a, T> Deref<T> for SharedRef<'a, T> {
-  fn deref<'a>(&'a self) -> &'a T {
+  fn deref<'b>(&'b self) -> &'b T {
     unsafe {
       &*self.ptr.value.get()
     }
@@ -61,7 +61,7 @@ impl<'a, T> Deref<T> for SharedRef<'a, T> {
 }
 
 impl<'a, T> DerefMut<T> for SharedRef<'a, T> {
-  fn deref_mut<'a>(&'a mut self) -> &'a mut T {
+  fn deref_mut<'b>(&'b mut self) -> &'b mut T {
     unsafe {
       &mut *self.ptr.value.get()
     }

@@ -52,7 +52,7 @@ pub enum Font {
 
 impl<'a> Hd44780u<'a> {
   /// Construct an Hd44780u instance
-  pub fn new<'a>(timer: &'a (Timer + 'a),
+  pub fn new(timer: &'a (Timer + 'a),
                  rs:    &'a (Gpio  + 'a),
                  en:    &'a (Gpio  + 'a),
                  data: [&'a (Gpio  + 'a), ..4]) -> Hd44780u<'a> {
