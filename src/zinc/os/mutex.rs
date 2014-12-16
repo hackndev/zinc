@@ -143,8 +143,7 @@ mod internal {
 #[cfg(not(multitasking))]
 mod internal {
   use core::kinds::Sync;
-  use core::option::Option::{None, Some};
-  use core::option::Option;
+  use core::option::Option::{mod, None, Some};
   use core::ops::Drop;
   use core::intrinsics::abort;
   use core::cell::UnsafeCell;

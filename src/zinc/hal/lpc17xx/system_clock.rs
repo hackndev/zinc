@@ -19,8 +19,8 @@ MCU initialication and clock configuration.
 This module includes code for setting up the clock, flash, access time and
 performing initial peripheral configuration.
 */
-use core::option::Option;
-use core::option::Option::{Some, None};
+
+use core::option::Option::{mod, Some, None};
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
