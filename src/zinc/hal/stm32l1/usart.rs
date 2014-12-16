@@ -128,7 +128,7 @@ impl CharIO for Usart {
 
 impl fmt::FormatWriter for Usart {
   fn write(&mut self, bytes: &[u8]) -> fmt::Result {
-    use core::slice::SlicePrelude;
+    use core::slice::SliceExt;
     for b in bytes.iter() {
       wait_for!(self.reg.sr.transmit_data_empty());
       self.reg.dr.set_data(*b as u16);

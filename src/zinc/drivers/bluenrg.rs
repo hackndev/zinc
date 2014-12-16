@@ -18,7 +18,7 @@
 
 use core::result::Result::{Ok, Err};
 use core::result::Result;
-use core::slice::SlicePrelude;
+use core::slice::SliceExt;
 
 use hal::pin::Gpio;
 use hal::spi::Spi;
