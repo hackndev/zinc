@@ -40,6 +40,7 @@ pub enum AttributeValue {
 ///
 /// Used in Node::expect_attributes to provide the expected type of the
 /// attribute.
+#[deriving(Copy)]
 pub enum AttributeType {
   IntAttribute,
   BoolAttribute,
