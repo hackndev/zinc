@@ -40,6 +40,7 @@ pub enum AttributeValue {
 ///
 /// Used in Node::expect_attributes to provide the expected type of the
 /// attribute.
+#[deriving(Copy)]
 pub enum AttributeType {
   IntAttribute,
   BoolAttribute,
@@ -261,7 +262,7 @@ impl Node {
       Some(ref parent) => parent.clone().upgrade().unwrap().full_path() + "::",
       None => "".to_string(),
     };
-    pp + self.path
+    pp + self.path.as_slice()
   }
 
   /// Returns attribute by name or panic!()s.

@@ -20,6 +20,7 @@
 //! Note: this module is used as part of initial setup if PLL is used.
 
 use super::init::reg;
+use core::kinds::Copy;
 
 use self::PeripheralClock::*;
 
@@ -102,6 +103,8 @@ pub enum PeripheralClock {
   TIM10Clock,
   TIM11Clock,
 }
+
+impl Copy for PeripheralClock {}
 
 impl PeripheralClock {
   /// Enables the given peripheral clock.

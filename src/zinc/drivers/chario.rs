@@ -16,7 +16,7 @@
 //! Generic char output trait.
 
 use core::str::{Str, StrPrelude};
-use core::slice::SlicePrelude;
+use core::slice::SliceExt;
 use core::iter::range;
 
 use core::mem::zeroed;

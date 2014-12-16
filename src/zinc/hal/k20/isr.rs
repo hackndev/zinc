@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use core::option::{Option, Some, None};
+use core::option::Option::{mod, Some, None};
 
 extern {
   fn isr_dma_0();

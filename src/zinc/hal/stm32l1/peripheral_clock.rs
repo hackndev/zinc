@@ -20,6 +20,7 @@
 //! Note: this module is used as part of initial setup if PLL is used.
 
 use super::init::{ClockConfig, reg};
+use core::kinds::Copy;
 
 pub use self::PeripheralClock::*;
 
@@ -44,6 +45,8 @@ pub enum BusAhb {
   Aes,
   Fsmc,
 }
+
+impl Copy for BusAhb {}
 
 impl BusAhb {
   fn to_reg_bit(self) -> u32 {
@@ -137,6 +140,8 @@ impl BusApb1 {
   }
 }
 
+impl Copy for BusApb1 {}
+
 #[allow(missing_docs)]
 #[repr(u8)]
 pub enum BusApb2 {
@@ -174,6 +179,8 @@ impl BusApb2 {
   }
 }
 
+impl Copy for BusApb2 {}
+
 /// Configures the state of peripheral clock.
 ///
 /// This enum contains all available clocks from both AHB and APB.
@@ -183,6 +190,8 @@ pub enum PeripheralClock {
   Apb1(BusApb1),
   Apb2(BusApb2),
 }
+
+impl Copy for PeripheralClock {}
 
 impl PeripheralClock {
   /// Enables the given peripheral clock.

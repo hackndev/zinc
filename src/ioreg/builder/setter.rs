@@ -39,8 +39,8 @@ impl<'a> BuildSetters<'a> {
 }
 
 impl<'a> node::RegVisitor for BuildSetters<'a> {
-  fn visit_prim_reg<'a>(&'a mut self, path: &Vec<String>,
-      reg: &'a node::Reg, _width: node::RegWidth, fields: &Vec<node::Field>)
+  fn visit_prim_reg<'b>(&'b mut self, path: &Vec<String>,
+      reg: &'b node::Reg, _width: &node::RegWidth, fields: &Vec<node::Field>)
   {
     if fields.iter().any(|f| f.access != node::Access::ReadOnly) {
       let it = build_type(self.cx, path, reg, fields);
@@ -51,6 +51,12 @@ impl<'a> node::RegVisitor for BuildSetters<'a> {
 
       let it = build_impl(self.cx, path, reg, fields);
       self.builder.push_item(it);
+
+      // Build Copy impl
+      let ty_name = utils::setter_name(self.cx, path);
+      let it = quote_item!(self.cx,
+                           impl<'a> ::core::kinds::Copy for $ty_name<'a> {});
+      self.builder.push_item(it.unwrap());
     }
   }
 }
@@ -199,7 +205,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   let unpacked_ty = utils::reg_primitive_type(cx, reg)
     .expect("Unexpected non-primitive register");
   let fn_name =
-    cx.ident_of((String::from_str("set_")+field.name.node).as_slice());
+    cx.ident_of((String::from_str("set_")+field.name.node.as_slice()).as_slice());
   let field_ty: P<ast::Ty> =
     cx.ty_path(utils::field_type_path(cx, path, reg, field));
   let mask = utils::mask(cx, field);
@@ -243,7 +249,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
 {
   let setter_ty = utils::setter_name(cx, path);
   let fn_name =
-    cx.ident_of((String::from_str("clear_")+field.name.node).as_slice());
+    cx.ident_of((String::from_str("clear_")+field.name.node.as_slice()).as_slice());
   let mask = utils::mask(cx, field);
 
   let field_doc = match field.docstring {

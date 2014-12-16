@@ -22,7 +22,7 @@ mod internal {
   use core::kinds::marker;
   use core::ty::Unsafe;
   use core::kinds::Sync;
-  use core::option::{Option, None, Some};
+  use core::option::Option::{None, Some};
   use core::ops::Drop;
 
   use hal::cortex_m3::irq::NoInterrupts;
@@ -143,7 +143,7 @@ mod internal {
 #[cfg(not(multitasking))]
 mod internal {
   use core::kinds::Sync;
-  use core::option::{Option, None, Some};
+  use core::option::Option::{mod, None, Some};
   use core::ops::Drop;
   use core::intrinsics::abort;
   use core::cell::UnsafeCell;

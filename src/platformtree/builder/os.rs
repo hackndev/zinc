@@ -210,7 +210,8 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
   cx.path_all(DUMMY_SP, false,
       ty.split_str("::").map(|t| cx.ident_of(t)).collect(),
       lifetimes,
-      types)
+      types,
+      vec!())
 }
 
 #[cfg(test)]

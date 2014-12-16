@@ -97,7 +97,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
         system_clock::init_clock(
             &system_clock::Clock {
               source: $clock_source,
-              pll: core::option::Some(system_clock::PLL0 {
+              pll: core::option::Option::Some(system_clock::PLL0 {
                 m: $pll_m,
                 n: $pll_n,
                 divisor: $pll_divisor,
@@ -137,7 +137,7 @@ mod test {
             system_clock::init_clock(
                 &system_clock::Clock {
                   source: system_clock::ClockSource::Main(12000000),
-                  pll: core::option::Some(system_clock::PLL0 {
+                  pll: core::option::Option::Some(system_clock::PLL0 {
                     m: 50u8,
                     n: 3u8,
                     divisor: 4u8,

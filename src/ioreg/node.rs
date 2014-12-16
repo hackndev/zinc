@@ -40,7 +40,7 @@ pub enum FieldType {
   },
 }
 
-#[deriving(PartialEq, Eq, Clone, Decodable, Encodable)]
+#[deriving(Copy, PartialEq, Eq, Clone, Decodable, Encodable)]
 pub enum Access {
   ReadWrite,
   ReadOnly,
@@ -71,7 +71,7 @@ impl Field {
   }
 }
 
-#[deriving(Clone, Decodable, Encodable)]
+#[deriving(Copy, Clone, Decodable, Encodable)]
 pub enum RegWidth {
   /// A 32-bit wide register
   Reg32,
@@ -104,7 +104,7 @@ impl RegType {
   /// Size of register type in bytes
   pub fn size(&self) -> uint {
     match self {
-      &RegType::RegPrim(width, _)  => width.size(),
+      &RegType::RegPrim(ref width, _)  => width.size(),
       &RegType::RegUnion(ref regs) => regs_size(regs.deref()),
     }
   }
@@ -142,7 +142,7 @@ pub fn regs_size(regs: &Vec<Reg>) -> uint {
 pub trait RegVisitor {
   /// Path includes name of `Reg` being visited
   fn visit_prim_reg<'a>(&'a mut self, _path: &Vec<String>, _reg: &'a Reg,
-                        _width: RegWidth, _fields: &Vec<Field>) {}
+                        _width: &RegWidth, _fields: &Vec<Field>) {}
   fn visit_union_reg<'a>(&'a mut self, _path: &Vec<String>, _reg: &'a Reg,
                          _subregs: Rc<Vec<Reg>>) {}
 }
@@ -161,7 +161,7 @@ fn visit_reg_<T: RegVisitor>(reg: &Reg, visitor: &mut T, path: Vec<String>) {
         visit_reg_(r, visitor, new_path);
       }
     },
-    RegType::RegPrim(width, ref fields) =>
+    RegType::RegPrim(ref width, ref fields) =>
       visitor.visit_prim_reg(&path, reg, width, fields)
   }
 }

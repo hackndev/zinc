@@ -20,6 +20,7 @@
 
 use hal::mem_init::init_data;
 use core::intrinsics::abort;
+use core::kinds::Copy;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
@@ -42,6 +43,8 @@ pub enum PLLClockSource {
   PLLClockHSE(u32),
 }
 
+impl Copy for PLLClockSource {}
+
 /// PLL configuration options.
 ///
 /// Frequency is calculated as
@@ -63,6 +66,8 @@ pub struct PLLConf {
   /// Main PLL division factor for USB, SDIO and RNG.
   pub q: u8,
 }
+
+impl Copy for PLLConf {}
 
 /// MCU clock configuration.
 pub struct ClockConf {

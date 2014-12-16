@@ -40,7 +40,7 @@ impl<'a> BuildGetters<'a> {
 
 impl<'a> node::RegVisitor for BuildGetters<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>,
-                    reg: &node::Reg, _width: node::RegWidth,
+                    reg: &node::Reg, _width: &node::RegWidth,
                     fields: &Vec<node::Field>) {
     if fields.iter().any(|f| f.access != node::Access::WriteOnly) {
       let it = build_type(self.cx, path, reg);
@@ -48,6 +48,12 @@ impl<'a> node::RegVisitor for BuildGetters<'a> {
 
       let it = build_impl(self.cx, path, reg, fields);
       self.builder.push_item(it);
+
+      // Build Copy impl
+      let ty_name = utils::getter_name(self.cx, path);
+      let it = quote_item!(self.cx,
+                           impl ::core::kinds::Copy for $ty_name {});
+      self.builder.push_item(it.unwrap());
     }
   }
 }
@@ -105,11 +111,11 @@ fn from_primitive(cx: &ExtCtxt, reg: &node::Reg,
                      prim, utils::expr_int(cx, 0)),
     node::FieldType::EnumField {..} => {
       let from = match reg.ty {
-        node::RegType::RegPrim(width,_) =>
+        node::RegType::RegPrim(ref width,_) =>
           match width {
-            node::RegWidth::Reg32 => "from_u32",
-            node::RegWidth::Reg16 => "from_u16",
-            node::RegWidth::Reg8  => "from_u8",
+            &node::RegWidth::Reg32 => "from_u32",
+            &node::RegWidth::Reg16 => "from_u16",
+            &node::RegWidth::Reg8  => "from_u8",
           },
         _ => panic!("Can't convert group register to primitive type"),
       };

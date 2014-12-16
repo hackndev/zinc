@@ -15,7 +15,7 @@
 
 //! A cell that with volatile setter and getter.
 
-use core::kinds::marker;
+use core::kinds::{marker, Copy};
 use core::intrinsics::{volatile_load, volatile_store};
 
 /// This structure is used to represent a hardware register.
@@ -24,6 +24,8 @@ pub struct VolatileCell<T> {
   value: T,
   invariant: marker::InvariantType<T>,
 }
+
+impl<T: Copy> Copy for VolatileCell<T> {}
 
 impl<T> VolatileCell<T> {
   /// Create a cell with initial value.

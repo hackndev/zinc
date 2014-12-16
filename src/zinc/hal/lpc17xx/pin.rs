@@ -21,7 +21,8 @@ on the package.
 */
 
 use core::intrinsics::abort;
-use core::option::{Option};
+use core::option::Option;
+use core::kinds::Copy;
 
 use self::Port::*;
 
@@ -46,6 +47,8 @@ pub enum Function {
   AltFunction2 = 2,
   AltFunction3 = 3,
 }
+
+impl Copy for Function {}
 
 /// Structure to describe the location of a pin
 pub struct Pin {

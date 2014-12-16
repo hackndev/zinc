@@ -35,16 +35,16 @@ pub struct BuildRegStructs<'a> {
 
 impl<'a> node::RegVisitor for BuildRegStructs<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
-                    width: node::RegWidth, fields: &Vec<node::Field>) {
+                    width: &node::RegWidth, fields: &Vec<node::Field>) {
     for field in fields.iter() {
-      match build_field_type(self.cx, path, reg, field) {
-        Some(item) => self.builder.push_item(item),
-        None       => {}
+      for item in build_field_type(self.cx, path, reg, field).into_iter() {
+        self.builder.push_item(item);
       }
     }
 
-    let reg_struct = build_reg_struct(self.cx, path, reg, width);
-    self.builder.push_item(reg_struct);
+    for item in build_reg_struct(self.cx, path, reg, width).into_iter() {
+      self.builder.push_item(item);
+    }
   }
 }
 
@@ -58,7 +58,7 @@ impl<'a> BuildRegStructs<'a> {
 /// Build a field type if necessary (e.g. in the case of an `EnumField`)
 fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
                     reg: &node::Reg, field: &node::Field)
-                    -> Option<P<ast::Item>> {
+                    -> Vec<P<ast::Item>> {
   match field.ty.node {
     node::FieldType::EnumField { ref variants, .. } => {
       // FIXME(bgamari): We construct a path, then only take the last
@@ -76,7 +76,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
                               vec!("dead_code",
                                    "non_camel_case_types",
                                    "missing_docs")));
-      let item: P<ast::Item> = P(ast::Item {
+      let ty_item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
         node: ast::ItemEnum(enum_def, empty_generics()),
@@ -84,9 +84,10 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
         attrs: attrs,
         span: field.ty.span,
       });
-      Some(item)
+      let copy_impl = quote_item!(cx, impl ::core::kinds::Copy for $name {}).unwrap();
+      vec!(ty_item, copy_impl)
     },
-    _ => None,
+    _ => Vec::new()
   }
 }
 
@@ -96,7 +97,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
 ///
 ///     pub struct REG {_value: u32}
 fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
-    reg: &node::Reg, _width: node::RegWidth) -> P<ast::Item> {
+    reg: &node::Reg, _width: &node::RegWidth) -> Vec<P<ast::Item>> {
   let packed_ty =
     utils::reg_primitive_type(cx, reg)
     .expect("Unexpected non-primitive reg");
@@ -120,7 +121,8 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
   );
   let mut item: ast::Item = item.unwrap().deref().clone();
   item.span = reg.name.span;
-  P(item)
+  let copy_impl = quote_item!(cx, impl ::core::kinds::Copy for $ty_name {}).unwrap();
+  vec!(P(item), copy_impl)
 }
 
 /// Build a variant of an `EnumField`

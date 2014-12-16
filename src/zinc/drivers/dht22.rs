@@ -16,7 +16,7 @@
 //! Driver for DHT22.
 
 use core::iter::range;
-use core::option::{Option, Some, None};
+use core::option::Option::{mod, Some, None};
 
 use hal::pin::Gpio;
 use hal::pin::GpioLevel::Low;

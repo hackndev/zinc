@@ -14,7 +14,7 @@
 // limitations under the License.
 
 use core::ty::Unsafe;
-use core::option::{Option, Some, None};
+use core::option::Option::{mod, Some, None};
 use core::ops::Drop;
 use core::kinds::Share;
 use core::kinds::marker::InvariantType;
