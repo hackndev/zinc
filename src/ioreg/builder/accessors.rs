@@ -127,7 +127,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
                       -> P<ast::Method>
 {
   let fn_name =
-    cx.ident_of((String::from_str("set_")+field.name.node).as_slice());
+    cx.ident_of((String::from_str("set_")+field.name.node.as_slice()).as_slice());
   let field_ty: P<ast::Ty> =
     cx.ty_path(utils::field_type_path(cx, path, reg, field));
   let setter_ty = utils::setter_name(cx, path);
@@ -182,7 +182,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
                         -> P<ast::Method>
 {
   let fn_name =
-    cx.ident_of((String::from_str("clear_")+field.name.node).as_slice());
+    cx.ident_of((String::from_str("clear_")+field.name.node.as_slice()).as_slice());
   let setter_ty = utils::setter_name(cx, path);
   if field.count.node == 1 {
     quote_method!(cx,
