@@ -51,6 +51,12 @@ impl<'a> node::RegVisitor for BuildSetters<'a> {
 
       let it = build_impl(self.cx, path, reg, fields);
       self.builder.push_item(it);
+
+      // Build Copy impl
+      let ty_name = utils::setter_name(self.cx, path);
+      let it = quote_item!(self.cx,
+                           impl<'a> ::core::kinds::Copy for $ty_name<'a> {});
+      self.builder.push_item(it.unwrap());
     }
   }
 }

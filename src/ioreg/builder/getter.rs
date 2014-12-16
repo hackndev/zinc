@@ -48,6 +48,12 @@ impl<'a> node::RegVisitor for BuildGetters<'a> {
 
       let it = build_impl(self.cx, path, reg, fields);
       self.builder.push_item(it);
+
+      // Build Copy impl
+      let ty_name = utils::getter_name(self.cx, path);
+      let it = quote_item!(self.cx,
+                           impl ::core::kinds::Copy for $ty_name {});
+      self.builder.push_item(it.unwrap());
     }
   }
 }
