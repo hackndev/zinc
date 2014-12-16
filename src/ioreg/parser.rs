@@ -47,7 +47,7 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
-  pub fn new<'a>(cx: &'a ExtCtxt<'a>, tts: &[TokenTree]) -> Parser<'a> {
+  pub fn new(cx: &'a ExtCtxt<'a>, tts: &[TokenTree]) -> Parser<'a> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
     let mut reader = box lexer::new_tt_reader(
