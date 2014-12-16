@@ -45,7 +45,7 @@ fn map_byte(s: u8) -> (&'static str, &'static str) {
 #[no_mangle]
 pub unsafe fn main() {
   use core::fmt::FormatWriter;
-  use core::result;
+  use core::result::Result;
   use zinc::drivers::bluenrg;
   use zinc::hal;
   use zinc::hal::pin::Gpio;
@@ -104,16 +104,16 @@ pub unsafe fn main() {
   let blue = bluenrg::BlueNrg::new(spi_csn, spi);
 
   let _ = match blue.wakeup(100) {
-    result::Ok((size_write, size_read)) => write!(&mut uart,
+    Result::Ok((size_write, size_read)) => write!(&mut uart,
       "BlueNRG is ready, write size = {}, read size = {}\n",
       map_byte(size_write as u8), map_byte(size_read as u8)),
-    result::Err(bluenrg::Error::Sleeping) => write!(&mut uart,
+    Result::Err(bluenrg::Error::Sleeping) => write!(&mut uart,
       "BlueNRG is sleeping\n"),
-    result::Err(bluenrg::Error::Allocating) => write!(&mut uart,
+    Result::Err(bluenrg::Error::Allocating) => write!(&mut uart,
       "BlueNRG is allocating buffers\n"),
-    result::Err(bluenrg::Error::Unknown(status)) => write!(&mut uart,
+    Result::Err(bluenrg::Error::Unknown(status)) => write!(&mut uart,
       "BlueNRG unknown status = {}\n", map_byte(status)),
-    result::Err(bluenrg::Error::BufferSize(_)) => write!(&mut uart, ""),
+    Result::Err(bluenrg::Error::BufferSize(_)) => write!(&mut uart, ""),
   };
 
   loop {}
