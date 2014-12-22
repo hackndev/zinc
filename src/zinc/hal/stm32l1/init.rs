@@ -338,7 +338,7 @@ pub mod reg {
       30 => window_watchdog_reset : rw,
       31 => low_power_reset : rw,
     },
-  })
+  });
 
   ioregs!(FLASH = {
     0x00 => reg32 acr {     // access control
@@ -374,7 +374,7 @@ pub mod reg {
     0x2C => reg32 wrpr2 {   // write protection register 2
       31..0 => protect : rw,
     },
-  })
+  });
 
   ioregs!(PWR = {
     0x0 => reg32 cr {   // power control
@@ -383,7 +383,7 @@ pub mod reg {
     0x4 => reg32 csr {  // power control/status
       31..0 => status : rw,
     },
-  })
+  });
 
   extern {
     #[link_name="stm32l1_iomem_RCC"] pub static RCC: RCC;

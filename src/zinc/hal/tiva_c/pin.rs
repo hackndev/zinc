@@ -212,7 +212,7 @@ pub mod reg {
       //! Pin function selection when afsel is set for the pin.
       0..31 => pctl[8]
     }
-  })
+  });
 
   pub const PORT_A: *const Port = 0x40004000 as *const Port;
   pub const PORT_B: *const Port = 0x40005000 as *const Port;

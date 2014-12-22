@@ -24,7 +24,7 @@ macro_rules! ioreg_old(
       )+
     }
   )
-)
+);
 
 macro_rules! reg_r(
   ($t:ident, $ty:ty, $getter_name:ident, $reg:ident) => (
@@ -36,7 +36,7 @@ macro_rules! reg_r(
       }
     }
   )
-)
+);
 
 macro_rules! reg_w(
   ($t:ident, $ty:ty, $setter_name:ident, $reg:ident) => (
@@ -48,11 +48,11 @@ macro_rules! reg_w(
       }
     }
   )
-)
+);
 
 macro_rules! reg_rw(
   ($t:ident, $ty:ty, $getter_name:ident, $setter_name:ident, $reg:ident) => (
-    reg_r!($t, $ty, $getter_name, $reg)
-    reg_w!($t, $ty, $setter_name, $reg)
+    reg_r!($t, $ty, $getter_name, $reg);
+    reg_w!($t, $ty, $setter_name, $reg);
   )
-)
+);

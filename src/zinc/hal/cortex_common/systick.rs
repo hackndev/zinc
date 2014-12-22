@@ -115,5 +115,5 @@ mod reg {
       23..0 => tenms : ro,    //= An optional Reload value for 10ms (100Hz) timing
                               //= If zero calibration value not known
     },
-  })
+  });
 }

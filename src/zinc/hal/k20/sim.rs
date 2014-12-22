@@ -174,7 +174,7 @@ pub mod reg {
     0x1060 => reg32 uidl {
       0..31  => uid,
     },
-  })
+  });
 
   extern {
     #[link_name="k20_iomem_SIM"] pub static SIM: SIM;

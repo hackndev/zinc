@@ -248,7 +248,7 @@ pub mod reg {
     0x88   => reg32 isfr {    //= Interrupt status
       0..31  => isf
     }
-  })
+  });
 
   extern {
     #[link_name="k20_iomem_PORTA"] pub static PORT_A: Port;
@@ -285,7 +285,7 @@ pub mod reg {
         1 => OUTPUT,
       }
     }
-  })
+  });
 
   extern {
     #[link_name="k20_iomem_GPIOA"] pub static GPIO_A: Gpio;

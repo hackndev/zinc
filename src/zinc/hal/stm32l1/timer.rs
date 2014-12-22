@@ -128,7 +128,7 @@ mod reg {
     0x50 => reg16 or {       // option
       15..0 => option : rw,
     },
-  })
+  });
 
   extern {
     #[link_name="stm32l1_iomem_TIM2"] pub static TIM2: TIMER;

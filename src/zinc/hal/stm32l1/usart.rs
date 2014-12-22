@@ -208,7 +208,7 @@ mod reg {
       7..0  => prescaler  : rw,
       15..8 => guard_time : rw,
     },
-  })
+  });
 
   extern {
     #[link_name="stm32l1_iomem_USART1"] pub static USART1: USART;

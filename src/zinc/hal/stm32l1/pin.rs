@@ -244,7 +244,7 @@ mod reg {
     0x28 => reg16 brr {      // bit reset register
       15..0 => reset : rw,
     },
-  })
+  });
 
   extern {
     #[link_name="stm32l1_iomem_GPIOA"] pub static GPIOA: GPIO;

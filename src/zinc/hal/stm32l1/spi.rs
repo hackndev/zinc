@@ -264,7 +264,7 @@ mod reg {
       8 => odd_factor : rw,
       9 => master_clock_output_enable : rw,
     },
-  })
+  });
 
   extern {
     #[link_name="stm32l1_iomem_SPI1"] pub static SPI1: SPI;
