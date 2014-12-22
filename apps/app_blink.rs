@@ -43,7 +43,7 @@ platformtree!(
       }
     }
   }
-)
+);
 
 fn run(args: &pt::run_args) {
   use zinc::hal::pin::Gpio;

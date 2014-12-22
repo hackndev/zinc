@@ -84,22 +84,22 @@ impl timer::Timer for Timer {
 mod reg {
   use util::volatile_cell::VolatileCell;
 
-  ioreg_old!(TIMER: u32, IR, TCR, TC, PR, PC, MCR, MR0, MR1, MR2, MR3, CCR, CR0, CR1, EMR, CTCR)
-  reg_rw!(TIMER, u32, IR,  set_IR,  IR)
-  reg_rw!(TIMER, u32, TCR, set_TCR, TCR)
-  reg_rw!(TIMER, u32, TC, set_TC, TC)
-  reg_rw!(TIMER, u32, PR, set_PR, PR)
-  reg_rw!(TIMER, u32, PC, set_PC, PC)
-  reg_rw!(TIMER, u32, MCR, set_MCR, MCR)
-  reg_rw!(TIMER, u32, MR0, set_MR0, MR0)
-  reg_rw!(TIMER, u32, MR1, set_MR1, MR1)
-  reg_rw!(TIMER, u32, MR2, set_MR2, MR2)
-  reg_rw!(TIMER, u32, MR3, set_MR3, MR3)
-  reg_rw!(TIMER, u32, CCR, set_CCR, CCR)
-  reg_rw!(TIMER, u32, CR0, set_CR0, CR0)
-  reg_rw!(TIMER, u32, CR1, set_CR1, CR1)
-  reg_rw!(TIMER, u32, EMR, set_EMR, EMR)
-  reg_rw!(TIMER, u32, CTCR, set_CTCR, CTCR)
+  ioreg_old!(TIMER: u32, IR, TCR, TC, PR, PC, MCR, MR0, MR1, MR2, MR3, CCR, CR0, CR1, EMR, CTCR);
+  reg_rw!(TIMER, u32, IR,  set_IR,  IR);
+  reg_rw!(TIMER, u32, TCR, set_TCR, TCR);
+  reg_rw!(TIMER, u32, TC, set_TC, TC);
+  reg_rw!(TIMER, u32, PR, set_PR, PR);
+  reg_rw!(TIMER, u32, PC, set_PC, PC);
+  reg_rw!(TIMER, u32, MCR, set_MCR, MCR);
+  reg_rw!(TIMER, u32, MR0, set_MR0, MR0);
+  reg_rw!(TIMER, u32, MR1, set_MR1, MR1);
+  reg_rw!(TIMER, u32, MR2, set_MR2, MR2);
+  reg_rw!(TIMER, u32, MR3, set_MR3, MR3);
+  reg_rw!(TIMER, u32, CCR, set_CCR, CCR);
+  reg_rw!(TIMER, u32, CR0, set_CR0, CR0);
+  reg_rw!(TIMER, u32, CR1, set_CR1, CR1);
+  reg_rw!(TIMER, u32, EMR, set_EMR, EMR);
+  reg_rw!(TIMER, u32, CTCR, set_CTCR, CTCR);
 
   extern {
     #[link_name="lpc17xx_iomem_TIMER0"] pub static TIMER0: TIMER;

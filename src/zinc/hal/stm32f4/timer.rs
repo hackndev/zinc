@@ -65,26 +65,26 @@ mod reg {
 
   ioreg_old!(TIM2To5: u32, CR1, CR2, SMCR, DIER, SR, EGR, CCMR1, CCMR2, CCER, CNT,
                        PSC, ARR, _pad_0, CCR1, CCR2, CCR3, CCR4, _pad_1, DCR,
-                       DMAR, OR)
-  reg_rw!(TIM2To5, u32, CR1,   set_CR1,   CR1)
-  reg_rw!(TIM2To5, u32, CR2,   set_CR2,   CR2)
-  reg_rw!(TIM2To5, u32, SMCR,  set_SMCR,  SMCR)
-  reg_rw!(TIM2To5, u32, DIER,  set_DIER,  DIER)
-  reg_rw!(TIM2To5, u32, SR,    set_SR,    SR)
-  reg_w!( TIM2To5, u32,        set_EGR,   EGR)
-  reg_rw!(TIM2To5, u32, CCMR1, set_CCMR1, CCMR1)
-  reg_rw!(TIM2To5, u32, CCMR2, set_CCMR2, CCMR2)
-  reg_rw!(TIM2To5, u32, CCER,  set_CCER,  CCER)
-  reg_rw!(TIM2To5, u32, CNT,   set_CNT,   CNT)
-  reg_rw!(TIM2To5, u32, PSC,   set_PSC,   PSC)
-  reg_rw!(TIM2To5, u32, ARR,   set_ARR,   ARR)
-  reg_rw!(TIM2To5, u32, CCR1,  set_CCR1,  CCR1)
-  reg_rw!(TIM2To5, u32, CCR2,  set_CCR2,  CCR2)
-  reg_rw!(TIM2To5, u32, CCR3,  set_CCR3,  CCR3)
-  reg_rw!(TIM2To5, u32, CCR4,  set_CCR4,  CCR4)
-  reg_rw!(TIM2To5, u32, DCR,   set_DCR,   DCR)
-  reg_rw!(TIM2To5, u32, DMAR,  set_DMAR,  DMAR)
-  reg_rw!(TIM2To5, u32, OR,    set_OR,    OR)
+                       DMAR, OR);
+  reg_rw!(TIM2To5, u32, CR1,   set_CR1,   CR1);
+  reg_rw!(TIM2To5, u32, CR2,   set_CR2,   CR2);
+  reg_rw!(TIM2To5, u32, SMCR,  set_SMCR,  SMCR);
+  reg_rw!(TIM2To5, u32, DIER,  set_DIER,  DIER);
+  reg_rw!(TIM2To5, u32, SR,    set_SR,    SR);
+  reg_w!( TIM2To5, u32,        set_EGR,   EGR);
+  reg_rw!(TIM2To5, u32, CCMR1, set_CCMR1, CCMR1);
+  reg_rw!(TIM2To5, u32, CCMR2, set_CCMR2, CCMR2);
+  reg_rw!(TIM2To5, u32, CCER,  set_CCER,  CCER);
+  reg_rw!(TIM2To5, u32, CNT,   set_CNT,   CNT);
+  reg_rw!(TIM2To5, u32, PSC,   set_PSC,   PSC);
+  reg_rw!(TIM2To5, u32, ARR,   set_ARR,   ARR);
+  reg_rw!(TIM2To5, u32, CCR1,  set_CCR1,  CCR1);
+  reg_rw!(TIM2To5, u32, CCR2,  set_CCR2,  CCR2);
+  reg_rw!(TIM2To5, u32, CCR3,  set_CCR3,  CCR3);
+  reg_rw!(TIM2To5, u32, CCR4,  set_CCR4,  CCR4);
+  reg_rw!(TIM2To5, u32, DCR,   set_DCR,   DCR);
+  reg_rw!(TIM2To5, u32, DMAR,  set_DMAR,  DMAR);
+  reg_rw!(TIM2To5, u32, OR,    set_OR,    OR);
 
   extern {
     #[link_name="stm32f4_iomem_TIM2"] pub static TIM2: TIM2To5;

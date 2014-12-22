@@ -172,8 +172,8 @@ pub fn set_trace_port_interface_enabled(enabled: bool) {
 mod reg {
   use util::volatile_cell::VolatileCell;
 
-  ioreg_old!(PINSEL: u32, value)
-  reg_rw!(PINSEL, u32, value, set_value, value)
+  ioreg_old!(PINSEL: u32, value);
+  reg_rw!(PINSEL, u32, value, set_value, value);
 
   extern {
     #[link_name="lpc17xx_iomem_PINSEL0"]  pub static PINSEL0:  PINSEL;
@@ -186,12 +186,12 @@ mod reg {
     #[link_name="lpc17xx_iomem_PINSEL10"] pub static PINSEL10: PINSEL;
   }
 
-  ioreg_old!(Gpio: u32, FIODIR, _r0, _r1, _r2, FIOMASK, FIOPIN, FIOSET, FIOCLR)
-  reg_rw!(Gpio, u32, FIODIR,  set_FIODIR,  FIODIR)
-  reg_rw!(Gpio, u32, FIOMASK, set_FIOMASK, FIOMASK)
-  reg_rw!(Gpio, u32, FIOPIN,  set_FIOPIN,  FIOPIN)
-  reg_rw!(Gpio, u32, FIOSET,  set_FIOSET,  FIOSET)
-  reg_rw!(Gpio, u32, FIOCLR,  set_FIOCLR,  FIOCLR)
+  ioreg_old!(Gpio: u32, FIODIR, _r0, _r1, _r2, FIOMASK, FIOPIN, FIOSET, FIOCLR);
+  reg_rw!(Gpio, u32, FIODIR,  set_FIODIR,  FIODIR);
+  reg_rw!(Gpio, u32, FIOMASK, set_FIOMASK, FIOMASK);
+  reg_rw!(Gpio, u32, FIOPIN,  set_FIOPIN,  FIOPIN);
+  reg_rw!(Gpio, u32, FIOSET,  set_FIOSET,  FIOSET);
+  reg_rw!(Gpio, u32, FIOCLR,  set_FIOCLR,  FIOCLR);
 
   extern {
     #[link_name="lpc17xx_iomem_GPIO0"] pub static GPIO_0: Gpio;

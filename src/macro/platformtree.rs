@@ -61,7 +61,7 @@ pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
 pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
     tts: &[ast::TokenTree]) -> Box<MacResult+'static> {
   let result = macro_platformtree(cx, sp, tts);
-  println!("Platform Tree dump:")
+  println!("Platform Tree dump:");
   for i in result.make_items().unwrap().as_slice().iter() {
     println!("{}", pprust::item_to_string(i.deref()));
   }

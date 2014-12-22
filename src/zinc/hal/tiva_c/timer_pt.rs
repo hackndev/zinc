@@ -63,7 +63,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let (wide_timer, id) =
     match regex!(r"(w?)([0-5])").captures(node.path.as_slice()) {
       Some(c) => {
-        (c.at(1) != "", c.at(2))
+        (c.at(1) != Some(""), c.at(2))
       }
       None => {
         error(
@@ -95,7 +95,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
               "TimerW"
             } else {
               "Timer"
-            }, id));
+            }, id.unwrap()));
 
   node.set_type_name("zinc::hal::tiva_c::timer::Timer".to_string());
 

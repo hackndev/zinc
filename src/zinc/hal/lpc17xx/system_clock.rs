@@ -154,22 +154,22 @@ fn init_pll(pll: &PLL0, source: &ClockSource) {
 mod reg {
   use util::volatile_cell::VolatileCell;
 
-  ioreg_old!(SCS: u32, value)
-  reg_rw!(SCS, u32, value, set_value, value)
-  ioreg_old!(FLASHCFG: u32, value)
-  reg_w!(FLASHCFG, u32, set_value, value)
-  ioreg_old!(PLL0CFG: u32, value)
-  reg_w!(PLL0CFG, u32, set_value, value)
-  ioreg_old!(PLL0CON: u32, value)
-  reg_w!(PLL0CON, u32, set_value, value)
-  ioreg_old!(PLL0FEED: u32, value)
-  reg_w!(PLL0FEED, u32, set_value, value)
-  ioreg_old!(PLL0STAT: u32, value)
-  reg_r!(PLL0STAT, u32, value, value)
-  ioreg_old!(CCLKCFG: u32, value)
-  reg_w!(CCLKCFG, u32, set_value, value)
-  ioreg_old!(CLKSRCSEL: u32, value)
-  reg_w!(CLKSRCSEL, u32, set_value, value)
+  ioreg_old!(SCS: u32, value);
+  reg_rw!(SCS, u32, value, set_value, value);
+  ioreg_old!(FLASHCFG: u32, value);
+  reg_w!(FLASHCFG, u32, set_value, value);
+  ioreg_old!(PLL0CFG: u32, value);
+  reg_w!(PLL0CFG, u32, set_value, value);
+  ioreg_old!(PLL0CON: u32, value);
+  reg_w!(PLL0CON, u32, set_value, value);
+  ioreg_old!(PLL0FEED: u32, value);
+  reg_w!(PLL0FEED, u32, set_value, value);
+  ioreg_old!(PLL0STAT: u32, value);
+  reg_r!(PLL0STAT, u32, value, value);
+  ioreg_old!(CCLKCFG: u32, value);
+  reg_w!(CCLKCFG, u32, set_value, value);
+  ioreg_old!(CLKSRCSEL: u32, value);
+  reg_w!(CLKSRCSEL, u32, set_value, value);
 
   extern {
     #[link_name="lpc17xx_iomem_SCS"] pub static SCS: SCS;

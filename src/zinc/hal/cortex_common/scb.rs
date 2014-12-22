@@ -134,5 +134,5 @@ mod reg {
     0x88      => reg32 cpacr { //! Coprocessor access control register
       0..23   => cp[24],
     }
-  })
+  });
 }

@@ -294,7 +294,7 @@ pub mod reg {
     },
 
     // FIXME(bgamari): Specialized registers omitted
-  })
+  });
 
   impl UART_c1_m {
     /// UART data word length flag value from bit count

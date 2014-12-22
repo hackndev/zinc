@@ -216,7 +216,7 @@ pub mod reg {
     0x50 => reg32 tav {
       0..31 => v,          // Timer A counter value
     }
-  })
+  });
 
   pub const TIMER_0:   *const Timer = 0x40030000 as *const Timer;
   pub const TIMER_1:   *const Timer = 0x40031000 as *const Timer;

@@ -89,5 +89,5 @@ mod reg {
     0xF00     => reg32 stir[8] {      //! Software triggered interrupt register
       0..8    => stir,
     }
-  })
+  });
 }

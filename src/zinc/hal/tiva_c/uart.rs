@@ -183,7 +183,7 @@ pub mod reg {
       14    => rtsen,    //= Enable Request-to-Send
       15    => ctsen,    //= Enable Clear-to-Send
     }
-  })
+  });
 
   pub const UART_0: *const Uart = 0x4000C000 as *const Uart;
   pub const UART_1: *const Uart = 0x4000D000 as *const Uart;

@@ -300,21 +300,21 @@ static LSRTHREmpty: u8 = 0x20;
 mod reg {
   use util::volatile_cell::VolatileCell;
 
-  ioreg_old!(UART: u32, RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER)
-  reg_r!( UART, u32, RBR,          RBR_THR_DLL)
-  reg_w!( UART, u32,      set_THR, RBR_THR_DLL)
-  reg_rw!(UART, u32, DLL, set_DLL, RBR_THR_DLL)
-  reg_rw!(UART, u32, DLM, set_DLM, DLM_IER)
-  reg_rw!(UART, u32, IER, set_IER, DLM_IER)
-  reg_r!( UART, u32, IIR,          IIR_FCR)
-  reg_w!( UART, u32,      set_FCR, IIR_FCR)
-  reg_rw!(UART, u32, LCR, set_LCR, LCR)
-  reg_r!( UART, u32, LSR,          LSR)
-  reg_rw!(UART, u32, SCR, set_SCR, SCR)
-  reg_rw!(UART, u32, ACR, set_ACR, ACR)
-  reg_rw!(UART, u32, ICR, set_ICR, ICR)
-  reg_rw!(UART, u32, FDR, set_FDR, FDR)
-  reg_rw!(UART, u32, TER, set_TER, TER)
+  ioreg_old!(UART: u32, RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER);
+  reg_r!( UART, u32, RBR,          RBR_THR_DLL);
+  reg_w!( UART, u32,      set_THR, RBR_THR_DLL);
+  reg_rw!(UART, u32, DLL, set_DLL, RBR_THR_DLL);
+  reg_rw!(UART, u32, DLM, set_DLM, DLM_IER);
+  reg_rw!(UART, u32, IER, set_IER, DLM_IER);
+  reg_r!( UART, u32, IIR,          IIR_FCR);
+  reg_w!( UART, u32,      set_FCR, IIR_FCR);
+  reg_rw!(UART, u32, LCR, set_LCR, LCR);
+  reg_r!( UART, u32, LSR,          LSR);
+  reg_rw!(UART, u32, SCR, set_SCR, SCR);
+  reg_rw!(UART, u32, ACR, set_ACR, ACR);
+  reg_rw!(UART, u32, ICR, set_ICR, ICR);
+  reg_rw!(UART, u32, FDR, set_FDR, FDR);
+  reg_rw!(UART, u32, TER, set_TER, TER);
 
   extern {
     #[link_name="lpc17xx_iomem_UART0"] pub static UART0: UART;

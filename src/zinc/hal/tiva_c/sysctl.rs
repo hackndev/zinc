@@ -445,7 +445,7 @@ pub mod reg {
     0x600 => reg32 rmcgc {
       0..31  => enabled[32], //= Module clock gating control (0 means gated)
     }
-  })
+  });
 
   pub const SYSCTL: *const SysCtl = 0x400FE000 as *const SysCtl;
 }
