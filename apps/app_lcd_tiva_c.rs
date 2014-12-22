@@ -57,7 +57,7 @@ platformtree!(
       }
     }
   }
-)
+);
 
 
 pub fn run(args: &pt::run_args) {

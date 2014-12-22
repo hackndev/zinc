@@ -24,7 +24,7 @@ platformtree!(
       loop = "run";
     }
   }
-)
+);
 
 fn run() {
   unsafe { asm!("nop") }

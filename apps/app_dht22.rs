@@ -62,7 +62,7 @@ platformtree!(
       }
     }
   }
-)
+);
 
 #[zinc_task]
 fn run(args: &pt::run_args) {

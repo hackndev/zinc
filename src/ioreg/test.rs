@@ -55,7 +55,7 @@ mod test {
       0..15  => field1: wo,
       16..31 => field2: wo,
     }
-  })
+  });
 
   describe!(
     before_each {
@@ -64,20 +64,20 @@ mod test {
 
     it "can round_trip simple field values 1" {
       test.reg1.set_field1(true);
-      assert_eq!(test.reg1.field1(), true)
-      assert_eq!(get_value(&test, 0), 1)
-      assert_eq!(get_value(&test, 1), 0)
+      assert_eq!(test.reg1.field1(), true);
+      assert_eq!(get_value(&test, 0), 1);
+      assert_eq!(get_value(&test, 1), 0);
     }
 
     it "can round trip simple field values 2" {
       test.reg1.set_field3(0xde);
-      assert_eq!(test.reg1.field3(), 0xde)
-      assert_eq!(get_value(&test, 0), 0xde<<16)
+      assert_eq!(test.reg1.field3(), 0xde);
+      assert_eq!(get_value(&test, 0), 0xde<<16);
     }
 
     it "sets set_to_clear fields" {
       test.reg1.clear_field4();
-      assert_eq!(get_value(&test, 0), 1<<25)
+      assert_eq!(get_value(&test, 0), 1<<25);
     }
 
     it "does not read from writeonly registers" {
@@ -86,7 +86,7 @@ mod test {
       test.wo_reg.set_field2(0xdead);
       assert_eq!(get_value(&test, 2), 0xdead<<16);
     }
-  )
+  );
 
   ioregs!(GROUP_TEST = {
     0x0 => group regs[5] {
@@ -97,7 +97,7 @@ mod test {
         0..31 => field2
       }
     }
-  })
+  });
 
   describe!(
     before_each {
@@ -106,23 +106,23 @@ mod test {
 
     it "sets groups correctly" {
       test.regs[0].reg1.set_field1(0xdeadbeef);
-      assert_eq!(test.regs[0].reg1.field1(), 0xdeadbeef)
-      assert_eq!(get_value(&test, 0), 0xdeadbeef)
+      assert_eq!(test.regs[0].reg1.field1(), 0xdeadbeef);
+      assert_eq!(get_value(&test, 0), 0xdeadbeef);
       for i in range(1, 10) {
-        assert_eq!(get_value(&test, i), 0)
+        assert_eq!(get_value(&test, i), 0);
       }
 
       test.regs[2].reg2.set_field2(0xfeedbeef);
-      assert_eq!(test.regs[2].reg2.field2(), 0xfeedbeef)
-      assert_eq!(get_value(&test, 5), 0xfeedbeef)
+      assert_eq!(test.regs[2].reg2.field2(), 0xfeedbeef);
+      assert_eq!(get_value(&test, 5), 0xfeedbeef);
     }
-  )
+  );
 
   ioregs!(FIELD_ARRAY_TEST = {
     0x0 => reg32 reg1 {
       0..31 => field[16]
     }
-  })
+  });
 
   describe!(
     before_each {
@@ -132,13 +132,13 @@ mod test {
     it "sets field arrays correctly" {
       test.reg1.set_field(0, 1);
       assert_eq!(test.reg1.field(0), 1);
-      assert_eq!(get_value(&test, 0), 0x1)
+      assert_eq!(get_value(&test, 0), 0x1);
 
       test.reg1.set_field(4, 3);
       assert_eq!(test.reg1.field(4), 3);
-      assert_eq!(get_value(&test, 0), 0x1 | 0x3<<8)
+      assert_eq!(get_value(&test, 0), 0x1 | 0x3<<8);
     }
-  )
+  );
 
   ioregs!(GAP_TEST = {
     0x0 => reg32 reg1 {
@@ -153,7 +153,7 @@ mod test {
     0x20 => reg32 reg4 {
       0..31 => field,
     }
-  })
+  });
 
   describe!(
     before_each {
@@ -162,15 +162,15 @@ mod test {
     }
     it "has zero base offset" {
       let addr = &test.reg1 as *const GAP_TEST_reg1;
-      assert_eq!(addr.to_uint() - base.to_uint(), 0x0)
+      assert_eq!(addr.to_uint() - base.to_uint(), 0x0);
     }
     it "computes the correct first gap" {
       let addr = &test.reg2 as *const GAP_TEST_reg2;
-      assert_eq!(addr.to_uint() - base.to_uint(), 0x10)
+      assert_eq!(addr.to_uint() - base.to_uint(), 0x10);
     }
     it "computes the correct second gap" {
       let addr = &test.reg4 as *const GAP_TEST_reg4;
-      assert_eq!(addr.to_uint() - base.to_uint(), 0x20)
+      assert_eq!(addr.to_uint() - base.to_uint(), 0x20);
     }
-  )
+  );
 }
