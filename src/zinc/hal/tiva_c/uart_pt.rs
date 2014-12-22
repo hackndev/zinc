@@ -75,14 +75,14 @@ pub fn build_uart(builder: &mut Builder,
     }
   };
 
-  let baud_rate = from_str::<uint>(mode_captures.at(1)).unwrap();
+  let baud_rate = from_str::<uint>(mode_captures.at(1).unwrap());
 
-  let word_len = match mode_captures.at(2) {
+  let word_len = match mode_captures.at(2).unwrap() {
     "" => 8,
     l  => from_str::<u8>(l).unwrap(),
   };
 
-  let parity = TokenString(match mode_captures.at(3) {
+  let parity = TokenString(match mode_captures.at(3).unwrap() {
     ""|"N"|"n" => "Disabled",
     "O"|"o"    => "Odd",
     "E"|"e"    => "Even",
@@ -94,7 +94,7 @@ pub fn build_uart(builder: &mut Builder,
     }
   }.to_string());
 
-  let stop_bits = match mode_captures.at(4) {
+  let stop_bits = match mode_captures.at(4).unwrap() {
     "" => 1,
     s  => from_str::<u8>(s).unwrap(),
   };
