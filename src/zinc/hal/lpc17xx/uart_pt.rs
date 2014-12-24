@@ -21,7 +21,7 @@ use node;
 
 
 pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
-  node.materializer.set(Some(verify));
+  node.materializer.set(Some(verify as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
 
   for sub in node.subnodes().iter() {
     add_node_dependency(&node, sub);
@@ -33,8 +33,8 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
     add_node_dependency(sub, &rx_node);
     super::add_node_dependency_on_clock(builder, sub);
 
-    sub.materializer.set(Some(build_uart));
-    sub.mutator.set(Some(mutate_pins));
+    sub.materializer.set(Some(build_uart as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
+    sub.mutator.set(Some(mutate_pins as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
   }
 }
 

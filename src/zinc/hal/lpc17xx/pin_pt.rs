@@ -21,12 +21,12 @@ use node;
 use super::pinmap;
 
 pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
-  node.materializer.set(Some(verify));
+  node.materializer.set(Some(verify as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
   for port_node in node.subnodes().iter() {
-    port_node.materializer.set(Some(verify));
+    port_node.materializer.set(Some(verify as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
     add_node_dependency(&node, port_node);
     for pin_node in port_node.subnodes().iter() {
-      pin_node.materializer.set(Some(build_pin));
+      pin_node.materializer.set(Some(build_pin as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
       add_node_dependency(port_node, pin_node);
       super::add_node_dependency_on_clock(builder, pin_node);
     }

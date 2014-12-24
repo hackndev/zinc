@@ -20,13 +20,13 @@ use builder::{Builder, TokenString, add_node_dependency};
 use node;
 
 pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
-  node.materializer.set(Some(verify));
+  node.materializer.set(Some(verify as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
 
   for sub in node.subnodes().iter() {
     add_node_dependency(&node, sub);
     super::add_node_dependency_on_clock(builder, sub);
 
-    sub.materializer.set(Some(build_uart));
+    sub.materializer.set(Some(build_uart as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
   }
 }
 

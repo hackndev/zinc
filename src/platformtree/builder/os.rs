@@ -29,13 +29,13 @@ use node;
 use super::{Builder, TokenString, add_node_dependency};
 
 pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
-  node.materializer.set(Some(verify));
+  node.materializer.set(Some(verify as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
   let mcu_node = builder.pt.get_by_path("mcu").unwrap();
 
   let maybe_task_node = node.get_by_path("single_task");
   if maybe_task_node.is_some() {
     let task_node = maybe_task_node.unwrap();
-    task_node.materializer.set(Some(build_single_task));
+    task_node.materializer.set(Some(build_single_task as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
     add_node_dependency(&node, &task_node);
     add_node_dependency(&task_node, &mcu_node);
 

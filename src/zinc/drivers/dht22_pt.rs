@@ -20,8 +20,8 @@ use builder::{Builder, TokenString, add_node_dependency};
 use node;
 
 pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
-  node.materializer.set(Some(build_dht22));
-  node.mutator.set(Some(mutate_pin));
+  node.materializer.set(Some(build_dht22 as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
+  node.mutator.set(Some(mutate_pin as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
 
   let pin_node_name = node.get_ref_attr("pin").unwrap();
   let pin_node = builder.pt().get_by_name(pin_node_name.as_slice()).unwrap();
