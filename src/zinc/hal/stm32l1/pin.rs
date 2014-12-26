@@ -92,6 +92,7 @@ pub enum AltMode {
 }
 
 /// Pin mode.
+#[deriving(Copy)]
 pub enum Mode {
   /// GPIO Input Mode
   GpioIn,
