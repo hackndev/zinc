@@ -21,7 +21,7 @@ use builder::{Builder, TokenString};
 use node;
 
 pub fn attach(_: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
-  node.materializer.set(Some(build_clock));
+  node.materializer.set(Some(build_clock as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
 }
 
 fn build_clock(builder: &mut Builder,

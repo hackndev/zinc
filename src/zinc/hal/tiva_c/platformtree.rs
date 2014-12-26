@@ -25,7 +25,7 @@ mod timer_pt;
 mod uart_pt;
 
 pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
-  node.materializer.set(Some(verify));
+  node.materializer.set(Some(verify as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
   for sub in node.subnodes().iter() {
     add_node_dependency(&node, sub);
 

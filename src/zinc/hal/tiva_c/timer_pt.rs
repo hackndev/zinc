@@ -20,9 +20,9 @@ use builder::{Builder, TokenString, add_node_dependency};
 use node;
 
 pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
-  node.materializer.set(Some(verify));
+  node.materializer.set(Some(verify as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
   for timer_node in node.subnodes().iter() {
-    timer_node.materializer.set(Some(build_timer));
+    timer_node.materializer.set(Some(build_timer as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
     add_node_dependency(&node, timer_node);
     super::add_node_dependency_on_clock(builder, timer_node);
   }
