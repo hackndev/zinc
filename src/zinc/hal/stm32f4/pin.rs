@@ -20,7 +20,6 @@
 
 use super::peripheral_clock;
 use core::intrinsics::abort;
-use core::kinds::Copy;
 
 use self::Port::*;
 
@@ -28,6 +27,7 @@ use self::Port::*;
 
 /// Available port names.
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum Port {
   PortA,
   PortB,
@@ -42,14 +42,13 @@ pub enum Port {
 
 /// Pin functions.
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum Function {
   GPIOIn      = 0,
   GPIOOut     = 1,
   AltFunction = 2,
   Analog      = 3,
 }
-
-impl Copy for Function {}
 
 impl Port {
   fn clock(self) -> peripheral_clock::PeripheralClock {
@@ -68,12 +67,11 @@ impl Port {
   }
 }
 
-impl Copy for Port {}
-
 /// Pin configuration.
 ///
 /// This structure shouldn't be used directly, pinmap.rs, available via pin::map
 /// has all possible pin configurations.
+#[deriving(Copy)]
 pub struct PinConf {
   /// Pin port, mcu-specific.
   pub port: Port,
@@ -82,8 +80,6 @@ pub struct PinConf {
   /// Pin function, mcu-specific.
   pub function: Function,
 }
-
-impl Copy for PinConf {}
 
 impl PinConf {
   /// Setup the pin.

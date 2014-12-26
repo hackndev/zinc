@@ -21,11 +21,13 @@
 
 /// Available timer peripherals.
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum TimerPeripheral {
   Timer2,
 }
 
 /// Structure describing a Timer.
+#[deriving(Copy)]
 pub struct Timer {
   reg: &'static reg::TIMER,
 }

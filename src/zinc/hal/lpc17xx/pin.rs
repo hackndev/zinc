@@ -30,6 +30,7 @@ use self::Port::*;
 
 /// Available port names.
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum Port {
   Port0,
   Port1,
@@ -51,6 +52,7 @@ pub enum Function {
 impl Copy for Function {}
 
 /// Structure to describe the location of a pin
+#[deriving(Copy)]
 pub struct Pin {
   /// Port the pin is attached to
   port: Port,

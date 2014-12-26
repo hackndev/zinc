@@ -31,6 +31,7 @@ enum Control {
 
 /// Spi error codes.
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum Error {
   /// Device is sleeping.
   Sleeping,

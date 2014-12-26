@@ -21,6 +21,7 @@ use util::support::nop;
 
 /// Watchdog state
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum State {
   Disabled,
   Enabled,

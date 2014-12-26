@@ -28,6 +28,7 @@ use self::UARTPeripheral::*;
 
 /// Available UART peripherals.
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum UARTPeripheral {
   UART0,
   UART1,
@@ -35,12 +36,14 @@ pub enum UARTPeripheral {
 }
 
 /// Structure describing a UART instance.
+#[deriving(Copy)]
 pub struct UART {
   reg: &'static reg::UART,
 }
 
 /// Stop bits configuration.
 /// K20 UART only supports one stop bit.
+#[deriving(Copy)]
 pub enum StopBit {
   /// Single stop bit.
   StopBit1bit  = 0,

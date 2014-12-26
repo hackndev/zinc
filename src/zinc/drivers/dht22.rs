@@ -34,6 +34,7 @@ pub struct DHT22<'a, T:'a, P:'a> {
 
 /// Measurement data from the DHT22.
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub struct Measurements {
   pub humidity: f32,
   pub temperature: f32,
