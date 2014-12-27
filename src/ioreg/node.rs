@@ -16,10 +16,9 @@
 use syntax::codemap::{Spanned, Span};
 use syntax::ast;
 use std::rc::Rc;
-use serialize::Encodable;
 
 /// A variant of an enum field type
-#[deriving(Clone, Decodable, Encodable)]
+#[deriving(Clone)]
 pub struct Variant {
   pub name: Spanned<String>,
   pub value: Spanned<uint>,
@@ -27,7 +26,7 @@ pub struct Variant {
 }
 
 /// A bit field type
-#[deriving(Clone, Decodable, Encodable)]
+#[deriving(Clone)]
 pub enum FieldType {
   /// A unsigned integer
   UIntField,
@@ -40,7 +39,7 @@ pub enum FieldType {
   },
 }
 
-#[deriving(Copy, PartialEq, Eq, Clone, Decodable, Encodable)]
+#[deriving(Copy, PartialEq, Eq, Clone)]
 pub enum Access {
   ReadWrite,
   ReadOnly,
@@ -49,7 +48,7 @@ pub enum Access {
   SetToClear,
 }
 
-#[deriving(Clone, Decodable, Encodable)]
+#[deriving(Clone)]
 pub struct Field {
   pub name: Spanned<String>,
   /// The index of the first (lowest order) bit of the field
@@ -71,7 +70,7 @@ impl Field {
   }
 }
 
-#[deriving(Copy, Clone, Decodable, Encodable)]
+#[deriving(Copy, Clone)]
 pub enum RegWidth {
   /// A 32-bit wide register
   Reg32,
@@ -92,7 +91,7 @@ impl RegWidth {
   }
 }
 
-#[deriving(Clone, Decodable, Encodable)]
+#[deriving(Clone)]
 pub enum RegType {
   /// A primitive bitfield
   RegPrim(RegWidth, Vec<Field>),
@@ -111,7 +110,7 @@ impl RegType {
 }
 
 /// A single register, either a union or primitive
-#[deriving(Clone, Decodable, Encodable)]
+#[deriving(Clone)]
 pub struct Reg {
   pub offset: uint,
   pub name: Spanned<String>,

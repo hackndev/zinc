@@ -69,6 +69,7 @@ impl Copy for PeripheralClock {}
 
 /// Configures the divisor of peripheral clock based on core clock.
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum PeripheralDivisor {
   WDTDivisor     = 0,
   TIMER0Divisor  = 2,

@@ -66,4 +66,5 @@ pub mod std {
   pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
   pub use core::option;
   pub use core::num;
+  pub use core::kinds;
 }

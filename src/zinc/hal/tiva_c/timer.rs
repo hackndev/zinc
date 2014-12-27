@@ -22,6 +22,7 @@ use util::support::get_reg_ref;
 
 /// There are 6 standard 16/32bit timers and 6 "wide" 32/64bit timers
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum TimerId {
   Timer0,
   Timer1,
@@ -38,6 +39,7 @@ pub enum TimerId {
 }
 
 /// Timer modes
+#[deriving(Copy)]
 pub enum Mode {
   /// Periodic timer loops and restarts once the timeout is reached.
   Periodic,
@@ -57,6 +59,7 @@ pub enum Mode {
 }
 
 /// Structure describing a single timer counter (both 16/32bit and 32/64bit)
+#[deriving(Copy)]
 pub struct Timer {
   /// Timer register interface
   regs    : &'static reg::Timer,

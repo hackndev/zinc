@@ -71,6 +71,7 @@ pub mod test {
 
   use drivers::chario::CharIO;
 
+  #[deriving(Copy)]
   pub struct TestCharIOData {
     last_char: char,
     putc_calls: uint,

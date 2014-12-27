@@ -33,6 +33,7 @@ use self::UsartPeripheral::*;
 /// Available USART peripherals.
 #[allow(missing_docs)]
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum UsartPeripheral {
   Usart1,
   Usart2,
@@ -44,6 +45,7 @@ pub enum UsartPeripheral {
 /// USART word length.
 #[allow(missing_docs)]
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum WordLen {
   WordLen8bits = 0,
   WordLen9bits = 1,
@@ -51,6 +53,7 @@ pub enum WordLen {
 
 /// Stop bits configuration.
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum StopBit {
   /// Single stop bit.
   StopBit1bit       = 0,
@@ -63,6 +66,7 @@ pub enum StopBit {
 }
 
 /// Structure describing a USART instance.
+#[deriving(Copy)]
 pub struct Usart {
   reg: &'static reg::USART,
 }

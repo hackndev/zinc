@@ -27,6 +27,7 @@ use self::TimerPeripheral::*;
 
 /// Available timer peripherals.
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum TimerPeripheral {
   Timer0,
   Timer1,
@@ -35,6 +36,7 @@ pub enum TimerPeripheral {
 }
 
 /// Configuration for timer.
+#[deriving(Copy)]
 pub struct TimerConf {
   /// Peripheral to use.
   pub timer: TimerPeripheral,
@@ -45,6 +47,7 @@ pub struct TimerConf {
 }
 
 /// Struct describing a timer instance.
+#[deriving(Copy)]
 pub struct Timer {
   reg: &'static reg::TIMER,
 }

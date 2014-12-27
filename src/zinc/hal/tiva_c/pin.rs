@@ -24,6 +24,7 @@ use util::support::get_reg_ref;
 /// The pins are accessed through ports. Each port has 8 pins and are identified
 /// by a letter (PortA, PortB, etc...).
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum PortId {
   PortA,
   PortB,
@@ -34,6 +35,7 @@ pub enum PortId {
 }
 
 /// Structure describing a single HW pin
+#[deriving(Copy)]
 pub struct Pin {
   /// Timer register interface
   regs: &'static reg::Port,

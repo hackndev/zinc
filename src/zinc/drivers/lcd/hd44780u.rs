@@ -35,6 +35,7 @@ pub struct Hd44780u<'a> {
 
 /// The controller supports writing in either direction to accomodate various
 /// languages.
+#[deriving(Copy)]
 pub enum MoveDir {
   /// Cursor moves right after write
   Right,
@@ -43,6 +44,7 @@ pub enum MoveDir {
 }
 
 /// The controller supports 5x8 and 5x10 dot fonts depending on the LCD used.
+#[deriving(Copy)]
 pub enum Font {
   /// Use 5x8 dot matrix font
   Font5x8,
@@ -52,7 +54,7 @@ pub enum Font {
 
 impl<'a> Hd44780u<'a> {
   /// Construct an Hd44780u instance
-  pub fn new<'a>(timer: &'a (Timer + 'a),
+  pub fn new(timer: &'a (Timer + 'a),
                  rs:    &'a (Gpio  + 'a),
                  en:    &'a (Gpio  + 'a),
                  data: [&'a (Gpio  + 'a), ..4]) -> Hd44780u<'a> {

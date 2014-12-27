@@ -24,6 +24,7 @@ use core::kinds::Copy;
 /// Available SPI peripherals.
 #[allow(missing_docs)]
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum Peripheral {
   Spi1,
   Spi2,
@@ -32,7 +33,7 @@ pub enum Peripheral {
 
 /// SPI direction modes.
 #[repr(u8)]
-#[deriving(PartialEq)]
+#[deriving(PartialEq, Copy)]
 pub enum Direction {
   /// 2 lines, default mode
   FullDuplex,
@@ -55,6 +56,7 @@ impl Copy for Role {}
 
 #[allow(missing_docs)]
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum DataSize {
   U8 = 0,
   U16 = 1,
@@ -62,6 +64,7 @@ pub enum DataSize {
 
 /// SPI data format.
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum DataFormat {
   /// Most Significant Bit
   MsbFirst = 0,
@@ -71,6 +74,7 @@ pub enum DataFormat {
 
 #[allow(missing_docs)]
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum ClockPhase {
   Edge1 = 0,
   Edge2 = 1,
@@ -78,6 +82,7 @@ pub enum ClockPhase {
 
 #[allow(missing_docs)]
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum ClockPolarity {
   Low = 0,
   High = 1,
@@ -85,6 +90,7 @@ pub enum ClockPolarity {
 
 /// SPI initialization errors.
 #[repr(u8)]
+#[deriving(Copy)]
 pub enum Error {
   /// Invalid baud rate shift.
   BaudRate,
@@ -93,6 +99,7 @@ pub enum Error {
 }
 
 /// Structure describing a SPI instance.
+#[deriving(Copy)]
 pub struct Spi {
   reg: &'static reg::SPI,
 }

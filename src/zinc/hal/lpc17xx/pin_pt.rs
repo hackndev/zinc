@@ -40,7 +40,7 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let port_node = node.parent.clone().unwrap().upgrade().unwrap();
   let ref port_path = port_node.path;
-  let port_str = format!("Port{}", match from_str::<uint>(port_path.as_slice()).unwrap() {
+  let port_str = format!("Port{}", match port_path.as_slice().parse::<uint>().unwrap() {
     0...4 => port_path,
     other => {
       cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
@@ -74,7 +74,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   };
   let direction = TokenString(direction_str.to_string());
 
-  let pin_str = match from_str::<uint>(node.path.as_slice()).unwrap() {
+  let pin_str = match node.path.as_slice().parse::<uint>().unwrap() {
     0...31 => &node.path,
     other  => {
       cx.parse_sess().span_diagnostic.span_err(node.path_span,
@@ -89,7 +89,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     None => "Gpio".to_string(),
     Some(fun) => {
       let pins = &port_def[*port_path];
-      let maybe_pin_index = from_str(node.path.as_slice()).unwrap();
+      let maybe_pin_index = node.path.as_slice().parse().unwrap();
       match pins[maybe_pin_index] {
         None => {
           cx.parse_sess().span_diagnostic.span_err(

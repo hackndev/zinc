@@ -81,9 +81,9 @@ fn build_field_accessors(cx: &ExtCtxt, path: &Vec<String>,
   let field_doc = match field.docstring {
     Some(ref d) => {
       let s = token::get_ident(d.node);
-      s.get().into_string()
+      s.get().to_string()
     },
-    None => "no documentation".into_string()
+    None => "no documentation".to_string()
   };
   let docstring = format!("*[{}]* `{}` field: {}",
                           access_tag,

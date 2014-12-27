@@ -20,12 +20,12 @@
 
 use hal::mem_init::init_data;
 use core::intrinsics::abort;
-use core::kinds::Copy;
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// System clock source.
+#[deriving(Copy)]
 pub enum SystemClockSource {
   /// High-speed internal oscillator, 16MHz.
   SystemClockHSI,
@@ -36,14 +36,13 @@ pub enum SystemClockSource {
 }
 
 /// PLL clock source. Applies to both PLL and PLLI2S.
+#[deriving(Copy)]
 pub enum PLLClockSource {
   /// High-speed internal oscillator, 16MHz.
   PLLClockHSI,
   /// High-speed external oscillator with configurable frequency.
   PLLClockHSE(u32),
 }
-
-impl Copy for PLLClockSource {}
 
 /// PLL configuration options.
 ///
@@ -54,6 +53,7 @@ impl Copy for PLLClockSource {}
 /// F_pll_out = Fvco / p
 /// F_pll_usb = Fvco / q
 /// ```
+#[deriving(Copy)]
 pub struct PLLConf {
   /// Clock source.
   pub source: PLLClockSource,
@@ -67,15 +67,15 @@ pub struct PLLConf {
   pub q: u8,
 }
 
-impl Copy for PLLConf {}
-
 /// MCU clock configuration.
+#[deriving(Copy)]
 pub struct ClockConf {
   /// Clocking source.
   pub source: SystemClockSource,
 }
 
 /// MCU configuration.
+#[deriving(Copy)]
 pub struct SysConf {
   /// Clock configuration.
   pub clock: ClockConf,
@@ -277,6 +277,7 @@ impl PLLConf {
 pub mod reg {
   use util::volatile_cell::VolatileCell;
 
+  #[deriving(Copy)]
   pub enum SystemClockSwitch {
     SystemClockHSI = 0,
     SystemClockHSE = 1,
