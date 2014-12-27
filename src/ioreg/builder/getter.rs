@@ -65,8 +65,8 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
     .expect("Unexpected non-primitive register");
   let name = utils::getter_name(cx, path);
   let reg_doc = match reg.docstring {
-    Some(d) => token::get_ident(d.node).get().into_string(),
-    None => "no documentation".into_string(),
+    Some(d) => token::get_ident(d.node).get().to_string(),
+    None => "no documentation".to_string(),
   };
   let docstring = format!("`{}`: {}", reg.name.node, reg_doc);
   let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
