@@ -42,7 +42,7 @@ pub fn build_uart(builder: &mut Builder,
   };
 
   let uart_peripheral_str = format!("Uart{}",
-      match from_str::<uint>(sub.path.as_slice()).unwrap() {
+      match sub.path.as_slice().parse::<uint>().unwrap() {
         0 ... 7 => sub.path.clone(),
         p       => {
           error(format!("unknown UART `{}`, allowed values: 0, 2, 3",
@@ -75,11 +75,11 @@ pub fn build_uart(builder: &mut Builder,
     }
   };
 
-  let baud_rate = from_str::<uint>(mode_captures.at(1).unwrap());
+  let baud_rate = mode_captures.at(1).unwrap().parse::<uint>();
 
   let word_len = match mode_captures.at(2).unwrap() {
     "" => 8,
-    l  => from_str::<u8>(l).unwrap(),
+    l  => l.parse::<u8>().unwrap(),
   };
 
   let parity = TokenString(match mode_captures.at(3).unwrap() {
@@ -96,7 +96,7 @@ pub fn build_uart(builder: &mut Builder,
 
   let stop_bits = match mode_captures.at(4).unwrap() {
     "" => 1,
-    s  => from_str::<u8>(s).unwrap(),
+    s  => s.parse::<u8>().unwrap(),
   };
 
   sub.set_type_name("zinc::hal::tiva_c::uart::Uart".to_string());

@@ -70,7 +70,7 @@ pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<Rc<nod
   let parse_sess = new_parse_sess_special_handler(sh);
   let cfg = Vec::new();
   let ecfg = ExpansionConfig {
-    crate_name: from_str("test").unwrap(),
+    crate_name: ("test").parse().unwrap(),
     deriving_hash_type_parameter: false,
     enable_quotes: true,
     recursion_limit: 10,

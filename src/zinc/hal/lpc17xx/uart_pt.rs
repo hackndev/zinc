@@ -46,16 +46,16 @@ pub fn mutate_pins(builder: &mut Builder, _: &mut ExtCtxt, sub: Rc<node::Node>) 
   let tx_node_name = sub.get_ref_attr("tx").unwrap();
   let rx_node_name = sub.get_ref_attr("rx").unwrap();
 
-  build_uart_gpio(builder, from_str(sub.path.as_slice()).unwrap(),
+  build_uart_gpio(builder, sub.path.as_slice().parse().unwrap(),
       tx_node_name.as_slice(), true);
-  build_uart_gpio(builder, from_str(sub.path.as_slice()).unwrap(),
+  build_uart_gpio(builder, sub.path.as_slice().parse().unwrap(),
       rx_node_name.as_slice(), false);
 }
 
 pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
     sub: Rc<node::Node>) {
   let uart_peripheral_str = format!("UARTPeripheral::UART{}",
-      match from_str::<uint>(sub.path.as_slice()).unwrap() {
+      match sub.path.as_slice().parse::<uint>().unwrap() {
         0|2|3 => sub.path.clone(),
         other => {
           cx.parse_sess().span_diagnostic.span_err(sub.path_span,
