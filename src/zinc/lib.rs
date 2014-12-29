@@ -39,6 +39,9 @@ Two MCUs are supported at the moment, specifically
 
  * NXP LPC1768
  * ST STM32F407
+ * ST STM32L152RCT6
+ * Freescale MK20DX32
+ * TI TM4C123GXL
 
 The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
