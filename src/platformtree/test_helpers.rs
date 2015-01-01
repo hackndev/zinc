@@ -103,6 +103,8 @@ impl CustomEmmiter {
   }
 }
 
+unsafe impl Send for CustomEmmiter {}
+
 impl Emitter for CustomEmmiter {
   fn emit(&mut self, _: Option<(&CodeMap, Span)>, m: &str, _: Option<&str>,
       l: Level) {
