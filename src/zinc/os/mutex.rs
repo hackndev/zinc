@@ -202,5 +202,5 @@ mod internal {
     }
   }
 
-  impl Sync for Mutex { }
+  unsafe impl Sync for Mutex { }
 }

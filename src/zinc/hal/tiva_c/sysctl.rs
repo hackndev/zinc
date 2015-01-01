@@ -253,7 +253,7 @@ pub mod periph {
   //! peripheral system control
 
   use core::iter::range;
-  use core::ptr::RawPtr;
+  use core::ptr::PtrExt;
 
   /// Sysctl can reset/clock gate each module, as well as set various sleep and
   /// deep-sleep mode behaviour.

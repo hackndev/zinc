@@ -160,7 +160,6 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
         OwnedSlice::from_vec(vec!(
           ast::RegionTyParamBound(cx.lifetime(DUMMY_SP, intern("'a")))
         )),
-        None,
         None);
     collected_params.push(typaram);
     ty_params_vec.push(ty.clone());

@@ -25,7 +25,7 @@ extern crate core;
 #[cfg(test)]
 mod test {
   use std::mem::{transmute, zeroed};
-  use std::ptr::RawPtr;
+  use std::ptr::PtrExt;
   use volatile_cell::VolatileCell;
 
   fn get_value<'a, T>(v: &'a T, offset: uint) -> u32 {

@@ -68,4 +68,4 @@ impl<'a, T> DerefMut<T> for SharedRef<'a, T> {
   }
 }
 
-impl<T: Send> Sync for Shared<T> {}
+unsafe impl<T: Send> Sync for Shared<T> {}
