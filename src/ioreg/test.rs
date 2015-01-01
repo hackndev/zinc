@@ -162,15 +162,15 @@ mod test {
     }
     it "has zero base offset" {
       let addr = &test.reg1 as *const GAP_TEST_reg1;
-      assert_eq!(addr.to_uint() - base.to_uint(), 0x0);
+      assert_eq!(addr as uint - base as uint, 0x0);
     }
     it "computes the correct first gap" {
       let addr = &test.reg2 as *const GAP_TEST_reg2;
-      assert_eq!(addr.to_uint() - base.to_uint(), 0x10);
+      assert_eq!(addr as uint - base as uint, 0x10);
     }
     it "computes the correct second gap" {
       let addr = &test.reg4 as *const GAP_TEST_reg4;
-      assert_eq!(addr.to_uint() - base.to_uint(), 0x20);
+      assert_eq!(addr as uint - base as uint, 0x20);
     }
   );
 }
