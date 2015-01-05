@@ -13,9 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::ops::Deref;
+use std::rc::Rc;
 use syntax::codemap::{Spanned, Span};
 use syntax::ast;
-use std::rc::Rc;
 
 /// A variant of an enum field type
 #[deriving(Clone)]

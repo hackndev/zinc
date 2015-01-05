@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use std::iter::FromIterator;
+use std::ops::Deref;
 
 use syntax::ast;
 use syntax::ptr::P;
