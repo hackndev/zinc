@@ -15,6 +15,7 @@
 
 use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
+use regex::Regex;
 
 use builder::{Builder, TokenString, add_node_dependency};
 use node;
@@ -65,7 +66,7 @@ pub fn build_uart(builder: &mut Builder,
   let mode = sub.get_string_attr("mode").unwrap();
 
   let mode_re =
-    regex!(r"([[:digit:]]+),?([[:digit:]]*)([nNoOEe]?)([[:digit:]])?");
+    Regex::new(r"([[:digit:]]+),?([[:digit:]]*)([nNoOEe]?)([[:digit:]])?").unwrap();
 
   let mode_captures = match mode_re.captures(mode.as_slice()) {
     Some(c) => c,
