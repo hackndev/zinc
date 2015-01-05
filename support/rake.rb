@@ -82,7 +82,7 @@ def compile_rust(n, h)
     flags += ' ' + more_flags
 
     if optimize
-      flags.gsub!(/--opt-level \d/, "--opt-level #{optimize}")
+      flags.gsub!(/-C opt-level=\d/, "-C opt-level=#{optimize}")
     end
 
     search_paths = search_paths.map { |s| "-L #{s}"}.join(' ')

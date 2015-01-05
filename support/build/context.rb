@@ -109,7 +109,7 @@ class Context
     ]
 
     @env[:rustcflags] = [
-      '--opt-level 2',
+      '-C opt-level=2',
       '-Z no-landing-pads',
     ] + @config_flags
 
