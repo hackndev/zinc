@@ -10,7 +10,7 @@ use core::ty::Unsafe;
 use core::cmp::Ord;
 use core::ops::Deref;
 use core::ptr::RawPtr;
-use core::option::Option::{mod, Some, None};
+use core::option::Option::{self, Some, None};
 
 use hal::cortex_m3::sched::NoInterrupts;
 

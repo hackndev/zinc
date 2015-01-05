@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use core::option::Option::{mod, Some};
+use core::option::Option::{self, Some};
 
 extern {
   fn isr_wdt();

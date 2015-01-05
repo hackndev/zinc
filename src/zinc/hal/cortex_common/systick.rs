@@ -17,7 +17,7 @@
 //!
 //! Systick memory location is 0xE000_E010.
 
-use core::option::Option::{mod, None, Some};
+use core::option::Option::{self, None, Some};
 
 #[inline(always)]
 fn get_reg() -> &'static reg::SYSTICK {
