@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(globs, macro_rules, asm, phase, unsafe_destructor, lang_items)]
+#![feature(globs, macro_rules, asm, phase, unsafe_destructor, lang_items, associated_types)]
 #![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(improper_ctypes)]
