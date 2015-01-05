@@ -51,7 +51,7 @@ impl<'a, T: Timer, P: Gpio> DHT22<'a, T, P> {
 
   /// Returns previous sensor measurements or None if synchronization failed.
   pub fn read(&self) -> Option<Measurements> {
-    let buffer: &mut [u8, ..5] = &mut [0, ..5];
+    let buffer: &mut [u8; 5] = &mut [0; 5];
     let mut idx: uint = 0;
     let mut mask: u8 = 128;
 

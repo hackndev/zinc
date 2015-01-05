@@ -19,7 +19,7 @@ const ISRCOUNT: uint = 139;
 
 #[link_section=".isr_vector_nvic"]
 #[no_mangle]
-pub static NVIC_VECTOR: [Option<unsafe extern fn()>, ..ISRCOUNT] = [
+pub static NVIC_VECTOR: [Option<unsafe extern fn()>; ISRCOUNT] = [
     None,                      // GPIO Port A
     None,                      // GPIO Port B
     None,                      // GPIO Port C

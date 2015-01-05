@@ -44,7 +44,7 @@ pub struct C12332<'a, S:'a, T:'a, P:'a> {
   cs:    &'a P,
   reset: &'a P,
 
-  videobuf: [cell::Cell<u8>, ..512],
+  videobuf: [cell::Cell<u8>; 512],
 
   font: &'static [u8],
   char_x: cell::Cell<u32>,

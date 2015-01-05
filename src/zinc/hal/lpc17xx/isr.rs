@@ -59,7 +59,7 @@ const ISRCount: uint = 35;
 #[allow(non_upper_case_globals)]
 #[link_section=".isr_vector_nvic"]
 #[no_mangle]
-pub static NVICVectors: [Option<unsafe extern fn()>, ..ISRCount] = [
+pub static NVICVectors: [Option<unsafe extern fn()>; ISRCount] = [
   // s.a. lpc17xx user manual, table 50 (chapter 6.3)
   Some(isr_wdt),
   Some(isr_timer_0),

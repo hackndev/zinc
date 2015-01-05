@@ -42,7 +42,7 @@ pub trait CharIO {
 
   /// Outputs an integer with given base.
   fn putint(&self, i: u32, base: u32) {
-    let mut buf : [u8, ..32] = unsafe { zeroed() };
+    let mut buf : [u8; 32] = unsafe { zeroed() };
     let bsl : &mut [u8] = &mut buf;
     strconv::itoa(i, bsl, base);
 

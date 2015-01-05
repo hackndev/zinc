@@ -83,7 +83,7 @@ const ISRCount: uint = 16;
 #[link_section=".isr_vector"]
 #[allow(non_upper_case_globals)]
 #[no_mangle]
-pub static ISRVectors: [Option<unsafe extern fn()>, ..ISRCount] = [
+pub static ISRVectors: [Option<unsafe extern fn()>; ISRCount] = [
   Some(__STACK_BASE),
   Some(main),             // Reset
   Some(isr_nmi),          // NMI
