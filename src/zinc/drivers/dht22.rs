@@ -88,11 +88,11 @@ impl<'a, T: Timer, P: Gpio> DHT22<'a, T, P> {
       }
     }
 
-    let humidity: f32 = ((buffer[0] as u16 << 8) | buffer[1] as u16) as f32 * 0.1;
+    let humidity: f32 = (((buffer[0] as u16) << 8) | buffer[1] as u16) as f32 * 0.1;
     let temperature: f32 = if buffer[2] & 0x80 != 0 {
       -0.1 * (((buffer[2] as u16 & 0x7F) << 8) | buffer[3] as u16) as f32
     } else {
-      0.1 * ((buffer[2] as u16 << 8) | buffer[3] as u16) as f32
+      0.1 * (((buffer[2] as u16) << 8) | buffer[3] as u16) as f32
     };
     let checksum: u8 = buffer[0] + buffer[1] + buffer[2] + buffer[3];
 

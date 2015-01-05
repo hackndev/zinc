@@ -78,8 +78,8 @@ impl Pin {
       gpiodir: Option<::hal::pin::GpioDirection>) {
     let (offset, reg) = self.get_pinsel_reg_and_offset();
 
-    let fun_bits: u32  = function as u32 << (offset as uint * 2);
-    let mask_bits: u32 = !(3u32 << (offset as uint * 2));
+    let fun_bits: u32  = (function as u32) << ((offset as uint) * 2);
+    let mask_bits: u32 = !(3u32 << ((offset as uint) * 2));
 
     let val: u32 = reg.value();
     let new_val = (val & mask_bits) | fun_bits;

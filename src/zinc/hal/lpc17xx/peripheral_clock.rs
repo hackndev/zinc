@@ -154,7 +154,7 @@ impl PeripheralClock {
       _   => unsafe { abort() },
     };
 
-    let bits: u32 = divisor_value as u32 << (offset as uint);
+    let bits: u32 = (divisor_value as u32) << (offset as uint);
     let mask: u32 = !((3u32 << (offset as uint)) as u32);
     let val: u32 = reg.value();
     reg.set_value(val & mask | bits);

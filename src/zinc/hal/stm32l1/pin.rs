@@ -142,27 +142,27 @@ impl Pin {
       GpioOut(otype, speed) => {
         // set type and speed
         let tv: u16 = reg.otyper.otype() & mask1;
-        reg.otyper.set_otype(tv | (otype as u16 << offset1));
+        reg.otyper.set_otype(tv | ((otype as u16) << offset1));
         let sv: u32 = reg.ospeedr.speed() & mask2;
-        reg.ospeedr.set_speed(sv | (speed as u32 << offset2));
+        reg.ospeedr.set_speed(sv | ((speed as u32) << offset2));
         // done
         0b01
       },
       AltFunction(alt, otype, speed) => {
         // set type and speed
         let tv: u16 = reg.otyper.otype() & mask1;
-        reg.otyper.set_otype(tv | (otype as u16 << offset1));
+        reg.otyper.set_otype(tv | ((otype as u16) << offset1));
         let sv: u32 = reg.ospeedr.speed() & mask2;
-        reg.ospeedr.set_speed(sv | (speed as u32 << offset2));
+        reg.ospeedr.set_speed(sv | ((speed as u32) << offset2));
         // set alt mode
-        let mut off = pin_index as uint << 2;
+        let mut off = (pin_index as uint) << 2;
         if pin_index < 8 {
           let v = reg.afrl.alt_fun() & !(0xF << off);
-          reg.afrl.set_alt_fun(v | (alt as u32 << off));
+          reg.afrl.set_alt_fun(v | ((alt as u32) << off));
         }else {
           off -= 32;
           let v = reg.afrh.alt_fun() & !(0xF << off);
-          reg.afrh.set_alt_fun(v | (alt as u32 << off));
+          reg.afrh.set_alt_fun(v | ((alt as u32) << off));
         }
         // done
         0b10
