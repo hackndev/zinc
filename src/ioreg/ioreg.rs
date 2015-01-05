@@ -327,7 +327,7 @@ N => NAME
 
 */
 
-#![feature(quote, plugin_registrar)]
+#![feature(quote, plugin_registrar, associated_types)]
 #![crate_name="ioreg"]
 #![crate_type="dylib"]
 
