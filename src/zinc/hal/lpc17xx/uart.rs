@@ -46,7 +46,7 @@ pub enum UARTPeripheral {
 
 /// UART word length.
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum WordLen {
   WordLen5bits = 0b00,
   WordLen6bits = 0b01,
@@ -69,7 +69,7 @@ impl WordLen {
 }
 
 /// Stop bits configuration.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum StopBit {
   /// Single stop bit.
   StopBit1bit  = 0b0_00,
@@ -127,7 +127,7 @@ enum FIFOTriggerLevel {
 }
 
 /// Structure describing a UART instance.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct UART {
   reg: &'static reg::UART,
   clock: PeripheralClock,

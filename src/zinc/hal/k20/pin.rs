@@ -33,7 +33,7 @@ use self::SlewRate::*;
 
 /// A pin.
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Pin {
   pub port: Port,
   pub pin: u8,
@@ -52,7 +52,7 @@ pub enum Port {
 impl Copy for Port {}
 
 /// Pin functions (GPIO or up to seven additional functions).
-#[deriving(PartialEq)]
+#[derive(PartialEq)]
 #[allow(missing_docs)]
 pub enum Function {
   Analog       = 0,
@@ -69,7 +69,7 @@ impl Copy for Function {}
 
 /// Pull-up/-down configuration.
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum PullConf {
   PullNone   = 0,
   PullUp     = 1,
@@ -78,7 +78,7 @@ pub enum PullConf {
 
 /// Pin output driver strength.
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum DriveStrength {
   DriveStrengthHigh   = 0,
   DriveStrengthLow    = 1,
@@ -86,7 +86,7 @@ pub enum DriveStrength {
 
 /// Pin output drive slew rate.
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum SlewRate {
   SlewFast   = 0,
   SlewSlow   = 1,

@@ -25,7 +25,7 @@ use core::intrinsics::abort;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// System clock source.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum SystemClockSource {
   /// High-speed internal oscillator, 16MHz.
   SystemClockHSI,
@@ -36,7 +36,7 @@ pub enum SystemClockSource {
 }
 
 /// PLL clock source. Applies to both PLL and PLLI2S.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum PLLClockSource {
   /// High-speed internal oscillator, 16MHz.
   PLLClockHSI,
@@ -53,7 +53,7 @@ pub enum PLLClockSource {
 /// F_pll_out = Fvco / p
 /// F_pll_usb = Fvco / q
 /// ```
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct PLLConf {
   /// Clock source.
   pub source: PLLClockSource,
@@ -68,14 +68,14 @@ pub struct PLLConf {
 }
 
 /// MCU clock configuration.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct ClockConf {
   /// Clocking source.
   pub source: SystemClockSource,
 }
 
 /// MCU configuration.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct SysConf {
   /// Clock configuration.
   pub clock: ClockConf,
@@ -277,7 +277,7 @@ impl PLLConf {
 pub mod reg {
   use util::volatile_cell::VolatileCell;
 
-  #[deriving(Copy)]
+  #[derive(Copy)]
   pub enum SystemClockSwitch {
     SystemClockHSI = 0,
     SystemClockHSE = 1,

@@ -35,7 +35,7 @@ pub struct Hd44780u<'a> {
 
 /// The controller supports writing in either direction to accomodate various
 /// languages.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum MoveDir {
   /// Cursor moves right after write
   Right,
@@ -44,7 +44,7 @@ pub enum MoveDir {
 }
 
 /// The controller supports 5x8 and 5x10 dot fonts depending on the LCD used.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum Font {
   /// Use 5x8 dot matrix font
   Font5x8,

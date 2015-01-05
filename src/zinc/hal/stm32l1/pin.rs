@@ -25,7 +25,7 @@ use self::Port::*;
 /// Available port names.
 #[allow(missing_docs)]
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum Port {
   PortA,
   PortB,
@@ -40,7 +40,7 @@ pub enum Port {
 /// Pin output type.
 #[allow(missing_docs)]
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum OutputType {
   OutPushPull  = 0,
   OutOpenDrain = 1,
@@ -49,7 +49,7 @@ pub enum OutputType {
 /// Pin pull resistors: up, down, or none.
 #[allow(missing_docs)]
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum PullType {
   PullNone = 0,
   PullUp   = 1,
@@ -58,7 +58,7 @@ pub enum PullType {
 
 /// Pin speed.
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum Speed {
   /// 400 KHz
   VeryLow = 0,
@@ -73,7 +73,7 @@ pub enum Speed {
 /// Extended pin modes.
 #[allow(missing_docs, non_camel_case_types)]
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum AltMode {
   AfRtc50Mhz_Mco_RtcAfl_Wakeup_SwJtag_Trace = 0,
   AfTim2 = 1,
@@ -92,7 +92,7 @@ pub enum AltMode {
 }
 
 /// Pin mode.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum Mode {
   /// GPIO Input Mode
   GpioIn,
@@ -105,7 +105,7 @@ pub enum Mode {
 }
 
 /// Pin configuration.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Pin {
   /// Pin index.
   pub index: u8,

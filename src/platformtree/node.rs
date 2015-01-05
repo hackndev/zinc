@@ -28,7 +28,7 @@ pub use self::AttributeType::*;
 /// Holds a value for an attribute.
 ///
 /// The value can be an unsigned integer, string or reference.
-#[deriving(Clone)]
+#[derive(Clone)]
 pub enum AttributeValue {
   IntValue(uint),
   BoolValue(bool),
@@ -40,7 +40,7 @@ pub enum AttributeValue {
 ///
 /// Used in Node::expect_attributes to provide the expected type of the
 /// attribute.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum AttributeType {
   IntAttribute,
   BoolAttribute,
@@ -52,7 +52,7 @@ pub enum AttributeType {
 ///
 /// Stored inside of a HashMap, the key to HashMap is the attribute name.
 /// Provides spans for both key and value.
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct Attribute {
   pub value: AttributeValue,
   pub key_span: Span,
