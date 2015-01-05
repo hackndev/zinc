@@ -31,7 +31,7 @@ enum Control {
 
 /// Spi error codes.
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum Error {
   /// Device is sleeping.
   Sleeping,
@@ -77,8 +77,8 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
     match status {
       0x02 if ((w0 | w1 == 0) | (r0 | r1 == 0)) => Err(Error::Allocating),
       0x02 => Ok((
-        (w1 as u16 << 8) | (w0 as u16), // write buffer size
-        (r1 as u16 << 8) | (r0 as u16), // read buffer size
+        ((w1 as u16) << 8) | (w0 as u16), // write buffer size
+        ((r1 as u16) << 8) | (r0 as u16), // read buffer size
       )),
       0x00 | 0xFF => Err(Error::Sleeping),
       other => Err(Error::Unknown(other)),
@@ -108,7 +108,7 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
     self.spi.transfer(0);
     let r0 = self.spi.transfer(0);
     let r1 = self.spi.transfer(0);
-    let size = (r1 as u16 << 8) | (r0 as u16);
+    let size = ((r1 as u16) << 8) | (r0 as u16);
     if status != 0x02 {
       self.active.set_high();
       Err(Error::Unknown(status))
@@ -132,7 +132,7 @@ impl<G: Gpio, S: Spi> BlueNrg<G, S> {
     let w1 = self.spi.transfer(0);
     self.spi.transfer(0);
     self.spi.transfer(0);
-    let size = (w1 as u16 << 8) | (w0 as u16);
+    let size = ((w1 as u16) << 8) | (w0 as u16);
     if status != 0x02 {
       self.active.set_high();
       Err(Error::Unknown(status))

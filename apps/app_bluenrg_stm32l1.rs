@@ -44,7 +44,7 @@ fn map_byte(s: u8) -> (&'static str, &'static str) {
 
 #[no_mangle]
 pub unsafe fn main() {
-  use core::fmt::FormatWriter;
+  use core::fmt::Writer;
   use core::result::Result;
   use zinc::drivers::bluenrg;
   use zinc::hal;

@@ -33,7 +33,7 @@ use self::UsartPeripheral::*;
 /// Available USART peripherals.
 #[allow(missing_docs)]
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum UsartPeripheral {
   Usart1,
   Usart2,
@@ -45,7 +45,7 @@ pub enum UsartPeripheral {
 /// USART word length.
 #[allow(missing_docs)]
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum WordLen {
   WordLen8bits = 0,
   WordLen9bits = 1,
@@ -53,7 +53,7 @@ pub enum WordLen {
 
 /// Stop bits configuration.
 #[repr(u8)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum StopBit {
   /// Single stop bit.
   StopBit1bit       = 0,
@@ -66,7 +66,7 @@ pub enum StopBit {
 }
 
 /// Structure describing a USART instance.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Usart {
   reg: &'static reg::USART,
 }
@@ -130,12 +130,12 @@ impl CharIO for Usart {
   }
 }
 
-impl fmt::FormatWriter for Usart {
-  fn write(&mut self, bytes: &[u8]) -> fmt::Result {
-    use core::slice::SliceExt;
-    for b in bytes.iter() {
+impl fmt::Writer for Usart {
+  fn write_str(&mut self, s: &str) -> fmt::Result {
+    use core::str::StrExt;
+    for b in s.bytes() {
       wait_for!(self.reg.sr.transmit_data_empty());
-      self.reg.dr.set_data(*b as u16);
+      self.reg.dr.set_data(b as u16);
     }
     Result::Ok(())
   }

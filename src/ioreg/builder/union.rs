@@ -53,7 +53,8 @@ impl<'a> PaddedRegsIterator<'a> {
   }
 }
 
-impl<'a> Iterator<RegOrPadding<'a>> for PaddedRegsIterator<'a> {
+impl<'a> Iterator for PaddedRegsIterator<'a> {
+  type Item = RegOrPadding<'a>;
   fn next(&mut self) -> Option<RegOrPadding<'a>> {
     if self.index >= self.sorted_regs.len() {
       None

@@ -16,7 +16,7 @@
 //! Driver for DHT22.
 
 use core::iter::range;
-use core::option::Option::{mod, Some, None};
+use core::option::Option::{self, Some, None};
 
 use hal::pin::Gpio;
 use hal::pin::GpioLevel::Low;
@@ -34,7 +34,7 @@ pub struct DHT22<'a, T:'a, P:'a> {
 
 /// Measurement data from the DHT22.
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Measurements {
   pub humidity: f32,
   pub temperature: f32,
@@ -51,7 +51,7 @@ impl<'a, T: Timer, P: Gpio> DHT22<'a, T, P> {
 
   /// Returns previous sensor measurements or None if synchronization failed.
   pub fn read(&self) -> Option<Measurements> {
-    let buffer: &mut [u8, ..5] = &mut [0, ..5];
+    let buffer: &mut [u8; 5] = &mut [0; 5];
     let mut idx: uint = 0;
     let mut mask: u8 = 128;
 
@@ -88,11 +88,11 @@ impl<'a, T: Timer, P: Gpio> DHT22<'a, T, P> {
       }
     }
 
-    let humidity: f32 = ((buffer[0] as u16 << 8) | buffer[1] as u16) as f32 * 0.1;
+    let humidity: f32 = (((buffer[0] as u16) << 8) | buffer[1] as u16) as f32 * 0.1;
     let temperature: f32 = if buffer[2] & 0x80 != 0 {
       -0.1 * (((buffer[2] as u16 & 0x7F) << 8) | buffer[3] as u16) as f32
     } else {
-      0.1 * ((buffer[2] as u16 << 8) | buffer[3] as u16) as f32
+      0.1 * (((buffer[2] as u16) << 8) | buffer[3] as u16) as f32
     };
     let checksum: u8 = buffer[0] + buffer[1] + buffer[2] + buffer[3];
 

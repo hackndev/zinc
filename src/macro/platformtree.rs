@@ -25,6 +25,7 @@ extern crate serialize;
 extern crate syntax;
 
 use std::clone::Clone;
+use std::ops::Deref;
 
 use rustc::plugin::Registry;
 use syntax::ast;
@@ -83,7 +84,6 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
             cx.ident_of(ty.to_tyhash().as_slice()),
             OwnedSlice::from_vec(vec!(cx.typarambound(
                 cx.path(DUMMY_SP, ty.as_slice().split_str("::").map(|t| cx.ident_of(t)).collect())))),
-            None,
             None)
       }).collect();
 

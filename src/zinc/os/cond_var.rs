@@ -143,5 +143,5 @@ mod internal {
     }
   }
 
-  impl Sync for CondVar {}
+  unsafe impl Sync for CondVar {}
 }

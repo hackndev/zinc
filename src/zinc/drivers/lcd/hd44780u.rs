@@ -30,12 +30,12 @@ pub struct Hd44780u<'a> {
   /// Enable wire
   en:    &'a (Gpio + 'a),
   /// The 4 data wires. Those must be wired to [d4, d5, d6, d7] in 4bit mode.
-  data: [&'a (Gpio + 'a), ..4],
+  data: [&'a (Gpio + 'a); 4],
 }
 
 /// The controller supports writing in either direction to accomodate various
 /// languages.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum MoveDir {
   /// Cursor moves right after write
   Right,
@@ -44,7 +44,7 @@ pub enum MoveDir {
 }
 
 /// The controller supports 5x8 and 5x10 dot fonts depending on the LCD used.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum Font {
   /// Use 5x8 dot matrix font
   Font5x8,
@@ -57,7 +57,7 @@ impl<'a> Hd44780u<'a> {
   pub fn new(timer: &'a (Timer + 'a),
                  rs:    &'a (Gpio  + 'a),
                  en:    &'a (Gpio  + 'a),
-                 data: [&'a (Gpio  + 'a), ..4]) -> Hd44780u<'a> {
+                 data: [&'a (Gpio  + 'a); 4]) -> Hd44780u<'a> {
     Hd44780u { timer: timer, rs: rs, en: en, data: data }
   }
 
@@ -228,7 +228,7 @@ impl<'a> Hd44780u<'a> {
   /// must be in the range 0 ... 7.
   ///
   /// This resets the cursor positon to 0.
-  pub fn custom_char_5x8(&self, pos: u8, bitmap: [ u8, ..8 ]) {
+  pub fn custom_char_5x8(&self, pos: u8, bitmap: [ u8; 8 ]) {
     if pos > 7 {
       panic!("Invalid character position");
     }
@@ -246,7 +246,7 @@ impl<'a> Hd44780u<'a> {
   /// Create custom 5x10 char at index `pos` from `bitmap`. Only the 5LSBs of
   /// each bitmap lines are used. There can be only 8 custom 5x8 chars so pos
   /// must be in the range 0 ... 3.
-  pub fn custom_char_5x10(&self, pos: u8, bitmap: [ u8, ..10 ]) {
+  pub fn custom_char_5x10(&self, pos: u8, bitmap: [ u8; 10 ]) {
     if pos > 3 {
       panic!("Invalid character position");
     }

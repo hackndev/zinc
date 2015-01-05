@@ -80,8 +80,8 @@ impl<'a, S: Spi, T: Timer, P: Gpio> ILI9341<'a, S, T, P> {
   }
 
   fn verify_id(&self) -> bool {
-    let mut data: [u8, ..3] = [0, 0, 0];
-    let id: [u8, ..3] = [0x00, 0x93, 0x41];
+    let mut data: [u8; 3] = [0, 0, 0];
+    let id: [u8; 3] = [0x00, 0x93, 0x41];
 
     for i in range(0, 3) {
       data[i] = self.read_register(0xd3, (i+1) as u8);

@@ -20,13 +20,13 @@ This module includes code for setting up the clock, flash, access time and
 performing initial peripheral configuration.
 */
 
-use core::option::Option::{mod, Some, None};
+use core::option::Option::{self, Some, None};
 
 #[path="../../util/ioreg.rs"] mod ioreg;
 #[path="../../util/wait_for.rs"] mod wait_for;
 
 /// PLL clock source.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum ClockSource {
   /// Internal resonator, 4MHz.
   Internal,
@@ -44,7 +44,7 @@ pub enum ClockSource {
 /// Fcco = (2 * m * Fin) / n
 /// Fcpu = Fcco / divisor
 /// ```
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct PLL0 {
   /// PLL multiplier.
   pub m: u8,
@@ -55,7 +55,7 @@ pub struct PLL0 {
 }
 
 /// MCU clock configuration.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Clock {
   /// Clocking source.
   pub source: ClockSource,

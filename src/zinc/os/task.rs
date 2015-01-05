@@ -87,12 +87,12 @@ impl TaskDescriptor {
 
 struct TasksCollection {
   pub current_task: uint,
-  pub tasks: [TaskDescriptor, ..MaxTasksCount],
+  pub tasks: [TaskDescriptor; MaxTasksCount],
 }
 
 pub static mut Tasks: TasksCollection = TasksCollection {
   current_task: 0,
-  tasks: [TaskDescriptor { stack_start: 0, stack_end: 0, status: Runnable }, ..MaxTasksCount]
+  tasks: [TaskDescriptor { stack_start: 0, stack_end: 0, status: Runnable }; MaxTasksCount]
 };
 
 impl TasksCollection {

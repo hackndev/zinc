@@ -111,6 +111,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
 #[cfg(test)]
 mod test {
+  use std::ops::Deref;
   use builder::Builder;
   use test_helpers::{assert_equal_source, with_parsed, fails_to_build};
 

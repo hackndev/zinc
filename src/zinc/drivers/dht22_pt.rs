@@ -70,6 +70,7 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
 #[cfg(test)]
 mod test {
+  use std::ops::Deref;
   use builder::Builder;
   use test_helpers::{assert_equal_source, with_parsed};
   use hamcrest::{assert_that, is, equal_to};

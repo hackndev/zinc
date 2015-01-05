@@ -14,6 +14,8 @@
 // limitations under the License.
 
 use std::iter::FromIterator;
+use std::ops::Deref;
+
 use syntax::ast;
 use syntax::ptr::P;
 use syntax::ast_util::empty_generics;
@@ -71,7 +73,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
           variants.iter().map(|v| P(build_enum_variant(cx, v)))),
       };
       let attrs: Vec<ast::Attribute> = vec!(
-        utils::list_attribute(cx, "deriving", vec!("FromPrimitive")),
+        utils::list_attribute(cx, "derive", vec!("FromPrimitive")),
         utils::list_attribute(cx, "allow",
                               vec!("dead_code",
                                    "non_camel_case_types",

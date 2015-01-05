@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(globs, macro_rules, asm, phase, unsafe_destructor, lang_items)]
+#![feature(globs, macro_rules, asm, phase, unsafe_destructor, lang_items, associated_types)]
 #![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(improper_ctypes)]
@@ -66,7 +66,7 @@ pub mod os;
 /// TODO(farcaller): clean up when fixed.
 #[cfg(not(test))]
 pub mod std {
-  pub use core::cmp;  // used for #[deriving(Eq)] until fixed in rust.
+  pub use core::cmp;  // used for #[derive(Eq)] until fixed in rust.
   pub use core::option;
   pub use core::num;
   pub use core::kinds;

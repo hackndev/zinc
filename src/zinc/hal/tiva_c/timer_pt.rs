@@ -15,6 +15,7 @@
 
 use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
+use regex::Regex;
 
 use builder::{Builder, TokenString, add_node_dependency};
 use node;
@@ -61,7 +62,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   //   two counters, A and B which can be configured independantly.
 
   let (wide_timer, id) =
-    match regex!(r"(w?)([0-5])").captures(node.path.as_slice()) {
+    match Regex::new(r"(w?)([0-5])").unwrap().captures(node.path.as_slice()) {
       Some(c) => {
         (c.at(1) != Some(""), c.at(2))
       }

@@ -30,7 +30,7 @@ use self::Port::*;
 
 /// Available port names.
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum Port {
   Port0,
   Port1,
@@ -40,7 +40,7 @@ pub enum Port {
 }
 
 /// Pin functions (GPIO or up to three additional functions).
-#[deriving(PartialEq)]
+#[derive(PartialEq)]
 #[allow(missing_docs)]
 pub enum Function {
   Gpio         = 0,
@@ -52,7 +52,7 @@ pub enum Function {
 impl Copy for Function {}
 
 /// Structure to describe the location of a pin
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Pin {
   /// Port the pin is attached to
   port: Port,
@@ -78,8 +78,8 @@ impl Pin {
       gpiodir: Option<::hal::pin::GpioDirection>) {
     let (offset, reg) = self.get_pinsel_reg_and_offset();
 
-    let fun_bits: u32  = function as u32 << (offset as uint * 2);
-    let mask_bits: u32 = !(3u32 << (offset as uint * 2));
+    let fun_bits: u32  = (function as u32) << ((offset as uint) * 2);
+    let mask_bits: u32 = !(3u32 << ((offset as uint) * 2));
 
     let val: u32 = reg.value();
     let new_val = (val & mask_bits) | fun_bits;

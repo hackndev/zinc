@@ -69,7 +69,7 @@ impl Copy for PeripheralClock {}
 
 /// Configures the divisor of peripheral clock based on core clock.
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum PeripheralDivisor {
   WDTDivisor     = 0,
   TIMER0Divisor  = 2,
@@ -154,7 +154,7 @@ impl PeripheralClock {
       _   => unsafe { abort() },
     };
 
-    let bits: u32 = divisor_value as u32 << (offset as uint);
+    let bits: u32 = (divisor_value as u32) << (offset as uint);
     let mask: u32 = !((3u32 << (offset as uint)) as u32);
     let val: u32 = reg.value();
     reg.set_value(val & mask | bits);

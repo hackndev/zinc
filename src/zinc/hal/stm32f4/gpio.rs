@@ -22,7 +22,7 @@ use hal::pin::{GpioDirection};
 mod ioreg;
 
 /// Configuration for a GPIO.
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct GPIOConf {
   /// Pin configuration for this GPIO.
   pub pin: pin::PinConf,

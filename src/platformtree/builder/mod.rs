@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use std::rc::Rc;
+use std::ops::DerefMut;
 use syntax::abi;
 use syntax::ast::TokenTree;
 use syntax::ast;

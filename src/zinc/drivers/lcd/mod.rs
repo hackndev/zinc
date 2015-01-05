@@ -165,7 +165,7 @@ mod test {
   use drivers::lcd::LCD;
 
   pub struct TestLCD {
-    pixbuf: [[Cell<u16>, ..16], ..16],
+    pixbuf: [[Cell<u16>; 16]; 16],
   }
 
   impl CharIO for TestLCD {
@@ -219,7 +219,7 @@ mod test {
   }
 
   /* keep this
-  let blank: [[u16, ..16], ..16] = [
+  let blank: [[u16; 16]; 16] = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -259,7 +259,7 @@ mod test {
   fn should_draw_line() {
     let io = TestLCD::new();
 
-    let diagonal: [[u16, ..16], ..16] = [
+    let diagonal: [[u16; 16]; 16] = [
       [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -289,7 +289,7 @@ mod test {
 
     io.clear();
 
-    let non_symetric: [[u16, ..16], ..16] = [
+    let non_symetric: [[u16; 16]; 16] = [
       [2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -323,7 +323,7 @@ mod test {
   fn should_draw_rect() {
     let io = TestLCD::new();
 
-    let overlapping: [[u16, ..16], ..16] = [
+    let overlapping: [[u16; 16]; 16] = [
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -359,7 +359,7 @@ mod test {
   fn should_draw_fillrect() {
     let io = TestLCD::new();
 
-    let eights: [[u16, ..16], ..16] = [
+    let eights: [[u16; 16]; 16] = [
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
       [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -424,7 +424,7 @@ mod test {
       0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff,
     ];
 
-    let i2: [[u16, ..16], ..16] = [
+    let i2: [[u16; 16]; 16] = [
       [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,
        0xed, 0x10, 0x01, 0xed, 0xad, 0xff, 0xff, 0xff],
       [0xff, 0xff, 0xff, 0xad, 0xde, 0x10, 0x01, 0xde,

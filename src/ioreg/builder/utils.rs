@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::iter::FromIterator;
+
 use syntax::ext::base::ExtCtxt;
 use syntax::ast;
 use syntax::ptr::P;

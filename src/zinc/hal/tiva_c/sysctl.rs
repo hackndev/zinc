@@ -32,7 +32,7 @@ pub mod clock {
 
   /// Clock sources available on the system. The values are the RCC/RCC2 OSCSRC
   /// field encoding.
-  #[deriving(PartialEq, FromPrimitive)]
+  #[derive(PartialEq, FromPrimitive)]
   pub enum ClockSource {
     /// The Main Oscillator, external crystal/oscillator on OSC pins.
     /// The possible frequencies are listed in MOSCSource.
@@ -51,7 +51,7 @@ pub mod clock {
   /// The chip supports a finite list of crystal frequencies for the MOSC, each
   /// having its own ID used to configure the PLL to output 400MHz.
   #[allow(missing_docs, non_camel_case_types)]
-  #[deriving(FromPrimitive, Copy)]
+  #[derive(FromPrimitive, Copy)]
   pub enum MOSCFreq {
     X5_0MHz    = 0x09,
     X5_12MHz   = 0x0A,
@@ -253,11 +253,11 @@ pub mod periph {
   //! peripheral system control
 
   use core::iter::range;
-  use core::ptr::RawPtr;
+  use core::ptr::PtrExt;
 
   /// Sysctl can reset/clock gate each module, as well as set various sleep and
   /// deep-sleep mode behaviour.
-  #[deriving(Copy)]
+  #[derive(Copy)]
   pub struct PeripheralClock {
     /// Hardware register offset for this peripheral class within a system
     /// control block.

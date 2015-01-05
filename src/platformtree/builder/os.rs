@@ -160,7 +160,6 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
         OwnedSlice::from_vec(vec!(
           ast::RegionTyParamBound(cx.lifetime(DUMMY_SP, intern("'a")))
         )),
-        None,
         None);
     collected_params.push(typaram);
     ty_params_vec.push(ty.clone());
@@ -216,6 +215,7 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
 
 #[cfg(test)]
 mod test {
+  use std::ops::Deref;
   use syntax::codemap::DUMMY_SP;
   use syntax::ext::build::AstBuilder;
 

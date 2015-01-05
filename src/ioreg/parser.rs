@@ -489,7 +489,7 @@ impl<'a> Parser<'a> {
 
           self.bump();
           let stripped = s.get().slice_from(prefix.len())
-            .trim_left_chars(' ');
+            .trim_left_matches(' ');
           docs.push(String::from_str(stripped));
         },
         _ => break,
