@@ -25,6 +25,7 @@ extern crate serialize;
 extern crate syntax;
 
 use std::clone::Clone;
+use std::ops::Deref;
 
 use rustc::plugin::Registry;
 use syntax::ast;

@@ -122,6 +122,7 @@ pub fn build_uart_gpio(builder: &Builder, uart_idx: uint, name: &str,
 
 #[cfg(test)]
 mod test {
+  use std::ops::Deref;
   use builder::Builder;
   use test_helpers::{assert_equal_source, with_parsed};
 

@@ -16,6 +16,7 @@
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::fmt;
+use std::ops::DerefMut;
 use std::rc::{Rc, Weak};
 use syntax::codemap::{Span, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;

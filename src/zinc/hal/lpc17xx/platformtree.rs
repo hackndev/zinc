@@ -55,6 +55,7 @@ pub fn add_node_dependency_on_clock(builder: &mut Builder,
 
 #[cfg(test)]
 mod test {
+  use std::ops::Deref;
   use builder::Builder;
   use test_helpers::{assert_equal_items, with_parsed, fails_to_build};
 

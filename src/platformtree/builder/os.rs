@@ -215,6 +215,7 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
 
 #[cfg(test)]
 mod test {
+  use std::ops::Deref;
   use syntax::codemap::DUMMY_SP;
   use syntax::ext::build::AstBuilder;
 
