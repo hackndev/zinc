@@ -50,8 +50,8 @@ impl<'a> Parser<'a> {
   pub fn new(cx: &'a ExtCtxt<'a>, tts: &[TokenTree]) -> Parser<'a> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
-    let mut reader = box lexer::new_tt_reader(
-        &sess.span_diagnostic, None, ttsvec) as Box<lexer::Reader>;
+    let mut reader = Box::new(lexer::new_tt_reader(
+        &sess.span_diagnostic, None, None, ttsvec)) as Box<lexer::Reader>;
 
     let tok0 = reader.next_token();
     let token = tok0.tok;
@@ -565,7 +565,7 @@ impl<'a> Parser<'a> {
   fn bump(&mut self) -> token::Token {
     let tok = self.token.clone();
     self.last_span = self.span;
-    self.last_token = Some(box tok.clone());
+    self.last_token = Some(Box::new(tok.clone()));
 
     let next = self.reader.next_token();
 
