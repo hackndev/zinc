@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(globs, macro_rules, asm, phase, unsafe_destructor, lang_items, associated_types)]
+#![feature(asm, unsafe_destructor, lang_items)]
 #![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(improper_ctypes)]
@@ -47,11 +47,11 @@ The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
 */
 
-#[phase(plugin,link)] extern crate core;
+#[macro_use] extern crate core;
 #[cfg(not(test))] extern crate rlibc;
 
-#[cfg(test)] #[phase(plugin,link)] extern crate std;
-#[phase(plugin)] extern crate ioreg;
+#[macro_use] extern crate std;
+#[plugin] extern crate ioreg;
 
 pub mod drivers;
 pub mod hal;
