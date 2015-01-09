@@ -17,6 +17,6 @@ require 'digest'
 
 module Rlib
   def self.crate_name(src)
-    `#{RUSTC} --print-file-name "#{src}"`.strip
+    `#{RUSTC} --print file-names "#{src}"`.strip
   end
 end
