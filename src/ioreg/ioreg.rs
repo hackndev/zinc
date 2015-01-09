@@ -371,7 +371,7 @@ pub struct MacItems {
 
 impl MacItems {
   pub fn new(items: Vec<P<ast::Item>>) -> Box<MacResult+'static> {
-    box MacItems { items: items } as Box<MacResult>
+    Box::new(MacItems { items: items })
   }
 }
 
