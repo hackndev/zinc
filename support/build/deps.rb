@@ -57,7 +57,7 @@ module Deps
           end
         end
       end
-      prev = l
+      prev = l if !(path_rx.match(prev) && l[0] = '#')
     end
     subs
   end
