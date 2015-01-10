@@ -226,7 +226,7 @@ impl<'a> Parser<'a> {
 
             // Verify fields fit in register
             match fields.last().map(|f| f.high_bit()) {
-              Some(last_bit) if last_bit >= 8*width.size() => {
+              Some(last_bit) if last_bit >= 8*width.size() as u8 => {
                 self.sess.span_diagnostic.span_err(
                   name.span,
                   format!("Width of fields ({} bits) exceeds access size of register ({} bits)",
@@ -298,7 +298,7 @@ impl<'a> Parser<'a> {
           bit, 8*reg_width.size()));
         return None;
       },
-      Some(bit) => bit,
+      Some(bit) => bit as u8,
       None => return None,
     };
     let bits_span = self.span;
@@ -311,11 +311,11 @@ impl<'a> Parser<'a> {
               bit, 8*reg_width.size()));
             return None;
           },
-          Some(bit) => bit as uint,
+          Some(bit) => bit as u8,
           None => return None,
         }
       },
-      _ => low_bit as uint,
+      _ => low_bit as u8,
     };
 
     // TODO(bgamari): Do we want to enforce an order here?
@@ -335,12 +335,12 @@ impl<'a> Parser<'a> {
       None => return None,
     };
 
-    let (count, width): (Spanned<uint>, uint) =
+    let (count, width): (Spanned<u8>, u8) =
       match self.parse_count() {
         Some(count) => {
           let w = high_bit - low_bit + 1;
-          if w % count.node == 0 {
-            (count, w / count.node)
+          if w as u32 % count.node == 0 {
+            (Spanned {node: count.node as u8, span: count.span}, w as u8 / count.node as u8)
           } else {
             self.sess.span_diagnostic.span_err(
               mk_sp(bits_span.lo, self.last_span.hi),
@@ -514,7 +514,7 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn parse_uint(&mut self) -> Option<uint> {
+  fn parse_uint(&mut self) -> Option<u64> {
     match self.token {
       token::Literal(token::Integer(n), suf) => {
         self.bump();
@@ -523,7 +523,7 @@ impl<'a> Parser<'a> {
                                      &self.sess.span_diagnostic,
                                      self.span);
         match lit {
-          ast::LitInt(n, _)  => Some(n as uint),
+          ast::LitInt(n, _)  => Some(n),
           _ => None,
         }
       },
@@ -531,7 +531,7 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn expect_uint(&mut self) -> Option<uint> {
+  fn expect_uint(&mut self) -> Option<u64> {
     match self.parse_uint() {
       Some(n) => Some(n),
       None => {
@@ -544,12 +544,16 @@ impl<'a> Parser<'a> {
 
   /// `None` indicates parse failure.
   /// If no count is given, a default of 1 is used
-  fn parse_count(&mut self) -> Option<Spanned<uint>> {
+  fn parse_count(&mut self) -> Option<Spanned<u32>> {
     match self.token {
       token::OpenDelim(token::Bracket) => {
         self.bump();
         let ret = match self.expect_uint() {
-          Some(count) => respan(self.last_span, count),
+          Some(count) if count >= 1<<32 => {
+            self.error(format!("count unreasonably large ({})", count));
+            return None;
+          },
+          Some(count) => respan(self.last_span, count as u32),
           None => return None,
         };
         if !self.expect(&token::CloseDelim(token::Bracket)) {

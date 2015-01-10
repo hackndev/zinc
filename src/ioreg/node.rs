@@ -22,7 +22,7 @@ use syntax::ast;
 #[derive(Clone)]
 pub struct Variant {
   pub name: Spanned<String>,
-  pub value: Spanned<uint>,
+  pub value: Spanned<u64>,
   pub docstring: Option<Spanned<ast::Ident>>,
 }
 
@@ -53,11 +53,11 @@ pub enum Access {
 pub struct Field {
   pub name: Spanned<String>,
   /// The index of the first (lowest order) bit of the field
-  pub low_bit: uint,
+  pub low_bit: u8,
   /// The width in bits of a single array element
-  pub width: uint,
+  pub width: u8,
   /// The number of array elements
-  pub count: Spanned<uint>,
+  pub count: Spanned<u8>,
   pub bit_range_span: Span,
   pub access: Access,
   pub ty: Spanned<FieldType>,
@@ -66,7 +66,7 @@ pub struct Field {
 
 impl Field {
   /// The index of the highest order bit owned by this field
-  pub fn high_bit(&self) -> uint {
+  pub fn high_bit(&self) -> u8 {
     self.low_bit + self.width * self.count.node - 1
   }
 }
@@ -83,7 +83,7 @@ pub enum RegWidth {
 
 impl RegWidth {
   /// Size of register type in bytes
-  pub fn size(&self) -> uint {
+  pub fn size(&self) -> u64 {
     match *self {
       RegWidth::Reg32 => 4,
       RegWidth::Reg16 => 2,
@@ -102,9 +102,9 @@ pub enum RegType {
 
 impl RegType {
   /// Size of register type in bytes
-  pub fn size(&self) -> uint {
+  pub fn size(&self) -> u64 {
     match self {
-      &RegType::RegPrim(ref width, _)  => width.size(),
+      &RegType::RegPrim(ref width, _)  => width.size() as u64,
       &RegType::RegUnion(ref regs) => regs_size(regs.deref()),
     }
   }
@@ -113,26 +113,26 @@ impl RegType {
 /// A single register, either a union or primitive
 #[derive(Clone)]
 pub struct Reg {
-  pub offset: uint,
+  pub offset: u64,
   pub name: Spanned<String>,
   pub ty: RegType,
-  pub count: Spanned<uint>,
+  pub count: Spanned<u32>,
   pub docstring: Option<Spanned<ast::Ident>>,
 }
 
 impl Reg {
   /// Size of a register in bytes
-  pub fn size(&self) -> uint {
-    self.count.node * self.ty.size()
+  pub fn size(&self) -> u64 {
+    self.count.node as u64 * self.ty.size()
   }
   /// The offset of the last byte owned by this register
-  pub fn last_byte(&self) -> uint {
+  pub fn last_byte(&self) -> u64 {
     self.offset + self.size() - 1
   }
 }
 
 /// Size of registers of register group in bytes
-pub fn regs_size(regs: &Vec<Reg>) -> uint {
+pub fn regs_size(regs: &Vec<Reg>) -> u64 {
   match regs.iter().max_by(|r| r.offset) {
     Some(last) => last.offset + last.ty.size(),
     None => 0,

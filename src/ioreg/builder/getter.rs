@@ -202,7 +202,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
       quote_expr!(cx, (self.value >> $shift) & $mask));
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name(&self, idx: uint) -> $field_ty {
+      pub fn $fn_name(&self, idx: usize) -> $field_ty {
         $value
       }
     )

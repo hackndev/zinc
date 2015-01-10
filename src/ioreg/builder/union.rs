@@ -31,15 +31,15 @@ enum RegOrPadding<'a> {
   /// A register
   Reg(&'a node::Reg),
   /// A given number of bytes of padding
-  Pad(uint)
+  Pad(u64)
 }
 
 /// An iterator which takes a potentially unsorted list of registers,
 /// sorts them, and adds padding to make offsets correct
 struct PaddedRegsIterator<'a> {
   sorted_regs: &'a Vec<node::Reg>,
-  index: uint,
-  last_offset: uint,
+  index: usize,
+  last_offset: u64,
 }
 
 impl<'a> PaddedRegsIterator<'a> {
@@ -86,6 +86,10 @@ impl<'a> BuildUnionTypes<'a> {
   }
 }
 
+fn expr_u64(cx: &ExtCtxt, n: u64) -> P<ast::Expr> {
+  cx.expr_lit(DUMMY_SP, ast::LitInt(n as u64, ast::UnsignedIntLit(ast::TyU64)))
+}
+
 /// Returns the type of the field representing the given register
 /// within a `RegGroup` struct
 fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
@@ -96,8 +100,7 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
     1 => base_ty,
     n =>
       cx.ty(DUMMY_SP,
-            ast::TyFixedLengthVec(base_ty,
-                                  cx.expr_uint(DUMMY_SP, n))),
+            ast::TyFixedLengthVec(base_ty, expr_u64(cx, n as u64))),
   }
 }
 
@@ -139,7 +142,7 @@ impl<'a> BuildUnionTypes<'a> {
 
   /// Build field for padding or a register
   fn build_pad_or_reg(&self, path: &Vec<String>, reg_or_pad: RegOrPadding,
-                      index: uint) -> ast::StructField {
+                      index: usize) -> ast::StructField {
     match reg_or_pad {
       RegOrPadding::Reg(reg) => self.build_reg_union_field(path, reg),
       RegOrPadding::Pad(length) => {
@@ -150,8 +153,7 @@ impl<'a> BuildUnionTypes<'a> {
         let ty: P<ast::Ty> =
           self.cx.ty(
             DUMMY_SP,
-            ast::TyFixedLengthVec(u8_ty,
-                                  self.cx.expr_uint(DUMMY_SP, length)));
+            ast::TyFixedLengthVec(u8_ty, expr_u64(self.cx, length)));
         dummy_spanned(
           ast::StructField_ {
             kind: ast::NamedField(

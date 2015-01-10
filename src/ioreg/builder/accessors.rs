@@ -143,7 +143,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
   } else {
     quote_method!(cx,
       #[allow(dead_code, missing_docs)]
-      pub fn $fn_name<'a>(&'a self, idx: uint, new_value: $field_ty) -> $setter_ty<'a> {
+      pub fn $fn_name<'a>(&'a self, idx: usize, new_value: $field_ty) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name(idx, new_value);
         setter
@@ -170,7 +170,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>,
   } else {
     quote_method!(cx,
       #[allow(dead_code, missing_docs)]
-      pub fn $fn_name(&self, idx: uint) -> $field_ty {
+      pub fn $fn_name(&self, idx: usize) -> $field_ty {
         $getter_ty::new(self).$fn_name(idx)
       }
     )
@@ -196,7 +196,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
   } else {
     quote_method!(cx,
       #[allow(dead_code, missing_docs)]
-      pub fn $fn_name<'a>(&'a self, idx: uint) -> $setter_ty<'a> {
+      pub fn $fn_name<'a>(&'a self, idx: usize) -> $setter_ty<'a> {
         let mut setter: $setter_ty = $setter_ty::new(self);
         setter.$fn_name(idx);
         setter
