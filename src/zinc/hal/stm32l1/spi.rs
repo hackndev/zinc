@@ -19,7 +19,8 @@ use core::result::Result;
 use core::result::Result::{Ok, Err};
 use core::kinds::Copy;
 
-#[path="../../util/wait_for.rs"] mod wait_for;
+#[path="../../util/wait_for.rs"]
+#[macro_use] mod wait_for;
 
 /// Available SPI peripherals.
 #[allow(missing_docs)]

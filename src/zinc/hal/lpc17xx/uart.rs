@@ -32,8 +32,10 @@ use hal::uart;
 
 use self::UARTPeripheral::*;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
-#[path="../../util/wait_for.rs"] mod wait_for;
+#[path="../../util/ioreg.rs"]
+#[macro_use] mod ioreg;
+#[path="../../util/wait_for.rs"]
+#[macro_use] mod wait_for;
 
 
 /// Available UART peripherals.

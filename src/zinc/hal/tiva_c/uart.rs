@@ -21,8 +21,10 @@ use util::support::get_reg_ref;
 use drivers::chario::CharIO;
 use hal::uart;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
-#[path="../../util/wait_for.rs"] mod wait_for;
+#[path="../../util/ioreg.rs"]
+#[macro_use] mod ioreg;
+#[path="../../util/wait_for.rs"]
+#[macro_use] mod wait_for;
 
 /// There are 8 UART instances in total
 #[allow(missing_docs)]

@@ -23,7 +23,8 @@ use core::intrinsics::abort;
 
 use self::Port::*;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
+#[path="../../util/ioreg.rs"]
+#[macro_use] mod ioreg;
 
 /// Available port names.
 #[allow(missing_docs)]

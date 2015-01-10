@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![macro_escape]
-
 macro_rules! ioreg_old(
   ($io:ident: $ty:ty, $($reg:ident),+) => (
     #[allow(non_snake_case)]

@@ -23,7 +23,8 @@ use hal::timer;
 
 use self::TimerPeripheral::*;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
+#[path="../../util/ioreg.rs"]
+#[macro_use] mod ioreg;
 
 /// Available timer peripherals.
 #[allow(missing_docs)]

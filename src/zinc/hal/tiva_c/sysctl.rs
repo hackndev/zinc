@@ -18,7 +18,8 @@ use core::kinds::Copy;
 
 use util::support::get_reg_ref;
 
-#[path="../../util/wait_for.rs"] mod wait_for;
+#[path="../../util/wait_for.rs"]
+#[macro_use] mod wait_for;
 
 fn sysctl_get() -> &'static reg::SysCtl {
   get_reg_ref(reg::SYSCTL)

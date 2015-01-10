@@ -21,7 +21,8 @@ TimerConf is a MCU-specific struct.
 Timers provide a simple way to delay program execution for some time.
 */
 
-#[path="../util/wait_for.rs"] mod wait_for;
+#[path="../util/wait_for.rs"]
+#[macro_use] mod wait_for;
 
 /// Timer implementation.
 pub trait Timer {
