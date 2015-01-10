@@ -330,6 +330,7 @@ N => NAME
 #![feature(quote, plugin_registrar)]
 #![crate_name="ioreg"]
 #![crate_type="dylib"]
+#![allow(unstable)]
 
 extern crate rustc;
 extern crate syntax;
