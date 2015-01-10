@@ -208,7 +208,7 @@ impl<'a> Parser<'a> {
 
     let ty = match ty {
       RegType::RegPrim(width, _) => {
-        match self.parse_fields() {
+        match self.parse_fields(width) {
           None => return None,
           Some(mut fields) => {
             // Check for overlapping fields
@@ -257,7 +257,7 @@ impl<'a> Parser<'a> {
     })
   }
 
-  fn parse_fields(&mut self) -> Option<Vec<node::Field>> {
+  fn parse_fields(&mut self, reg_width: node::RegWidth) -> Option<Vec<node::Field>> {
     // sitting at starting bit number
     let mut fields: Vec<node::Field> = Vec::new();
     loop {
@@ -272,7 +272,7 @@ impl<'a> Parser<'a> {
         break;
       }
 
-      match self.parse_field() {
+      match self.parse_field(reg_width) {
         None => return None,
         Some(field) => fields.push(field),
       }
@@ -287,12 +287,17 @@ impl<'a> Parser<'a> {
   /// already seen the comma before the docstring) in addition to the
   /// parsed field.
   ///
-  fn parse_field(&mut self) -> Option<node::Field> {
+  fn parse_field(&mut self, reg_width: node::RegWidth) -> Option<node::Field> {
     // potentially an initial outer docstring
     let docstring = self.parse_docstring(Scope::Outer);
 
     // sitting at starting bit number
     let low_bit = match self.expect_uint() {
+      Some(bit) if bit >= reg_width.size() * 8 => {
+        self.error(format!("Start bit of field ({}) is greater than width of register ({})",
+          bit, 8*reg_width.size()));
+        return None;
+      },
       Some(bit) => bit,
       None => return None,
     };
@@ -301,6 +306,11 @@ impl<'a> Parser<'a> {
       token::DotDot => {
         self.bump();
         match self.expect_uint() {
+          Some(bit) if bit >= reg_width.size() * 8 => {
+            self.error(format!("End bit of field ({}) is greater than width of register ({})",
+              bit, 8*reg_width.size()));
+            return None;
+          },
           Some(bit) => bit as uint,
           None => return None,
         }
