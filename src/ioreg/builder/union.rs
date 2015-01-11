@@ -87,7 +87,7 @@ impl<'a> BuildUnionTypes<'a> {
 }
 
 fn expr_u64(cx: &ExtCtxt, n: u64) -> P<ast::Expr> {
-  cx.expr_lit(DUMMY_SP, ast::LitInt(n as u64, ast::UnsignedIntLit(ast::TyU64)))
+  cx.expr_lit(DUMMY_SP, ast::LitInt(n as u64, ast::UnsignedIntLit(ast::TyUs(false))))
 }
 
 /// Returns the type of the field representing the given register
