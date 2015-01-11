@@ -20,8 +20,8 @@
 //! This module provides all possible pin configurations for LPC17xx.
 use std::collections::HashMap;
 
-type PinDef = HashMap<String, uint>;
-type PinsDef = Vec<Option<PinDef>>;
+pub type PinDef = HashMap<String, uint>;
+pub type PinsDef = Vec<Option<PinDef>>;
 
 pub fn port_def() -> HashMap<String, PinsDef> {
   let mut h = HashMap::new();
