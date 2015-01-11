@@ -47,7 +47,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("platformtree", macro_platformtree);
   reg.register_macro("platformtree_verbose", macro_platformtree_verbose);
   reg.register_syntax_extension(syntax::parse::token::intern("zinc_task"),
-      Modifier(box macro_zinc_task));
+      Modifier(Box::new(macro_zinc_task)));
 }
 
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
@@ -128,7 +128,7 @@ pub struct MacItems {
 
 impl MacItems {
   pub fn new(items: Vec<P<ast::Item>>) -> Box<MacResult+'static> {
-    box MacItems { items: items } as Box<MacResult>
+    Box::new(MacItems { items: items })
   }
 }
 impl MacResult for MacItems {
