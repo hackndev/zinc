@@ -35,7 +35,7 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
 fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
-  let error = | err: &str | {
+  let error = |&: err: &str | {
     cx.parse_sess().span_diagnostic.span_err(node.path_span, err);
   };
 

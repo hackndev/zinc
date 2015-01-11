@@ -38,7 +38,7 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 pub fn build_uart(builder: &mut Builder,
                   cx: &mut ExtCtxt,
                   sub: Rc<node::Node>) {
-  let error = | err: &str | {
+  let error = |&: err: &str | {
     cx.parse_sess().span_diagnostic.span_err(sub.path_span, err);
   };
 
