@@ -1,4 +1,4 @@
-#![feature(phase)]
+#![feature(plugin)]
 #![feature(asm)]
 #![crate_type="staticlib"]
 #![no_std]
