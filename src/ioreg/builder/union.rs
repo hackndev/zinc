@@ -111,10 +111,6 @@ impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
     let union_type = self.build_union_type(path, reg, &*subregs);
     let ty_name = union_type.ident.clone();
     self.builder.push_item(union_type);
-
-    let copy_impl = quote_item!(self.cx,
-                                impl ::core::kinds::Copy for $ty_name {});
-    self.builder.push_item(copy_impl.unwrap());
   }
 }
 
