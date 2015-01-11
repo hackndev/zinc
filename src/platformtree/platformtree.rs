@@ -16,7 +16,7 @@
 //! Platform tree operations crate
 
 #![experimental]
-#![feature(quote, globs, phase)]
+#![feature(quote, globs)]
 
 #![crate_name="platformtree"]
 #![crate_type="rlib"]

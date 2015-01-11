@@ -4,7 +4,7 @@
 
 extern crate core;
 extern crate zinc;
-#[phase(plugin)] extern crate macro_platformtree;
+#[macro_use] #[plugin] #[no_link] extern crate macro_platformtree;
 
 platformtree!(
   tiva_c@mcu {
