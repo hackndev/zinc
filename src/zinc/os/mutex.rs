@@ -19,7 +19,7 @@ pub use os::mutex::internal::{MUTEX_INIT, Mutex, Guard};
 
 #[cfg(multitasking)]
 mod internal {
-  use core::kinds::marker;
+  use core::marker;
   use core::ty::Unsafe;
   use core::kinds::Sync;
   use core::option::Option::{None, Some};
@@ -142,7 +142,7 @@ mod internal {
 
 #[cfg(not(multitasking))]
 mod internal {
-  use core::kinds::Sync;
+  use core::marker::Sync;
   use core::option::Option::{self, None, Some};
   use core::ops::Drop;
   use core::intrinsics::abort;

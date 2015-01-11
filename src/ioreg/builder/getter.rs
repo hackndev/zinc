@@ -55,7 +55,7 @@ impl<'a> node::RegVisitor for BuildGetters<'a> {
       // Build Copy impl
       let ty_name = utils::getter_name(self.cx, path);
       let it = quote_item!(self.cx,
-                           impl ::core::kinds::Copy for $ty_name {});
+                           impl ::core::marker::Copy for $ty_name {});
       self.builder.push_item(it.unwrap());
     }
   }

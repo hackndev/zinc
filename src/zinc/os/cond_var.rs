@@ -21,8 +21,8 @@ pub use os::cond_var::internal::{CondVar, COND_VAR_INIT};
 mod internal {
   use core::option::{None, Some};
   use core::ty::Unsafe;
-  use core::kinds::marker;
-  use core::kinds::Sync;
+  use core::marker;
+  use core::marker::Sync;
 
   use hal::cortex_m3::sched::NoInterrupts;
   use util::queue::{Queue, Node};
@@ -92,8 +92,8 @@ mod internal {
 
 #[cfg(not(multitasking))]
 mod internal {
-  use core::kinds::marker;
-  use core::kinds::Sync;
+  use core::marker;
+  use core::marker::Sync;
   use core::cell::UnsafeCell;
 
   use util::support::wfi;

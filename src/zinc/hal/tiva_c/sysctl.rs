@@ -14,7 +14,7 @@
 // limitations under the License.
 
 //! Low level system control (PLL, clock gating, ...)
-use core::kinds::Copy;
+use core::marker::Copy;
 
 use util::support::get_reg_ref;
 

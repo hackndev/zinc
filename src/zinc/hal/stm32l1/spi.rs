@@ -17,7 +17,7 @@
 
 use core::result::Result;
 use core::result::Result::{Ok, Err};
-use core::kinds::Copy;
+use core::marker::Copy;
 
 #[path="../../util/wait_for.rs"]
 #[macro_use] mod wait_for;

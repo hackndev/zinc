@@ -21,7 +21,7 @@ on the package.
 */
 
 use core::option::Option;
-use core::kinds::Copy;
+use core::marker::Copy;
 
 use super::sim;
 

@@ -22,7 +22,7 @@
 use core::default;
 use core::intrinsics::abort;
 use core::option::Option;
-use core::kinds::Copy;
+use core::marker::Copy;
 
 use self::MsiSpeed::*;
 use self::SystemClockSource::*;
