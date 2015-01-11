@@ -153,10 +153,6 @@ def provide_stdlibs
     sh "git clone --single-branch --depth 1 https://github.com/rust-lang/rust #{t.name}"
   end.invoke
 
-  Rake::FileTask.define_task 'thirdparty/librlibc'.in_root do |t|
-    sh "git clone https://github.com/bharrisau/rust-librlibc #{t.name}"
-  end.invoke
-
   Rake::FileTask.define_task 'thirdparty/libcore/lib.rs'.in_root do |t|
     sh "ln -s rust/src/libcore thirdparty/libcore"
   end.invoke
