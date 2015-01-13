@@ -73,7 +73,6 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
   let cfg = Vec::new();
   let ecfg = ExpansionConfig {
     crate_name: ("test").parse().unwrap(),
-    deriving_hash_type_parameter: false,
     enable_quotes: true,
     recursion_limit: 10,
   };
