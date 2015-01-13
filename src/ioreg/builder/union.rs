@@ -108,9 +108,10 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
 impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
   fn visit_union_reg<'b>(&'b mut self, path: &Vec<String>, reg: &'b node::Reg,
                          subregs: Rc<Vec<node::Reg>>) {
-    let union_type = self.build_union_type(path, reg, &*subregs);
-    let ty_name = union_type.ident.clone();
-    self.builder.push_item(union_type);
+    let items = self.build_union_type(path, reg, &*subregs);
+    for item in items.into_iter() {
+      self.builder.push_item(item);
+    }
   }
 }
 
@@ -166,9 +167,8 @@ impl<'a> BuildUnionTypes<'a> {
 
   /// Build the type associated with a register group
   fn build_union_type(&self, path: &Vec<String>, reg: &node::Reg,
-                      regs: &Vec<node::Reg>) -> P<ast::Item> {
-    let name = String::from_str(
-        token::get_ident(utils::path_ident(self.cx, path)).get());
+                      regs: &Vec<node::Reg>) -> Vec<P<ast::Item>> {
+    let name = utils::path_ident(self.cx, path);
     // Registers are already sorted by parser
     let mut regs = regs.clone();
     let padded_regs = PaddedRegsIterator::new(&mut regs);
@@ -190,13 +190,15 @@ impl<'a> BuildUnionTypes<'a> {
           utils::doc_attribute(self.cx, token::get_ident(docstring.node))),
       None => (),
     }
-    P(ast::Item {
-      ident: self.cx.ident_of(name.as_slice()),
+    let struct_item = P(ast::Item {
+      ident: name,
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
       node: ast::ItemStruct(P(struct_def), empty_generics()),
       vis: ast::Public,
       span: reg.name.span,
-    })
+    });
+    let copy_impl = quote_item!(self.cx, impl ::core::marker::Copy for $name {}).unwrap();
+    vec!(struct_item, copy_impl)
   }
 }
