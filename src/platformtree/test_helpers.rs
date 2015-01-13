@@ -67,7 +67,7 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
     where F: Fn(&mut ExtCtxt, *mut bool, Option<Rc<node::PlatformTree>>) {
   let mut failed = false;
   let failptr = &mut failed as *mut bool;
-  let ce = box CustomEmmiter::new(failptr);
+  let ce = Box::new(CustomEmmiter::new(failptr));
   let sh = mk_span_handler(mk_handler(ce), CodeMap::new());
   let parse_sess = new_parse_sess_special_handler(sh);
   let cfg = Vec::new();
