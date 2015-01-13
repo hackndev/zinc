@@ -15,9 +15,10 @@
 
 //! Tests for ioreg! syntax extension
 
-#![feature(phase)]
-#[phase(plugin)] extern crate ioreg;
-#[phase(plugin,link)] extern crate shiny;
+#![feature(plugin)]
+
+#[plugin] extern crate ioreg;
+#[plugin] extern crate shiny;
 extern crate core;
 
 #[path="../zinc/util/volatile_cell.rs"] mod volatile_cell;
