@@ -110,7 +110,7 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
 
 /// Build an expression for the mask of a field
 pub fn mask(cx: &ExtCtxt, field: &node::Field) -> P<ast::Expr> {
-  expr_int(cx, ((1 << field.width) - 1) as i64)
+  expr_int(cx, ((1 << field.width as u64) - 1))
 }
 
 /// Build an expression for the shift of a field (including the array
