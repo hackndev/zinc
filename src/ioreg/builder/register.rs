@@ -122,8 +122,8 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
   );
   let mut item: ast::Item = item.unwrap().deref().clone();
   item.span = reg.name.span;
-  // let copy_impl = quote_item!(cx, impl ::core::marker::Copy for $ty_name {}).unwrap();
-  vec!(P(item))
+  let copy_impl = quote_item!(cx, impl ::core::marker::Copy for $ty_name {}).unwrap();
+  vec!(P(item), copy_impl)
 }
 
 /// Build a variant of an `EnumField`
