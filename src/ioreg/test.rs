@@ -29,10 +29,10 @@ mod test {
   use std::ptr::PtrExt;
   use volatile_cell::VolatileCell;
 
-  fn get_value<'a, T>(v: &'a T, offset: uint) -> u32 {
+  fn get_value<'a, T>(v: &'a T, offset: usize) -> u32 {
     unsafe {
       let ptr: *const u32 = transmute(v);
-      *(ptr.offset(offset as int))
+      *(ptr.offset(offset as isize))
     }
   }
 
@@ -163,15 +163,15 @@ mod test {
     }
     it "has zero base offset" {
       let addr = &test.reg1 as *const GAP_TEST_reg1;
-      assert_eq!(addr as uint - base as uint, 0x0);
+      assert_eq!(addr as usize - base as usize, 0x0);
     }
     it "computes the correct first gap" {
       let addr = &test.reg2 as *const GAP_TEST_reg2;
-      assert_eq!(addr as uint - base as uint, 0x10);
+      assert_eq!(addr as usize - base as usize, 0x10);
     }
     it "computes the correct second gap" {
       let addr = &test.reg4 as *const GAP_TEST_reg4;
-      assert_eq!(addr as uint - base as uint, 0x20);
+      assert_eq!(addr as usize - base as usize, 0x20);
     }
   );
 }
