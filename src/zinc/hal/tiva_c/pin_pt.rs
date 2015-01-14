@@ -50,7 +50,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let port_node = node.parent.clone().unwrap().upgrade().unwrap();
   let ref port_path = port_node.path;
 
-  let error = | err: &str | {
+  let error = |&: err: &str | {
     cx.parse_sess().span_diagnostic.span_err(port_node.path_span, err);
   };
 

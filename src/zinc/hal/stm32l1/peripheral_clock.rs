@@ -20,7 +20,7 @@
 //! Note: this module is used as part of initial setup if PLL is used.
 
 use super::init::{ClockConfig, reg};
-use core::kinds::Copy;
+use core::marker::Copy;
 
 pub use self::PeripheralClock::*;
 

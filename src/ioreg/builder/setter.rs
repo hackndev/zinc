@@ -54,12 +54,6 @@ impl<'a> node::RegVisitor for BuildSetters<'a> {
 
       let it = build_impl(self.cx, path, reg, fields);
       self.builder.push_item(it);
-
-      // Build Copy impl
-      let ty_name = utils::setter_name(self.cx, path);
-      let it = quote_item!(self.cx,
-                           impl<'a> ::core::kinds::Copy for $ty_name<'a> {});
-      self.builder.push_item(it.unwrap());
     }
   }
 }
@@ -237,7 +231,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name<'b>(&'b mut self, idx: uint, new_value: $field_ty)
+      pub fn $fn_name<'b>(&'b mut self, idx: usize, new_value: $field_ty)
           -> &'b mut $setter_ty<'a> {
         self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
         self.mask |= $mask << $shift;
@@ -278,7 +272,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
     let shift = utils::shift(cx, Some(quote_expr!(cx, idx)), field);
     quote_method!(cx,
       $doc_attr
-      pub fn $fn_name<'b>(&'b mut self, idx: uint) -> &'b mut $setter_ty<'a> {
+      pub fn $fn_name<'b>(&'b mut self, idx: usize) -> &'b mut $setter_ty<'a> {
         self.value |= $mask << $shift;
         self.mask |= $mask << $shift;
         self

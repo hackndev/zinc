@@ -86,8 +86,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
         attrs: attrs,
         span: field.ty.span,
       });
-      let copy_impl = quote_item!(cx, impl ::core::kinds::Copy for $name {}).unwrap();
-      vec!(ty_item, copy_impl)
+      vec!(ty_item)
     },
     _ => Vec::new()
   }
@@ -123,7 +122,7 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
   );
   let mut item: ast::Item = item.unwrap().deref().clone();
   item.span = reg.name.span;
-  let copy_impl = quote_item!(cx, impl ::core::kinds::Copy for $ty_name {}).unwrap();
+  let copy_impl = quote_item!(cx, impl ::core::marker::Copy for $ty_name {}).unwrap();
   vec!(P(item), copy_impl)
 }
 

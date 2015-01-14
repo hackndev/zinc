@@ -242,7 +242,8 @@ impl Node {
 
   /// Invokes the closure for each node from node's subnodes passing a path and
   /// weak node reference.
-  pub fn with_subnodes_map(&self, f: |&HashMap<String, Weak<Node>>|) {
+  pub fn with_subnodes_map<F>(&self, mut f: F)
+      where F: FnMut(&HashMap<String, Weak<Node>>) {
     let borrow = self.subnodes.borrow();
     f(borrow.as_map());
   }

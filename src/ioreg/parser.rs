@@ -50,8 +50,8 @@ impl<'a> Parser<'a> {
   pub fn new(cx: &'a ExtCtxt<'a>, tts: &[TokenTree]) -> Parser<'a> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
-    let mut reader = box lexer::new_tt_reader(
-        &sess.span_diagnostic, None, ttsvec) as Box<lexer::Reader>;
+    let mut reader = Box::new(lexer::new_tt_reader(
+        &sess.span_diagnostic, None, None, ttsvec)) as Box<lexer::Reader>;
 
     let tok0 = reader.next_token();
     let token = tok0.tok;
@@ -208,7 +208,7 @@ impl<'a> Parser<'a> {
 
     let ty = match ty {
       RegType::RegPrim(width, _) => {
-        match self.parse_fields() {
+        match self.parse_fields(width) {
           None => return None,
           Some(mut fields) => {
             // Check for overlapping fields
@@ -226,7 +226,7 @@ impl<'a> Parser<'a> {
 
             // Verify fields fit in register
             match fields.last().map(|f| f.high_bit()) {
-              Some(last_bit) if last_bit >= 8*width.size() => {
+              Some(last_bit) if last_bit >= 8*width.size() as u8 => {
                 self.sess.span_diagnostic.span_err(
                   name.span,
                   format!("Width of fields ({} bits) exceeds access size of register ({} bits)",
@@ -257,7 +257,7 @@ impl<'a> Parser<'a> {
     })
   }
 
-  fn parse_fields(&mut self) -> Option<Vec<node::Field>> {
+  fn parse_fields(&mut self, reg_width: node::RegWidth) -> Option<Vec<node::Field>> {
     // sitting at starting bit number
     let mut fields: Vec<node::Field> = Vec::new();
     loop {
@@ -272,7 +272,7 @@ impl<'a> Parser<'a> {
         break;
       }
 
-      match self.parse_field() {
+      match self.parse_field(reg_width) {
         None => return None,
         Some(field) => fields.push(field),
       }
@@ -287,13 +287,18 @@ impl<'a> Parser<'a> {
   /// already seen the comma before the docstring) in addition to the
   /// parsed field.
   ///
-  fn parse_field(&mut self) -> Option<node::Field> {
+  fn parse_field(&mut self, reg_width: node::RegWidth) -> Option<node::Field> {
     // potentially an initial outer docstring
     let docstring = self.parse_docstring(Scope::Outer);
 
     // sitting at starting bit number
     let low_bit = match self.expect_uint() {
-      Some(bit) => bit,
+      Some(bit) if bit >= reg_width.size() * 8 => {
+        self.error(format!("Start bit of field ({}) is greater than width of register ({})",
+          bit, 8*reg_width.size()));
+        return None;
+      },
+      Some(bit) => bit as u8,
       None => return None,
     };
     let bits_span = self.span;
@@ -301,11 +306,16 @@ impl<'a> Parser<'a> {
       token::DotDot => {
         self.bump();
         match self.expect_uint() {
-          Some(bit) => bit as uint,
+          Some(bit) if bit >= reg_width.size() * 8 => {
+            self.error(format!("End bit of field ({}) is greater than width of register ({})",
+              bit, 8*reg_width.size()));
+            return None;
+          },
+          Some(bit) => bit as u8,
           None => return None,
         }
       },
-      _ => low_bit as uint,
+      _ => low_bit as u8,
     };
 
     // TODO(bgamari): Do we want to enforce an order here?
@@ -325,12 +335,12 @@ impl<'a> Parser<'a> {
       None => return None,
     };
 
-    let (count, width): (Spanned<uint>, uint) =
+    let (count, width): (Spanned<u8>, u8) =
       match self.parse_count() {
         Some(count) => {
           let w = high_bit - low_bit + 1;
-          if w % count.node == 0 {
-            (count, w / count.node)
+          if w as u32 % count.node == 0 {
+            (Spanned {node: count.node as u8, span: count.span}, w as u8 / count.node as u8)
           } else {
             self.sess.span_diagnostic.span_err(
               mk_sp(bits_span.lo, self.last_span.hi),
@@ -504,7 +514,7 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn parse_uint(&mut self) -> Option<uint> {
+  fn parse_uint(&mut self) -> Option<u64> {
     match self.token {
       token::Literal(token::Integer(n), suf) => {
         self.bump();
@@ -513,7 +523,7 @@ impl<'a> Parser<'a> {
                                      &self.sess.span_diagnostic,
                                      self.span);
         match lit {
-          ast::LitInt(n, _)  => Some(n as uint),
+          ast::LitInt(n, _)  => Some(n),
           _ => None,
         }
       },
@@ -521,7 +531,7 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn expect_uint(&mut self) -> Option<uint> {
+  fn expect_uint(&mut self) -> Option<u64> {
     match self.parse_uint() {
       Some(n) => Some(n),
       None => {
@@ -534,12 +544,16 @@ impl<'a> Parser<'a> {
 
   /// `None` indicates parse failure.
   /// If no count is given, a default of 1 is used
-  fn parse_count(&mut self) -> Option<Spanned<uint>> {
+  fn parse_count(&mut self) -> Option<Spanned<u32>> {
     match self.token {
       token::OpenDelim(token::Bracket) => {
         self.bump();
         let ret = match self.expect_uint() {
-          Some(count) => respan(self.last_span, count),
+          Some(count) if count >= 1<<32 => {
+            self.error(format!("count unreasonably large ({})", count));
+            return None;
+          },
+          Some(count) => respan(self.last_span, count as u32),
           None => return None,
         };
         if !self.expect(&token::CloseDelim(token::Bracket)) {
@@ -565,7 +579,7 @@ impl<'a> Parser<'a> {
   fn bump(&mut self) -> token::Token {
     let tok = self.token.clone();
     self.last_span = self.span;
-    self.last_token = Some(box tok.clone());
+    self.last_token = Some(Box::new(tok.clone()));
 
     let next = self.reader.next_token();
 

@@ -22,11 +22,12 @@ on the package.
 
 use core::intrinsics::abort;
 use core::option::Option;
-use core::kinds::Copy;
+use core::marker::Copy;
 
 use self::Port::*;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
+#[path="../../util/ioreg.rs"]
+#[macro_use] mod ioreg;
 
 /// Available port names.
 #[allow(missing_docs)]

@@ -17,8 +17,8 @@
 
 use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
-use core::kinds::{Sync, Send};
-use core::kinds::marker;
+use core::marker::{Sync, Send};
+use core::marker;
 
 use hal::cortex_m3::irq::NoInterrupts;
 

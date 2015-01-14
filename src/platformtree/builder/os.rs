@@ -273,7 +273,7 @@ mod test {
       assert_equal_source(builder.main_stmts[0].deref(),
           "loop {
             run(&pt::run_args {
-              a: 1u,
+              a: 1us,
               b: \"a\",
               c: &named,
             });

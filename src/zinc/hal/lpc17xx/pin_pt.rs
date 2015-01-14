@@ -89,16 +89,17 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     None => "Gpio".to_string(),
     Some(fun) => {
       let pins = &port_def[*port_path];
-      let maybe_pin_index = node.path.as_slice().parse().unwrap();
-      match pins[maybe_pin_index] {
-        None => {
+      let maybe_pin_index: usize = node.path.as_slice().parse().unwrap();
+      let maybe_pin: &Option<pinmap::PinDef> = pins.get(maybe_pin_index).unwrap();
+      match maybe_pin {
+        &None => {
           cx.parse_sess().span_diagnostic.span_err(
               node.get_attr("function").value_span,
               format!("unknown pin function `{}`, only GPIO avaliable on this pin",
                   fun).as_slice());
           return;
         }
-        Some(ref pin_funcs) => {
+        &Some(ref pin_funcs) => {
           let maybe_func = pin_funcs.get(&fun);
           match maybe_func {
             None => {

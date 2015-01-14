@@ -1,11 +1,11 @@
-#![feature(phase)]
+#![feature(plugin)]
 #![crate_type="staticlib"]
 #![no_std]
 
 //! Sample application for BlueNRG communication over SPI in X-NUCLEO-IDB04A1
 //! extension board for NUCLEO-L152RE
 
-#[phase(plugin, link)]
+#[macro_use] #[plugin]
 extern crate core;
 extern crate zinc;
 
@@ -97,23 +97,32 @@ pub unsafe fn main() {
     pin::PullType::PullUp);
 
   bnrg_reset.set_low();
-  let _ = write!(&mut uart, "SPI created, status = {}\n",
-    map_byte(spi.get_status()));
+  let status_s = map_byte(spi.get_status());
+  let _ = write!(&mut uart, "SPI created, status = {}{}\n", status_s.0, status_s.1);
   bnrg_reset.set_high();
 
   let blue = bluenrg::BlueNrg::new(spi_csn, spi);
 
-  let _ = match blue.wakeup(100) {
-    Result::Ok((size_write, size_read)) => write!(&mut uart,
-      "BlueNRG is ready, write size = {}, read size = {}\n",
-      map_byte(size_write as u8), map_byte(size_read as u8)),
-    Result::Err(bluenrg::Error::Sleeping) => write!(&mut uart,
-      "BlueNRG is sleeping\n"),
-    Result::Err(bluenrg::Error::Allocating) => write!(&mut uart,
-      "BlueNRG is allocating buffers\n"),
-    Result::Err(bluenrg::Error::Unknown(status)) => write!(&mut uart,
-      "BlueNRG unknown status = {}\n", map_byte(status)),
-    Result::Err(bluenrg::Error::BufferSize(_)) => write!(&mut uart, ""),
+  match blue.wakeup(100) {
+    Result::Ok((size_write, size_read)) => {
+      let size_write_s = map_byte(size_write as u8);
+      let size_read_s = map_byte(size_read as u8);
+      write!(&mut uart,
+        "BlueNRG is ready, write size = {}{}, read size = {}{}\n",
+        size_write_s.0, size_write_s.1, size_read_s.0, size_read_s.1);
+    },
+    Result::Err(bluenrg::Error::Sleeping) => {
+      write!(&mut uart, "BlueNRG is sleeping\n");
+    },
+    Result::Err(bluenrg::Error::Allocating) => {
+      write!(&mut uart, "BlueNRG is allocating buffers\n");
+    },
+    Result::Err(bluenrg::Error::Unknown(status)) => {
+      let status_s = map_byte(status);
+      write!(&mut uart,
+        "BlueNRG unknown status = {}{}\n", status_s.0, status_s.1);
+    },
+    Result::Err(bluenrg::Error::BufferSize(_)) => { write!(&mut uart, ""); }
   };
 
   loop {}

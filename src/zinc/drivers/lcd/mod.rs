@@ -160,6 +160,7 @@ mod test {
   use core::mem::zeroed;
   use core::iter::{Range, range};
   use core::cell::Cell;
+  use core::ops::Fn;
 
   use drivers::chario::CharIO;
   use drivers::lcd::LCD;
@@ -197,7 +198,7 @@ mod test {
 
     fn axis(&self) -> Range<uint> { range(0u, 16) }
 
-    fn for_each(&self, block: |(u32, u32), u16|) {
+    fn for_each<F>(&self, block: F) where F: Fn((u32, u32), u16) {
       for x in self.axis() {
         for y in self.axis() {
           block(self.coords(x, y), self.pixbuf[x][y].get());
@@ -205,7 +206,7 @@ mod test {
       }
     }
 
-    fn map_each(&self, block: |(u32, u32), u16| -> u16) {
+    fn map_each<F>(&self, block: F) where F: Fn((u32, u32), u16) -> u16 {
       for x in self.axis() {
         for y in self.axis() {
           self.pixbuf[x][y].set(block(self.coords(x, y), self.pixbuf[x][y].get()));

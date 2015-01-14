@@ -49,29 +49,30 @@ pub fn fails_to_build(src: &str) {
 /// Yields an ExtCtxt, parser error state and parsed PT.
 ///
 /// TODO(farcaller): get rid of that bool, it's broken.
-pub fn with_parsed(src: &str,
-    block: |&mut ExtCtxt, *mut bool, Rc<node::PlatformTree>|) {
+pub fn with_parsed<F>(src: &str, block: F)
+    where F: Fn(&mut ExtCtxt, *mut bool, Rc<node::PlatformTree>) {
   with_parsed_tts(src, |cx, failed, pt| {
     block(cx, failed, pt.unwrap());
   });
 }
 
-pub fn with_parsed_node(name: &str, src: &str, block: |Rc<node::Node>|) {
+pub fn with_parsed_node<F>(name: &str, src: &str, block: F)
+    where F: Fn(Rc<node::Node>) {
   with_parsed(src, |_, _, pt| {
     block(pt.get_by_path(name).unwrap());
   });
 }
 
-pub fn with_parsed_tts(src: &str, block: |&mut ExtCtxt, *mut bool, Option<Rc<node::PlatformTree>>|) {
+pub fn with_parsed_tts<F>(src: &str, block: F)
+    where F: Fn(&mut ExtCtxt, *mut bool, Option<Rc<node::PlatformTree>>) {
   let mut failed = false;
   let failptr = &mut failed as *mut bool;
-  let ce = box CustomEmmiter::new(failptr);
+  let ce = Box::new(CustomEmmiter::new(failptr));
   let sh = mk_span_handler(mk_handler(ce), CodeMap::new());
   let parse_sess = new_parse_sess_special_handler(sh);
   let cfg = Vec::new();
   let ecfg = ExpansionConfig {
     crate_name: ("test").parse().unwrap(),
-    deriving_hash_type_parameter: false,
     enable_quotes: true,
     recursion_limit: 10,
   };

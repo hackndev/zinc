@@ -24,9 +24,10 @@ use core::intrinsics::abort;
 use super::system_clock::system_clock;
 use self::PeripheralClock::*;
 use self::PeripheralDivisor::*;
-use core::kinds::Copy;
+use core::marker::Copy;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
+#[path="../../util/ioreg.rs"]
+#[macro_use] mod ioreg;
 
 /// Configures the state of peripheral clock.
 #[allow(missing_docs)]

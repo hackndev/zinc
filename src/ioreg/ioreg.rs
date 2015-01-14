@@ -327,9 +327,10 @@ N => NAME
 
 */
 
-#![feature(quote, plugin_registrar, associated_types)]
+#![feature(quote, plugin_registrar)]
 #![crate_name="ioreg"]
 #![crate_type="dylib"]
+#![allow(unstable)]
 
 extern crate rustc;
 extern crate syntax;
@@ -371,7 +372,7 @@ pub struct MacItems {
 
 impl MacItems {
   pub fn new(items: Vec<P<ast::Item>>) -> Box<MacResult+'static> {
-    box MacItems { items: items } as Box<MacResult>
+    Box::new(MacItems { items: items })
   }
 }
 

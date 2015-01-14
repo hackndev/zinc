@@ -20,7 +20,8 @@
 use super::peripheral_clock;
 use hal::timer;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
+#[path="../../util/ioreg.rs"]
+#[macro_use] mod ioreg;
 
 /// Available timer peripherals.
 #[allow(missing_docs)]

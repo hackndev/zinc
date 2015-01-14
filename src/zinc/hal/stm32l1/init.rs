@@ -22,12 +22,13 @@
 use core::default;
 use core::intrinsics::abort;
 use core::option::Option;
-use core::kinds::Copy;
+use core::marker::Copy;
 
 use self::MsiSpeed::*;
 use self::SystemClockSource::*;
 
-#[path="../../util/wait_for.rs"] mod wait_for;
+#[path="../../util/wait_for.rs"]
+#[macro_use] mod wait_for;
 
 /// Phase-locked loop clock source.
 #[repr(u8)]

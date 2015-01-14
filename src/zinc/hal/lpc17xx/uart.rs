@@ -21,7 +21,7 @@ than other UARTs in MCU).
 */
 
 use core::intrinsics::abort;
-use core::kinds::Copy;
+use core::marker::Copy;
 
 use hal::lpc17xx::peripheral_clock::PeripheralClock;
 use hal::lpc17xx::peripheral_clock::PeripheralClock::UART0Clock;
@@ -32,8 +32,10 @@ use hal::uart;
 
 use self::UARTPeripheral::*;
 
-#[path="../../util/ioreg.rs"] mod ioreg;
-#[path="../../util/wait_for.rs"] mod wait_for;
+#[path="../../util/ioreg.rs"]
+#[macro_use] mod ioreg;
+#[path="../../util/wait_for.rs"]
+#[macro_use] mod wait_for;
 
 
 /// Available UART peripherals.

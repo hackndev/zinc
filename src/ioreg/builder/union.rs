@@ -31,15 +31,15 @@ enum RegOrPadding<'a> {
   /// A register
   Reg(&'a node::Reg),
   /// A given number of bytes of padding
-  Pad(uint)
+  Pad(u64)
 }
 
 /// An iterator which takes a potentially unsorted list of registers,
 /// sorts them, and adds padding to make offsets correct
 struct PaddedRegsIterator<'a> {
   sorted_regs: &'a Vec<node::Reg>,
-  index: uint,
-  last_offset: uint,
+  index: usize,
+  last_offset: u64,
 }
 
 impl<'a> PaddedRegsIterator<'a> {
@@ -86,6 +86,10 @@ impl<'a> BuildUnionTypes<'a> {
   }
 }
 
+fn expr_u64(cx: &ExtCtxt, n: u64) -> P<ast::Expr> {
+  cx.expr_lit(DUMMY_SP, ast::LitInt(n as u64, ast::UnsignedIntLit(ast::TyUs(false))))
+}
+
 /// Returns the type of the field representing the given register
 /// within a `RegGroup` struct
 fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
@@ -96,8 +100,7 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
     1 => base_ty,
     n =>
       cx.ty(DUMMY_SP,
-            ast::TyFixedLengthVec(base_ty,
-                                  cx.expr_uint(DUMMY_SP, n))),
+            ast::TyFixedLengthVec(base_ty, expr_u64(cx, n as u64))),
   }
 }
 
@@ -105,13 +108,10 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
 impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
   fn visit_union_reg<'b>(&'b mut self, path: &Vec<String>, reg: &'b node::Reg,
                          subregs: Rc<Vec<node::Reg>>) {
-    let union_type = self.build_union_type(path, reg, &*subregs);
-    let ty_name = union_type.ident.clone();
-    self.builder.push_item(union_type);
-
-    let copy_impl = quote_item!(self.cx,
-                                impl ::core::kinds::Copy for $ty_name {});
-    self.builder.push_item(copy_impl.unwrap());
+    let items = self.build_union_type(path, reg, &*subregs);
+    for item in items.into_iter() {
+      self.builder.push_item(item);
+    }
   }
 }
 
@@ -139,7 +139,7 @@ impl<'a> BuildUnionTypes<'a> {
 
   /// Build field for padding or a register
   fn build_pad_or_reg(&self, path: &Vec<String>, reg_or_pad: RegOrPadding,
-                      index: uint) -> ast::StructField {
+                      index: usize) -> ast::StructField {
     match reg_or_pad {
       RegOrPadding::Reg(reg) => self.build_reg_union_field(path, reg),
       RegOrPadding::Pad(length) => {
@@ -150,8 +150,7 @@ impl<'a> BuildUnionTypes<'a> {
         let ty: P<ast::Ty> =
           self.cx.ty(
             DUMMY_SP,
-            ast::TyFixedLengthVec(u8_ty,
-                                  self.cx.expr_uint(DUMMY_SP, length)));
+            ast::TyFixedLengthVec(u8_ty, expr_u64(self.cx, length)));
         dummy_spanned(
           ast::StructField_ {
             kind: ast::NamedField(
@@ -168,9 +167,8 @@ impl<'a> BuildUnionTypes<'a> {
 
   /// Build the type associated with a register group
   fn build_union_type(&self, path: &Vec<String>, reg: &node::Reg,
-                      regs: &Vec<node::Reg>) -> P<ast::Item> {
-    let name = String::from_str(
-        token::get_ident(utils::path_ident(self.cx, path)).get());
+                      regs: &Vec<node::Reg>) -> Vec<P<ast::Item>> {
+    let name = utils::path_ident(self.cx, path);
     // Registers are already sorted by parser
     let mut regs = regs.clone();
     let padded_regs = PaddedRegsIterator::new(&mut regs);
@@ -192,13 +190,15 @@ impl<'a> BuildUnionTypes<'a> {
           utils::doc_attribute(self.cx, token::get_ident(docstring.node))),
       None => (),
     }
-    P(ast::Item {
-      ident: self.cx.ident_of(name.as_slice()),
+    let struct_item = P(ast::Item {
+      ident: name,
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
       node: ast::ItemStruct(P(struct_def), empty_generics()),
       vis: ast::Public,
       span: reg.name.span,
-    })
+    });
+    let copy_impl = quote_item!(self.cx, impl ::core::marker::Copy for $name {}).unwrap();
+    vec!(struct_item, copy_impl)
   }
 }
