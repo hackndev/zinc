@@ -52,6 +52,8 @@ STM32F403/407).
 
 #[macro_use] #[no_link] #[plugin] extern crate ioreg;
 
+#[cfg(test)] extern crate std;
+
 pub mod drivers;
 pub mod hal;
 pub mod util;
