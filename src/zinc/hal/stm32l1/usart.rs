@@ -91,7 +91,7 @@ impl Usart {
 
     clock.enable();
 
-    reg.cr1.set_word_length(word_len as bool);
+    reg.cr1.set_word_length(word_len as usize != 0);
     reg.cr2.set_stop_bits(stop_bits as u16);
 
     // Standard USART baud rate:

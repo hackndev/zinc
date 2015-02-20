@@ -189,7 +189,7 @@ impl ClockConfig {
       SystemClockPLL(pll_source, mul, div) => {
         r.cr.set_pll_on(true);
         wait_for!(r.cr.pll_ready());
-        r.cfgr.set_pll_clock_source(pll_source as bool);
+        r.cfgr.set_pll_clock_source(pll_source as usize != 0);
         let factor = match mul {
           3 => 0,
           4 => 1,

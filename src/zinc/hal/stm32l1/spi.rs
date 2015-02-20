@@ -127,14 +127,14 @@ impl Spi {
     reg.cr1.set_bidirectional_output_enable(direction == Direction::Tx);
 
     // set role
-    reg.cr1.set_master(role as bool);
-    reg.cr1.set_internal_slave_select(role as bool);
+    reg.cr1.set_master(role as usize != 0);
+    reg.cr1.set_internal_slave_select(role as usize != 0);
     reg.cr1.set_software_slave_management(true);
     reg.cr2.set_ss_output_enable(false);
 
     // set data size and format (MSB or LSB)
-    reg.cr1.set_data_frame_format(data_size as bool);
-    reg.cr1.set_frame_format(format as bool);
+    reg.cr1.set_data_frame_format(data_size as usize != 0);
+    reg.cr1.set_frame_format(format as usize != 0);
 
     // set baud rate
     if prescaler_shift<1 || prescaler_shift>8 {
@@ -143,8 +143,8 @@ impl Spi {
     reg.cr1.set_baud_rate(prescaler_shift as u16 - 1);
 
     // set clock mode
-    reg.cr1.set_clock_phase(ClockPhase::Edge1 as bool);
-    reg.cr1.set_clock_polarity(ClockPolarity::Low as bool);
+    reg.cr1.set_clock_phase(ClockPhase::Edge1 as usize != 0);
+    reg.cr1.set_clock_polarity(ClockPolarity::Low as usize != 0);
 
     reg.i2s_cfgr.set_enable(false);
     reg.cr1.set_hardware_crc_enable(false);
