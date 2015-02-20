@@ -493,12 +493,12 @@ impl<'a> Parser<'a> {
       match self.token {
         token::DocComment(docstring) => {
           let s = token::get_ident(docstring.ident());
-          if !s.get().starts_with(prefix) {
+          if !s.starts_with(prefix) {
             break
           }
 
           self.bump();
-          let stripped = s.get().slice_from(prefix.len())
+          let stripped = s.slice_from(prefix.len())
             .trim_left_matches(' ');
           docs.push(String::from_str(stripped));
         },

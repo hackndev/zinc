@@ -67,7 +67,7 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
   let reg_ty = cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
 
   let reg_doc = match reg.docstring {
-    Some(d) => token::get_ident(d.node).get().to_string(),
+    Some(d) => token::get_ident(d.node).to_string(),
     None => "no documentation".to_string(),
   };
   let docstring = format!("Update value of `{}` register: {}",
@@ -208,7 +208,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   let mask = utils::mask(cx, field);
 
   let field_doc = match field.docstring {
-    Some(d) => token::get_ident(d.node).get().to_string(),
+    Some(d) => token::get_ident(d.node).to_string(),
     None => "no documentation".to_string(),
   };
   let docstring = format!("Set value of `{}` field: {}",
@@ -250,7 +250,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
   let mask = utils::mask(cx, field);
 
   let field_doc = match field.docstring {
-    Some(d) => token::get_ident(d.node).get().to_string(),
+    Some(d) => token::get_ident(d.node).to_string(),
     None => "no documentation".to_string(),
   };
   let docstring = format!("Clear `{}` flag: {}",
