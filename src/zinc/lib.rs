@@ -46,11 +46,13 @@ Two MCUs are supported at the moment, specifically
 The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
 */
+#![plugin(ioreg)]
+#![feature(no_std)]
 
 #[macro_use] extern crate core;
 #[cfg(not(test))] extern crate rlibc;
 
-#[macro_use] #[no_link] #[plugin] extern crate ioreg;
+#[macro_use] #[no_link] extern crate ioreg;
 
 #[cfg(test)] extern crate std;
 
