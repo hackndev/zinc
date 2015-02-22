@@ -27,7 +27,6 @@ use hal::cortex_m3::irq::NoInterrupts;
 #[allow(missing_docs)]
 pub struct Shared<T> {
   pub value: UnsafeCell<T>,
-  pub invariant: marker::InvariantType<T>,
 }
 
 /// A reference to a shared value
@@ -42,7 +41,6 @@ impl<T> Shared<T> {
   pub fn new(value: T) -> Shared<T> {
     Shared {
       value: UnsafeCell::new(value),
-      invariant: marker::InvariantType,
     }
   }
 

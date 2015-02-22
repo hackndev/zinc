@@ -15,7 +15,7 @@
 
 //! A cell that with volatile setter and getter.
 
-use core::marker::{Copy, InvariantType};
+use core::marker::Copy;
 use core::intrinsics::{volatile_load, volatile_store};
 
 /// This structure is used to represent a hardware register.
