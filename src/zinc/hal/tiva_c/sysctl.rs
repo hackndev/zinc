@@ -293,7 +293,7 @@ pub mod periph {
       // maybe because we also have to take the bus write time into account or
       // the CPU is more clever than I think. Anyway, looping 5 times seems to
       // work
-      for _ in range(0u, 10) {
+      for _ in range(0usize, 10) {
         unsafe {
           asm!("nop" :::: "volatile");
         }

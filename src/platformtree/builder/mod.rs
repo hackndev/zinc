@@ -99,7 +99,7 @@ impl Builder {
       let mut sub_deps = sub.depends_on.borrow_mut();
       let deps = sub_deps.deref_mut();
       let mut index = None;
-      let mut i = 0u;
+      let mut i = 0usize;
       // FIXME: iter().position()
       for dep in deps.iter() {
         let strong_dep = dep.upgrade().unwrap();

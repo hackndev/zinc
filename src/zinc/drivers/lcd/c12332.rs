@@ -229,7 +229,7 @@ impl<'a, S: Spi, T: Timer, P: Gpio> LCD for C12332<'a, S, T, P> {
   }
 
   fn clear(&self) {
-    for i in range(0u, 512) {
+    for i in range(0usize, 512) {
       self.videobuf[i].set(0);
     }
   }
