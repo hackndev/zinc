@@ -15,7 +15,6 @@
 
 //! Platform tree operations crate
 
-#![experimental]
 #![feature(quote, globs)]
 
 #![crate_name="platformtree"]
