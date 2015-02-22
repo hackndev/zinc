@@ -21,7 +21,7 @@ use core::mem::uninitialized;
 pub fn itoa(val: u32, buf : &mut [u8], base: u32) {
   let mut rbuf : [u8; 32] = unsafe { uninitialized() };
   let mut myval : u32 = val;
-  let mut idx: int = 0;
+  let mut idx: isize = 0;
 
   if myval == 0 {
     buf[0] = '0' as u8;

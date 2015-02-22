@@ -276,7 +276,7 @@ pub mod periph {
       let p = base as *const super::reg::SysCtl_rmcgc;
 
       unsafe {
-        &*p.offset(self.class as int)
+        &*p.offset(self.class as isize)
       }
     }
 
