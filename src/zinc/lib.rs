@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(asm, unsafe_destructor, lang_items, plugin)]
+#![feature(asm, unsafe_destructor, lang_items, plugin, core)]
 #![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(improper_ctypes)]
