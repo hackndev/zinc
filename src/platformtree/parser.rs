@@ -370,7 +370,7 @@ impl<'a> Parser<'a> {
       },
       token::Ident(ident, _) => {
         self.bump();
-        match token::get_ident(ident).get() {
+        match &*token::get_ident(ident) {
           "true"  => Some(node::BoolValue(true)),
           "false" => Some(node::BoolValue(false)),
           other   => {
