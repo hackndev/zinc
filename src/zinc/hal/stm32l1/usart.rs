@@ -131,17 +131,16 @@ impl CharIO for Usart {
   }
 }
 
-// TODO: encoding::types Writer
-// impl fmt::Writer for Usart {
-//   fn write_str(&mut self, s: &str) -> fmt::Result {
-//     use core::str::StrExt;
-//     for b in s.bytes() {
-//       wait_for!(self.reg.sr.transmit_data_empty());
-//       self.reg.dr.set_data(b as u16);
-//     }
-//     Result::Ok(())
-//   }
-// }
+impl fmt::Write for Usart {
+  fn write_str(&mut self, s: &str) -> fmt::Result {
+    use core::str::StrExt;
+    for b in s.bytes() {
+      wait_for!(self.reg.sr.transmit_data_empty());
+      self.reg.dr.set_data(b as u16);
+    }
+    Result::Ok(())
+  }
+}
 
 mod reg {
   use util::volatile_cell::VolatileCell;
