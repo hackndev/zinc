@@ -160,7 +160,7 @@ impl<'a, S: Spi, T: Timer, P: Gpio> C12332<'a, S, T, P> {
 
     let start: uint = ((c - 32) as uint * offset as uint) + 4;
     let end: uint = start + offset as uint;
-    let zeichen = self.font.slice(start, end);
+    let zeichen = &self.font[start..end];
     // zeichen = &self.font[]; // start of char bitmap
     let w = zeichen[0];                          // width of actual char
     // construct the char into the buffer
