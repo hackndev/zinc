@@ -127,7 +127,7 @@ mod test {
           divisor = 4;
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       super::build_clock(&mut builder, cx, pt.get_by_path("clock").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
@@ -161,7 +161,7 @@ mod test {
           divisor = 4;
         }
       }", |cx, _, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       let node = pt.get_by_path("clock").unwrap();
       super::build_clock(&mut builder, cx, node.clone());
 

@@ -85,7 +85,7 @@ mod test {
           divisor = 4;
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       super::build_timer(&mut builder, cx, pt.get_by_name("tim").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);

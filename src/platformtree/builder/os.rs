@@ -229,7 +229,7 @@ mod test {
       single_task {
         loop = \"run\";
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       build_single_task(&mut builder, cx, pt.get_by_path("single_task").unwrap().clone());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
@@ -255,15 +255,16 @@ mod test {
 
       named@ref;
       ", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       pt.get_by_path("ref").unwrap().set_type_name("hello::world::Struct".to_string());
 
       build_single_task(&mut builder, cx, pt.get_by_path("single_task").unwrap().clone());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
-      assert!(builder.type_items.len() == 1);
+      assert!(builder.type_items.len() == 2);
 
-      assert_equal_source(cx.stmt_item(DUMMY_SP, builder.type_items[0].clone()).deref(),
+      // XXX: builder.type_items[0] is `use zinc;` now
+      assert_equal_source(cx.stmt_item(DUMMY_SP, builder.type_items[1].clone()).deref(),
           "pub struct run_args<'a> {
             pub a: u32,
             pub b: &'static str,
@@ -273,7 +274,7 @@ mod test {
       assert_equal_source(builder.main_stmts[0].deref(),
           "loop {
             run(&pt::run_args {
-              a: 1us,
+              a: 1usize,
               b: \"a\",
               c: &named,
             });

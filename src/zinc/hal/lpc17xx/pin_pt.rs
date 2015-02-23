@@ -149,7 +149,7 @@ mod test {
           p1@1 { direction = \"in\"; }
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       super::build_pin(&mut builder, cx, pt.get_by_name("p1").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
@@ -171,7 +171,7 @@ mod test {
           p2@2 { direction = \"out\"; }
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       super::build_pin(&mut builder, cx, pt.get_by_name("p2").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
@@ -193,7 +193,7 @@ mod test {
           p3@3 { direction = \"out\"; function = \"ad0_6\"; }
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       super::build_pin(&mut builder, cx, pt.get_by_name("p3").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);

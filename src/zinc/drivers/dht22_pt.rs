@@ -84,7 +84,7 @@ mod test {
         pin = &pin;
         timer = &timer;
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       pt.get_by_name("timer").unwrap().set_type_name("T".to_string());
       pt.get_by_name("pin").unwrap().set_type_name("P".to_string());
       super::mutate_pin(&mut builder, cx, pt.get_by_name("dht").unwrap());

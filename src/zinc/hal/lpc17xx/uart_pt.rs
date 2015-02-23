@@ -147,7 +147,7 @@ mod test {
         uart_rx@1;
       }
       ", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       super::mutate_pins(&mut builder, cx, pt.get_by_name("uart").unwrap());
       super::build_uart(&mut builder, cx, pt.get_by_name("uart").unwrap());
       assert!(unsafe{*failed} == false);
