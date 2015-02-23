@@ -1,6 +1,7 @@
-#![feature(plugin)]
+#![feature(plugin, no_std, core)]
 #![crate_type="staticlib"]
 #![no_std]
+#![plugin(macro_platformtree)]
 
 extern crate core;
 extern crate zinc;

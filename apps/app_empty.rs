@@ -1,10 +1,12 @@
-#![feature(plugin, asm)]
+#![feature(plugin, asm, no_std)]
 #![crate_type="staticlib"]
 #![no_std]
+#![plugin(macro_platformtree)]
+#![plugin(macro_platformtree)]
 
 extern crate core;
 extern crate zinc;
-#[macro_use] #[plugin] #[no_link] extern crate macro_platformtree;
+#[macro_use] #[no_link] extern crate macro_platformtree;
 
 platformtree!(
   lpc17xx@mcu {

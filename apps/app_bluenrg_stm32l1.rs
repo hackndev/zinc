@@ -1,6 +1,7 @@
-#![feature(plugin)]
+#![feature(plugin, no_std, core)]
 #![crate_type="staticlib"]
 #![no_std]
+#![plugin(macro_platformtree)]
 
 //! Sample application for BlueNRG communication over SPI in X-NUCLEO-IDB04A1
 //! extension board for NUCLEO-L152RE
