@@ -132,9 +132,9 @@ impl Pin {
     // TODO(farcaller): should be done once per port
     peripheral_clock::PeripheralClock::Ahb(clock).enable();
 
-    let offset1 = pin_index as uint;
+    let offset1 = pin_index as usize;
     let mask1 = !(0b1u16 << offset1);
-    let offset2 = pin_index as uint * 2;
+    let offset2 = pin_index as usize * 2;
     let mask2: u32 = !(0b11 << offset2);
 
     let fun: u32 = match mode {
@@ -155,7 +155,7 @@ impl Pin {
         let sv: u32 = reg.ospeedr.speed() & mask2;
         reg.ospeedr.set_speed(sv | ((speed as u32) << offset2));
         // set alt mode
-        let mut off = (pin_index as uint) << 2;
+        let mut off = (pin_index as usize) << 2;
         if pin_index < 8 {
           let v = reg.afrl.alt_fun() & !(0xF << off);
           reg.afrl.set_alt_fun(v | ((alt as u32) << off));
@@ -189,17 +189,17 @@ impl Pin {
 
 impl ::hal::pin::Gpio for Pin {
   fn set_high(&self) {
-    let bit: u32 = 1 << self.index as uint;
+    let bit: u32 = 1 << self.index as usize;
     self.reg.bsrr.set_reset(bit);
   }
 
   fn set_low(&self) {
-    let bit: u32 = 1 << (self.index as uint + 16);
+    let bit: u32 = 1 << (self.index as usize + 16);
     self.reg.bsrr.set_reset(bit);
   }
 
   fn level(&self) -> ::hal::pin::GpioLevel {
-    let bit = 1u16 << (self.index as uint);
+    let bit = 1u16 << (self.index as usize);
 
     match self.reg.idr.input() & bit {
       0 => ::hal::pin::Low,

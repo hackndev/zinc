@@ -98,7 +98,7 @@ impl Usart {
     // Tx/Rx baud = Fck / (8 * (2 - OVER8) * USARTDIV)
 
     let bus_clock = clock.frequency(config);
-    let over8 = reg.cr1.oversample_8bit_enable() as uint;
+    let over8 = reg.cr1.oversample_8bit_enable() as usize;
     let idiv = (bus_clock << 4) / (baudrate << (2 - over8));
     reg.brr.set_fraction(((idiv & 0xF) >> over8) as u16);
     reg.brr.set_mantissa((idiv >> 4) as u16);

@@ -75,10 +75,10 @@ pub unsafe extern fn isr_handler_wrapper() {
       ldr r2, [r0, 0x18]
       ldr r3, [r1, 0x18]
       bkpt" :::: "volatile");
-}  
+}
 
 #[allow(non_upper_case_globals)]
-const ISRCount: uint = 16;
+const ISRCount: usize = 16;
 
 #[link_section=".isr_vector"]
 #[allow(non_upper_case_globals)]

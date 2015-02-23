@@ -149,7 +149,7 @@ pub trait LCD : CharIO {
   fn image(&self, width: u32, height: u32, data: &[u16]) {
     for x in range(0, width) {
       for y in range(0, height) {
-        self.pixel(x, y, data[(x+y*width) as uint]);
+        self.pixel(x, y, data[(x+y*width) as usize]);
       }
     }
   }
@@ -183,7 +183,7 @@ mod test {
         return
       }
 
-      self.pixbuf[x as uint][y as uint].set(color);
+      self.pixbuf[x as usize][y as usize].set(color);
     }
   }
 
@@ -194,9 +194,9 @@ mod test {
       }
     }
 
-    fn coords(&self, x: uint, y: uint) -> (u32, u32) { (x as u32, y as u32) }
+    fn coords(&self, x: usize, y: usize) -> (u32, u32) { (x as u32, y as u32) }
 
-    fn axis(&self) -> Range<uint> { range(0u, 16) }
+    fn axis(&self) -> Range<usize> { range(0u, 16) }
 
     fn for_each<F>(&self, block: F) where F: Fn((u32, u32), u16) {
       for x in self.axis() {
@@ -284,8 +284,8 @@ mod test {
     io.line(15, 15, 0, 0, 1);
 
     io.for_each(|(x, y), v| {
-      assert!(v == diagonal[y as uint][x as uint]);
-      assert!(v == diagonal[x as uint][y as uint]);
+      assert!(v == diagonal[y as usize][x as usize]);
+      assert!(v == diagonal[x as usize][y as usize]);
     });
 
     io.clear();
@@ -316,7 +316,7 @@ mod test {
     io.line(11, 11, 13, 13, 5);
 
     io.for_each(|(x, y), v| {
-      assert!(v == non_symetric[x as uint][y as uint]);
+      assert!(v == non_symetric[x as usize][y as usize]);
     });
   }
 
@@ -352,7 +352,7 @@ mod test {
     io.rect(10, 10, 7, 4, 7);
 
     io.for_each(|(x, y), v| {
-      assert!(v == overlapping[x as uint][y as uint]);
+      assert!(v == overlapping[x as usize][y as usize]);
     });
   }
 
@@ -382,7 +382,7 @@ mod test {
     io.fillrect(4, 4, 11, 11, 8);
 
     io.for_each(|(x, y), v| {
-      assert!(v == eights[x as uint][y as uint]);
+      assert!(v == eights[x as usize][y as usize]);
     });
   }
 
@@ -463,7 +463,7 @@ mod test {
     io.image(16, 16, i1);
 
     io.for_each(|(y, x), v| {
-      assert!(v == i2[x as uint][y as uint]);
+      assert!(v == i2[x as usize][y as usize]);
     });
   }
 }

@@ -43,7 +43,7 @@ pub fn build_uart(builder: &mut Builder,
   };
 
   let uart_peripheral_str = format!("Uart{}",
-      match sub.path.as_slice().parse::<uint>().unwrap() {
+      match sub.path.as_slice().parse::<usize>().unwrap() {
         0 ... 7 => sub.path.clone(),
         p       => {
           error(format!("unknown UART `{}`, allowed values: 0, 2, 3",
@@ -76,7 +76,7 @@ pub fn build_uart(builder: &mut Builder,
     }
   };
 
-  let baud_rate = mode_captures.at(1).unwrap().parse::<uint>();
+  let baud_rate = mode_captures.at(1).unwrap().parse::<usize>();
 
   let word_len = match mode_captures.at(2).unwrap() {
     "" => 8,

@@ -89,7 +89,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     Some(f)    => f as u8,
   };
 
-  let pin_str = match node.path.as_slice().parse::<uint>().unwrap() {
+  let pin_str = match node.path.as_slice().parse::<usize>().unwrap() {
     0 ...7  => &node.path,
     other  => {
       error(format!("unknown pin `{}`, allowed values: 0...7",

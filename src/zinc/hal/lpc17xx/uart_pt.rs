@@ -55,7 +55,7 @@ pub fn mutate_pins(builder: &mut Builder, _: &mut ExtCtxt, sub: Rc<node::Node>) 
 pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
     sub: Rc<node::Node>) {
   let uart_peripheral_str = format!("UARTPeripheral::UART{}",
-      match sub.path.as_slice().parse::<uint>().unwrap() {
+      match sub.path.as_slice().parse::<usize>().unwrap() {
         0|2|3 => sub.path.clone(),
         other => {
           cx.parse_sess().span_diagnostic.span_err(sub.path_span,
@@ -109,7 +109,7 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
   builder.add_main_statement(st);
 }
 
-pub fn build_uart_gpio(builder: &Builder, uart_idx: uint, name: &str,
+pub fn build_uart_gpio(builder: &Builder, uart_idx: usize, name: &str,
     istx: bool) {
   let node = builder.pt().get_by_name(name).unwrap();
   let direction = (if istx {"out"} else {"in"}).to_string();

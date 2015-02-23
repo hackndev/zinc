@@ -43,15 +43,15 @@ mod current_stack_offset {
 static ReservedPivilegedStackSize: u32 = 256;
 
 /// Maximum number of tasks.
-static MaxTasksCount: uint = 4;
+static MaxTasksCount: usize = 4;
 
 mod defined_tasks_count {
   use core::intrinsics::abort;
 
   /// Total defined tasks count.
-  static mut DefinedTasksCount: uint = 0;
+  static mut DefinedTasksCount: usize = 0;
 
-  pub fn get() -> uint {
+  pub fn get() -> usize {
     unsafe { DefinedTasksCount }
   }
 
@@ -86,7 +86,7 @@ impl TaskDescriptor {
 }
 
 struct TasksCollection {
-  pub current_task: uint,
+  pub current_task: usize,
   pub tasks: [TaskDescriptor; MaxTasksCount],
 }
 

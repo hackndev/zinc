@@ -165,7 +165,7 @@ impl<'a> Parser<'a> {
     let docstring = self.parse_docstring(Scope::Outer);
 
     // we are still sitting at the offset
-    let offset = match self.expect_uint() {
+    let offset = match self.expect_usize() {
       Some(offset) => offset,
       None => return None,
     };
@@ -292,7 +292,7 @@ impl<'a> Parser<'a> {
     let docstring = self.parse_docstring(Scope::Outer);
 
     // sitting at starting bit number
-    let low_bit = match self.expect_uint() {
+    let low_bit = match self.expect_usize() {
       Some(bit) if bit >= reg_width.size() * 8 => {
         self.error(format!("Start bit of field ({}) is greater than width of register ({})",
           bit, 8*reg_width.size()));
@@ -305,7 +305,7 @@ impl<'a> Parser<'a> {
     let high_bit = match self.token {
       token::DotDot => {
         self.bump();
-        match self.expect_uint() {
+        match self.expect_usize() {
           Some(bit) if bit >= reg_width.size() * 8 => {
             self.error(format!("End bit of field ({}) is greater than width of register ({})",
               bit, 8*reg_width.size()));
@@ -451,7 +451,7 @@ impl<'a> Parser<'a> {
         break;
       }
 
-      let value = match self.expect_uint() {
+      let value = match self.expect_usize() {
         Some(v) => respan(self.last_span, v),
         _ => return None,
       };
@@ -514,7 +514,7 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn parse_uint(&mut self) -> Option<u64> {
+  fn parse_usize(&mut self) -> Option<u64> {
     match self.token {
       token::Literal(token::Integer(n), suf) => {
         self.bump();
@@ -531,8 +531,8 @@ impl<'a> Parser<'a> {
     }
   }
 
-  fn expect_uint(&mut self) -> Option<u64> {
-    match self.parse_uint() {
+  fn expect_usize(&mut self) -> Option<u64> {
+    match self.parse_usize() {
       Some(n) => Some(n),
       None => {
         let this_token_str = pprust::token_to_string(&self.token);
@@ -548,7 +548,7 @@ impl<'a> Parser<'a> {
     match self.token {
       token::OpenDelim(token::Bracket) => {
         self.bump();
-        let ret = match self.expect_uint() {
+        let ret = match self.expect_usize() {
           Some(count) if count >= 1<<32 => {
             self.error(format!("count unreasonably large ({})", count));
             return None;

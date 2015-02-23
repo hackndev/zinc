@@ -346,7 +346,7 @@ impl<'a> Parser<'a> {
           match lit {
             LitInt(i, UnsuffixedIntLit(_)) => {
               self.bump();
-              Some(node::IntValue(i as uint))
+              Some(node::IntValue(i as usize))
             },
             _ => {
               self.error(format!("expected unsuffixed positive integer but found `{}`",

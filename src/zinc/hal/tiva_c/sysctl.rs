@@ -77,7 +77,7 @@ pub mod clock {
   pub fn sysclk_configure(source:      ClockSource,
                           mosc_source: Option<MOSCFreq>,
                           use_pll:     bool,
-                          div:         Option<uint>) {
+                          div:         Option<usize>) {
 
     let sysctl = super::sysctl_get();
 
@@ -147,7 +147,7 @@ pub mod clock {
   }
 
   /// Retrieve the current sysclk frequency
-  pub fn sysclk_get() -> uint {
+  pub fn sysclk_get() -> usize {
     let sysctl = super::sysctl_get();
 
     let rcc  = sysctl.rcc.get();
@@ -215,10 +215,10 @@ pub mod clock {
       } else {
         // We're running from the PLL output
 
-        let mint  = sysctl.pllfreq0.mint()  as uint;
-        let mfrac = sysctl.pllfreq0.mfrac() as uint;
-        let n = sysctl.pllfreq1.n()         as uint;
-        let q = sysctl.pllfreq1.q()         as uint;
+        let mint  = sysctl.pllfreq0.mint()  as usize;
+        let mfrac = sysctl.pllfreq0.mfrac() as usize;
+        let n = sysctl.pllfreq1.n()         as usize;
+        let q = sysctl.pllfreq1.q()         as usize;
 
         let mut pllfreq = input_freq / ((n + 1) * (q + 1));
         pllfreq         = (pllfreq * mint) + ((pllfreq * mfrac) >> 10);
@@ -244,7 +244,7 @@ pub mod clock {
       }
     };
 
-    div_freq / sysdiv as uint
+    div_freq / sysdiv as usize
   }
 }
 
@@ -286,7 +286,7 @@ pub mod periph {
       let cgr = self.clock_gating_reg();
 
       // Enable peripheral clock
-      cgr.set_enabled(self.id as uint, true);
+      cgr.set_enabled(self.id as usize, true);
 
       // The manual says we have to wait for 3 clock cycles before we can access
       // the peripheral. Waiting for 3 NOPs don't seem to be enough on my board,
@@ -305,7 +305,7 @@ pub mod periph {
     pub fn ensure_enabled(&self) {
       let cgr = self.clock_gating_reg();
 
-      if !cgr.enabled(self.id as uint) {
+      if !cgr.enabled(self.id as usize) {
         self.enable();
       }
     }

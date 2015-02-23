@@ -15,7 +15,7 @@
 
 use core::option::Option::{self, None};
 
-const ISRCOUNT: uint = 139;
+const ISRCOUNT: usize = 139;
 
 #[link_section=".isr_vector_nvic"]
 #[no_mangle]

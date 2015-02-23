@@ -24,42 +24,42 @@ fn get_reg() -> &'static reg::NVIC {
 }
 
 /// Enable an interrupt
-pub fn enable_irq(irqn: uint) {
+pub fn enable_irq(irqn: usize) {
   get_reg().iser[irqn / 32].clear_iser(irqn % 32);
 }
 
 /// Disable an interrupt
-pub fn disable_irq(irqn: uint) {
+pub fn disable_irq(irqn: usize) {
   get_reg().icer[irqn / 32].clear_icer(irqn % 32);
 }
 
 /// Return whether the given interrupt is enabled
-pub fn is_enabled(irqn: uint) -> bool {
+pub fn is_enabled(irqn: usize) -> bool {
   get_reg().iser[irqn / 32].iser(irqn % 32)
 }
 
 /// Clear the pending flag for the given interrupt
-pub fn clear_pending(irqn: uint) {
+pub fn clear_pending(irqn: usize) {
   get_reg().icpr[irqn / 32].clear_icpr(irqn % 32);
 }
 
 /// Return whether the given interrupt is pending
-pub fn is_pending(irqn: uint) -> bool {
+pub fn is_pending(irqn: usize) -> bool {
   get_reg().ispr[irqn / 32].ispr(irqn % 32)
 }
 
 /// Return whether the given interrupt is active
-pub fn is_active(irqn: uint) -> bool {
+pub fn is_active(irqn: usize) -> bool {
   get_reg().iabr[irqn / 32].iabr(irqn % 32)
 }
 
 /// Set the priority for the given interrupt
-pub fn set_priority(irqn: uint, prio: u8) {
+pub fn set_priority(irqn: usize, prio: u8) {
   get_reg().ipr[irqn / 4].set_ipr(irqn % 4, prio as u32);
 }
 
 /// Return the priority for the given interrupt
-pub fn get_priority(irqn: uint) -> u8 {
+pub fn get_priority(irqn: usize) -> u8 {
   get_reg().ipr[irqn / 4].ipr(irqn % 4) as u8
 }
 

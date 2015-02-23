@@ -44,7 +44,7 @@ impl Drop for NoInterrupts {
 }
 
 #[cfg(not(test))]
-static mut irq_level : uint = 0;
+static mut irq_level : usize = 0;
 
 /// Disables all interrupts except Reset, HardFault, and NMI.
 /// Note that this is reference counted: if `disable_irqs` is called

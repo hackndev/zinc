@@ -1,5 +1,5 @@
 // Rough structure taken from libsync's mpcs_intrusive
-// all links are uint to allow for static initialization
+// all links are usize to allow for static initialization
 
 //
 // head                       tail

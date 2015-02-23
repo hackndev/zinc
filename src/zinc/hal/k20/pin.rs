@@ -163,25 +163,25 @@ impl Pin {
       PortD => &reg::PORT_D,
       PortE => &reg::PORT_E,
     };
-    return &port.pcr[self.pin as uint];
+    return &port.pcr[self.pin as usize];
   }
 }
 
 impl ::hal::pin::Gpio for Pin {
   /// Sets output GPIO value to high.
   fn set_high(&self) {
-    self.gpioreg().psor.set_ptso(self.pin as uint, true);
+    self.gpioreg().psor.set_ptso(self.pin as usize, true);
   }
 
   /// Sets output GPIO value to low.
   fn set_low(&self) {
-    self.gpioreg().pcor.set_ptco(self.pin as uint, true);
+    self.gpioreg().pcor.set_ptco(self.pin as usize, true);
   }
 
   /// Returns input GPIO level.
   fn level(&self) -> ::hal::pin::GpioLevel {
     let reg = self.gpioreg();
-    match reg.pdir.pdi(self.pin as uint) {
+    match reg.pdir.pdi(self.pin as usize) {
       false => ::hal::pin::Low,
       _     => ::hal::pin::High,
     }
@@ -195,7 +195,7 @@ impl ::hal::pin::Gpio for Pin {
       ::hal::pin::In  => pdd::INPUT,
       ::hal::pin::Out => pdd::OUTPUT,
     };
-    reg.pddr.set_pdd(self.pin as uint, val);
+    reg.pddr.set_pdd(self.pin as usize, val);
   }
 }
 

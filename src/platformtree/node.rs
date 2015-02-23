@@ -31,7 +31,7 @@ pub use self::AttributeType::*;
 /// The value can be an unsigned integer, string or reference.
 #[derive(Clone)]
 pub enum AttributeValue {
-  IntValue(uint),
+  IntValue(usize),
   BoolValue(bool),
   StrValue(String),
   RefValue(String),
@@ -284,7 +284,7 @@ impl Node {
 
   /// Returns an integer attribute by name or None, if it's not present or not
   /// of an IntAttribute type.
-  pub fn get_int_attr(&self, key: &str) -> Option<uint> {
+  pub fn get_int_attr(&self, key: &str) -> Option<usize> {
     self.attributes.borrow().get(&key.to_string()).and_then(|av| match av.value {
       IntValue(ref u) => Some(*u),
       _ => None,
@@ -329,7 +329,7 @@ impl Node {
   /// of an IntAttribute type. Reports a parser error if an attribute is
   /// missing.
   pub fn get_required_int_attr(&self, cx: &ExtCtxt, key: &str)
-      -> Option<uint> {
+      -> Option<usize> {
     match self.get_int_attr(key) {
       Some(val) => Some(val),
       None => {

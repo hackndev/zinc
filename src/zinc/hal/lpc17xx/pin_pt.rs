@@ -40,7 +40,7 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let port_node = node.parent.clone().unwrap().upgrade().unwrap();
   let ref port_path = port_node.path;
-  let port_str = format!("Port{}", match port_path.as_slice().parse::<uint>().unwrap() {
+  let port_str = format!("Port{}", match port_path.as_slice().parse::<usize>().unwrap() {
     0...4 => port_path,
     other => {
       cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
@@ -74,7 +74,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   };
   let direction = TokenString(direction_str.to_string());
 
-  let pin_str = match node.path.as_slice().parse::<uint>().unwrap() {
+  let pin_str = match node.path.as_slice().parse::<usize>().unwrap() {
     0...31 => &node.path,
     other  => {
       cx.parse_sess().span_diagnostic.span_err(node.path_span,

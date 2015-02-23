@@ -124,7 +124,7 @@ fn init_flash_access(freq: u32) {
 }
 
 #[inline(always)]
-fn wait_for_pll0stat_bit(bit: uint) {
+fn wait_for_pll0stat_bit(bit: usize) {
   wait_for!(reg::PLL0STAT.value() & (1 << bit) == (1 << bit));
 }
 

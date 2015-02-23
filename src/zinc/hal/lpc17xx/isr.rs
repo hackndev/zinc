@@ -54,7 +54,7 @@ extern {
 }
 
 #[allow(non_upper_case_globals)]
-const ISRCount: uint = 35;
+const ISRCount: usize = 35;
 
 #[allow(non_upper_case_globals)]
 #[link_section=".isr_vector_nvic"]

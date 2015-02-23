@@ -234,17 +234,17 @@ impl ClockConfig {
 
   /// Returns AHB clock frequency
   pub fn get_ahb_frequency(&self) -> u32 {
-    self.source.frequency() >> self.ahb_shift as uint
+    self.source.frequency() >> self.ahb_shift as usize
   }
 
   /// Returns APB1 clock frequency
   pub fn get_apb1_frequency(&self) -> u32 {
-    self.source.frequency() >> self.apb1_shift as uint
+    self.source.frequency() >> self.apb1_shift as usize
   }
 
   /// Returns APB2 clock frequency
   pub fn get_apb2_frequency(&self) -> u32 {
-    self.source.frequency() >> self.apb2_shift as uint
+    self.source.frequency() >> self.apb2_shift as usize
   }
 }
 
