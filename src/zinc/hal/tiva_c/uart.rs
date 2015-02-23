@@ -50,7 +50,7 @@ pub struct Uart {
 impl Uart {
   /// Create and setup a UART.
   pub fn new(id:        UartId,
-             baudrate:  uint,
+             baudrate:  usize,
              word_len:  u8,
              parity:    uart::Parity,
              stop_bits: u8) -> Uart {
@@ -77,7 +77,7 @@ impl Uart {
 
   /// Configure the UART
   fn configure(&self,
-               baudrate:  uint,
+               baudrate:  usize,
                word_len:  u8,
                parity:    uart::Parity,
                stop_bits: u8) {

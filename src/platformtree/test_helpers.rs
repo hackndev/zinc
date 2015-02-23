@@ -18,8 +18,8 @@ use syntax::ast;
 use syntax::codemap::MacroBang;
 use syntax::codemap::{CodeMap, Span, mk_sp, BytePos, ExpnInfo, NameAndSpan};
 use syntax::codemap;
-use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler};
 use syntax::diagnostic::mk_handler;
+use syntax::diagnostic::{Emitter, RenderSpan, Level, mk_span_handler};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
@@ -68,12 +68,12 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
   let mut failed = false;
   let failptr = &mut failed as *mut bool;
   let ce = Box::new(CustomEmmiter::new(failptr));
-  let sh = mk_span_handler(mk_handler(ce), CodeMap::new());
+  let sh = mk_span_handler(mk_handler(false, ce), CodeMap::new());
   let parse_sess = new_parse_sess_special_handler(sh);
   let cfg = Vec::new();
   let ecfg = ExpansionConfig {
     crate_name: ("test").parse().unwrap(),
-    enable_quotes: true,
+    features: None,
     recursion_limit: 10,
   };
   let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg);

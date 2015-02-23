@@ -31,7 +31,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   }
 
   let source = node.get_string_attr("source").unwrap();
-  let source_freq: uint;
+  let source_freq: usize;
   let clock_source = TokenString(match source.as_slice() {
     "internal-oscillator" => {
       source_freq = 4_000_000;
@@ -62,7 +62,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   });
 
   let some_pll_conf = node.get_by_path("pll").and_then(|sub|
-      -> Option<(uint, uint, uint)> {
+      -> Option<(usize, usize, usize)> {
     if !sub.expect_no_subnodes(cx) || !sub.expect_attributes(cx, &[
         ("m", node::IntAttribute),
         ("n", node::IntAttribute),
@@ -86,8 +86,8 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
   let pll_n: u8 = n as u8;
   let pll_divisor: u8 = divisor as u8;
 
-  let sysfreq = source_freq * 2 * pll_m as uint / pll_n as uint
-      / pll_divisor as uint;
+  let sysfreq = source_freq * 2 * pll_m as usize / pll_n as usize
+      / pll_divisor as usize;
   node.attributes.borrow_mut().insert("system_frequency".to_string(),
       Rc::new(node::Attribute::new_nosp(node::IntValue(sysfreq))));
 
@@ -127,7 +127,7 @@ mod test {
           divisor = 4;
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       super::build_clock(&mut builder, cx, pt.get_by_path("clock").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
@@ -161,7 +161,7 @@ mod test {
           divisor = 4;
         }
       }", |cx, _, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       let node = pt.get_by_path("clock").unwrap();
       super::build_clock(&mut builder, cx, node.clone());
 

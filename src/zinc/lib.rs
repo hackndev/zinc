@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(asm, unsafe_destructor, lang_items, plugin)]
+#![feature(asm, unsafe_destructor, lang_items, plugin, core)]
 #![crate_name="zinc"]
 #![crate_type="rlib"]
 #![allow(improper_ctypes)]
@@ -46,11 +46,13 @@ Two MCUs are supported at the moment, specifically
 The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
 */
+#![plugin(ioreg)]
+#![feature(no_std)]
 
 #[macro_use] extern crate core;
 #[cfg(not(test))] extern crate rlibc;
 
-#[macro_use] #[no_link] #[plugin] extern crate ioreg;
+#[macro_use] #[no_link] extern crate ioreg;
 
 #[cfg(test)] extern crate std;
 

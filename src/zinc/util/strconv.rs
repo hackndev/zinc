@@ -32,7 +32,7 @@ pub fn itoa(val: u32, buf : &mut [u8], base: u32) {
     let digit : u8 = (myval % base) as u8;
     myval = myval / base;
 
-    rbuf[idx as uint] = digit;
+    rbuf[idx as usize] = digit;
 
     idx += 1;
   }
@@ -42,7 +42,7 @@ pub fn itoa(val: u32, buf : &mut [u8], base: u32) {
   let mut ridx = 0;
 
   while idx >= 0 {
-    let charcode : u8 = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'][rbuf[idx as uint] as uint] as u8;
+    let charcode : u8 = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'][rbuf[idx as usize] as usize] as u8;
 
     buf[ridx] = charcode;
 

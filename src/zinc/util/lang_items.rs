@@ -30,6 +30,6 @@ extern fn begin_unwind() {}
 
 #[cfg(not(test))]
 #[lang="panic_fmt"]
-pub fn panic_fmt(_fmt: &Arguments, _file_line: &(&'static str, uint)) -> ! {
+pub fn panic_fmt(_fmt: &Arguments, _file_line: &(&'static str, usize)) -> ! {
   loop { }
 }

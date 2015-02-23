@@ -74,7 +74,7 @@ pub mod test {
   #[derive(Copy)]
   pub struct TestCharIOData {
     last_char: char,
-    putc_calls: uint,
+    putc_calls: usize,
   }
 
   pub struct TestCharIO {
@@ -103,7 +103,7 @@ pub mod test {
       self.data.borrow().last_char
     }
 
-    fn get_and_reset_putc_calls(&self) -> uint {
+    fn get_and_reset_putc_calls(&self) -> usize {
       let current = self.data.borrow().putc_calls;
       self.data.borrow_mut().putc_calls = 0;
       current

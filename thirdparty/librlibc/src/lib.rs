@@ -23,6 +23,7 @@
 #![crate_name = "rlibc"]
 #![crate_type = "rlib"]
 
+#![feature(no_std)]
 #![no_std]
 
 // This library defines the builtin functions, so it would be a shame for

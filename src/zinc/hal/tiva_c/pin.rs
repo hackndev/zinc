@@ -40,7 +40,7 @@ pub struct Pin {
   /// Timer register interface
   regs: &'static reg::Port,
   /// Pin index in the port
-  index: uint,
+  index: usize,
 }
 
 impl Pin {
@@ -62,7 +62,7 @@ impl Pin {
 
     periph.ensure_enabled();
 
-    let pin = Pin { regs: get_reg_ref(regs), index: pin_index as uint };
+    let pin = Pin { regs: get_reg_ref(regs), index: pin_index as usize };
 
     pin.configure(dir, function);
 

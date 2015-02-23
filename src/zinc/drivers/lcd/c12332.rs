@@ -122,13 +122,13 @@ impl<'a, S: Spi, T: Timer, P: Gpio> C12332<'a, S, T, P> {
       return
     }
 
-    let index = (x + (y/8) * 128) as uint;
+    let index = (x + (y/8) * 128) as usize;
     if color == 0 {
       self.videobuf[index].set(
-        self.videobuf[index].get() & !(1u8 << (y%8u32) as uint) as u8);
+        self.videobuf[index].get() & !(1u8 << (y%8u32) as usize) as u8);
     } else {
       self.videobuf[index].set(
-        self.videobuf[index].get() | (1 << ((y%8) as uint)));
+        self.videobuf[index].get() | (1 << ((y%8) as usize)));
     }
   }
 
@@ -158,16 +158,16 @@ impl<'a, S: Spi, T: Timer, P: Gpio> C12332<'a, S, T, P> {
       }
     }
 
-    let start: uint = ((c - 32) as uint * offset as uint) + 4;
-    let end: uint = start + offset as uint;
-    let zeichen = self.font.slice(start, end);
+    let start: usize = ((c - 32) as usize * offset as usize) + 4;
+    let end: usize = start + offset as usize;
+    let zeichen = &self.font[start..end];
     // zeichen = &self.font[]; // start of char bitmap
     let w = zeichen[0];                          // width of actual char
     // construct the char into the buffer
     for j in range(0, vert) {
       for i in range(0, hor) {
-        let z: u8 =  zeichen[(bpl * i + ((j & 0xF8) >> 3)+1) as uint];
-        let b: u8 = 1 << ((j & 0x07) as uint);
+        let z: u8 =  zeichen[(bpl * i + ((j & 0xF8) >> 3)+1) as usize];
+        let b: u8 = 1 << ((j & 0x07) as usize);
         if ( z & b ) == 0x00 {
           self.set_pixel(x+i as u32, y+j as u32, 0);
         } else {
@@ -185,7 +185,7 @@ impl<'a, S: Spi, T: Timer, P: Gpio> C12332<'a, S, T, P> {
 
 impl<'a, S: Spi, T: Timer, P: Gpio> LCD for C12332<'a, S, T, P> {
   fn flush(&self) {
-    let mut i: uint = 0;
+    let mut i: usize = 0;
 
     //page 0
     self.wr_cmd(0x00);      // set column low nibble 0

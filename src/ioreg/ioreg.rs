@@ -327,7 +327,7 @@ N => NAME
 
 */
 
-#![feature(quote, plugin_registrar)]
+#![feature(quote, plugin_registrar, rustc_private, collections, core)]
 #![crate_name="ioreg"]
 #![crate_type="dylib"]
 #![allow(unstable)]

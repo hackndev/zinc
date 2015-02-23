@@ -1,12 +1,12 @@
-#![feature(plugin)]
+#![feature(plugin, no_std, core)]
 #![crate_type="staticlib"]
 #![no_std]
+#![plugin(macro_platformtree)]
 
 //! Sample application for BlueNRG communication over SPI in X-NUCLEO-IDB04A1
 //! extension board for NUCLEO-L152RE
 
-#[macro_use] #[plugin]
-extern crate core;
+#[macro_use] extern crate core;
 extern crate zinc;
 
 use core::intrinsics::abort;
@@ -44,7 +44,7 @@ fn map_byte(s: u8) -> (&'static str, &'static str) {
 
 #[no_mangle]
 pub unsafe fn main() {
-  use core::fmt::Writer;
+  use core::fmt::Write;
   use core::result::Result;
   use zinc::drivers::bluenrg;
   use zinc::hal;

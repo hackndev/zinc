@@ -81,7 +81,7 @@ fn build_field_accessors(cx: &ExtCtxt, path: &Vec<String>,
   let field_doc = match field.docstring {
     Some(ref d) => {
       let s = token::get_ident(d.node);
-      s.get().to_string()
+      s.to_string()
     },
     None => "no documentation".to_string()
   };

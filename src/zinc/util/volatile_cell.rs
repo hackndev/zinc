@@ -15,14 +15,13 @@
 
 //! A cell that with volatile setter and getter.
 
-use core::marker::{Copy, InvariantType};
+use core::marker::Copy;
 use core::intrinsics::{volatile_load, volatile_store};
 
 /// This structure is used to represent a hardware register.
 /// It is mostly used by the ioreg family of macros.
 pub struct VolatileCell<T> {
   value: T,
-  invariant: InvariantType<T>,
 }
 
 impl<T: Copy> Copy for VolatileCell<T> {}
@@ -32,7 +31,6 @@ impl<T> VolatileCell<T> {
   pub fn new(value: T) -> VolatileCell<T> {
     VolatileCell {
       value: value,
-      invariant: InvariantType::<T>,
     }
   }
 

@@ -56,7 +56,7 @@ pub extern fn __aeabi_unwind_cpp_pr1() {
 #[doc(hidden)]
 #[no_stack_check]
 #[no_mangle]
-pub extern fn __aeabi_memset(dest: *mut u8, size: uint, value: u32) {
+pub extern fn __aeabi_memset(dest: *mut u8, size: usize, value: u32) {
   unsafe {
     use core::intrinsics::set_memory;
     set_memory(dest, value as u8, size);

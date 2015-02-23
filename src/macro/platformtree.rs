@@ -75,7 +75,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
   match it.node {
     ast::ItemFn(ref decl, style, abi, _, ref block) => {
       let istr = syntax::parse::token::get_ident(it.ident);
-      let fn_name = istr.get();
+      let fn_name = &*istr;
       let ty_params = platformtree::builder::meta_args::get_ty_params_for_task(cx, fn_name);
 
       let params = ty_params.iter().map(|ty| {

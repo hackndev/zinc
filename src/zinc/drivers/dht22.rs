@@ -52,7 +52,7 @@ impl<'a, T: Timer, P: Gpio> DHT22<'a, T, P> {
   /// Returns previous sensor measurements or None if synchronization failed.
   pub fn read(&self) -> Option<Measurements> {
     let buffer: &mut [u8; 5] = &mut [0; 5];
-    let mut idx: uint = 0;
+    let mut idx: usize = 0;
     let mut mask: u8 = 128;
 
     self.gpio.set_direction(Out);
@@ -116,7 +116,7 @@ impl<'a, T: Timer, P: Gpio> DHT22<'a, T, P> {
     }
   }
 
-  fn wait_while(&self, level: GpioLevel, timeout: uint) -> bool {
+  fn wait_while(&self, level: GpioLevel, timeout: usize) -> bool {
     for _ in range(0, timeout / 10) {
       self.timer.wait_us(10);
       if self.gpio.level() != level {

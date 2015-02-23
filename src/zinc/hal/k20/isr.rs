@@ -90,7 +90,7 @@ extern {
 
 #[link_section=".flash_configuration"]
 #[allow(non_upper_case_globals)]
-pub static FlashConfigField: [uint; 4] = [
+pub static FlashConfigField: [usize; 4] = [
     0xFFFFFFFF,
     0xFFFFFFFF,
     0xFFFFFFFF,
@@ -98,7 +98,7 @@ pub static FlashConfigField: [uint; 4] = [
 ];
 
 #[allow(non_upper_case_globals)]
-const ISRCount: uint = 95;
+const ISRCount: usize = 95;
 
 #[link_section=".isr_vector_nvic"]
 #[allow(non_upper_case_globals)]

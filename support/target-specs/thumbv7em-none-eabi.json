@@ -9,5 +9,5 @@
     "os": "none",
     "relocation-model": "static",
     "target-endian": "little",
-    "target-word-size": "32"
+    "target-pointer-width": "32"
 }

@@ -40,7 +40,7 @@ pub struct Builder {
 
 impl Builder {
   pub fn build(cx: &mut ExtCtxt, pt: Rc<node::PlatformTree>) -> Option<Builder> {
-    let mut builder = Builder::new(pt.clone());
+    let mut builder = Builder::new(pt.clone(), cx);
 
     if !pt.expect_subnodes(cx, &["mcu", "os", "drivers"]) {
       return None;
@@ -120,10 +120,13 @@ impl Builder {
     }
   }
 
-  pub fn new(pt: Rc<node::PlatformTree>) -> Builder {
+  pub fn new(pt: Rc<node::PlatformTree>, cx: &ExtCtxt) -> Builder {
+    let use_zinc = cx.item_use_simple(DUMMY_SP, ast::Inherited, cx.path_ident(
+        DUMMY_SP, cx.ident_of("zinc")));
+
     Builder {
-      main_stmts: Vec::new(),
-      type_items: Vec::new(),
+      main_stmts: vec!(),
+      type_items: vec!(use_zinc),
       pt: pt,
     }
   }
@@ -188,12 +191,10 @@ impl Builder {
         DUMMY_SP,
         InternedString::new("allow"), vec!(non_camel_case_types));
     let allow_noncamel = cx.attribute(DUMMY_SP, allow);
-    let use_zinc = cx.view_use_simple(DUMMY_SP, ast::Inherited, cx.path_ident(
-        DUMMY_SP, cx.ident_of("zinc")));
     let pt_mod_item = cx.item_mod(DUMMY_SP, DUMMY_SP, cx.ident_of("pt"),
-        vec!(allow_noncamel), vec!(use_zinc), self.type_items.clone());
+        vec!(allow_noncamel), self.type_items.clone());
 
-    if self.type_items.len() > 0 {
+    if self.type_items.len() > 1 {
       vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx))
     } else {
       vec!(self.emit_main(cx), self.emit_morestack(cx))

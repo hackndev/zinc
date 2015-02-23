@@ -46,7 +46,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 
   let name = TokenString(node.name.clone().unwrap());
-  let timer_index: uint = node.path.as_slice().parse().unwrap();
+  let timer_index: usize = node.path.as_slice().parse().unwrap();
   let counter: u32 = node.get_int_attr("counter").unwrap() as u32;
   let divisor: u8 = node.get_int_attr("divisor").unwrap() as u8;
 
@@ -85,7 +85,7 @@ mod test {
           divisor = 4;
         }
       }", |cx, failed, pt| {
-      let mut builder = Builder::new(pt.clone());
+      let mut builder = Builder::new(pt.clone(), cx);
       super::build_timer(&mut builder, cx, pt.get_by_name("tim").unwrap());
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);

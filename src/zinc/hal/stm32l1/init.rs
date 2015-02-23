@@ -189,7 +189,7 @@ impl ClockConfig {
       SystemClockPLL(pll_source, mul, div) => {
         r.cr.set_pll_on(true);
         wait_for!(r.cr.pll_ready());
-        r.cfgr.set_pll_clock_source(pll_source as bool);
+        r.cfgr.set_pll_clock_source(pll_source as usize != 0);
         let factor = match mul {
           3 => 0,
           4 => 1,
@@ -234,17 +234,17 @@ impl ClockConfig {
 
   /// Returns AHB clock frequency
   pub fn get_ahb_frequency(&self) -> u32 {
-    self.source.frequency() >> self.ahb_shift as uint
+    self.source.frequency() >> self.ahb_shift as usize
   }
 
   /// Returns APB1 clock frequency
   pub fn get_apb1_frequency(&self) -> u32 {
-    self.source.frequency() >> self.apb1_shift as uint
+    self.source.frequency() >> self.apb1_shift as usize
   }
 
   /// Returns APB2 clock frequency
   pub fn get_apb2_frequency(&self) -> u32 {
-    self.source.frequency() >> self.apb2_shift as uint
+    self.source.frequency() >> self.apb2_shift as usize
   }
 }
 

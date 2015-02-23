@@ -346,7 +346,7 @@ impl<'a> Parser<'a> {
           match lit {
             LitInt(i, UnsuffixedIntLit(_)) => {
               self.bump();
-              Some(node::IntValue(i as uint))
+              Some(node::IntValue(i as usize))
             },
             _ => {
               self.error(format!("expected unsuffixed positive integer but found `{}`",
@@ -370,7 +370,7 @@ impl<'a> Parser<'a> {
       },
       token::Ident(ident, _) => {
         self.bump();
-        match token::get_ident(ident).get() {
+        match &*token::get_ident(ident) {
           "true"  => Some(node::BoolValue(true)),
           "false" => Some(node::BoolValue(false)),
           other   => {

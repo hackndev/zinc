@@ -91,14 +91,14 @@ impl Usart {
 
     clock.enable();
 
-    reg.cr1.set_word_length(word_len as bool);
+    reg.cr1.set_word_length(word_len as usize != 0);
     reg.cr2.set_stop_bits(stop_bits as u16);
 
     // Standard USART baud rate:
     // Tx/Rx baud = Fck / (8 * (2 - OVER8) * USARTDIV)
 
     let bus_clock = clock.frequency(config);
-    let over8 = reg.cr1.oversample_8bit_enable() as uint;
+    let over8 = reg.cr1.oversample_8bit_enable() as usize;
     let idiv = (bus_clock << 4) / (baudrate << (2 - over8));
     reg.brr.set_fraction(((idiv & 0xF) >> over8) as u16);
     reg.brr.set_mantissa((idiv >> 4) as u16);
@@ -131,7 +131,7 @@ impl CharIO for Usart {
   }
 }
 
-impl fmt::Writer for Usart {
+impl fmt::Write for Usart {
   fn write_str(&mut self, s: &str) -> fmt::Result {
     use core::str::StrExt;
     for b in s.bytes() {

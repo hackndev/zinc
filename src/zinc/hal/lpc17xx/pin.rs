@@ -79,8 +79,8 @@ impl Pin {
       gpiodir: Option<::hal::pin::GpioDirection>) {
     let (offset, reg) = self.get_pinsel_reg_and_offset();
 
-    let fun_bits: u32  = (function as u32) << ((offset as uint) * 2);
-    let mask_bits: u32 = !(3u32 << ((offset as uint) * 2));
+    let fun_bits: u32  = (function as u32) << ((offset as usize) * 2);
+    let mask_bits: u32 = !(3u32 << ((offset as usize) * 2));
 
     let val: u32 = reg.value();
     let new_val = (val & mask_bits) | fun_bits;
@@ -132,17 +132,17 @@ impl Pin {
 impl ::hal::pin::Gpio for Pin {
   /// Sets output GPIO value to high.
   fn set_high(&self) {
-    self.gpioreg().set_FIOSET(1 << (self.pin as uint));
+    self.gpioreg().set_FIOSET(1 << (self.pin as usize));
   }
 
   /// Sets output GPIO value to low.
   fn set_low(&self) {
-    self.gpioreg().set_FIOCLR(1 << (self.pin as uint));
+    self.gpioreg().set_FIOCLR(1 << (self.pin as usize));
   }
 
   /// Returns input GPIO level.
   fn level(&self) -> ::hal::pin::GpioLevel {
-    let bit: u32 = 1 << (self.pin as uint);
+    let bit: u32 = 1 << (self.pin as usize);
     let reg = self.gpioreg();
 
     match reg.FIOPIN() & bit {
@@ -153,7 +153,7 @@ impl ::hal::pin::Gpio for Pin {
 
   /// Sets output GPIO direction.
   fn set_direction(&self, new_mode: ::hal::pin::GpioDirection) {
-    let bit: u32 = 1 << (self.pin as uint);
+    let bit: u32 = 1 << (self.pin as usize);
     let mask: u32 = !bit;
     let reg = self.gpioreg();
     let val: u32 = reg.FIODIR();

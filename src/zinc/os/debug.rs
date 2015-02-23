@@ -77,7 +77,7 @@ mod internal {
   /// A token to ensure the life of the reference to the debugging output backend
   /// doesn't outlive the backend itself.
   #[must_use]
-  pub struct Token<'a> {
+  pub struct Token {
     #[allow(dead_code)]
     hello: ()
   }
