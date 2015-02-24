@@ -13,11 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![feature(core, rustc_private, collections, plugin_registrar, quote)]
 #![crate_name="macro_platformtree"]
 #![crate_type="dylib"]
-#![warn(missing_docs)]
 
-#![feature(plugin_registrar, quote)]
 
 extern crate platformtree;
 extern crate rustc;

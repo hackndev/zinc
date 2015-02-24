@@ -19,7 +19,7 @@ use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token::{InternedString, intern_and_get_ident};
 use syntax::ptr::P;
-use std::hash::{hash, Hash, SipHasher};
+use std::hash::{hash, SipHasher};
 
 static TAG: &'static str = "__zinc_task_ty_params";
 
