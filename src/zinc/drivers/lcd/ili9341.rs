@@ -278,7 +278,7 @@ impl<'a, S: Spi, T: Timer, P: Gpio> ILI9341<'a, S, T, P> {
 
     self.dc.set_high();
     self.cs.set_low();
-    for _ in range(0u, 38400) {
+    for _ in range(0usize, 38400) {
       self.spi.transfer(0);
       self.spi.transfer(0);
       self.spi.transfer(0);

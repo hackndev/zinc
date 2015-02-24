@@ -66,7 +66,7 @@ impl<'a, T: Timer, P: Gpio> DHT22<'a, T, P> {
       return None
     }
 
-    for _ in range(0u, 40) {
+    for _ in range(0usize, 40) {
       if !self.wait_while(Low, 80) {
         return None
       }

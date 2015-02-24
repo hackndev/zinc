@@ -15,7 +15,7 @@
 
 //! Platform tree operations crate
 
-#![feature(quote, globs, rustc_private, collections, core, alloc)]
+#![feature(quote, rustc_private, collections, core, alloc, old_fmt, unicode, hash)]
 
 #![crate_name="platformtree"]
 #![crate_type="rlib"]
