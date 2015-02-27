@@ -454,7 +454,7 @@ impl PartialEq for Node {
   }
 }
 
-impl fmt::Show for Node {
+impl fmt::Display for Node {
   fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
     fmt.write_str(format!("<Node {}>", self.full_path()).as_slice())
         .or_else(|_| { panic!() })

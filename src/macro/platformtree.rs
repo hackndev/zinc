@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(core, rustc_private, collections, plugin_registrar, quote)]
+#![feature(core, rustc_private, plugin_registrar, quote)]
 #![crate_name="macro_platformtree"]
 #![crate_type="dylib"]
 
@@ -82,7 +82,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
             DUMMY_SP,
             cx.ident_of(ty.to_tyhash().as_slice()),
             OwnedSlice::from_vec(vec!(cx.typarambound(
-                cx.path(DUMMY_SP, ty.as_slice().split_str("::").map(|t| cx.ident_of(t)).collect())))),
+                cx.path(DUMMY_SP, ty.as_slice().split("::").map(|t| cx.ident_of(t)).collect())))),
             None)
       }).collect();
 
