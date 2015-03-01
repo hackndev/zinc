@@ -498,7 +498,7 @@ impl<'a> Parser<'a> {
           }
 
           self.bump();
-          let stripped = s.slice_from(prefix.len())
+          let stripped = s[prefix.len() ..]
             .trim_left_matches(' ');
           docs.push(String::from_str(stripped));
         },

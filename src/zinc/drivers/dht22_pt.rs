@@ -90,7 +90,7 @@ mod test {
       super::mutate_pin(&mut builder, cx, pt.get_by_name("dht").unwrap());
       super::build_dht22(&mut builder, cx, pt.get_by_name("dht").unwrap());
       assert_that(unsafe{*failed}, is(equal_to(false)));
-      assert_that(builder.main_stmts().len(), is(equal_to(1u)));
+      assert_that(builder.main_stmts().len(), is(equal_to(1usize)));
 
       assert_equal_source(builder.main_stmts()[0].deref(),
           "let dht = zinc::drivers::dht22::DHT22::new(&timer, &pin);");
