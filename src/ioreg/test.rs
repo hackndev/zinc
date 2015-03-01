@@ -15,11 +15,9 @@
 
 //! Tests for ioreg! syntax extension
 
-#![feature(plugin)]
+#![feature(core, plugin)]
 #![plugin(ioreg, shiny)]
 
-extern crate ioreg;
-extern crate shiny;
 extern crate core;
 
 #[path="../zinc/util/volatile_cell.rs"] mod volatile_cell;

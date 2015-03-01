@@ -196,7 +196,7 @@ mod test {
 
     fn coords(&self, x: usize, y: usize) -> (u32, u32) { (x as u32, y as u32) }
 
-    fn axis(&self) -> Range<usize> { range(0u, 16) }
+    fn axis(&self) -> Range<usize> { range(0, 16) }
 
     fn for_each<F>(&self, block: F) where F: Fn((u32, u32), u16) {
       for x in self.axis() {
