@@ -32,7 +32,6 @@ compile_rust :rlibc_crate, {
   source:  'thirdparty/librlibc/src/lib.rs'.in_root,
   produce: 'thirdparty/librlibc/src/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
-  recompile_on: :triple,
 }
 
 # cross-compiled libcore
@@ -40,7 +39,6 @@ compile_rust :core_crate, {
   source:  'thirdparty/libcore/lib.rs'.in_root,
   produce: 'thirdparty/libcore/lib.rs'.in_root.as_rlib.in_build,
   out_dir: true,
-  recompile_on: :triple,
 }
 
 # ioreg
