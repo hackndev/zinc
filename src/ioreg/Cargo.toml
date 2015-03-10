@@ -1,0 +1,13 @@
+[package]
+
+name = "ioreg"
+version = "0.0.1"
+authors = ["Ben Gamari <bgamari@gmail.com>"]
+
+[lib]
+name = "ioreg"
+path = "ioreg.rs"
+plugin = true
+
+[dev-dependencies.shiny]
+git = "https://github.com/farcaller/shiny"

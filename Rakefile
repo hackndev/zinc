@@ -52,7 +52,7 @@ compile_rust :ioreg_crate, {
 }
 
 rust_tests :ioreg_test, {
-  source:    'ioreg/test.rs'.in_source,
+  source:    'ioreg/tests/ioreg.rs'.in_source,
   deps:      [:core_crate, :ioreg_crate, :shiny_crate],
   produce:   'ioreg_test'.in_build,
 }
@@ -120,7 +120,13 @@ desc "Build API documentation"
 task build_docs: [:build_docs_html]
 
 task build_docs_html: [] do |t|
-  ['src/zinc/lib.rs', 'src/platformtree/platformtree.rs', 'src/ioreg/ioreg.rs'].each do |f|
+  ['src/ioreg'].each do |dir|
+    Dir.chdir(dir) do
+      sh 'cargo doc'
+    end
+  end
+
+  ['src/zinc/lib.rs', 'src/platformtree/platformtree.rs'].each do |f|
     build = Context.instance.build_dir
     sh ("rustdoc -w html -o #{build}/doc -L #{build} " \
 	+ f + ' ' + :config_flags.in_env.join(' '))

@@ -20,7 +20,7 @@
 
 extern crate core;
 
-#[path="../zinc/util/volatile_cell.rs"] mod volatile_cell;
+#[path="../../zinc/util/volatile_cell.rs"] mod volatile_cell;
 
 #[cfg(test)]
 mod test {

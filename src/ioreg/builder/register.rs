@@ -96,7 +96,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
 /// In this case `None` indicates no struct is necessary, not failure.
 /// For instance,
 ///
-///     pub struct REG {_value: u32}
+///     struct REG {_value: u32}
 fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
     reg: &node::Reg, _width: &node::RegWidth) -> Vec<P<ast::Item>> {
   let packed_ty =

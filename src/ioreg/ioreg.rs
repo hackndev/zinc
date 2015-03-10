@@ -61,7 +61,7 @@ offset       name         description
 The syntax extension is invoked through through the `ioregs!` macro. A
 register definition for the above peripheral might look like this,
 
-```
+```ignore
 ioregs!(UART = {
     0x0    => reg32 cr {
         0      => rxe,
@@ -121,7 +121,7 @@ type will be concatenated together into a single doc comment.
 
 For instance, we might document the above example as follows,
 
-```
+```ignore
 ioregs!(UART = {
     /// Control register
     /// Here is some discussion of the function of the `cr` register.
@@ -150,7 +150,7 @@ of a DMA peripheral it is common that the same block of registers will
 be replicated, one for each DMA channel. This can be accomplished with
 `ioregs!` as follows,
 
-```
+```ignore
 ioregs!(DMA = {
     0x0    => reg32 cr { ... }
     0x10   => group channel[4] {
@@ -184,7 +184,7 @@ The `ioregs!` extension produces a variety of types and methods for
 each register and field. Let's start by examining the top-level types
 representing the structure of the interface.
 
-```
+```ignore
 pub enum UART_cr_parity {
     NoParity = 0, EvenParity = 2, OddParity = 3,
 }
@@ -204,7 +204,7 @@ The `UART` struct is the the "entry-point" into the interface and is
 ultimately what will be instantiated to represent the peripheral's
 register window, typically as a `static extern` item,
 
-```
+```ignore
 extern { pub static UART: UART; }
 ```
 
@@ -212,7 +212,7 @@ The register structs (`UART_cr`, `UART_sr`, and `UART_dr`)
 have no user visible members but expose a variety of methods. Let's
 look at `cr` in particular,
 
-```
+```ignore
 impl UART_cr {
     pub fn get(&self) -> UART_cr_Get { ... }
 
@@ -235,7 +235,7 @@ function returns a `UART_cr_Update` object. This object mirrors the
 setter methods of `UART_cr`, collecting multiple field updates within
 a register, performing them on destruction with the `Drop` trait,
 
-```
+```ignore
 pub struct UART_cr_Update { ... }
 impl Drop for UART_cr_Update { ... }
 
@@ -250,7 +250,7 @@ As the set methods return references to `self` they can be easily
 chained together. For instance, we can update the `rxe` and `txe`
 fields of the `cr` register atomically,
 
-```
+```ignore
 UART.cr.set_rxe(true).set_txe(false);
 ```
 
@@ -259,7 +259,7 @@ method which returns a `UART_cr_Get` object mirroring the get methods
 of `UART_cr`. This object captures the state of the register allowing
 field values to be later atomically queried,
 
-```
+```ignore
 let cr: UART_cr_Get = UART.cr.get();
 format!("txe={}, rxe={}, br={}", cr.txe(), cr.rxe(), cr.br())
 ```
@@ -269,7 +269,7 @@ method is omitted. In the case of `set_to_clear` fields a `clear`
 method is instead produced in place of `set`. For instance, in the
 case of the `sr` register's `fe` flag,
 
-```
+```ignore
 pub fn fe(self: &UART_sr_Getter) -> bool { ... }
 pub fn clear_fe(self: &UART_sr_Update) -> UART_sr_Update { ... }
 ```
@@ -283,7 +283,7 @@ brackets.
 
 The `ioregs!` macro expects a definition of the form,
 
-```
+```ignore
 ioregs!(IDENT = { REG, ... })
 ```
 
