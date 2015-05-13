@@ -28,14 +28,18 @@ Zinc supports only ARM at the moment. The primary development is focused on two 
 
 Zinc is distributed under Apache-2.0, see LICENSE for more details.
 
+## Current Status
+
+Zinc is currently undergoing some large build system changes to keep up with the latest developments in rust. Some things, most notably `platformtree` are not currently building, so note that some examples may not build. All non-platformtree examples should work fine though.
+
 ## Usage
 
-Get a gcc cross-toolchain for arm and configure `TOOLCHAIN` and `RUNTIME_LIB` in
-Rakefile header as appropriate. `RUNTIME_LIB` should be either libgcc or
-libcompiler-rt ar archive, compiled for appropriate architecture.
+Get a gcc cross-toolchain for arm and configure the configuration section of `Makefile` with information about it.
 
-To build an application from apps/ use the following rake command:
+To build an application from examples/ use the following rake command:
 
 ```
-rake PLATFORM=<platform> build_all  # or build_<appname>
+PLATFORM=<platform> EXAMPLE_NAME=<appname> make build
 ```
+
+Ouput will go to `target/<target-triple>/release/examples`.

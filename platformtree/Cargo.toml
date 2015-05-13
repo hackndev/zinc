@@ -1,0 +1,8 @@
+[package]
+name = "platformtree"
+version = "0.1.0"
+authors = ["Zinc Developers <zinc@github.com>"]
+
+[lib]
+name = "platformtree"
+crate-type = ["lib"]

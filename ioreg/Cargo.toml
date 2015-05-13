@@ -1,0 +1,8 @@
+[package]
+name = "ioreg"
+version = "0.1.0"
+authors = ["Zinc Developers <zinc@github.com>"]
+
+[lib]
+name = "ioreg"
+plugin = true
