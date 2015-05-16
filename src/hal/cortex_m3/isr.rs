@@ -17,8 +17,8 @@ use core::option::Option;
 use core::option::Option::{Some, None};
 
 extern {
-  fn __STACK_BASE();
   fn main();
+  fn __STACK_BASE();
 
   fn isr_nmi();
   fn isr_hardfault();

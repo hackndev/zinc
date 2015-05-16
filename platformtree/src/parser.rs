@@ -78,8 +78,8 @@ impl<'a> Parser<'a> {
       if nodes.contains_key(&path) {
         failed = true;
         self.sess.span_diagnostic.span_err(node.path_span,
-            format!("duplicate node definition `{}`", path).as_slice());
-        let old_node: &Rc<node::Node> = &nodes[path];
+            format!("duplicate node definition `{}`", path).as_str());
+        let old_node: &Rc<node::Node> = &nodes[&path];
         self.sess.span_diagnostic.span_err(old_node.path_span,
             "previously defined here");
       } else {
@@ -118,10 +118,10 @@ impl<'a> Parser<'a> {
         Some(ref name) => {
           if map.contains_key(name) {
             self.sess.span_diagnostic.span_err(n.name_span, format!(
-                "duplicate `{}` definition", name).as_slice());
+                "duplicate `{}` definition", name).as_str());
 
             self.sess.span_diagnostic.span_warn(
-                (*map)[*name].upgrade().unwrap().name_span,
+                (*map)[name].upgrade().unwrap().name_span,
                 "previously defined here");
             return false;
           } else {
@@ -318,7 +318,7 @@ impl<'a> Parser<'a> {
           self.span = node.path_span;
           self.error(format!("duplicate node definition `{}`",
               path));
-          let old_node: Rc<node::Node> = subnodes.as_map()[path].upgrade().unwrap();
+          let old_node: Rc<node::Node> = subnodes.as_map()[&path].upgrade().unwrap();
           self.span = old_node.path_span.clone();
           self.error("previously defined here".to_string());
           return None;
@@ -390,7 +390,7 @@ impl<'a> Parser<'a> {
   }
 
   fn error(&self, m: String) {
-    self.sess.span_diagnostic.span_err(self.span, m.as_slice());
+    self.sess.span_diagnostic.span_err(self.span, m.as_str());
   }
 
   /// Bumps a token.

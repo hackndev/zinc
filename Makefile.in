@@ -1,0 +1,50 @@
+STRIP=@STRIP@
+OBJCOPY=@OBJCOPY@
+OBJDUMP=@OBJDUMP@
+
+TARGET=@host@
+
+CARGO_ROOT=@srcdir@
+MCU=@MCU@
+
+# Output directory
+OUT_DIR=$(CARGO_ROOT)/target/$(TARGET)/release
+EXAMPLE_DIR=$(OUT_DIR)/examples
+
+# ISR Crate Info
+ISR_SRC=$(CARGO_ROOT)/src/hal/isr.rs
+ISR_CRATE=$(shell rustc --print crate-name $(ISR_SRC))
+ISR_FILE=$(OUT_DIR)/$(ISR_CRATE).o
+
+BIN_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME).bin
+LST_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME).lst
+EXAMPLE_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME)
+
+RUSTC_FLAGS=--target=$(TARGET) --out-dir=$(OUT_DIR) --cfg feature=\"$(MCU)\" -C opt-level=2
+
+.PHONY: build clean listing
+build: $(BIN_FILE)
+
+clean:
+	cargo clean
+
+listing: $(LST_FILE)
+
+# FIXME(mcoffin): Make this target depend on all the crate deps
+$(EXAMPLE_FILE): $(ISR_FILE)
+	cd $(CARGO_ROOT)
+	cargo rustc --example $(EXAMPLE_NAME) --release --target=$(TARGET) --verbose
+
+$(BIN_FILE): $(EXAMPLE_FILE)
+	$(OBJCOPY) -O binary $< $@
+
+$(LST_FILE): $(EXAMPLE_FILE)
+	$(OBJDUMP) -D $< > $@
+
+# FIXME(mcoffin): Make this target depend on all the crate deps
+$(ISR_FILE): $(ISR_SRC) | $(OUT_DIR)
+	rustc $(RUSTC_FLAGS) --emit=obj $<
+	$(STRIP) -N rust_begin_unwind -N rust_stack_exhausted -N rust_eh_personality $@
+
+$(OUT_DIR):
+	mkdir -p $@

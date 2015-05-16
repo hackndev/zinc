@@ -7,11 +7,24 @@ authors = ["Zinc Developers <zinc@github.com>"]
 name = "zinc"
 crate-type = ["lib"]
 
+[features]
+lpc17xx = []
+stm32f4 = []
+stm32l1 = []
+k20 = []
+tiva_c = []
+
 [dependencies.ioreg]
 path = "./ioreg"
 
 [dependencies.rlibc]
 version = "*"
+
+[dev-dependencies.platformtree]
+path = "./platformtree"
+
+[dev-dependencies.macro_platformtree]
+path = "./macro_platformtree"
 
 [[example]]
 name = "blink"

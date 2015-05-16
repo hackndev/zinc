@@ -43,9 +43,9 @@ pub trait LCD : CharIO {
 
   /// Draws a line from xy0 to xy1.
   fn line(&self, x0_b: u32, y0_b: u32, x1: u32, y1: u32, color: u16) {
-    let (mut x0, mut y0) = (x0_b, y0_b);
+    let (mut x0, mut y0) = (x0_b as i32, y0_b as i32);
 
-    let (dx, dy) = ((x1-x0) as i32, (y1-y0) as i32);
+    let (dx, dy) = ((x1 as i32) - (x0), (y1 as i32) - (y0));
 
     let dx_sym: i32 =
       if dx > 0 {
@@ -67,30 +67,30 @@ pub trait LCD : CharIO {
 
     if dx >= dy {
       let mut di = dy_x2 - dx;
-      while x0 != x1 {
-        self.pixel(x0, y0, color);
-        x0 += dx_sym as u32;
+      while x0 as u32 != x1 {
+        self.pixel(x0 as u32, y0 as u32, color);
+        x0 += dx_sym;
         if di < 0 {
           di += dy_x2;
         } else {
           di += dy_x2 - dx_x2;
-          y0 += dy_sym as u32;
+          y0 += dy_sym;
         }
       }
-      self.pixel(x0, y0, color);
+      self.pixel(x0 as u32, y0 as u32, color);
     } else {
       let mut di = dx_x2 - dy;
-      while y0 != y1 {
-        self.pixel(x0, y0, color);
-        y0 += dy_sym as u32;
+      while y0 as u32 != y1 {
+        self.pixel(x0 as u32, y0 as u32, color);
+        y0 += dy_sym;
         if di < 0 {
           di += dx_x2;
         } else {
           di += dx_x2 - dy_x2;
-          x0 += dx_sym as u32;
+          x0 += dx_sym;
         }
       }
-      self.pixel(x0, y0, color);
+      self.pixel(x0 as u32, y0 as u32, color);
     }
   }
 
@@ -160,6 +160,7 @@ mod test {
   use core::mem::zeroed;
   use core::cell::Cell;
   use core::ops::Fn;
+  use core::ops::Range;
 
   use drivers::chario::CharIO;
   use drivers::lcd::LCD;

@@ -13,10 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(core, rustc_private, plugin_registrar, quote)]
-#![crate_name="macro_platformtree"]
-#![crate_type="dylib"]
-
+#![feature(rustc_private, plugin_registrar, quote, convert)]
 
 extern crate platformtree;
 extern crate rustc;
@@ -53,7 +50,7 @@ pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     -> Box<MacResult+'static> {
   let pt = Parser::new(cx, tts).parse_platformtree();
   let items = Builder::build(cx, pt.unwrap())
-    .expect(format!("Unexpected failure on {}", line!()).as_slice())
+    .expect(format!("Unexpected failure on {}", line!()).as_str())
     .emit_items(cx);
   MacItems::new(items)
 }
@@ -80,9 +77,9 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
       let params = ty_params.iter().map(|ty| {
         cx.typaram(
             DUMMY_SP,
-            cx.ident_of(ty.to_tyhash().as_slice()),
+            cx.ident_of(ty.to_tyhash().as_str()),
             OwnedSlice::from_vec(vec!(cx.typarambound(
-                cx.path(DUMMY_SP, ty.as_slice().split("::").map(|t| cx.ident_of(t)).collect())))),
+                cx.path(DUMMY_SP, ty.as_str().split("::").map(|t| cx.ident_of(t)).collect())))),
             None)
       }).collect();
 
@@ -92,10 +89,10 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
               cx.path_all(
                   DUMMY_SP,
                   false,
-                  ["pt".to_string(), fn_name.to_string() + "_args"].iter().map(|t| cx.ident_of(t.as_slice())).collect(),
+                  ["pt".to_string(), fn_name.to_string() + "_args"].iter().map(|t| cx.ident_of(t.as_str())).collect(),
                   vec!(),
                   ty_params.iter().map(|ty| {
-                    cx.ty_path(cx.path_ident(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_slice())))
+                    cx.ty_path(cx.path_ident(DUMMY_SP, cx.ident_of(ty.to_tyhash().as_str())))
                   }).collect(),
                   vec!())),
           None,

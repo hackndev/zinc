@@ -1,0 +1,22 @@
+{
+    "arch": "@tgt_arch@",
+    "cpu": "@tgt_cpu@",
+    "data-layout": "@tgt_layout@",
+    "disable-redzone": true,
+    "executables": true,
+    "llvm-target": "@tgt_llvm_tgt@",
+    "morestack": false,
+    "os": "@tgt_os@",
+    "relocation-model": "static",
+    "target-endian": "@tgt_endian@",
+    "target-pointer-width": "@tgt_ptr_width@",
+    "no-compiler-rt": true,
+    "linker": "@CC@",
+    "pre-link-args": [
+        @tgt_pre_link_args@,
+        "-L@abs_srcdir@/src/hal/@MCU@",
+        "-L@abs_srcdir@/src/hal",
+        "-T@abs_srcdir@/src/hal/@MCU@/layout.ld",
+        "@abs_srcdir@/target/@host@/release/isr.o"
+    ]
+}

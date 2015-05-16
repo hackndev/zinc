@@ -40,12 +40,12 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let port_node = node.parent.clone().unwrap().upgrade().unwrap();
   let ref port_path = port_node.path;
-  let port_str = format!("Port{}", match port_path.as_slice().parse::<usize>().unwrap() {
+  let port_str = format!("Port{}", match port_path.as_str().parse::<usize>().unwrap() {
     0...4 => port_path,
     other => {
       cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
           format!("unknown port `{}`, allowed values: 0...4",
-              other).as_slice());
+              other).as_str());
       return;
     }
   });
@@ -60,26 +60,26 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let direction_str = if node.get_string_attr("function").is_some() {
     "core::option::Option::None"
   } else {
-    match node.get_string_attr("direction").unwrap().as_slice() {
+    match node.get_string_attr("direction").unwrap().as_str() {
       "out" => "core::option::Option::Some(zinc::hal::pin::Out)",
       "in"  => "core::option::Option::Some(zinc::hal::pin::In)",
       other => {
         let attr = node.get_attr("direction");
         cx.parse_sess().span_diagnostic.span_err(attr.value_span,
             format!("unknown direction `{}`, allowed values: `in`, `out`",
-                other).as_slice());
+                other).as_str());
         return;
       }
     }
   };
   let direction = TokenString(direction_str.to_string());
 
-  let pin_str = match node.path.as_slice().parse::<usize>().unwrap() {
+  let pin_str = match node.path.as_str().parse::<usize>().unwrap() {
     0...31 => &node.path,
     other  => {
       cx.parse_sess().span_diagnostic.span_err(node.path_span,
           format!("unknown pin `{}`, allowed values: 0...31",
-              other).as_slice());
+              other).as_str());
       return;
     }
   };
@@ -88,15 +88,15 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let function_str = match node.get_string_attr("function") {
     None => "Gpio".to_string(),
     Some(fun) => {
-      let pins = &port_def[*port_path];
-      let maybe_pin_index: usize = node.path.as_slice().parse().unwrap();
+      let pins = &port_def[port_path];
+      let maybe_pin_index: usize = node.path.as_str().parse().unwrap();
       let maybe_pin: &Option<pinmap::PinDef> = pins.get(maybe_pin_index).unwrap();
       match maybe_pin {
         &None => {
           cx.parse_sess().span_diagnostic.span_err(
               node.get_attr("function").value_span,
               format!("unknown pin function `{}`, only GPIO avaliable on this pin",
-                  fun).as_slice());
+                  fun).as_str());
           return;
         }
         &Some(ref pin_funcs) => {
@@ -107,7 +107,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
               cx.parse_sess().span_diagnostic.span_err(
                   node.get_attr("function").value_span,
                   format!("unknown pin function `{}`, allowed functions: {}",
-                      fun, avaliable.connect(", ")).as_slice());
+                      fun, avaliable.connect(", ")).as_str());
               return;
             },
             Some(func_idx) => {
@@ -131,7 +131,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
           $pin,
           zinc::hal::lpc17xx::pin::Function::$function,
           $direction);
-  );
+  ).unwrap();
   builder.add_main_statement(st);
 }
 

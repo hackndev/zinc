@@ -41,7 +41,7 @@ pub enum AttributeValue {
 ///
 /// Used in Node::expect_attributes to provide the expected type of the
 /// attribute.
-#[derive(Copy)]
+#[derive(Clone, Copy)]
 pub enum AttributeType {
   IntAttribute,
   BoolAttribute,
@@ -264,12 +264,12 @@ impl Node {
       Some(ref parent) => parent.clone().upgrade().unwrap().full_path() + "::",
       None => "".to_string(),
     };
-    pp + self.path.as_slice()
+    pp + self.path.as_str()
   }
 
   /// Returns attribute by name or panic!()s.
   pub fn get_attr(&self, key: &str) -> Rc<Attribute> {
-    let ref attr = (*self.attributes.borrow())[key.to_string()];
+    let ref attr = (*self.attributes.borrow())[&key.to_string()];
     attr.clone()
   }
 
@@ -319,7 +319,7 @@ impl Node {
       None => {
         cx.parse_sess().span_diagnostic.span_err(self.name_span,
             format!("required string attribute `{}` is missing", key)
-            .as_slice());
+            .as_str());
         None
       }
     }
@@ -335,7 +335,7 @@ impl Node {
       None => {
         cx.parse_sess().span_diagnostic.span_err(self.name_span,
             format!("required integer attribute `{}` is missing", key)
-            .as_slice());
+            .as_str());
         None
       }
     }
@@ -351,7 +351,7 @@ impl Node {
       None => {
         cx.parse_sess().span_diagnostic.span_err(self.name_span,
             format!("required boolean attribute `{}` is missing", key)
-            .as_slice());
+            .as_str());
         None
       }
     }
@@ -367,7 +367,7 @@ impl Node {
       None => {
         cx.parse_sess().span_diagnostic.span_err(self.name_span,
             format!("required ref attribute `{}` is missing", key)
-            .as_slice());
+            .as_str());
         None
       }
     }
@@ -426,11 +426,11 @@ impl Node {
   pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
     let mut ok = true;
     for sub in self.subnodes().iter() {
-      if !expectations.contains(&sub.path.as_slice()) {
+      if !expectations.contains(&sub.path.as_str()) {
         ok = false;
         cx.parse_sess().span_diagnostic.span_err(sub.path_span,
             format!("unknown subnode `{}` in node `{}`",
-                sub.path, self.path).as_slice());
+                sub.path, self.path).as_str());
       }
     }
     ok
@@ -456,7 +456,7 @@ impl PartialEq for Node {
 
 impl fmt::Display for Node {
   fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-    fmt.write_str(format!("<Node {}>", self.full_path()).as_slice())
+    fmt.write_str(format!("<Node {}>", self.full_path()).as_str())
         .or_else(|_| { panic!() })
   }
 }
@@ -505,10 +505,10 @@ impl PlatformTree {
   pub fn expect_subnodes(&self, cx: &ExtCtxt, expectations: &[&str]) -> bool {
     let mut ok = true;
     for (path, sub) in self.nodes.iter() {
-      if !expectations.contains(&path.as_slice()) {
+      if !expectations.contains(&path.as_str()) {
         ok = false;
         cx.parse_sess().span_diagnostic.span_err(sub.path_span,
-            format!("unknown root node `{}`", path).as_slice());
+            format!("unknown root node `{}`", path).as_str());
       }
     }
     ok

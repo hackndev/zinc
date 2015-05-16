@@ -25,7 +25,7 @@ use super::Builder;
 pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   match node.name {
     Some(ref name) => {
-      match name.as_slice() {
+      match name.as_str() {
         "lpc17xx" => lpc17xx_pt::attach(builder, cx, node.clone()),
         // "tiva_c"  => tiva_c_pt::attach(builder, cx, node.clone()),
         _ => node.materializer.set(Some(fail_build_mcu as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>))),
@@ -38,7 +38,7 @@ pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 pub fn fail_build_mcu(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   match node.name {
     Some(ref name) => cx.parse_sess().span_diagnostic.span_err(
-        node.name_span, format!("unknown mcu `{}`", name).as_slice()),
+        node.name_span, format!("unknown mcu `{}`", name).as_str()),
     None => cx.parse_sess().span_diagnostic.span_err(
         node.name_span, "`mcu` node must have a name"),
   }

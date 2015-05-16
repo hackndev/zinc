@@ -5,4 +5,7 @@ authors = ["Zinc Developers <zinc@github.com>"]
 
 [lib]
 name = "platformtree"
-crate-type = ["lib"]
+plugin = true
+
+[dev-dependencies.hamcrest]
+git = "https://github.com/carllerche/hamcrest-rust.git"

@@ -32,7 +32,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
   let source = node.get_string_attr("source").unwrap();
   let source_freq: usize;
-  let clock_source = TokenString(match source.as_slice() {
+  let clock_source = TokenString(match source.as_str() {
     "internal-oscillator" => {
       source_freq = 4_000_000;
       "system_clock::Internal".to_string()
@@ -56,7 +56,7 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
       source_freq = 0;
       cx.span_err(
           node.get_attr("source").value_span,
-          format!("unknown oscillator value `{}`", other).as_slice());
+          format!("unknown oscillator value `{}`", other).as_str());
       "BAD".to_string()
     },
   });

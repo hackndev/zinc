@@ -31,7 +31,7 @@ pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   for sub in node.subnodes().iter() {
     add_node_dependency(&node, sub);
 
-    match sub.path.as_slice() {
+    match sub.path.as_str() {
       "clock" => system_clock_pt::attach(builder, cx, sub.clone()),
       "timer" => timer_pt::attach(builder, cx, sub.clone()),
       "uart"  => uart_pt::attach(builder, cx, sub.clone()),
@@ -116,16 +116,16 @@ mod test {
         }
       }", |cx, failed, pt| {
       let items = Builder::build(cx, pt)
-        .expect(format!("Unexpected failure on {}", line!()).as_slice())
+        .expect(format!("Unexpected failure on {}", line!()).as_str())
         .emit_items(cx);
 
       assert!(unsafe{*failed} == false);
-      assert!(items.len() == 3);
+      assert!(items.len() == 4);
 
       assert_equal_items(items[1].deref(), "
           #[no_mangle]
           #[allow(unused_variables)]
-          pub unsafe fn main() -> () {
+          pub unsafe fn platformtree_main() -> () {
             zinc::hal::mem_init::init_stack();
             zinc::hal::mem_init::init_data();
             {

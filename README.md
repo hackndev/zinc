@@ -34,7 +34,13 @@ Zinc is currently undergoing some large build system changes to keep up with the
 
 ## Usage
 
+### Environment Setup
+
 Get a gcc cross-toolchain for arm and configure the configuration section of `Makefile` with information about it.
+
+Next, you'll need to compile a version of libcore for your target. Just checkout a copy of rust from github at the commit hash for your version of `rustc`, and compile `src/libcore/lib.rs` with `--target=<target-triple>`. Put the resulting libcore.rlib in `/usr/local/lib/rustlib/<target-triple>/lib`. This emulates what the rustc build system would do if you compiled it with `<target-triple>` enabled at compile-time.
+
+### Examples
 
 To build an application from examples/ use the following rake command:
 

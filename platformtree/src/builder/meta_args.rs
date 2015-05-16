@@ -41,7 +41,7 @@ impl ToTyHash for String {
 ///   args: a vector of type parameters
 pub fn set_ty_params_for_task(cx: &mut ExtCtxt, task: &str, args: Vec<String>) {
   let ty_params = args.iter().map(|arg| {
-    cx.meta_word(DUMMY_SP, intern_and_get_ident(arg.as_slice()))
+    cx.meta_word(DUMMY_SP, intern_and_get_ident(arg.as_str()))
   }).collect();
   let newmi = cx.meta_list(DUMMY_SP, intern_and_get_ident(task), ty_params);
 
@@ -112,7 +112,7 @@ fn get_task(tasks: &Vec<P<ast::MetaItem>>, task: &str) -> Vec<String> {
 // fn get_task(cx: &ExtCtxt, task: &str) -> Option<MetaArgs> {
 //   get_args(cx).and_then(|args| {
 //     for a in args.iter() {
-//       if a.task_name.as_slice() == task {
+//       if a.task_name.as_str() == task {
 //         return Some(a.clone());
 //       }
 //     }
@@ -154,6 +154,6 @@ fn get_task(tasks: &Vec<P<ast::MetaItem>>, task: &str) -> Vec<String> {
 //     extra_ty_params: args,
 //   };
 //   let enc = json::encode(&ma);
-//   let istr = intern_and_get_ident(enc.as_slice());
+//   let istr = intern_and_get_ident(enc.as_str());
 //   box(GC) respan(DUMMY_SP, ast::MetaWord(istr))
 // }

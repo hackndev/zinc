@@ -170,7 +170,37 @@ impl Builder {
         InternedString::new("allow"), vec!(unused_variables));
     let allow_noncamel = cx.attribute(DUMMY_SP, allow);
 
-    self.item_fn(cx, DUMMY_SP, "main", &[allow_noncamel], body)
+    self.item_fn(cx, DUMMY_SP, "platformtree_main", &[allow_noncamel], body)
+  }
+
+  fn emit_start(&self, cx: &ExtCtxt) -> P<ast::Item> {
+      /*
+      let argc = ast::Arg {
+          ty: quote_ty!(cx, isize),
+          pat: cx.pat_wild(DUMMY_SP),
+          id: ast::DUMMY_NODE_ID,
+      };
+      let argv = ast::Arg {
+          ty: quote_ty!(cx, *const *const u8),
+          pat: cx.pat_wild(DUMMY_SP),
+          id: ast::DUMMY_NODE_ID,
+      };
+      cx.item_fn(
+          DUMMY_SP,
+          cx.ident_of("start"),
+          vec!(argc, argv),
+          quote_ty!(cx, isize),
+          body)
+      */
+      quote_item!(cx,
+          #[start]
+          fn start(_: isize, _: *const *const u8) -> isize {
+              unsafe {
+                  platformtree_main();
+              }
+              0
+          }
+      ).unwrap()
   }
 
   fn emit_morestack(&self, cx: &ExtCtxt) -> P<ast::Item> {
@@ -195,9 +225,9 @@ impl Builder {
         vec!(allow_noncamel), self.type_items.clone());
 
     if self.type_items.len() > 1 {
-      vec!(pt_mod_item, self.emit_main(cx), self.emit_morestack(cx))
+      vec!(pt_mod_item, self.emit_main(cx), self.emit_start(cx), self.emit_morestack(cx))
     } else {
-      vec!(self.emit_main(cx), self.emit_morestack(cx))
+      vec!(self.emit_main(cx), self.emit_start(cx), self.emit_morestack(cx))
     }
   }
 

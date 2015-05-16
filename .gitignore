@@ -7,3 +7,4 @@ target
 *.o
 *.bin
 *.lst
+autom4te.cache

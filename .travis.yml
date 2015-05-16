@@ -4,14 +4,17 @@ before_install:
     - sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/terry_guo-gcc-arm-embedded-precise.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 install:
     - sudo apt-get install gcc-arm-none-eabi
-    - (mkdir -p ./thirdparty/rust)
-    - (cd ./thirdparty/rust; wget -O rust.tar.gz https://github.com/rust-lang/rust/tarball/`rustc --version|awk '{sub(/\\(/, "", $3); print $3}'`; tar -zx --strip-components=1 -f rust.tar.gz)
+    - (mkdir -p ./rust)
+    - (cd ./rust; wget -O rust.tar.gz https://github.com/rust-lang/rust/tarball/`rustc --version|awk '{sub(/\\(/, "", $3); print $3}'`; tar -zx --strip-components=1 -f rust.tar.gz)
+    - (sudo mkdir -p /home/travis/rust/lib/rustlib/$TARGET/lib)
+    - (rustc -C opt-level=2 -Z no-landing-pads --target=$TARGET -g --out-dir . rust/src/libcore/lib.rs; sudo mv libcore.rlib /home/travis/rust/lib/rustlib/$TARGET/lib)
 script:
-    - rake build_all test
+    - cargo build --target=$TARGET --verbose
+after_script:
+    - cargo test --lib --verbose
+    - (cd ./platformtree; cargo build --verbose; cargo test --verbose)
+    - (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
 env:
   matrix:
-    - PLATFORM=lpc17xx
-    - PLATFORM=stm32f4
-    - PLATFORM=stm32l1
-    - PLATFORM=k20
-    - PLATFORM=tiva_c
+    - TARGET=thumbv7m-none-eabi
+    - TARGET=thumbv7em-none-eabi

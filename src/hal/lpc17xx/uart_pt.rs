@@ -27,8 +27,8 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
     add_node_dependency(&node, sub);
     let tx_node_name = sub.get_ref_attr("tx").unwrap();
     let rx_node_name = sub.get_ref_attr("rx").unwrap();
-    let tx_node = builder.pt().get_by_name(tx_node_name.as_slice()).unwrap();
-    let rx_node = builder.pt().get_by_name(rx_node_name.as_slice()).unwrap();
+    let tx_node = builder.pt().get_by_name(tx_node_name.as_str()).unwrap();
+    let rx_node = builder.pt().get_by_name(rx_node_name.as_str()).unwrap();
     add_node_dependency(sub, &tx_node);
     add_node_dependency(sub, &rx_node);
     super::add_node_dependency_on_clock(builder, sub);
@@ -46,21 +46,21 @@ pub fn mutate_pins(builder: &mut Builder, _: &mut ExtCtxt, sub: Rc<node::Node>) 
   let tx_node_name = sub.get_ref_attr("tx").unwrap();
   let rx_node_name = sub.get_ref_attr("rx").unwrap();
 
-  build_uart_gpio(builder, sub.path.as_slice().parse().unwrap(),
-      tx_node_name.as_slice(), true);
-  build_uart_gpio(builder, sub.path.as_slice().parse().unwrap(),
-      rx_node_name.as_slice(), false);
+  build_uart_gpio(builder, sub.path.as_str().parse().unwrap(),
+      tx_node_name.as_str(), true);
+  build_uart_gpio(builder, sub.path.as_str().parse().unwrap(),
+      rx_node_name.as_str(), false);
 }
 
 pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
     sub: Rc<node::Node>) {
   let uart_peripheral_str = format!("UARTPeripheral::UART{}",
-      match sub.path.as_slice().parse::<usize>().unwrap() {
+      match sub.path.as_str().parse::<usize>().unwrap() {
         0|2|3 => sub.path.clone(),
         other => {
           cx.parse_sess().span_diagnostic.span_err(sub.path_span,
               format!("unknown UART `{}`, allowed values: 0, 2, 3",
-                  other).as_slice());
+                  other).as_str());
           return
         }
       });
@@ -83,17 +83,17 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
   let baud_rate: u32 = sub.get_int_attr("baud_rate").unwrap() as u32;
   let mode = sub.get_string_attr("mode").unwrap();
 
-  let word_len = mode.as_slice().char_at(0).to_digit(10).unwrap() as u8;
+  let word_len = mode.as_str().chars().nth(0).unwrap().to_digit(10).unwrap() as u8;
   let parity = TokenString(
-      match mode.as_slice().char_at(1) {
-        'N' => "Parity::Disabled",
-        'O' => "Parity::Odd",
-        'E' => "Parity::Even",
-        '1' => "Parity::Forced1",
-        '0' => "Parity::Forced0",
+      match mode.as_str().chars().nth(1) {
+        Some('N') => "Parity::Disabled",
+        Some('O') => "Parity::Odd",
+        Some('E') => "Parity::Even",
+        Some('1') => "Parity::Forced1",
+        Some('0') => "Parity::Forced0",
         _ => panic!(),
       }.to_string());
-  let stop_bits = mode.as_slice().char_at(2).to_digit(10).unwrap() as u8;
+  let stop_bits = mode.as_str().chars().nth(2).unwrap().to_digit(10).unwrap() as u8;
 
   sub.set_type_name("zinc::hal::lpc17xx::uart::UART".to_string());
   let uart_name = TokenString(sub.name.clone().unwrap());
@@ -105,7 +105,7 @@ pub fn build_uart(builder: &mut Builder, cx: &mut ExtCtxt,
           $word_len,
           zinc::hal::uart::$parity,
           $stop_bits)
-  );
+  ).unwrap();
   builder.add_main_statement(st);
 }
 

@@ -24,17 +24,17 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   node.mutator.set(Some(mutate_pin as fn(&mut Builder, &mut ExtCtxt, Rc<node::Node>)));
 
   let pin_node_name = node.get_ref_attr("pin").unwrap();
-  let pin_node = builder.pt().get_by_name(pin_node_name.as_slice()).unwrap();
+  let pin_node = builder.pt().get_by_name(pin_node_name.as_str()).unwrap();
   add_node_dependency(&node, &pin_node);
 
   let timer_node_name = node.get_ref_attr("timer").unwrap();
-  let timer_node = builder.pt().get_by_name(timer_node_name.as_slice()).unwrap();
+  let timer_node = builder.pt().get_by_name(timer_node_name.as_str()).unwrap();
   add_node_dependency(&node, &timer_node);
 }
 
 fn mutate_pin(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
   let pin_node_name = node.get_ref_attr("pin").unwrap();
-  let pin_node = builder.pt().get_by_name(pin_node_name.as_slice()).unwrap();
+  let pin_node = builder.pt().get_by_name(pin_node_name.as_str()).unwrap();
   pin_node.attributes.borrow_mut().insert("direction".to_string(),
         Rc::new(node::Attribute::new_nosp(node::StrValue("out".to_string()))));
 }
@@ -64,7 +64,7 @@ fn build_dht22(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
   let st = quote_stmt!(&*cx,
       let $name = zinc::drivers::dht22::DHT22::new(&$timer, &$pin);
-  );
+  ).unwrap();
   builder.add_main_statement(st);
 }
 

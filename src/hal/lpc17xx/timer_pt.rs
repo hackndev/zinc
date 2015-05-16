@@ -46,7 +46,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 
   let name = TokenString(node.name.clone().unwrap());
-  let timer_index: usize = node.path.as_slice().parse().unwrap();
+  let timer_index: usize = node.path.as_str().parse().unwrap();
   let counter: u32 = node.get_int_attr("counter").unwrap() as u32;
   let divisor: u8 = node.get_int_attr("divisor").unwrap() as u8;
 
@@ -56,7 +56,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     other => {
       cx.parse_sess().span_diagnostic.span_err(node.path_span,
           format!("unknown timer index `{}`, allowed indexes: 0, 1, 2, 3",
-              other).as_slice());
+              other).as_str());
       return
     }
   };
@@ -66,7 +66,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let st = quote_stmt!(&*cx,
       let $name = zinc::hal::lpc17xx::timer::Timer::new(
           $timer_name, $counter, $divisor);
-  );
+  ).unwrap();
   builder.add_main_statement(st);
 }
 

@@ -45,7 +45,7 @@ pub fn attach(builder: &mut Builder, _: &mut ExtCtxt, node: Rc<node::Node>) {
       for (_, ref attr) in args_node.attributes.borrow().iter() {
         match attr.value {
           node::RefValue(ref refname) => {
-            let refnode = builder.pt.get_by_name(refname.as_slice()).unwrap();
+            let refnode = builder.pt.get_by_name(refname.as_str()).unwrap();
             add_node_dependency(&task_node, &refnode);
           },
           _ => (),
@@ -79,9 +79,9 @@ fn build_single_task(builder: &mut Builder, cx: &mut ExtCtxt,
 
       let call_expr = cx.expr_call_ident(
           node.get_attr("loop").value_span,
-          cx.ident_of(loop_fn.as_slice()),
+          cx.ident_of(loop_fn.as_str()),
           args);
-      let loop_stmt = quote_stmt!(&*cx, loop { $call_expr; } );
+      let loop_stmt = quote_stmt!(&*cx, loop { $call_expr; } ).unwrap();
       builder.add_main_statement(loop_stmt);
     },
     None => (),
@@ -102,7 +102,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
   all_keys.sort();
 
   for k in all_keys.iter() {
-    let v = &(*node_attr)[*k];
+    let v = &(*node_attr)[k];
 
     let (ty, val) = match v.value {
       node::IntValue(i) =>
@@ -113,7 +113,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
             quote_expr!(&*cx, $b)),
       node::StrValue(ref string)  => {
         let static_lifetime = cx.lifetime(DUMMY_SP, intern("'static"));
-        let val_slice = string.as_slice();
+        let val_slice = string.as_str();
         (cx.ty_rptr(
           DUMMY_SP,
           cx.ty_ident(DUMMY_SP, cx.ident_of("str")),
@@ -121,11 +121,11 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           ast::MutImmutable), quote_expr!(&*cx, $val_slice))
       },
       node::RefValue(ref rname)  => {
-        let refnode = builder.pt.get_by_name(rname.as_slice()).unwrap();
+        let refnode = builder.pt.get_by_name(rname.as_str()).unwrap();
         let reftype = refnode.type_name().unwrap();
         let refparams = refnode.type_params();
         for param in refparams.iter() {
-          if !param.as_slice().starts_with("'") {
+          if !param.as_str().starts_with("'") {
             ty_params.insert(param.clone());
           }
         }
@@ -133,12 +133,12 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
         let a_lifetime = cx.lifetime(DUMMY_SP, intern("'a"));
         (cx.ty_rptr(
           DUMMY_SP,
-          cx.ty_path(type_name_as_path(cx, reftype.as_slice(), refparams)),
+          cx.ty_path(type_name_as_path(cx, reftype.as_str(), refparams)),
           Some(a_lifetime),
           ast::MutImmutable), quote_expr!(&*cx, &$val_slice))
       },
     };
-    let name_ident = cx.ident_of(k.as_slice());
+    let name_ident = cx.ident_of(k.as_str());
     let sf = ast::StructField_ {
       kind: ast::NamedField(name_ident, ast::Public),
       id: ast::DUMMY_NODE_ID,
@@ -150,13 +150,13 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     expr_fields.push(cx.field_imm(DUMMY_SP, name_ident, val));
   }
 
-  let name_ident = cx.ident_of(format!("{}_args", struct_name).as_slice());
+  let name_ident = cx.ident_of(format!("{}_args", struct_name).as_str());
   let mut collected_params = vec!();
   let mut ty_params_vec = vec!();
   for ty in ty_params.iter() {
     let typaram = cx.typaram(
         DUMMY_SP,
-        cx.ident_of(ty.to_tyhash().as_slice()),
+        cx.ident_of(ty.to_tyhash().as_str()),
         OwnedSlice::from_vec(vec!(
           ast::RegionTyParamBound(cx.lifetime(DUMMY_SP, intern("'a")))
         )),
@@ -165,7 +165,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     ty_params_vec.push(ty.clone());
   }
 
-  set_ty_params_for_task(cx, struct_name.as_slice(), ty_params_vec);
+  set_ty_params_for_task(cx, struct_name.as_str(), ty_params_vec);
   let struct_item = P(ast::Item {
     ident: name_ident,
     attrs: vec!(),
@@ -197,12 +197,12 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
   let mut lifetimes = vec!();
   let mut types = vec!();
   for p in params.iter() {
-    let slice = p.as_slice();
+    let slice = p.as_str();
     if slice.starts_with("'") {
       let lifetime = cx.lifetime(DUMMY_SP, intern(slice));
       lifetimes.push(lifetime);
     } else {
-      let path = cx.ty_path(type_name_as_path(cx, p.to_tyhash().as_slice(), vec!()));
+      let path = cx.ty_path(type_name_as_path(cx, p.to_tyhash().as_str(), vec!()));
       types.push(path);
     }
   }

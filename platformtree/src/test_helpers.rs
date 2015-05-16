@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use std::rc::Rc;
+use std::string::ToString;
 use syntax::ast;
 use syntax::codemap::MacroBang;
 use syntax::codemap::{CodeMap, Span, mk_sp, BytePos, ExpnInfo, NameAndSpan};
@@ -75,6 +76,7 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
     crate_name: ("test").parse().unwrap(),
     features: None,
     recursion_limit: 10,
+    trace_mac: true,
   };
   let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
   cx.bt_push(ExpnInfo {
@@ -82,6 +84,7 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
     callee: NameAndSpan {
       name: "platformtree".to_string(),
       format: MacroBang,
+      allow_internal_unstable: true,
       span: None,
     },
   });

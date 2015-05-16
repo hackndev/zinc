@@ -17,8 +17,8 @@
 //! ISRs for the platform.
 
 #![feature(core, asm, lang_items, no_std)]
-#![crate_name = "isr"]
-#![crate_type = "staticlib"]
+#![crate_name="isr"]
+#![crate_type="staticlib"]
 #![no_std]
 
 #![allow(missing_docs)]
@@ -27,13 +27,13 @@ extern crate core;
 
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
 
-#[cfg(mcu_lpc17xx)]
+#[cfg(feature = "lpc17xx")]
 #[path="lpc17xx/isr.rs"] pub mod isr_lpc17xx;
 
-#[cfg(mcu_k20)]
+#[cfg(feature = "k20")]
 #[path="k20/isr.rs"] pub mod isr_k20;
 
-#[cfg(mcu_tiva_c)]
+#[cfg(feature = "tiva_c")]
 #[path="tiva_c/isr.rs"] pub mod isr_tiva_c;
 
 #[path="../util/lang_items.rs"] mod lang_items;
