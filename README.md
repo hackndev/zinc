@@ -28,24 +28,28 @@ Zinc supports only ARM at the moment. The primary development is focused on two 
 
 Zinc is distributed under Apache-2.0, see LICENSE for more details.
 
-## Current Status
-
-Zinc is currently undergoing some large build system changes to keep up with the latest developments in rust. Some things, most notably `platformtree` are not currently building, so note that some examples may not build. All non-platformtree examples should work fine though.
-
 ## Usage
 
 ### Environment Setup
 
-Get a gcc cross-toolchain for arm and configure the configuration section of `Makefile` with information about it.
+Get a gcc cross-toolchain for arm and make sure it is accessible.
 
-Next, you'll need to compile a version of libcore for your target. Just checkout a copy of rust from github at the commit hash for your version of `rustc`, and compile `src/libcore/lib.rs` with `--target=<target-triple>`. Put the resulting libcore.rlib in `/usr/local/lib/rustlib/<target-triple>/lib`. This emulates what the rustc build system would do if you compiled it with `<target-triple>` enabled at compile-time.
+To generate a `<target>.json` file and Makefile for a certain MCU, just run
+
+````
+path/to/configure MCU=<mcu> --host=<toolchain-triple>
+````
+
+This `<target>.json` file may then be used with Cargo or rustc to
+generate binares for `<target>`
 
 ### Examples
 
-To build an application from examples/ use the following rake command:
+To build an application from examples/ use the following command after having
+run `configure`:
 
 ```
-PLATFORM=<platform> EXAMPLE_NAME=<appname> make build
+EXAMPLE_NAME=<example> make build
 ```
 
 Ouput will go to `target/<target-triple>/release/examples`.

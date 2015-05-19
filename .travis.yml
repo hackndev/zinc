@@ -1,20 +1,21 @@
 language: rust
+rust: nightly
 before_install:
     - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
     - sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/terry_guo-gcc-arm-embedded-precise.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 install:
     - sudo apt-get install gcc-arm-none-eabi
-    - (mkdir -p ./rust)
-    - (cd ./rust; wget -O rust.tar.gz https://github.com/rust-lang/rust/tarball/`rustc --version|awk '{sub(/\\(/, "", $3); print $3}'`; tar -zx --strip-components=1 -f rust.tar.gz)
-    - (sudo mkdir -p /home/travis/rust/lib/rustlib/$TARGET/lib)
-    - (rustc -C opt-level=2 -Z no-landing-pads --target=$TARGET -g --out-dir . rust/src/libcore/lib.rs; sudo mv libcore.rlib /home/travis/rust/lib/rustlib/$TARGET/lib)
 script:
-    - cargo build --target=$TARGET --verbose
+    - ./configure --host=arm-none-eabi
+    - cargo build --target=$MCU --verbose
 after_script:
     - cargo test --lib --verbose
     - (cd ./platformtree; cargo build --verbose; cargo test --verbose)
     - (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
 env:
   matrix:
-    - TARGET=thumbv7m-none-eabi
-    - TARGET=thumbv7em-none-eabi
+    - MCU=lpc17xx
+    - MCU=k20
+    - MCU=stm32f4
+    - MCU=stm32l1
+    - MCU=tiva_c
