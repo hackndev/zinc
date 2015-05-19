@@ -39,4 +39,5 @@ pub mod stack;
 pub mod timer;
 pub mod uart;
 
+#[cfg(not(test))]
 pub mod isr;

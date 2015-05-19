@@ -23,7 +23,7 @@ extern {
 }
 
 /// Returns the address of main stack base (end of ram).
-pub fn stack_base() -> u32 {
+pub fn stack_base() -> usize {
     unsafe {
         transmute(__STACK_BASE)
     }
