@@ -16,7 +16,6 @@
         @tgt_pre_link_args@,
         "-L@abs_srcdir@/src/hal/@MCU@",
         "-L@abs_srcdir@/src/hal",
-        "-T@abs_srcdir@/src/hal/@MCU@/layout.ld",
-        "@abs_srcdir@/target/@host@/release/isr.o"
+        "-T@abs_srcdir@/src/hal/@MCU@/layout.ld"
     ]
 }

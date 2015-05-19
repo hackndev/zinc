@@ -8,11 +8,12 @@ AC_CHECK_TOOL(OBJCOPY, objcopy, :)
 AC_CHECK_TOOL(OBJDUMP, objdump, :)
 AC_CHECK_TOOL(AR, ar, :)
 
-AC_SUBST(host, $host)
+AC_SUBST(host, $MCU)
 AC_SUBST(CC, $GCC)
 
 AC_ARG_VAR(MCU, [MCU type])
 
+# Set CPU
 case $MCU in
 lpc17xx)
 	tgt_cpu=cortex-m3
@@ -34,19 +35,32 @@ tiva_c)
 	;;
 esac
 
+# Set stuff that's the same for all MCU
 tgt_arch=arm
 tgt_layout=e-m:e-p:32:32-i1:8:32-i8:8:32-i16:16:32-i64:64-v128:64:128-a:0:32-n32-S64
 tgt_os=none
 tgt_endian=little
 tgt_ptr_width=32
-tgt_pre_link_args=\"-mthumb\",\ \"-lm\",\ \"-lgcc\",\ \"-mcpu=$tgt_cpu\"
+#tgt_pre_link_args=\"-mthumb\",\ \"-lm\",\ \"-lgcc\",\ \"-mcpu=$tgt_cpu\",
+tgt_pre_link_args="\"-lm\", \"-lgcc\", \"-mcpu=$tgt_cpu\""
 
+# Set up thumb flag if needed
+case $tgt_cpu in
+cortex-m3 | cortex-m4)
+	tgt_pre_link_args="$tgt_pre_link_args, \"-mthumb\""
+	;;
+esac
+
+# Set llvm target
 case $tgt_cpu in
 cortex-m3)
-	tgt_llvm_tgt=thumbv7em-none-eabi
+	tgt_llvm_tgt=thumbv7m-none-eabi
 	;;
 cortex-m4)
-	tgt_llvm_tgt=thumbv7m-none-eabi
+	tgt_llvm_tgt=thumbv7em-none-eabi
+	;;
+*)
+	AC_MSG_ERROR([Unknown CPU $tgt_cpu])
 	;;
 esac
 
@@ -77,7 +91,7 @@ AC_CONFIG_COMMANDS([libcore.rlib],
 AC_CONFIG_FILES([Makefile])
 
 if test -n "$host"; then
-	AC_CONFIG_FILES([$host.json:target.json.in])
+	AC_CONFIG_FILES([$MCU.json:target.json.in])
 fi
 
 AC_OUTPUT

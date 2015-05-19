@@ -3,7 +3,7 @@ __STACK_BASE  = 0x20001FFF;
 
 _data_load = LOADADDR(.data);
 
-INCLUDE ./src/hal/k20/iomem.ld
+INCLUDE iomem.ld
 
 ENTRY(main)
 

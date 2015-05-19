@@ -13,4 +13,4 @@ __STACK_BASE  = ORIGIN(ram) + LENGTH(ram);
 
 REGION_ALIAS("vectors", rom);
 
-INCLUDE ./src/hal/layout_common.ld
+INCLUDE layout_common.ld

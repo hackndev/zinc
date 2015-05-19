@@ -1,7 +1,7 @@
 __STACK_BASE = 0x20008000;  /* end of ram */
 _data_load = LOADADDR(.data);
 
-INCLUDE ./src/hal/stm32l1/iomem.ld
+INCLUDE iomem.ld
 
 ENTRY(main)
 
@@ -13,4 +13,4 @@ MEMORY
 
 REGION_ALIAS("vectors", rom);
 
-INCLUDE ./src/hal/layout_common.ld
+INCLUDE layout_common.ld

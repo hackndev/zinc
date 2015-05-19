@@ -14,17 +14,25 @@ stm32l1 = []
 k20 = []
 tiva_c = []
 
+[dependencies.core]
+git = "https://github.com/bharrisau/rust-libcore"
+
 [dependencies.ioreg]
 path = "./ioreg"
 
 [dependencies.rlibc]
-version = "*"
+git = "https://github.com/posborne/rlibc"
+branch = "test-libcore-dependency"
 
 [dev-dependencies.platformtree]
 path = "./platformtree"
 
 [dev-dependencies.macro_platformtree]
 path = "./macro_platformtree"
+
+[[example]]
+name = "nothing"
+path = "examples/app_nothing.rs"
 
 [[example]]
 name = "blink"
