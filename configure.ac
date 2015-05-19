@@ -73,21 +73,6 @@ AC_SUBST(tgt_endian, $tgt_endian)
 AC_SUBST(tgt_ptr_width, $tgt_ptr_width)
 AC_SUBST(tgt_pre_link_args, $tgt_pre_link_args)
 
-rustc_version=$(rustc --version|awk '{sub(/\(/, "", $3); print $3}')
-
-AC_CONFIG_COMMANDS([libcore.rlib],
-		   [mkdir -p rust]
-		   [pushd rust]
-		   [wget -O rust.tar.gz https://github.com/rust-lang/rust/tarball/$commit]
-		   [tar -zx --strip-components=1 -f rust.tar.gz]
-		   [ln -s ../$host.json $host.json]
-		   [rustc -C opt-level=2 -C ar=$tgt_ar -Z no-landing-pads --target $host -g src/libcore/lib.rs --out-dir ..]
-		   [popd],
-		   [tgt_llvm_tgt=$tgt_llvm_tgt]
-		   [commit=$rustc_version]
-		   [tgt_ar=$AR]
-		   [host=$host])
-
 AC_CONFIG_FILES([Makefile])
 
 if test -n "$host"; then

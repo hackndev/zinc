@@ -21,8 +21,8 @@ git = "https://github.com/bharrisau/rust-libcore"
 path = "./ioreg"
 
 [dependencies.rlibc]
-git = "https://github.com/posborne/rlibc"
-branch = "test-libcore-dependency"
+git = "https://github.com/mcoffin/rlibc"
+branch = "zinc"
 
 [dev-dependencies.platformtree]
 path = "./platformtree"
