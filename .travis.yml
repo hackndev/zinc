@@ -7,15 +7,20 @@ install:
     - sudo apt-get install gcc-arm-none-eabi
 script:
     - ./configure --host=arm-none-eabi
-    - cargo build --target=$MCU --verbose
+    - cargo build --target=$TARGET --verbose --features $PLATFORM
 after_script:
     - cargo test --lib --verbose
     - (cd ./platformtree; cargo build --verbose; cargo test --verbose)
     - (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
 env:
   matrix:
-    - MCU=lpc17xx
-    - MCU=k20
-    - MCU=stm32f4
-    - MCU=stm32l1
-    - MCU=tiva_c
+    - PLATFORM=lpc17xx
+      TARGET=thumbv7m-none-eabi
+    - PLATFORM=k20
+      TARGET=thumbv7em-none-eabi
+    - PLATFORM=stm32f4
+      TARGET=thumbv7em-none-eabi
+    - PLATFORM=stm32l1
+      TARGET=thumbv7m-none-eabi
+    - PLATFORM=tiva_c
+      TARGET=thumbv7em-none-eabi

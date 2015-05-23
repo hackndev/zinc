@@ -34,16 +34,13 @@ Zinc is distributed under Apache-2.0, see LICENSE for more details.
 
 Get a gcc cross-toolchain for arm and make sure it is accessible.
 
-To generate a `<target>.json` file and Makefile for a certain MCU, just run
-
-````
-path/to/configure MCU=<mcu> --host=<toolchain-triple>
-````
-
-This `<target>.json` file may then be used with Cargo or rustc to
-generate binares for `<target>`
-
 ### Examples
+
+First, generate a `Makefile` and `.cargo/config` with `configure` so cargo
+can find your toolchain. Your toolchain triple is probably `arm-none-eabi`
+````
+./configure PLATFORM=<platform> --host=<toolchain-triple>
+````
 
 To build an application from examples/ use the following command after having
 run `configure`:

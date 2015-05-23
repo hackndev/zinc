@@ -583,17 +583,9 @@ PACKAGE_URL=''
 
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
-tgt_pre_link_args
-tgt_ptr_width
-tgt_endian
-tgt_os
-tgt_llvm_tgt
-tgt_layout
-tgt_cpu
-tgt_arch
-MCU
+TARGET
+PLATFORM
 CC
-host
 AR
 OBJDUMP
 OBJCOPY
@@ -644,7 +636,7 @@ enable_option_checking
       ac_precious_vars='build_alias
 host_alias
 target_alias
-MCU'
+PLATFORM'
 
 
 # Initialize some variables set by options.
@@ -1251,7 +1243,7 @@ if test -n "$ac_init_help"; then
   cat <<\_ACEOF
 
 Some influential environment variables:
-  MCU         MCU type
+  PLATFORM    Platform for which to build
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -2148,88 +2140,30 @@ else
 fi
 
 
-host=$MCU
-
 CC=$GCC
 
 
 
 
-# Set CPU
-case $MCU in
-lpc17xx)
-	tgt_cpu=cortex-m3
+case $PLATFORM in
+lpc17xx | stm32l1)
+	platform_target=thumbv7m-none-eabi
 	;;
-stm32f4)
-	tgt_cpu=cortex-m4
-	;;
-stm32l1)
-	tgt_cpu=cortex-m3
-	;;
-k20)
-	tgt_cpu=cortex-m4
-	;;
-tiva_c)
-	tgt_cpu=cortex-m4
+stm32f4 | k20 | tiva_c)
+	platform_target=thumbv7em-none-eabi
 	;;
 *)
-	as_fn_error $? "Unknown MCU $MCU" "$LINENO" 5
+	as_fn_error $? "Unknown platform $PLATFORM" "$LINENO" 5
 	;;
 esac
 
-# Set stuff that's the same for all MCU
-tgt_arch=arm
-tgt_layout=e-m:e-p:32:32-i1:8:32-i8:8:32-i16:16:32-i64:64-v128:64:128-a:0:32-n32-S64
-tgt_os=none
-tgt_endian=little
-tgt_ptr_width=32
-#tgt_pre_link_args=\"-mthumb\",\ \"-lm\",\ \"-lgcc\",\ \"-mcpu=$tgt_cpu\",
-tgt_pre_link_args="\"-lm\", \"-lgcc\", \"-mcpu=$tgt_cpu\""
-
-# Set up thumb flag if needed
-case $tgt_cpu in
-cortex-m3 | cortex-m4)
-	tgt_pre_link_args="$tgt_pre_link_args, \"-mthumb\""
-	;;
-esac
-
-# Set llvm target
-case $tgt_cpu in
-cortex-m3)
-	tgt_llvm_tgt=thumbv7m-none-eabi
-	;;
-cortex-m4)
-	tgt_llvm_tgt=thumbv7em-none-eabi
-	;;
-*)
-	as_fn_error $? "Unknown CPU $tgt_cpu" "$LINENO" 5
-	;;
-esac
-
-tgt_arch=$tgt_arch
-
-tgt_cpu=$tgt_cpu
-
-tgt_layout=$tgt_layout
-
-tgt_llvm_tgt=$tgt_llvm_tgt
-
-tgt_os=$tgt_os
-
-tgt_endian=$tgt_endian
-
-tgt_ptr_width=$tgt_ptr_width
-
-tgt_pre_link_args=$tgt_pre_link_args
+TARGET=$platform_target
 
 
 ac_config_files="$ac_config_files Makefile"
 
+ac_config_files="$ac_config_files .cargo/config:cargo_config.in"
 
-if test -n "$host"; then
-	ac_config_files="$ac_config_files $MCU.json:target.json.in"
-
-fi
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -2937,7 +2871,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "$MCU.json") CONFIG_FILES="$CONFIG_FILES $MCU.json:target.json.in" ;;
+    ".cargo/config") CONFIG_FILES="$CONFIG_FILES .cargo/config:cargo_config.in" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
