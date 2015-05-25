@@ -246,6 +246,7 @@ impl Builder {
       node: ast::ItemFn(
           cx.fn_decl(Vec::new(), cx.ty(DUMMY_SP, ast::Ty_::TyTup(Vec::new()))),
           ast::Unsafety::Unsafe,
+          ast::Constness::NotConst,
           abi::Rust, // TODO(farcaller): should this be abi::C?
           empty_generics(),
           body),

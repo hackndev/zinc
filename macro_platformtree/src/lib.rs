@@ -69,7 +69,7 @@ pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
 fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
     it: P<ast::Item>) -> P<ast::Item> {
   match it.node {
-    ast::ItemFn(ref decl, style, abi, _, ref block) => {
+    ast::ItemFn(ref decl, style, constness, abi, _, ref block) => {
       let istr = syntax::parse::token::get_ident(it.ident);
       let fn_name = &*istr;
       let ty_params = platformtree::builder::meta_args::get_ty_params_for_task(cx, fn_name);
@@ -110,7 +110,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
           predicates: vec!(),
         }
       };
-      let new_node = ast::ItemFn(new_decl, style, abi, new_generics, block.clone());
+      let new_node = ast::ItemFn(new_decl, style, constness, abi, new_generics, block.clone());
 
       P(ast::Item {node: new_node, ..it.deref().clone() })
     },
