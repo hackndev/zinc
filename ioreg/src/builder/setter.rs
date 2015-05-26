@@ -96,14 +96,14 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
   let setter_ident = utils::setter_name(cx, path);
   utils::unwrap_impl_item(quote_item!(cx,
     impl<'a> $setter_ident<'a> {
-        #[doc="Create a new updater"]
-        pub fn new(reg: &'a $reg_ty) -> $setter_ident<'a> {
-            $setter_ident {
-                value: 0,
-                mask: 0,
-                reg: reg,
-            }
+      #[doc="Create a new updater"]
+      pub fn new(reg: &'a $reg_ty) -> $setter_ident<'a> {
+        $setter_ident {
+          value: 0,
+          mask: 0,
+          reg: reg,
         }
+      }
     }
   ).unwrap())
 }
@@ -140,11 +140,11 @@ fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
     #[doc = "This performs the register update"]
     impl<'a> Drop for $setter_ident<'a> {
       fn drop(&mut self) {
-          let clear_mask: $unpacked_ty = $clear as $unpacked_ty;
-          if self.mask != 0 {
-              let v: $unpacked_ty = $initial_value & ! clear_mask & ! self.mask;
-              self.reg.value.set(self.value | v);
-          }
+        let clear_mask: $unpacked_ty = $clear as $unpacked_ty;
+        if self.mask != 0 {
+          let v: $unpacked_ty = $initial_value & ! clear_mask & ! self.mask;
+          self.reg.value.set(self.value | v);
+        }
       }
     }
   );
@@ -152,13 +152,13 @@ fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
 }
 
 fn build_done(ctx: &ExtCtxt, path: &Vec<String>) -> P<ast::ImplItem> {
-    let setter_ident = utils::setter_name(ctx, path);
-    utils::unwrap_impl_item(quote_item!(ctx,
-        impl<'a> $setter_ident<'a> {
-            #[doc = "Commit changes to register. Allows for chaining of set"]
-            pub fn done(self) {}
-        }
-    ).unwrap())
+  let setter_ident = utils::setter_name(ctx, path);
+  utils::unwrap_impl_item(quote_item!(ctx,
+    impl<'a> $setter_ident<'a> {
+      #[doc = "Commit changes to register. Allows for chaining of set"]
+      pub fn done(self) {}
+    }
+  ).unwrap())
 }
 
 fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
@@ -218,11 +218,11 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
-        pub fn $fn_name<'b>(&'b mut self, new_value: $field_ty)
-            -> &'b mut $setter_ty<'a> {
-            self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
-            self.mask |= $mask << $shift;
-            self
+        pub fn $fn_name<'b>(&'b mut self,
+                            new_value: $field_ty) -> &'b mut $setter_ty<'a> {
+          self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
+          self.mask |= $mask << $shift;
+          self
         }
       }
     ).unwrap())
@@ -231,11 +231,12 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
-        pub fn $fn_name<'b>(&'b mut self, idx: usize, new_value: $field_ty)
-            -> &'b mut $setter_ty<'a> {
-            self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
-            self.mask |= $mask << $shift;
-            self
+        pub fn $fn_name<'b>(&'b mut self,
+                            idx: usize,
+                            new_value: $field_ty) -> &'b mut $setter_ty<'a> {
+          self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
+          self.mask |= $mask << $shift;
+          self
         }
       }
     ).unwrap())
@@ -265,9 +266,9 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
       impl<'a> $setter_ty<'a> {
         $doc_attr
         pub fn $fn_name<'b>(&'b mut self) -> &'b mut $setter_ty<'a> {
-            self.value |= $mask << $shift;
-            self.mask |= $mask << $shift;
-            self
+          self.value |= $mask << $shift;
+          self.mask |= $mask << $shift;
+          self
         }
       }
     ).unwrap())
@@ -277,9 +278,9 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
       impl<'a> $setter_ty<'a> {
         $doc_attr
         pub fn $fn_name<'b>(&'b mut self, idx: usize) -> &'b mut $setter_ty<'a> {
-            self.value |= $mask << $shift;
-            self.mask |= $mask << $shift;
-            self
+          self.value |= $mask << $shift;
+          self.mask |= $mask << $shift;
+          self
         }
       }
     ).unwrap())

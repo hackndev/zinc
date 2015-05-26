@@ -203,27 +203,27 @@ impl<'a> BuildUnionTypes<'a> {
     //FIXME(mcoffin) - We're making this iterator twice
     let padded_regs2 = PaddedRegsIterator::new(&mut regs2);
     padded_regs2.enumerate().map(|(_, rp)| {
-        full_size += match rp {
-            RegOrPadding::Reg(reg) => reg.ty.size(),
-            RegOrPadding::Pad(s) => s,
-        };
+      full_size += match rp {
+        RegOrPadding::Reg(reg) => reg.ty.size(),
+        RegOrPadding::Pad(s) => s,
+      };
     }).count();
     let clone_impl = quote_item!(self.cx,
-        impl ::core::clone::Clone for $name {
-            fn clone(&self) -> Self {
-                let mut next: $name = unsafe {
-                    ::core::mem::uninitialized()
-                };
-                unsafe {
-                    let next_ptr: *mut $name = &mut next;
-                    ::core::intrinsics::copy(
-                        ::core::mem::transmute(self),
-                        next_ptr,
-                        $full_size as usize);
-                    return next;
-                }
-            }
+      impl ::core::clone::Clone for $name {
+        fn clone(&self) -> Self {
+          let mut next: $name = unsafe {
+            ::core::mem::uninitialized()
+          };
+          unsafe {
+            let next_ptr: *mut $name = &mut next;
+            ::core::intrinsics::copy(
+              ::core::mem::transmute(self),
+              next_ptr,
+              $full_size as usize);
+            return next;
+          }
         }
+      }
     ).unwrap();
     let copy_impl = quote_item!(self.cx, impl ::core::marker::Copy for $name {}).unwrap();
     vec!(struct_item, clone_impl, copy_impl)

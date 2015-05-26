@@ -137,9 +137,9 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
       impl $reg_ty {
         #[allow(dead_code, missing_docs)]
         pub fn $fn_name<'a>(&'a self, new_value: $field_ty) -> $setter_ty<'a> {
-            let mut setter: $setter_ty = $setter_ty::new(self);
-            setter.$fn_name(new_value);
-            setter
+          let mut setter: $setter_ty = $setter_ty::new(self);
+          setter.$fn_name(new_value);
+          setter
         }
       }
     ).unwrap())
@@ -148,9 +148,9 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
       impl $reg_ty {
         #[allow(dead_code, missing_docs)]
         pub fn $fn_name<'a>(&'a self, idx: usize, new_value: $field_ty) -> $setter_ty<'a> {
-            let mut setter: $setter_ty = $setter_ty::new(self);
-            setter.$fn_name(idx, new_value);
-            setter
+          let mut setter: $setter_ty = $setter_ty::new(self);
+          setter.$fn_name(idx, new_value);
+          setter
         }
       }
     ).unwrap())

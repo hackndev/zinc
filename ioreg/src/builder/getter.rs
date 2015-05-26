@@ -95,14 +95,14 @@ fn build_new(cx: &ExtCtxt, path: &Vec<String>) -> P<ast::ImplItem> {
                                           getter_ident);
   let item = quote_item!(cx,
     impl $getter_ty {
-        #[doc = "Create a getter reflecting the current value of the given register."]
-        pub fn new(reg: & $reg_ty) -> $getter_ty {
-            $getter_ident {
-                value: reg.value.get(),
-            }
+      #[doc = "Create a getter reflecting the current value of the given register."]
+      pub fn new(reg: & $reg_ty) -> $getter_ty {
+        $getter_ident {
+          value: reg.value.get(),
         }
+      }
     }
-    ).unwrap();
+  ).unwrap();
   utils::unwrap_impl_item(item)
 }
 
@@ -119,69 +119,46 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
     node::FieldType::EnumField {opt_name: _, variants: ref vars} => {
       let mut arms: Vec<ast::Arm> = Vec::new();
       for v in vars.iter() {
-          let mut name = path.clone();
-          name.push(field.name.node.clone());
-          let enum_ident = cx.ident_of(name.connect("_").as_str());
-          let val_ident = cx.ident_of(v.name.node.as_str());
-          let body = cx.expr_path(
-              cx.path(DUMMY_SP, vec!(enum_ident, val_ident)));
-          let val: u64 = v.value.node;
-          let lit = cx.expr_lit(
-              DUMMY_SP,
-              ast::LitInt(val, ast::UnsuffixedIntLit(ast::Plus)));
-          let arm = ast::Arm {
-              attrs: vec!(),
-              pats: vec!(
-                  P(ast::Pat {
-                      id: ast::DUMMY_NODE_ID,
-                      span: DUMMY_SP,
-                      node: ast::PatLit(lit),
-                  })
-                ),
-              guard: None,
-              body: cx.expr_some(DUMMY_SP, body),
-          };
-          arms.push(arm);
+        let mut name = path.clone();
+        name.push(field.name.node.clone());
+        let enum_ident = cx.ident_of(name.connect("_").as_str());
+        let val_ident = cx.ident_of(v.name.node.as_str());
+        let body = cx.expr_path(
+          cx.path(DUMMY_SP, vec!(enum_ident, val_ident)));
+        let val: u64 = v.value.node;
+        let lit = cx.expr_lit(
+          DUMMY_SP,
+          ast::LitInt(val, ast::UnsuffixedIntLit(ast::Plus)));
+        let arm = ast::Arm {
+          attrs: vec!(),
+          pats: vec!(
+            P(ast::Pat {
+              id: ast::DUMMY_NODE_ID,
+              span: DUMMY_SP,
+              node: ast::PatLit(lit),
+            })
+            ),
+            guard: None,
+            body: cx.expr_some(DUMMY_SP, body),
+        };
+        arms.push(arm);
       }
       let wild_arm = ast::Arm {
-          attrs: vec!(),
-          pats: vec!(cx.pat_wild(DUMMY_SP)),
-          guard: None,
-          body: cx.expr_none(DUMMY_SP),
+        attrs: vec!(),
+        pats: vec!(cx.pat_wild(DUMMY_SP)),
+        guard: None,
+        body: cx.expr_none(DUMMY_SP),
       };
       arms.push(wild_arm);
       let opt_expr = cx.expr_match(
-          DUMMY_SP,
-          prim,
-          arms);
-      cx.expr_method_call(
-          DUMMY_SP,
-          opt_expr,
-          cx.ident_of("unwrap"),
-          Vec::new())
-      /*
-      let from = match reg.ty {
-        node::RegType::RegPrim(ref width,_) =>
-          match width {
-            &node::RegWidth::Reg32 => "from_u32",
-            &node::RegWidth::Reg16 => "from_u16",
-            &node::RegWidth::Reg8  => "from_u8",
-          },
-        _ => panic!("Can't convert group register to primitive type"),
-      };
+        DUMMY_SP,
+        prim,
+        arms);
       cx.expr_method_call(
         DUMMY_SP,
-        cx.expr_call_global(
-          DUMMY_SP,
-          vec!(cx.ident_of("core"),
-               cx.ident_of("num"),
-               cx.ident_of(from)),
-          vec!(prim)
-        ),
+        opt_expr,
         cx.ident_of("unwrap"),
-        Vec::new()
-      )
-      */
+        Vec::new())
     },
   }
 }
@@ -199,19 +176,19 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     .expect("Unexpected non-primitive register");
   let get_raw: P<ast::ImplItem> = utils::unwrap_impl_item(quote_item!(cx,
     impl $getter_ty {
-        #[doc = "Get the raw value of the register."]
-        pub fn raw(&self) -> $packed_ty {
-            self.value
-        }
+      #[doc = "Get the raw value of the register."]
+      pub fn raw(&self) -> $packed_ty {
+        self.value
+      }
     }
   ).unwrap());
 
   let it = quote_item!(cx,
     #[allow(dead_code)]
     impl $getter_ty {
-        $new
-        $getters
-        $get_raw
+      $new
+      $getters
+      $get_raw
     }
   );
   let mut item: ast::Item = it.unwrap().deref().clone();
@@ -245,7 +222,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
       impl X {
         $doc_attr
         pub fn $fn_name(&self) -> $field_ty {
-            $value
+          $value
         }
       }
     ).unwrap())
@@ -258,7 +235,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
       impl X {
         $doc_attr
         pub fn $fn_name(&self, idx: usize) -> $field_ty {
-            $value
+          $value
         }
       }
     ).unwrap())

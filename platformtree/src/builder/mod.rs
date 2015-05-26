@@ -174,33 +174,15 @@ impl Builder {
   }
 
   fn emit_start(&self, cx: &ExtCtxt) -> P<ast::Item> {
-      /*
-      let argc = ast::Arg {
-          ty: quote_ty!(cx, isize),
-          pat: cx.pat_wild(DUMMY_SP),
-          id: ast::DUMMY_NODE_ID,
-      };
-      let argv = ast::Arg {
-          ty: quote_ty!(cx, *const *const u8),
-          pat: cx.pat_wild(DUMMY_SP),
-          id: ast::DUMMY_NODE_ID,
-      };
-      cx.item_fn(
-          DUMMY_SP,
-          cx.ident_of("start"),
-          vec!(argc, argv),
-          quote_ty!(cx, isize),
-          body)
-      */
-      quote_item!(cx,
-          #[start]
-          fn start(_: isize, _: *const *const u8) -> isize {
-              unsafe {
-                  platformtree_main();
-              }
-              0
-          }
-      ).unwrap()
+    quote_item!(cx,
+      #[start]
+      fn start(_: isize, _: *const *const u8) -> isize {
+        unsafe {
+          platformtree_main();
+        }
+        0
+      }
+    ).unwrap()
   }
 
   fn emit_morestack(&self, cx: &ExtCtxt) -> P<ast::Item> {

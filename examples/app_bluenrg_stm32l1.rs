@@ -16,8 +16,8 @@ mod std {
 
 #[start]
 fn start(_: isize, _: *const *const u8) -> isize {
-    main();
-    0
+  main();
+  0
 }
 
 //TODO(kvark): temporary `u8 -> str` conversion until #235 is resolved

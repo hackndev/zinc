@@ -6,8 +6,8 @@ extern crate zinc;
 
 #[start]
 fn start(_: isize, _: *const *const u8) -> isize {
-    main();
-    0
+  main();
+  0
 }
 
 pub unsafe fn main() {
@@ -28,8 +28,8 @@ pub unsafe fn main() {
   sys_clock.setup();
 
   let led1 = pin::Pin::new(pin::Port::PortA, 5,
-    pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
-    pin::PullType::PullNone);
+                           pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
+                           pin::PullType::PullNone);
 
   // TODO(kvark): why doesn't "sys_clock.get_apb1_frequency()" work better?
   let timer_clock = sys_clock.source.frequency();

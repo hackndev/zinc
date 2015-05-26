@@ -12,26 +12,26 @@ use core::option::Option::Some;
 
 #[start]
 fn start(_: isize, _: *const *const u8) -> isize {
-    main();
-    0
+  main();
+  0
 }
 
 pub fn main() {
-    zinc::hal::mem_init::init_stack();
-    zinc::hal::mem_init::init_data();
-    
-    // P1.20 => LED-2 (mbed LPC1768)
-    let led2 = pin::Pin::new(
-        pin::Port::Port1, 21,
-        pin::Function::Gpio,
-        Some(GpioDirection::Out));
+  zinc::hal::mem_init::init_stack();
+  zinc::hal::mem_init::init_data();
 
-    let timer = timer::Timer::new(timer::TimerPeripheral::Timer0, 25, 4);
-    
-    loop  {
-        led2.set_high();
-        timer.wait_ms(10);
-        led2.set_low();
-        timer.wait_ms(10);
-    }
+  // P1.20 => LED-2 (mbed LPC1768)
+  let led2 = pin::Pin::new(
+    pin::Port::Port1, 21,
+    pin::Function::Gpio,
+    Some(GpioDirection::Out));
+
+  let timer = timer::Timer::new(timer::TimerPeripheral::Timer0, 25, 4);
+
+  loop  {
+    led2.set_high();
+    timer.wait_ms(10);
+    led2.set_low();
+    timer.wait_ms(10);
+  }
 }

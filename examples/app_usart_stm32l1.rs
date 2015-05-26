@@ -6,8 +6,8 @@ extern crate zinc;
 
 #[start]
 fn start(_: isize, _: *const *const u8) -> isize {
-    main();
-    0
+  main();
+  0
 }
 
 pub unsafe fn main() {
@@ -23,20 +23,20 @@ pub unsafe fn main() {
   sys_clock.setup();
 
   let _pin_tx = pin::Pin::new(pin::Port::PortA, 2,
-    pin::Mode::AltFunction(
-      pin::AltMode::AfUsart1_Usart2_Usart3,
-      pin::OutputType::OutPushPull,
-      pin::Speed::VeryLow),
-    pin::PullType::PullNone);
+                              pin::Mode::AltFunction(
+                                pin::AltMode::AfUsart1_Usart2_Usart3,
+                                pin::OutputType::OutPushPull,
+                                pin::Speed::VeryLow),
+                              pin::PullType::PullNone);
 
   let led1 = pin::Pin::new(pin::Port::PortA, 5,
-    pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
-    pin::PullType::PullNone);
+                           pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
+                           pin::PullType::PullNone);
 
   led1.set_low();
 
   let uart = usart::Usart::new(usart::UsartPeripheral::Usart2, 38400, usart::WordLen::WordLen8bits,
-    hal::uart::Parity::Disabled, usart::StopBit::StopBit1bit, &sys_clock);
+                               hal::uart::Parity::Disabled, usart::StopBit::StopBit1bit, &sys_clock);
   uart.puts("Hello, world\n");
 
   led1.set_high();

@@ -18,11 +18,11 @@ static mut global_on: u32 = 0;
 #[allow(dead_code)]
 #[no_mangle]
 pub unsafe extern fn isr_systick() {
-    i += 1;
-    if i > 100 {
-      i = 0;
-      global_on = !global_on;
-    }
+  i += 1;
+  if i > 100 {
+    i = 0;
+    global_on = !global_on;
+  }
 }
 
 pub fn main() {
@@ -39,16 +39,16 @@ pub fn main() {
 
   loop {
     let on: bool = unsafe { volatile_load(&global_on as *const u32) == 0 };
-      match on {
-        true  => led1.set_high(),
-        false => led1.set_low(),
-      }
-      wfi();
+    match on {
+      true  => led1.set_high(),
+      false => led1.set_low(),
+    }
+    wfi();
   }
 }
 
 #[start]
 fn start(_: isize, _: *const *const u8) -> isize {
-    main();
-    0
+  main();
+  0
 }

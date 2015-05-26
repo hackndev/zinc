@@ -9,8 +9,8 @@ use zinc::hal::stm32f4::{pin, timer};
 
 #[start]
 fn start(_: isize, _: *const *const u8) -> isize {
-    main();
-    0
+  main();
+  0
 }
 
 pub fn main() {
