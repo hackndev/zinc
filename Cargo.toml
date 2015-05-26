@@ -16,10 +16,10 @@ k20 = []
 tiva_c = []
 
 [target.thumbv7m-none-eabi.dependencies.core]
-git = "https://github.com/bharrisau/rust-libcore"
+git = "https://github.com/hackndev/rust-libcore"
 
 [target.thumbv7em-none-eabi.dependencies.core]
-git = "https://github.com/bharrisau/rust-libcore"
+git = "https://github.com/hackndev/rust-libcore"
 
 [dependencies.ioreg]
 path = "./ioreg"
