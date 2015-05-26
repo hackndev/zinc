@@ -45,6 +45,8 @@ lpc17xx_iomem_TIMER1    = 0x40008000;
 
 lpc17xx_iomem_UART0     = 0x4000C000;
 
+lpc17xx_iomem_PWM1      = 0x40018000;
+
 lpc17xx_iomem_PINSEL0   = 0x4002C000;
 lpc17xx_iomem_PINSEL1   = 0x4002C004;
 lpc17xx_iomem_PINSEL2   = 0x4002C008;
