@@ -7,6 +7,9 @@ CARGO_ROOT=@srcdir@
 PLATFORM=@PLATFORM@
 TARGET=@TARGET@
 
+$(if $(value EXAMPLE_NAME),, \
+	$(error EXAMPLE_NAME must be set))
+
 # Output directory
 OUT_DIR=$(CARGO_ROOT)/target/$(TARGET)/release
 EXAMPLE_DIR=$(OUT_DIR)/examples
