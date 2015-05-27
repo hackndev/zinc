@@ -15,16 +15,103 @@
 
 //! PWM Support for the NXP LPC17xx MCUs
 
-use hal::lpc17xx::peripheral_clock::PeripheralClock;
 use hal::lpc17xx::peripheral_clock::PeripheralClock::PWM1Clock;
+
+use self::PWMChannel::*;
 
 #[path="../../util/ioreg.rs"]
 #[macro_use] mod ioreg;
 
+/// "Channels" correspond to MR0..6
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
-pub struct PWMPeripheral {
-    value: u32
+pub enum PWMChannel {
+    CHANNEL0,
+    CHANNEL1,
+    CHANNEL2,
+    CHANNEL3,
+    CHANNEL4,
+    CHANNEL5,
+    CHANNEL6,
+}
+
+#[allow(missing_docs)]
+#[derive(Clone, Copy)]
+pub struct PWM {
+    channel: PWMChannel,
+    period_us: u32,
+    pulsewidth_us: u32,
+}
+
+impl PWM {
+
+    /// Create a new PWM Output on the provided channel
+    pub fn new(channel: PWMChannel) -> PWM {
+        PWM1Clock.enable();
+        PWM1Clock.set_divisor(4);
+
+        // reset TC on match 0 for this channel and
+        // enable output
+        let mcr = reg::PWM1.mcr;
+        let pcr = reg::PWM1.pcr;
+        match channel {
+            CHANNEL0 => { mcr.set_pwmmr0r(true); }, // no enable for ch0
+            CHANNEL1 => { mcr.set_pwmmr1r(true); pcr.set_pwmena1(true); },
+            CHANNEL2 => { mcr.set_pwmmr2r(true); pcr.set_pwmena2(true); },
+            CHANNEL3 => { mcr.set_pwmmr3r(true); pcr.set_pwmena3(true); },
+            CHANNEL4 => { mcr.set_pwmmr4r(true); pcr.set_pwmena4(true); },
+            CHANNEL5 => { mcr.set_pwmmr5r(true); pcr.set_pwmena5(true); },
+            CHANNEL6 => { mcr.set_pwmmr6r(true); pcr.set_pwmena6(true); },
+        };
+
+        let pwm = PWM {
+            channel: channel,
+            period_us: 20_000,  // 20ms
+            pulsewidth_us: 0,   // off by default
+        };
+        pwm.update_output();
+        pwm
+    }
+
+    /// Update the PWM Signal based on the current state
+    fn update_output(&self) {
+        // calculate the number of ticks required based on our clock
+        let freq_hz: u32 = PWM1Clock.frequency();
+        let freq_mhz: u32 = freq_hz / 1_000_000;
+        
+        // NOTE: The Match Register is shared for all
+        // channels, so updating the channel for one channel
+        // could break all others!
+        let period_ticks: u32 = freq_mhz * self.period_us;
+        reg::PWM1.mr[0].set_value(period_ticks);
+        
+        // TODO: Determine if we can support muliple periods, ideally
+        //   for each chhnnel
+        // TODO: Cacluate and set match for pulsewidth_us
+        // TODO: Put change into effet with LER
+    }
+
+}
+
+/// Implementation of Generic PWMOutput trait for LPC17xx
+impl ::hal::pwm::PWMOutput for PWM {
+    fn set_period_us(&mut self, period_us: u32) {
+        self.period_us = period_us;
+        self.update_output();
+    }
+
+    fn get_period_us(&self) -> u32 {
+        self.period_us
+    }
+
+    fn set_pulsewidth_us(&mut self, pulsewidth_us: u32) {
+        self.pulsewidth_us = pulsewidth_us;
+        self.update_output();
+    }
+
+    fn get_pulsewidth_us(&self) -> u32 {
+        self.pulsewidth_us
+    }
 }
 
 
@@ -121,7 +208,7 @@ mod reg {
         /// in single-edge mode, and sets PWM<N + 1> if it’s in double-edge
         /// mode.
         0x18 => reg32 mr[4] {
-
+            0..31 => value,
         }
         /// Capture Control Register. The CCR controls which edges of
         /// the capture inputs are used to load the Capture Registers
@@ -141,6 +228,12 @@ mod reg {
         /// channel types as either single edge or double edge
         /// controlled.
         0x4c => reg32 pcr {
+            9  => pwmena1,
+            10 => pwmena2,
+            11 => pwmena3,
+            12 => pwmena4,
+            13 => pwmena5,
+            14 => pwmena6,
         }
         /// Load Enable Register. Enables use of new PWM match
         /// values.

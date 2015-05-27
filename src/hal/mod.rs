@@ -39,6 +39,7 @@ pub mod cortex_m4;
 
 pub mod mem_init;
 pub mod pin;
+pub mod pwm;
 pub mod spi;
 pub mod stack;
 pub mod timer;

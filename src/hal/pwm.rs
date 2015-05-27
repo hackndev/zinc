@@ -27,14 +27,14 @@
 /// duty cycle in the case of a period change.
 pub trait PWMOutput {
     /// set the period in microseconds
-    fn set_period_us(period_us: u32);
+    fn set_period_us(&mut self, period_us: u32);
 
     /// get the period in microseconds
-    fn get_period_us() -> u32;
+    fn get_period_us(&self) -> u32;
 
     /// Set the pulse width in microseconds
-    fn set_pulsewidth_us(pulsewidth_us: u32);
+    fn set_pulsewidth_us(&mut self, pulsewidth_us: u32);
 
     /// get the duty cycle as a percentage
-    fn get_pulsewidth_us() -> u32;
+    fn get_pulsewidth_us(&self) -> u32;
 }
