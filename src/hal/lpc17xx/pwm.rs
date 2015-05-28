@@ -22,17 +22,36 @@ use self::PWMChannel::*;
 #[path="../../util/ioreg.rs"]
 #[macro_use] mod ioreg;
 
-/// "Channels" correspond to MR0..6
+/// "Channels" correspond to MR1..6 (0 used for period)
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
 pub enum PWMChannel {
-    CHANNEL0,
+    CHANNEL0 = 0,  // reserved for period
     CHANNEL1,
     CHANNEL2,
     CHANNEL3,
     CHANNEL4,
     CHANNEL5,
     CHANNEL6,
+}
+
+impl PWMChannel {
+
+    /// Set the match register for this channel to the provided value
+    fn set_mr(&self, value: u32) {
+        // note that for whatever reason, the match registers are fragmented
+        // across two registers.  They aren't even located next to each other
+        // in memory
+        match *self {
+            CHANNEL0 => { reg::PWM1.mr[0].set_value(value); },
+            CHANNEL1 => { reg::PWM1.mr[1].set_value(value); },
+            CHANNEL2 => { reg::PWM1.mr[2].set_value(value); },
+            CHANNEL3 => { reg::PWM1.mr[3].set_value(value); },
+            CHANNEL4 => { reg::PWM1.mr2[0].set_value(value); },
+            CHANNEL5 => { reg::PWM1.mr2[1].set_value(value); },
+            CHANNEL6 => { reg::PWM1.mr2[2].set_value(value); },
+        };
+    }
 }
 
 #[allow(missing_docs)]
@@ -55,7 +74,7 @@ impl PWM {
         let mcr = reg::PWM1.mcr;
         let pcr = reg::PWM1.pcr;
         match channel {
-            CHANNEL0 => { mcr.set_pwmmr0r(true); }, // no enable for ch0
+            CHANNEL0 => { panic!() },  // CHANNEL0 reserved for internal use
             CHANNEL1 => { mcr.set_pwmmr1r(true); pcr.set_pwmena1(true); },
             CHANNEL2 => { mcr.set_pwmmr2r(true); pcr.set_pwmena2(true); },
             CHANNEL3 => { mcr.set_pwmmr3r(true); pcr.set_pwmena3(true); },
@@ -70,25 +89,36 @@ impl PWM {
             pulsewidth_us: 0,   // off by default
         };
         pwm.update_output();
+
+        // TODO: Pin Muxing?
+        //   - On the LPC1768, a few pads could be used for, e.g. PWM1.3
+        //   - Can work as-is if function setup correct on the Pin, but this requires
+        //     reading the user manual in detail
+        //   - Alt for PWM on various pins is not always the same (1 or 2)
         pwm
     }
 
     /// Update the PWM Signal based on the current state
     fn update_output(&self) {
-        // calculate the number of ticks required based on our clock
+        // calculate the number of ticks for our period and pulsewidth
         let freq_hz: u32 = PWM1Clock.frequency();
         let freq_mhz: u32 = freq_hz / 1_000_000;
-        
-        // NOTE: The Match Register is shared for all
-        // channels, so updating the channel for one channel
-        // could break all others!
         let period_ticks: u32 = freq_mhz * self.period_us;
-        reg::PWM1.mr[0].set_value(period_ticks);
-        
-        // TODO: Determine if we can support muliple periods, ideally
-        //   for each chhnnel
-        // TODO: Cacluate and set match for pulsewidth_us
-        // TODO: Put change into effet with LER
+        let pulsewidth_ticks: u32 = freq_mhz * self.pulsewidth_us;
+
+        // Set the match registers for period (CH0) and pulsewidth (CHN)
+        CHANNEL0.set_mr(period_ticks);
+        self.channel.set_mr(pulsewidth_ticks);
+
+        // set the channel latch to update CH0 and CHN
+        reg::PWM1.ler.set_value(1 << CHANNEL0 as u32 |
+                                1 << self.channel as u32);
+
+        // enable counter and pwm, clear reset
+        reg::PWM1.tcr
+            .set_ctr_en(reg::PWM1_tcr_ctr_en::ENABLED)
+            .set_pwm_enable(reg::PWM1_tcr_pwm_enable::ENABLED)
+            .set_ctr_reset(reg::PWM1_tcr_ctr_reset::SYNCHRONOUS_RESET);
     }
 
 }
@@ -156,19 +186,15 @@ mod reg {
         }
         /// Timer Counter. The 32-bit TC is incremented every PR+1
         /// cycles of PCLK.  The TC is controlled through the TCR.
-        0x08 => reg32 tc {
-        }
+        0x08 => reg32 tc { 31..0 => value }
         /// Prescale Register. The TC is incremented every PR+1 cycles
         /// of PCLK.
-        0x0C => reg32 pr {
-        }
+        0x0C => reg32 pr { 31..0 => value }
         /// Prescale Counter. The 32-bit PC is a counter which is
         /// incremented to the value stored in PR. When the value in
         /// PR is reached, the TC is incremented. The PC is observable
         /// and controllable through the bus interface.
-        0x10 => reg32 pc {
-            
-        }
+        0x10 => reg32 pc { 31..0 => value }
         /// Match Control Register. The MCR is used to control if an
         /// interrupt is generated and if the TC is reset when a Match
         /// occurs.
@@ -207,23 +233,18 @@ mod reg {
         /// between this value and the TC sets any PWM output that is
         /// in single-edge mode, and sets PWM<N + 1> if it’s in double-edge
         /// mode.
-        0x18 => reg32 mr[4] {
-            0..31 => value,
-        }
+        0x18 => reg32 mr[4] { 31..0 => value }
         /// Capture Control Register. The CCR controls which edges of
         /// the capture inputs are used to load the Capture Registers
         /// and whether or not an interrupt is generated when a
         /// capture takes place.
-        0x28 => reg32 ccr {
-        }
+        0x28 => reg32 ccr { 31..0 => value }
         /// Capture Registers (0-3). CR<N> is loaded with the value of the TC
         /// when there is an event on the CAPn.<N> input.
-        0x30 => reg32 cr[4] {
-        }
+        0x30 => reg32 cr[4] { 31..0 => value }
         /// Match Registers (4-6).  See `mr` registers.  Not sure why
         /// banks are fragmented.
-        0x40 => reg32 mr2[3] {
-        }
+        0x40 => reg32 mr2[3] { 31..0 => value }
         /// PWM Control Register. Enables PWM outputs and selects PWM
         /// channel types as either single edge or double edge
         /// controlled.
@@ -237,8 +258,7 @@ mod reg {
         }
         /// Load Enable Register. Enables use of new PWM match
         /// values.
-        0x50 => reg32 ler {
-        }
+        0x50 => reg32 ler { 31..0 => value }
         /// Count Control Register. The CTCR selects between Timer and
         /// Counter mode, and in Counter mode selects the signal and
         /// edge(s) for counting.
