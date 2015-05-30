@@ -1,3 +1,10 @@
 /build/
 /thirdparty/
 .DS_Store
+Cargo.lock
+target
+.cargo
+*.o
+*.bin
+*.lst
+autom4te.cache

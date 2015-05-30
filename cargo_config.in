@@ -1,0 +1,3 @@
+[target.@TARGET@]
+linker = "@CC@"
+ar = "@AR@"

@@ -1,0 +1,39 @@
+STRIP=@STRIP@
+OBJCOPY=@OBJCOPY@
+OBJDUMP=@OBJDUMP@
+
+CARGO_ROOT=@srcdir@
+
+PLATFORM=@PLATFORM@
+TARGET=@TARGET@
+
+$(if $(value EXAMPLE_NAME),, \
+	$(error EXAMPLE_NAME must be set))
+
+# Output directory
+OUT_DIR=$(CARGO_ROOT)/target/$(TARGET)/release
+EXAMPLE_DIR=$(OUT_DIR)/examples
+
+BIN_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME).bin
+LST_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME).lst
+EXAMPLE_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME)
+
+.PHONY: build clean listing $(EXAMPLE_FILE)
+
+build: $(BIN_FILE)
+
+clean:
+	cargo clean
+
+listing: $(LST_FILE)
+
+# Target is PHONY so cargo can deal with dependencies
+$(EXAMPLE_FILE):
+	cd $(CARGO_ROOT)
+	cargo build --example $(EXAMPLE_NAME) --release --target=$(TARGET) --verbose --features $(PLATFORM)
+
+$(BIN_FILE): $(EXAMPLE_FILE)
+	$(OBJCOPY) -O binary $< $@
+
+$(LST_FILE): $(EXAMPLE_FILE)
+	$(OBJDUMP) -D $< > $@

@@ -30,12 +30,23 @@ Zinc is distributed under Apache-2.0, see LICENSE for more details.
 
 ## Usage
 
-Get a gcc cross-toolchain for arm and configure `TOOLCHAIN` and `RUNTIME_LIB` in
-Rakefile header as appropriate. `RUNTIME_LIB` should be either libgcc or
-libcompiler-rt ar archive, compiled for appropriate architecture.
+### Environment Setup
 
-To build an application from apps/ use the following rake command:
+Get a gcc cross-toolchain for arm and make sure it is accessible.
+
+### Examples
+
+First, generate a `Makefile` and `.cargo/config` with `configure` so cargo
+can find your toolchain. Your toolchain triple is probably `arm-none-eabi`
+````
+./configure PLATFORM=<platform> --host=<toolchain-triple>
+````
+
+To build an application from examples/ use the following command after having
+run `configure`:
 
 ```
-rake PLATFORM=<platform> build_all  # or build_<appname>
+EXAMPLE_NAME=<example> make build
 ```
+
+Ouput will go to `target/<target-triple>/release/examples`.

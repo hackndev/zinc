@@ -1,0 +1,95 @@
+[package]
+name = "zinc"
+version = "0.1.0"
+authors = ["Zinc Developers <zinc@github.com>"]
+build = "build.rs"
+
+[lib]
+name = "zinc"
+crate-type = ["lib"]
+
+[features]
+lpc17xx = []
+stm32f4 = []
+stm32l1 = []
+k20 = []
+tiva_c = []
+
+[target.thumbv7m-none-eabi.dependencies.core]
+git = "https://github.com/hackndev/rust-libcore"
+
+[target.thumbv7em-none-eabi.dependencies.core]
+git = "https://github.com/hackndev/rust-libcore"
+
+[dependencies.ioreg]
+path = "./ioreg"
+
+[dependencies.rlibc]
+git = "https://github.com/mcoffin/rlibc"
+branch = "zinc"
+
+[dev-dependencies.platformtree]
+path = "./platformtree"
+
+[dev-dependencies.macro_platformtree]
+path = "./macro_platformtree"
+
+[[example]]
+name = "nothing"
+path = "examples/app_nothing.rs"
+
+[[example]]
+name = "blink"
+path = "examples/app_blink.rs"
+
+[[example]]
+name = "blink_k20"
+path = "examples/app_blink_k20.rs"
+
+[[example]]
+name = "blink_k20_isr"
+path = "examples/app_blink_k20_isr.rs"
+
+[[example]]
+name = "blink_pt"
+path = "examples/app_blink_pt.rs"
+
+[[example]]
+name = "blink_stm32f4"
+path = "examples/app_blink_stm32f4.rs"
+
+[[example]]
+name = "blink_stm32l1"
+path = "examples/app_blink_stm32l1.rs"
+
+[[example]]
+name = "blink_tiva_c"
+path = "examples/app_blink_tiva_c.rs"
+
+[[example]]
+name = "bluenrg_stm32l1"
+path = "examples/app_bluenrg_stm32l1.rs"
+
+[[example]]
+name = "dht22"
+path = "examples/app_dht22.rs"
+
+[[example]]
+name = "empty"
+path = "examples/app_empty.rs"
+
+[[example]]
+name = "lcd_tiva_c"
+path = "examples/app_lcd_tiva_c.rs"
+
+[[example]]
+name = "uart"
+path = "examples/app_uart.rs"
+
+[[example]]
+name = "uart_tiva_c"
+path = "examples/app_uart_tiva_c.rs"
+
+[[example]]
+name = "uart_stm32l1"
+path = "examples/app_uart_stm32l1.rs"

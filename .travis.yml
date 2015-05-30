@@ -1,17 +1,26 @@
 language: rust
+rust: nightly
 before_install:
     - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
     - sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/terry_guo-gcc-arm-embedded-precise.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
 install:
     - sudo apt-get install gcc-arm-none-eabi
-    - (mkdir -p ./thirdparty/rust)
-    - (cd ./thirdparty/rust; wget -O rust.tar.gz https://github.com/rust-lang/rust/tarball/`rustc --version|awk '{sub(/\\(/, "", $3); print $3}'`; tar -zx --strip-components=1 -f rust.tar.gz)
 script:
-    - rake build_all test
+    - ./configure --host=arm-none-eabi
+    - cargo build --target=$TARGET --verbose --features $PLATFORM
+after_script:
+    - cargo test --lib --verbose
+    - (cd ./platformtree; cargo build --verbose; cargo test --verbose)
+    - (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
 env:
   matrix:
     - PLATFORM=lpc17xx
-    - PLATFORM=stm32f4
-    - PLATFORM=stm32l1
+      TARGET=thumbv7m-none-eabi
     - PLATFORM=k20
+      TARGET=thumbv7em-none-eabi
+    - PLATFORM=stm32f4
+      TARGET=thumbv7em-none-eabi
+    - PLATFORM=stm32l1
+      TARGET=thumbv7m-none-eabi
     - PLATFORM=tiva_c
+      TARGET=thumbv7em-none-eabi

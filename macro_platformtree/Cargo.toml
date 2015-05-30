@@ -1,0 +1,11 @@
+[package]
+name = "macro_platformtree"
+version = "0.1.0"
+authors = ["Zinc Developers <zinc@github.com>"]
+
+[lib]
+name = "macro_platformtree"
+plugin = true
+
+[dependencies.platformtree]
+path = "../platformtree"

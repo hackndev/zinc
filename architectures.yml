@@ -1,8 +1,0 @@
-cortex_m3:
-  arch:   armv7-m
-  cpu:    cortex-m3
-  target: thumbv7m-none-eabi
-cortex_m4:
-  arch:   armv7e-m
-  cpu:    cortex-m4
-  target: thumbv7em-none-eabi
