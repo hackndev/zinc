@@ -1,3 +1,6 @@
+__aeabi_unwind_cpp_pr0 = abort;
+__aeabi_unwind_cpp_pr1 = abort;
+
 SECTIONS
 {
     .vector : ALIGN(4)

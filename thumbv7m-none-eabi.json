@@ -12,7 +12,10 @@
     "target-pointer-width": "32",
     "no-compiler-rt": true,
     "pre-link-args": [
-        "-lm", "-lgcc", "-mcpu=cortex-m3", "-mthumb",
+        "-mcpu=cortex-m3", "-mthumb",
         "-Tlayout.ld"
+    ],
+    "post-link-args": [
+        "-lm", "-lgcc", "-lnosys"
     ]
 }
