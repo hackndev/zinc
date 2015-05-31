@@ -27,6 +27,3 @@ env:
     - PLATFORM=stm32l1
       TARGET=thumbv7m-none-eabi
       EXAMPLES="blink_stm32l1 bluenrg_stm32l1 usart_stm32l1"
-    - PLATFORM=tiva_c
-      EXAMPLES="blink_tiva_c uart_tiva_c lcd_tiva_c"
-      TARGET=thumbv7em-none-eabi
