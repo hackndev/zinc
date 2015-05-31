@@ -10,6 +10,7 @@ script:
     - cargo build --target=$TARGET --verbose --features $PLATFORM
 after_script:
     - cargo test --lib --verbose
+    - (cd ./ioreg; cargo build --verbose; cargo test --verbose)
     - (cd ./platformtree; cargo build --verbose; cargo test --verbose)
     - (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
 env:
