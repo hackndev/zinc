@@ -91,5 +91,5 @@ name = "uart_tiva_c"
 path = "examples/app_uart_tiva_c.rs"
 
 [[example]]
-name = "uart_stm32l1"
-path = "examples/app_uart_stm32l1.rs"
+name = "usart_stm32l1"
+path = "examples/app_usart_stm32l1.rs"
