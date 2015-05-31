@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Zinc, the bare metal stack for rust.
-# Copyright 2014 Vladimir "farcaller" Pouzanov <farcaller@gmail.com>
+# Copyright 2014 Matt Coffin <mcoffin13@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
