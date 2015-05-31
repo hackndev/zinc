@@ -1,11 +1,9 @@
-#![feature(plugin, no_std, core)]
-#![crate_type="staticlib"]
+#![feature(plugin, no_std, core, start)]
 #![no_std]
 #![plugin(macro_platformtree)]
 
 extern crate core;
 extern crate zinc;
-#[macro_use] #[no_link] extern crate macro_platformtree;
 
 platformtree!(
   tiva_c@mcu {
@@ -17,8 +15,7 @@ platformtree!(
     }
 
     gpio {
-      f {
-        led1@1 { direction = "out"; }
+      f { led1@1 { direction = "out"; }
         led2@2 { direction = "out"; }
       }
     }
@@ -46,7 +43,7 @@ platformtree!(
   }
 );
 
-pub fn run(args: &pt::run_args) {
+fn run(args: &pt::run_args) {
   use zinc::hal::pin::Gpio;
   use zinc::hal::timer::Timer;
 

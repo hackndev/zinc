@@ -1,4 +1,4 @@
-#![feature(plugin, no_std, core)]
+#![feature(plugin, no_std, core, start)]
 #![crate_type="staticlib"]
 #![no_std]
 #![plugin(macro_platformtree)]
