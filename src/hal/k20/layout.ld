@@ -1,3 +1,7 @@
+__aeabi_unwind_cpp_pr0 = abort;
+__aeabi_unwind_cpp_pr1 = abort;
+__aeabi_unwind_cpp_pr2 = abort;
+
 /* FIXME(bgamari): Make stack base configurable? */
 __STACK_BASE  = 0x20001FFF;
 
