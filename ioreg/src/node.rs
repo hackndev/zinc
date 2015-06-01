@@ -19,7 +19,7 @@ use syntax::codemap::{Spanned, Span};
 use syntax::ast;
 
 /// A variant of an enum field type
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Variant {
   pub name: Spanned<String>,
   pub value: Spanned<u64>,
@@ -27,7 +27,7 @@ pub struct Variant {
 }
 
 /// A bit field type
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FieldType {
   /// A unsigned integer
   UIntField,
@@ -40,7 +40,7 @@ pub enum FieldType {
   },
 }
 
-#[derive(Copy, PartialEq, Eq, Clone)]
+#[derive(Copy, PartialEq, Eq, Clone, Debug)]
 pub enum Access {
   ReadWrite,
   ReadOnly,
@@ -49,7 +49,7 @@ pub enum Access {
   SetToClear,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Field {
   pub name: Spanned<String>,
   /// The index of the first (lowest order) bit of the field
@@ -71,7 +71,7 @@ impl Field {
   }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum RegWidth {
   /// A 32-bit wide register
   Reg32,
@@ -92,7 +92,7 @@ impl RegWidth {
   }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum RegType {
   /// A primitive bitfield
   RegPrim(Spanned<RegWidth>, Vec<Field>),
@@ -111,13 +111,14 @@ impl RegType {
 }
 
 /// A single register, either a union or primitive
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Reg {
   pub offset: u64,
   pub name: Spanned<String>,
   pub ty: RegType,
   pub count: Spanned<u32>,
   pub docstring: Option<Spanned<ast::Ident>>,
+  pub address: usize,
 }
 
 impl Reg {

@@ -39,7 +39,7 @@ mod test {
     }
   }
 
-  ioregs!(BASIC_TEST = {
+  ioregs!(BASIC_TEST @ 0 = {
     0x0 => reg32 reg1 {
       0      => field1,
       1..3   => field2,
@@ -125,7 +125,7 @@ mod test {
      );
      */
 
-  ioregs!(GROUP_TEST = {
+  ioregs!(GROUP_TEST @ 0 = {
     0x0 => group regs[5] {
       0x0 => reg32 reg1 {
         0..31 => field1
@@ -172,7 +172,7 @@ mod test {
      );
      */
 
-  ioregs!(FIELD_ARRAY_TEST = {
+  ioregs!(FIELD_ARRAY_TEST @ 0 = {
     0x0 => reg32 reg1 {
       0..31 => field[16]
     }
@@ -208,7 +208,7 @@ mod test {
      );
      */
 
-  ioregs!(GAP_TEST = {
+  ioregs!(GAP_TEST @ 0 = {
     0x0 => reg32 reg1 {
       0..31 => field,
     }
@@ -268,7 +268,7 @@ mod test {
      );
      */
 
-  ioregs!(MULTI_TEST = {
+  ioregs!(MULTI_TEST @ 0 = {
     0x100 => reg32 reg1[8] {
       0..31 => field[32],
     }

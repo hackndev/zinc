@@ -228,7 +228,16 @@ impl<'a> BuildUnionTypes<'a> {
         }
       }
     ).unwrap();
+
     let copy_impl = quote_item!(self.cx, impl ::core::marker::Copy for $name {}).unwrap();
-    vec!(struct_item, clone_impl, copy_impl)
+
+    let item_address = reg.address;
+    let item_getter = quote_item!(self.cx,
+      #[allow(non_snake_case, dead_code)]
+      pub fn $name() -> &'static $name {
+          unsafe { ::core::intrinsics::transmute($item_address as usize) }
+      }
+    ).unwrap();
+    vec!(struct_item, clone_impl, copy_impl, item_getter)
   }
 }

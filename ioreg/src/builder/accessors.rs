@@ -37,6 +37,10 @@ impl<'a> node::RegVisitor for BuildAccessors<'a> {
       let item = build_get_fn(self.cx, path, reg);
       self.builder.push_item(item);
     }
+    if fields.iter().any(|f| f.access != node::Access::ReadOnly) {
+      let item = build_ignoring_state_setter_fn(self.cx, path, reg);
+      self.builder.push_item(item);
+    }
 
     for field in fields.iter() {
       match build_field_accessors(self.cx, path, reg, field) {
@@ -115,6 +119,29 @@ fn build_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
       #[allow(dead_code)]
       pub fn get(&self) -> $getter_ty {
         $getter_ty::new(self)
+      }
+    }
+    );
+  item.unwrap()
+}
+
+fn build_ignoring_state_setter_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
+                -> P<ast::Item>
+{
+  let reg_ty: P<ast::Ty> =
+    cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+  let setter_ty = utils::setter_name(cx, path);
+
+  let docstring = format!("Create new updater that ignores current value of the `{}` register",
+                          reg.name.node);
+  let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
+
+  let item = quote_item!(cx,
+    impl $reg_ty {
+      $doc_attr
+      #[allow(dead_code)]
+      pub fn ignoring_state(&self) -> $setter_ty {
+        $setter_ty::new_ignoring_state(self)
       }
     }
     );

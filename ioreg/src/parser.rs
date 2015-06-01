@@ -77,6 +77,16 @@ impl<'a> Parser<'a> {
       None => return None,
     };
 
+    if !self.expect(&token::At) {
+      return None;
+    }
+
+    // TODO(farcaller): expect_usize should return usize, no?
+    let address = match self.expect_usize() {
+      Some(address) => address as usize,
+      None => return None,
+    };
+
     if !self.expect(&token::Eq) {
       return None;
     }
@@ -99,6 +109,7 @@ impl<'a> Parser<'a> {
       ty: RegType::RegUnion(Rc::new(regs)),
       count: respan(mk_sp(sp_lo, self.span.hi), 1),
       docstring: docstring,
+      address: address,
     };
 
     Some(Rc::new(group))
@@ -137,26 +148,29 @@ impl<'a> Parser<'a> {
     regs.sort_by(|r1,r2| r1.offset.cmp(&r2.offset));
 
     // Verify that registers don't overlap
-    let mut failed = false;
-    for (r1,r2) in regs.iter().zip(regs.iter().skip(1)) {
-      if r2.offset <= r1.last_byte() {
-        self.sess.span_diagnostic.span_err(
-          r1.name.span,
-          format!("The byte range of register ({} to {})",
-                  r1.offset, r1.last_byte()).as_str());
-        self.sess.span_diagnostic.span_err(
-          r2.name.span,
-          format!("overlaps with the range of this register ({} to {})",
-                  r2.offset, r2.last_byte()).as_str());
-        failed = true;
-      }
-    }
+    // TODO(farcaller): they actually can, which is a register union. We need
+    //                  a proper terminology and implementation for that.
+    // let mut failed = false;
+    // for (r1,r2) in regs.iter().zip(regs.iter().skip(1)) {
+    //   if r2.offset <= r1.last_byte() {
+    //     self.sess.span_diagnostic.span_err(
+    //       r1.name.span,
+    //       format!("The byte range of register ({} to {})",
+    //               r1.offset, r1.last_byte()).as_slice());
+    //     self.sess.span_diagnostic.span_err(
+    //       r2.name.span,
+    //       format!("overlaps with the range of this register ({} to {})",
+    //               r2.offset, r2.last_byte()).as_slice());
+    //     failed = true;
+    //   }
+    // }
 
-    if failed {
-      None
-    } else {
-      Some(regs)
-    }
+    // if failed {
+    //   None
+    // } else {
+    //   Some(regs)
+    // }
+    Some(regs)
   }
 
   /// Parse the introduction of a register
@@ -260,6 +274,7 @@ impl<'a> Parser<'a> {
       ty: ty,
       count: count,
       docstring: docstring,
+      address: 0,
     })
   }
 

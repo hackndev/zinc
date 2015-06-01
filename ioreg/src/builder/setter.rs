@@ -76,10 +76,11 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
 
   let item = quote_item!(cx,
     $doc_attr
-    #[allow(non_camel_case_types)]
+    #[allow(non_camel_case_types, dead_code)]
     pub struct $name<'a> {
       value: $packed_ty,
       mask: $packed_ty,
+      write_only: bool,
       reg: &'a $reg_ty,
     }
   );
@@ -100,6 +101,27 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
         $setter_ident {
           value: 0,
           mask: 0,
+          write_only: false,
+          reg: reg,
+        }
+      }
+    }
+  ).unwrap())
+}
+
+fn build_new_ignoring_state<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
+                 -> P<ast::ImplItem> {
+  let reg_ty: P<ast::Ty> =
+    cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+  let setter_ident = utils::setter_name(cx, path);
+  utils::unwrap_impl_item(quote_item!(cx,
+    impl<'a> $setter_ident<'a> {
+      #[doc="Create a new updater that ignores current state"]
+      pub fn new_ignoring_state(reg: &'a $reg_ty) -> $setter_ident<'a> {
+        $setter_ident {
+          value: 0,
+          mask: 0,
+          write_only: true,
           reg: reg,
         }
       }
@@ -132,7 +154,7 @@ fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
     if wo_reg {
       quote_expr!(cx, 0)
     } else {
-      quote_expr!(cx, self.reg.value.get())
+      quote_expr!(cx, if self.write_only { 0 } else { self.reg.value.get() })
     };
 
   let item = quote_item!(cx,
@@ -164,6 +186,7 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
               fields: &Vec<node::Field>) -> P<ast::Item>
 {
   let new = build_new(cx, path, reg);
+  let new_is = build_new_ignoring_state(cx, path, reg);
   let setter_ident = utils::setter_name(cx, path);
   let methods: Vec<P<ast::ImplItem>> =
     FromIterator::from_iter(
@@ -174,6 +197,7 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     #[allow(dead_code)]
     impl<'a> $setter_ident<'a> {
       $new
+      $new_is
       $methods
       $done
     }
