@@ -18,6 +18,11 @@
 
 #![allow(missing_docs)]
 
+#[cfg(any(feature = "lpc17xx",
+          feature = "stm32f4",
+          feature = "stm32l1",
+          feature = "k20",
+          feature = "tiva_c"))]
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
 
 #[cfg(feature = "lpc17xx")]
