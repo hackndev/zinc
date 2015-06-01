@@ -22,10 +22,10 @@ env:
       EXAMPLES="blink blink_pt uart dht22 empty"
     - PLATFORM=k20
       TARGET=thumbv7em-none-eabi
-      EXAMPLES="blink_k20 blink_k20_isr"
+      EXAMPLES="blink_k20 blink_k20_isr empty"
     - PLATFORM=stm32f4
       TARGET=thumbv7em-none-eabi
-      EXAMPLES="blink_stm32f4"
+      EXAMPLES="blink_stm32f4 empty"
     - PLATFORM=stm32l1
       TARGET=thumbv7m-none-eabi
-      EXAMPLES="blink_stm32l1 bluenrg_stm32l1 usart_stm32l1"
+      EXAMPLES="blink_stm32l1 bluenrg_stm32l1 usart_stm32l1 empty"
