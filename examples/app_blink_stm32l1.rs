@@ -1,16 +1,16 @@
 #![feature(no_std, core, start)]
 #![no_std]
 
-extern crate core;
-extern crate zinc;
-
 #[start]
 fn start(_: isize, _: *const *const u8) -> isize {
   main();
   0
 }
 
-pub unsafe fn main() {
+extern crate core;
+extern crate zinc;
+
+fn main() {
   use core::option::Option;
   use zinc::hal::pin::Gpio;
   use zinc::hal::stm32l1::{init, pin, timer};

@@ -46,7 +46,7 @@ fn map_byte(s: u8) -> (&'static str, &'static str) {
   (map_hex(s>>4), map_hex(s&0xF))
 }
 
-pub unsafe fn main() {
+pub fn main() {
   use core::fmt::Write;
   use core::result::Result;
   use zinc::drivers::bluenrg;
@@ -92,7 +92,9 @@ pub unsafe fn main() {
     spi::Role::Master, spi::DataSize::U8, spi::DataFormat::MsbFirst, 1).
     unwrap_or_else(|_| {
       let _ = write!(&mut uart, "SPI failed to initialize");
-      abort()
+      unsafe {
+        abort()
+      }
     });
 
   let bnrg_reset = pin::Pin::new(pin::Port::PortA, 8,

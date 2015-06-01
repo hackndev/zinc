@@ -10,7 +10,7 @@ fn start(_: isize, _: *const *const u8) -> isize {
   0
 }
 
-pub unsafe fn main() {
+pub fn main() {
   use zinc::drivers::chario::CharIO;
   use zinc::hal;
   use zinc::hal::pin::Gpio;

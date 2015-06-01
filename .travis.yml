@@ -8,6 +8,7 @@ install:
 script:
     - ./configure --host=arm-none-eabi
     - cargo build --target=$TARGET --verbose --features $PLATFORM
+    - ./ci/build-examples.sh
 after_script:
     - cargo test --lib --verbose
     - (cd ./ioreg; cargo build --verbose; cargo test --verbose)
@@ -17,11 +18,13 @@ env:
   matrix:
     - PLATFORM=lpc17xx
       TARGET=thumbv7m-none-eabi
+      EXAMPLES="blink blink_pt uart dht22 empty"
     - PLATFORM=k20
       TARGET=thumbv7em-none-eabi
+      EXAMPLES="blink_k20 blink_k20_isr"
     - PLATFORM=stm32f4
       TARGET=thumbv7em-none-eabi
+      EXAMPLES="blink_stm32f4"
     - PLATFORM=stm32l1
       TARGET=thumbv7m-none-eabi
-    - PLATFORM=tiva_c
-      TARGET=thumbv7em-none-eabi
+      EXAMPLES="blink_stm32l1 bluenrg_stm32l1 usart_stm32l1"
