@@ -238,6 +238,10 @@ impl<'a> BuildUnionTypes<'a> {
           unsafe { ::core::intrinsics::transmute($item_address as usize) }
       }
     ).unwrap();
-    vec!(struct_item, clone_impl, copy_impl, item_getter)
+    if item_address == 0 {
+      vec!(struct_item, clone_impl, copy_impl)
+    } else {
+      vec!(struct_item, clone_impl, copy_impl, item_getter)
+    }
   }
 }

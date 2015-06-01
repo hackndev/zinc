@@ -76,16 +76,17 @@ impl<'a> Parser<'a> {
       Some(name) => respan(self.last_span, name),
       None => return None,
     };
+    let mut address: usize = 0;
 
-    if !self.expect(&token::At) {
-      return None;
+    if self.token == token::At {
+      self.bump();
+
+      // TODO(farcaller): expect_usize should return usize, no?
+      address = match self.expect_usize() {
+        Some(address) => address as usize,
+        None => return None,
+      };
     }
-
-    // TODO(farcaller): expect_usize should return usize, no?
-    let address = match self.expect_usize() {
-      Some(address) => address as usize,
-      None => return None,
-    };
 
     if !self.expect(&token::Eq) {
       return None;
