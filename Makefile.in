@@ -1,17 +1,26 @@
-STRIP=@STRIP@
-OBJCOPY=@OBJCOPY@
-OBJDUMP=@OBJDUMP@
+STRIP ?= @STRIP@
+OBJCOPY ?= @OBJCOPY@
+OBJDUMP ?= @OBJDUMP@
+DEBUG ?= false
 
-CARGO_ROOT=@srcdir@
+CARGO_ROOT ?= @srcdir@
 
-PLATFORM=@PLATFORM@
-TARGET=@TARGET@
+PLATFORM ?= @PLATFORM@
+TARGET ?= @TARGET@
 
 $(if $(value EXAMPLE_NAME),, \
 	$(error EXAMPLE_NAME must be set))
 
+ifeq "$(DEBUG)" "true"
+  PROFILE_OPTION =
+  PROFILE = debug
+else
+  PROFILE_OPTION = --release
+  PROFILE = release
+endif
+
 # Output directory
-OUT_DIR=$(CARGO_ROOT)/target/$(TARGET)/release
+OUT_DIR=$(CARGO_ROOT)/target/$(TARGET)/$(PROFILE)
 EXAMPLE_DIR=$(OUT_DIR)/examples
 
 BIN_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME).bin
@@ -30,7 +39,7 @@ listing: $(LST_FILE)
 # Target is PHONY so cargo can deal with dependencies
 $(EXAMPLE_FILE):
 	cd $(CARGO_ROOT)
-	cargo build --example $(EXAMPLE_NAME) --release --target=$(TARGET) --verbose --features $(PLATFORM)
+	cargo build --example $(EXAMPLE_NAME) $(PROFILE_OPTION) --target=$(TARGET) --verbose --features $(PLATFORM)
 
 $(BIN_FILE): $(EXAMPLE_FILE)
 	$(OBJCOPY) -O binary $< $@
