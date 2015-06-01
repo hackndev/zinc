@@ -166,10 +166,14 @@ impl VolatileCellReplayer {
     let mut i = 1usize;
     for ref replay in &*self.replays {
       println!("replay {}", i);
+      println!("replayed?");
       assert_that(replay.replayed, is(equal_to(true)));
+      println!("is read?");
       assert_that(replay.is_read, is(equal_to(replay.did_read)));
+      println!("address correct?");
       assert_that(replay.address, is(equal_to(replay.actual_address)));
       if !replay.is_read {
+        println!("value written is correct?");
         assert_that(replay.value, is(equal_to(replay.actual_value)));
       }
       i += 1;
@@ -177,6 +181,10 @@ impl VolatileCellReplayer {
   }
 
   pub fn get_cell(&mut self, address: usize) -> u32 {
+    if self.current_replay >= self.replays.len() {
+      panic!("get_cell({}) faled, current replay: {}, total replays: {}",
+        address, self.current_replay+1, self.replays.len());
+    }
     let replay: &mut ReplayRecord = &mut self.replays[self.current_replay];
     replay.replayed = true;
     replay.did_read = true;
@@ -188,6 +196,10 @@ impl VolatileCellReplayer {
   }
 
   pub fn set_cell(&mut self, address: usize, value: u32) {
+    if self.current_replay >= self.replays.len() {
+      panic!("set_cell({}, {}) faled, current replay: {}, total replays: {}",
+        address, value, self.current_replay+1, self.replays.len());
+    }
     let replay: &mut ReplayRecord = &mut self.replays[self.current_replay];
     replay.replayed = true;
     replay.did_read = false;
