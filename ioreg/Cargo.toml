@@ -9,3 +9,6 @@ plugin = true
 
 [dev-dependencies.volatile_cell]
 path = "../volatile_cell"
+
+[dependencies]
+syntaxext_lint = "*"
