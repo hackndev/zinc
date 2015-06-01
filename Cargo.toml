@@ -34,6 +34,9 @@ path = "./platformtree"
 [dev-dependencies.macro_platformtree]
 path = "./macro_platformtree"
 
+[dev-dependencies.macro_zinc]
+path = "./macro_zinc"
+
 [[example]]
 name = "nothing"
 path = "examples/app_nothing.rs"

@@ -1,0 +1,8 @@
+[package]
+name = "macro_zinc"
+version = "0.1.0"
+authors = ["Matt Coffin <mcoffin13@gmail.com>"]
+
+[lib]
+name = "macro_zinc"
+plugin = true

@@ -1,13 +1,9 @@
-#![feature(no_std, core, start)]
+#![feature(plugin, no_std, core, start)]
 #![no_std]
+#![plugin(macro_zinc)]
 
 extern crate zinc;
 
-#[start]
-fn start(_: isize, _: *const *const u8) -> isize {
-  main();
-  0
-}
-
+#[zinc_main]
 pub fn main() {
 }

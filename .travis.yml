@@ -14,6 +14,7 @@ after_script:
     - (cd ./ioreg; cargo build --verbose; cargo test --verbose)
     - (cd ./platformtree; cargo build --verbose; cargo test --verbose)
     - (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
+    - (cd ./macro_zinc; cargo test --verbose)
 env:
   matrix:
     - PLATFORM=lpc17xx

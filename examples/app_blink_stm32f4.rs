@@ -1,5 +1,6 @@
-#![feature(no_std, core, start)]
+#![feature(plugin, no_std, core, start)]
 #![no_std]
+#![plugin(macro_zinc)]
 
 extern crate core;
 extern crate zinc;
@@ -7,12 +8,7 @@ extern crate zinc;
 use zinc::hal::timer::Timer;
 use zinc::hal::stm32f4::{pin, timer};
 
-#[start]
-fn start(_: isize, _: *const *const u8) -> isize {
-  main();
-  0
-}
-
+#[zinc_main]
 pub fn main() {
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
