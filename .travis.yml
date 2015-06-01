@@ -8,7 +8,7 @@ install:
 script:
     - ./configure --host=arm-none-eabi
     - cargo build --target=$TARGET --verbose --features $PLATFORM
-    - ./ci/build-examples.sh
+    - ./support/build-examples.sh
 after_script:
     - cargo test --lib --verbose
     - (cd ./ioreg; cargo build --verbose; cargo test --verbose)
