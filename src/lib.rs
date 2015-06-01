@@ -51,6 +51,7 @@ STM32F403/407).
 #[cfg(not(test))] extern crate rlibc;
 
 #[macro_use] #[no_link] extern crate ioreg;
+extern crate volatile_cell;
 
 #[cfg(test)] extern crate std;
 
