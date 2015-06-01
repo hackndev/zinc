@@ -82,7 +82,7 @@ pub fn tick() -> bool {
 
 #[allow(dead_code)]
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(SYSTICK = {

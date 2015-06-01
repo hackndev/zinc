@@ -144,7 +144,7 @@ impl PinConf {
 
 #[allow(dead_code)]
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
 
   ioreg_old!(GPIO: u32, MODER, OTYPER, OSPEEDER, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH);
   reg_rw!(GPIO, u32, MODER,    set_MODER,    MODER);

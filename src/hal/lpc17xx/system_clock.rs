@@ -157,7 +157,7 @@ fn init_pll(pll: &PLL0, source: &ClockSource) {
 }
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
 
   ioreg_old!(SCS: u32, value);
   reg_rw!(SCS, u32, value, set_value, value);

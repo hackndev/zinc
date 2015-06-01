@@ -158,7 +158,7 @@ impl timer::Timer for Timer {
 
 pub mod reg {
   //! Timer registers definition
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(Timer = {

@@ -33,7 +33,7 @@ pub fn enable_PORT(port: pin::Port) {
 /// Registers
 #[allow(dead_code)]
 pub mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(SIM = {

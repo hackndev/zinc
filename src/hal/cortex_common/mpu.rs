@@ -14,7 +14,7 @@
 // limitations under the License.
 
 //! Interface to Memory Protection Unit.
-//! 
+//!
 //! MPU memory location is 0xE000_ED90.
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/BIHJJABA.html
 
@@ -26,7 +26,7 @@ fn get_reg() -> &'static reg::MPU {
 }
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(MPU = {

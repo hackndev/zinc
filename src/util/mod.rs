@@ -21,5 +21,3 @@ pub mod shared;
 #[cfg(feature = "multitasking")] pub mod queue;
 
 mod lang_items;
-
-pub use volatile_cell;

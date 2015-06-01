@@ -170,7 +170,7 @@ pub fn set_trace_port_interface_enabled(enabled: bool) {
 }
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
 
   ioreg_old!(PINSEL: u32, value);
   reg_rw!(PINSEL, u32, value, set_value, value);

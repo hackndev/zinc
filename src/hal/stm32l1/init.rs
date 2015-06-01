@@ -259,7 +259,7 @@ impl ClockConfig {
 //                  split RCC into distinct registers.
 #[allow(missing_docs)]
 pub mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(RCC = {

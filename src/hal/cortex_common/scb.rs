@@ -14,7 +14,7 @@
 // limitations under the License.
 
 //! Interface to System Control Block.
-//! 
+//!
 //! System Control Block memory location is 0xE000_ED00.
 //! System Control Block ACTLR memory location is 0xE000_E008;
 //  Link: http://infocenter.arm.com/help/topic/com.arm.doc.dui0552a/CIHFDJCA.html
@@ -40,7 +40,7 @@ pub fn set_pendsv(val: bool) {
 }
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(SCB = {

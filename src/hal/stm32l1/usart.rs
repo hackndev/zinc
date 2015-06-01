@@ -143,7 +143,7 @@ impl fmt::Write for Usart {
 }
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(USART = {
