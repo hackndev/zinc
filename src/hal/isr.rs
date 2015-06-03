@@ -20,11 +20,11 @@
 
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
 
-#[cfg(feature = "lpc17xx")]
+#[cfg(feature = "mcu_lpc17xx")]
 #[path="lpc17xx/isr.rs"] pub mod isr_lpc17xx;
 
-#[cfg(feature = "k20")]
+#[cfg(feature = "mcu_k20")]
 #[path="k20/isr.rs"] pub mod isr_k20;
 
-#[cfg(feature = "tiva_c")]
+#[cfg(feature = "mcu_tiva_c")]
 #[path="tiva_c/isr.rs"] pub mod isr_tiva_c;

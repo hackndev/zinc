@@ -9,11 +9,11 @@ name = "zinc"
 crate-type = ["lib"]
 
 [features]
-lpc17xx = []
-stm32f4 = []
-stm32l1 = []
-k20 = []
-tiva_c = []
+mcu_lpc17xx = []
+mcu_stm32f4 = []
+mcu_stm32l1 = []
+mcu_k20 = []
+mcu_tiva_c = []
 
 [target.thumbv7m-none-eabi.dependencies.core]
 git = "https://github.com/hackndev/rust-libcore"
