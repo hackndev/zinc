@@ -25,5 +25,5 @@ pub use super::cortex_common::scb;
 pub use super::cortex_common::nvic;
 pub use super::cortex_common::mpu;
 pub use super::cortex_common::irq;
-#[cfg(cfg_multitasking)] pub mod sched;
-#[cfg(cfg_multitasking)] pub mod lock;
+#[cfg(feature = "multitasking")] pub mod sched;
+#[cfg(feature = "multitasking")] pub mod lock;

@@ -14,6 +14,7 @@ mcu_stm32f4 = []
 mcu_stm32l1 = []
 mcu_k20 = []
 mcu_tiva_c = []
+multitasking = []
 
 [target.thumbv7m-none-eabi.dependencies.core]
 git = "https://github.com/hackndev/rust-libcore"
