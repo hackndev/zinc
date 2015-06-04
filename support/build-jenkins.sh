@@ -2,6 +2,8 @@
 
 set -e
 
+echo " * rustc version: `rustc --version`"
+
 if [ "$PLATFORM" == "native" ]; then
   # build unit tests
   cargo test --lib --verbose
@@ -9,6 +11,11 @@ if [ "$PLATFORM" == "native" ]; then
   (cd ./platformtree; cargo build --verbose; cargo test --verbose)
   (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
   (cd ./macro_zinc; cargo test --verbose)
+
+  echo " * generating coverage data"
+  kcov cov/ target/debug/zinc-*
+  kcov cov/ ioreg/target/debug/test-*
+  kcov cov/ platformtree/target/debug/platformtree-*
 else
   # build cross-compiled lib and examples
   case "$PLATFORM" in
