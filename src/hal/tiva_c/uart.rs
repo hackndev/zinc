@@ -138,7 +138,7 @@ impl CharIO for Uart {
 
 pub mod reg {
   //! Uart registers definition
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(Uart = {

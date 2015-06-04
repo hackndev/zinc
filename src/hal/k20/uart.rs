@@ -124,7 +124,7 @@ impl CharIO for UART {
 
 /// Register definitions
 pub mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
   use core::intrinsics::abort;
 

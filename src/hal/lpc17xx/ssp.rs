@@ -222,7 +222,7 @@ impl spi::Spi for SSP {
 }
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
 
   ioreg_old!(SSP: u32, CR0, CR1, DR, SR, CPSR, IMSC, RIS, MIS, ICR, DMACR)
   reg_rw!(SSP, u32, CR0,   set_CR0,   CR0)

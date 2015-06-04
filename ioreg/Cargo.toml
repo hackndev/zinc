@@ -6,3 +6,6 @@ authors = ["Zinc Developers <zinc@github.com>"]
 [lib]
 name = "ioreg"
 plugin = true
+
+[dev-dependencies.volatile_cell]
+path = "../volatile_cell"

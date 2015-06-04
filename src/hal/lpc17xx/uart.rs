@@ -301,7 +301,7 @@ static LCRModeMask: u8 = 0b1_11_1_1_11;
 static LSRTHREmpty: u8 = 0x20;
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
 
   ioreg_old!(UART: u32, RBR_THR_DLL, DLM_IER, IIR_FCR, LCR, _pad_0, LSR, _pad_1, SCR, ACR, ICR, FDR, _pad_2, TER);
   reg_r!( UART, u32, RBR,          RBR_THR_DLL);

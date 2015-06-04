@@ -19,8 +19,7 @@
 #![plugin(ioreg)]
 
 extern crate core;
-
-#[path="../../src/util/volatile_cell.rs"] mod volatile_cell;
+extern crate volatile_cell;
 
 #[cfg(test)]
 mod test {

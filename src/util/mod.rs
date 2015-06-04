@@ -16,7 +16,6 @@
 //! Helper methods.
 
 pub mod strconv;
-pub mod volatile_cell;
 pub mod support;
 pub mod shared;
 #[cfg(feature = "multitasking")] pub mod queue;

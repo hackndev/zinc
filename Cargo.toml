@@ -25,6 +25,9 @@ git = "https://github.com/hackndev/rust-libcore"
 [dependencies.ioreg]
 path = "./ioreg"
 
+[dependencies.volatile_cell]
+path = "./volatile_cell"
+
 [dependencies.rlibc]
 git = "https://github.com/mcoffin/rlibc"
 branch = "zinc"

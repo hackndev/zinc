@@ -217,7 +217,7 @@ impl PeripheralClock {
 }
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
 
   ioreg_old!(PCONP: u32, value);
   reg_rw!(PCONP, u32, value, set_value, value);

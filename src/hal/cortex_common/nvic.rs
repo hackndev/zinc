@@ -64,7 +64,7 @@ pub fn get_priority(irqn: usize) -> u8 {
 }
 
 mod reg {
-  use util::volatile_cell::VolatileCell;
+  use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
   ioregs!(NVIC = {

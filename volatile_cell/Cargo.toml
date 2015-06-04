@@ -1,0 +1,26 @@
+[package]
+
+name = "volatile_cell"
+version = "1.0.0"
+authors = ["Vladimir Pouzanov <farcaller@gmail.com>"]
+
+[lib]
+name = "volatile_cell"
+path = "lib.rs"
+test = false
+doctest = false
+doc = true
+crate-type = ["rlib"]
+
+[features]
+replayer = ["hamcrest"]
+
+[target.thumbv7m-none-eabi.dependencies.core]
+git = "https://github.com/hackndev/rust-libcore"
+
+[target.thumbv7em-none-eabi.dependencies.core]
+git = "https://github.com/hackndev/rust-libcore"
+
+[dependencies.hamcrest]
+git = "https://github.com/carllerche/hamcrest-rust"
+optional = true
