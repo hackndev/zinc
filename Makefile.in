@@ -39,7 +39,7 @@ listing: $(LST_FILE)
 # Target is PHONY so cargo can deal with dependencies
 $(EXAMPLE_FILE):
 	cd $(CARGO_ROOT)
-	cargo build --example $(EXAMPLE_NAME) $(PROFILE_OPTION) --target=$(TARGET) --verbose --features $(PLATFORM)
+	cargo build --example $(EXAMPLE_NAME) $(PROFILE_OPTION) --target=$(TARGET) --verbose --features mcu_$(PLATFORM)
 
 $(BIN_FILE): $(EXAMPLE_FILE)
 	$(OBJCOPY) -O binary $< $@

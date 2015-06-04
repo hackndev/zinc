@@ -5,10 +5,10 @@ use std::io;
 use std::path::Path;
 
 fn get_platform() -> Option<String> {
-  let features = env::vars().filter(|&(ref key, _)| key.starts_with("CARGO_FEATURE_"));
+  let features = env::vars().filter(|&(ref key, _)| key.starts_with("CARGO_FEATURE_MCU_"));
   match features.last() {
     Some((feature_var, _)) => Some(
-      feature_var.trim_left_matches("CARGO_FEATURE_")
+      feature_var.trim_left_matches("CARGO_FEATURE_MCU_")
         .to_string().to_ascii_lowercase()),
       None => None,
   }

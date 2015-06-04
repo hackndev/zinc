@@ -32,21 +32,21 @@ pub extern fn main() {
 
 #[no_stack_check]
 #[no_mangle]
-#[cfg(not(cfg_multitasking))]
+#[cfg(not(feature = "multitasking"))]
 pub extern fn __morestack() {
   unsafe { core::intrinsics::abort() };
 }
 
 #[no_stack_check]
 #[no_mangle]
-#[cfg(cfg_multitasking)]
+#[cfg(feature = "multitasking")]
 pub extern fn __morestack() {
   zinc::os::task::morestack();
 }
 
 #[no_stack_check]
 #[no_mangle]
-#[cfg(cfg_multitasking)]
+#[cfg(feature = "multitasking")]
 pub unsafe fn task_scheduler() {
   zinc::os::task::task_scheduler();
 }

@@ -22,7 +22,7 @@ incompatible direct hal usage in some cases.
 
 // pub mod debug;
 pub mod syscall;
-#[cfg(cfg_multitasking)] pub mod task;
+#[cfg(feature = "multitasking")] pub mod task;
 pub mod mutex;
 pub mod cond_var;
 pub mod debug;

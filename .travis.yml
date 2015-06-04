@@ -7,7 +7,7 @@ install:
     - sudo apt-get install gcc-arm-none-eabi
 script:
     - ./configure --host=arm-none-eabi
-    - cargo build --target=$TARGET --verbose --features $PLATFORM
+    - cargo build --target=$TARGET --verbose --features mcu_$PLATFORM
     - ./support/build-examples.sh
 after_script:
     - cargo test --lib --verbose
