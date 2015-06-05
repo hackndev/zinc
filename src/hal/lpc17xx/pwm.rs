@@ -20,6 +20,7 @@ use core::intrinsics::abort;
 
 use self::PWMChannel::*;
 
+
 #[path="../../util/ioreg.rs"]
 #[macro_use] mod ioreg;
 
@@ -116,8 +117,7 @@ impl PWM {
         // enable counter and pwm, clear reset
         reg::PWM1.tcr
             .set_ctr_en(reg::PWM1_tcr_ctr_en::ENABLED)
-            .set_pwm_enable(reg::PWM1_tcr_pwm_enable::ENABLED)
-            .set_ctr_reset(reg::PWM1_tcr_ctr_reset::SYNCHRONOUS_RESET);
+            .set_pwm_enable(reg::PWM1_tcr_pwm_enable::ENABLED);
     }
 
 }
