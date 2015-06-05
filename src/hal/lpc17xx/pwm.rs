@@ -16,6 +16,7 @@
 //! PWM Support for the NXP LPC17xx MCUs
 
 use hal::lpc17xx::peripheral_clock::PeripheralClock::PWM1Clock;
+use core::intrinsics::abort;
 
 use self::PWMChannel::*;
 
@@ -74,6 +75,7 @@ impl PWM {
         let mcr = reg::PWM1.mcr;
         let pcr = reg::PWM1.pcr;
         match channel {
+            CHANNEL0 => { unsafe { abort() } },  // CHANNEL0 reserved for internal use
             CHANNEL0 => { panic!() },  // CHANNEL0 reserved for internal use
             CHANNEL1 => { mcr.set_pwmmr1r(true); pcr.set_pwmena1(true); },
             CHANNEL2 => { mcr.set_pwmmr2r(true); pcr.set_pwmena2(true); },
@@ -147,7 +149,7 @@ impl ::hal::pwm::PWMOutput for PWM {
 
 /// LPC17xx PWM Register Definitions (User Manual: 24.6)
 mod reg {
-    use util::volatile_cell::VolatileCell;
+    use volatile_cell::VolatileCell;
     use core::ops::Drop;
 
     ioregs!(PWM1 = {
