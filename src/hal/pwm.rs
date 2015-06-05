@@ -44,7 +44,7 @@ pub trait PWMOutput {
     /// Numbers below 0 will be set to 0 and above 1 will be set to
     /// 1.0.
     fn write(&mut self, duty_cycle: f32) {
-        let adj_duty_cycle = if duty_cycle > 0.0 {
+        let adj_duty_cycle = if duty_cycle < 0.0 {
             0.0
         } else if duty_cycle > 1.0 {
             1.0
