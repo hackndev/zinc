@@ -72,17 +72,14 @@ impl PWM {
 
         // reset TC on match 0 for this channel and
         // enable output
-        let mcr = reg::PWM1.mcr;
-        let pcr = reg::PWM1.pcr;
         match channel {
             CHANNEL0 => { unsafe { abort() } },  // CHANNEL0 reserved for internal use
-            CHANNEL0 => { panic!() },  // CHANNEL0 reserved for internal use
-            CHANNEL1 => { mcr.set_pwmmr1r(true); pcr.set_pwmena1(true); },
-            CHANNEL2 => { mcr.set_pwmmr2r(true); pcr.set_pwmena2(true); },
-            CHANNEL3 => { mcr.set_pwmmr3r(true); pcr.set_pwmena3(true); },
-            CHANNEL4 => { mcr.set_pwmmr4r(true); pcr.set_pwmena4(true); },
-            CHANNEL5 => { mcr.set_pwmmr5r(true); pcr.set_pwmena5(true); },
-            CHANNEL6 => { mcr.set_pwmmr6r(true); pcr.set_pwmena6(true); },
+            CHANNEL1 => { reg::PWM1.mcr.set_pwmmr1r(true); reg::PWM1.pcr.set_pwmena1(true); },
+            CHANNEL2 => { reg::PWM1.mcr.set_pwmmr2r(true); reg::PWM1.pcr.set_pwmena2(true); },
+            CHANNEL3 => { reg::PWM1.mcr.set_pwmmr3r(true); reg::PWM1.pcr.set_pwmena3(true); },
+            CHANNEL4 => { reg::PWM1.mcr.set_pwmmr4r(true); reg::PWM1.pcr.set_pwmena4(true); },
+            CHANNEL5 => { reg::PWM1.mcr.set_pwmmr5r(true); reg::PWM1.pcr.set_pwmena5(true); },
+            CHANNEL6 => { reg::PWM1.mcr.set_pwmmr6r(true); reg::PWM1.pcr.set_pwmena6(true); },
         };
 
         let pwm = PWM {
