@@ -22,10 +22,6 @@ use zinc::hal::pwm::PWMOutput;
 // Application Board.  The LED is connected to 3 pins coming
 // from the MBED LPC1768.  Here's the mapping:
 //
-// - RGB_RED   => p23 => p2.3 (PWM1.4)
-// - RGB_GREEN => p24 => p2.2 (PWM1.3)
-// - RGB_BLUE  => p25 => p2.1 (PWM1.2)
-
 platformtree!(
   lpc17xx@mcu {
     clock {
@@ -47,17 +43,20 @@ platformtree!(
 
     gpio {
       2 {
-        rgb_blue@3 {
+        // LPC1768 DIPP25 - P2.1/PWM1.2/RXD1
+        rgb_blue@1 {
           direction = "out";
-          function = "pwm1_4";
+          function = "pwm1_2";
         }
+        // LPC1768 DIPP24 - P2.2/PWM1.3/TRACEDATA3
         rgb_green@2 {
           direction = "out";
           function = "pwm1_3";
         }
-        rgb_red@1 {
+        // LPC1768 DIPP23 - P2.3/PWM1.4/TRACEDATA2
+        rgb_red@3 {
           direction = "out";
-          function = "pwm1_2";
+          function = "pwm1_4";
         }
       }
     }
@@ -76,25 +75,23 @@ platformtree!(
   }
 );
 
-fn do_color(timer: &Timer, pwm: &mut pwm::PWM) {
-  for i in 0..100 {
-    pwm.write(i as f32 / 100.0f32);
-    timer.wait_ms(10);
-  }
-}
-
 fn run(args: &pt::run_args) {
-  let mut pwm_red = pwm::PWM::new(pwm::PWMChannel::CHANNEL3);
-  let mut pwm_green = pwm::PWM::new(pwm::PWMChannel::CHANNEL2);
-  let mut pwm_blue = pwm::PWM::new(pwm::PWMChannel::CHANNEL1);
+  let mut pwm_red = pwm::PWM::new(pwm::PWMChannel::CHANNEL4);
+  let mut pwm_green = pwm::PWM::new(pwm::PWMChannel::CHANNEL3);
+  let mut pwm_blue = pwm::PWM::new(pwm::PWMChannel::CHANNEL2);
 
-  pwm_red.set_period_us(10_000);
-  pwm_green.set_period_us(10_000);
-  pwm_blue.set_period_us(10_000);
+  // turn all off
+  pwm_red.write(0.0);
+  pwm_green.write(1.0);
+  pwm_blue.write(1.0);
 
   loop {
-    pwm_red.write(1.0);
-    pwm_green.write(1.0);
-    pwm_blue.write(1.0);
+    for pwm in &mut [pwm_red, pwm_green, pwm_blue] {
+      for i in 1..100 {
+        pwm.write((i as f32) / 100.0);
+        args.timer.wait_ms(10);
+      }
+      pwm.write(1.0); // turn off channel
+    }
   }
 }

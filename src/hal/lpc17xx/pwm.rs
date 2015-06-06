@@ -24,6 +24,8 @@ use self::PWMChannel::*;
 #[path="../../util/ioreg.rs"]
 #[macro_use] mod ioreg;
 
+const PWM_CLOCK_DIVISOR: u8 = 4;
+
 /// "Channels" correspond to MR1..6 (0 used for period)
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
@@ -56,6 +58,14 @@ impl PWMChannel {
     }
 }
 
+/// calculate the number of PWM clock ticks for the given number of microseconds
+fn pwm_us_to_ticks(us: u32) -> u32 {
+    let pwm_clock_frequency_hz: u32 = PWM1Clock.frequency();
+    let pwm_clock_frequency_mhz: u32 = pwm_clock_frequency_hz / 1_000_000;
+    return pwm_clock_frequency_mhz * us;
+}
+
+
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
 pub struct PWM {
@@ -69,56 +79,66 @@ impl PWM {
     /// Create a new PWM Output on the provided channel
     pub fn new(channel: PWMChannel) -> PWM {
         PWM1Clock.enable();
-        PWM1Clock.set_divisor(4);
+        PWM1Clock.set_divisor(PWM_CLOCK_DIVISOR);
+        reg::PWM1.pr.set_value(0);  // no prescaler
 
-        // reset TC on match 0 for this channel and
-        // enable output
+        // single PWM mode (reset TC on match 0 for Ch0)
+        reg::PWM1.mcr.set_pwmmr0r(true);
+
+        // enable PWM output on this channel
         match channel {
             CHANNEL0 => { unsafe { abort() } },  // CHANNEL0 reserved for internal use
-            CHANNEL1 => { reg::PWM1.mcr.set_pwmmr1r(true); reg::PWM1.pcr.set_pwmena1(true); },
-            CHANNEL2 => { reg::PWM1.mcr.set_pwmmr2r(true); reg::PWM1.pcr.set_pwmena2(true); },
-            CHANNEL3 => { reg::PWM1.mcr.set_pwmmr3r(true); reg::PWM1.pcr.set_pwmena3(true); },
-            CHANNEL4 => { reg::PWM1.mcr.set_pwmmr4r(true); reg::PWM1.pcr.set_pwmena4(true); },
-            CHANNEL5 => { reg::PWM1.mcr.set_pwmmr5r(true); reg::PWM1.pcr.set_pwmena5(true); },
-            CHANNEL6 => { reg::PWM1.mcr.set_pwmmr6r(true); reg::PWM1.pcr.set_pwmena6(true); },
+            CHANNEL1 => { reg::PWM1.pcr.set_pwmena1(true); },
+            CHANNEL2 => { reg::PWM1.pcr.set_pwmena2(true); },
+            CHANNEL3 => { reg::PWM1.pcr.set_pwmena3(true); },
+            CHANNEL4 => { reg::PWM1.pcr.set_pwmena4(true); },
+            CHANNEL5 => { reg::PWM1.pcr.set_pwmena5(true); },
+            CHANNEL6 => { reg::PWM1.pcr.set_pwmena6(true); },
         };
 
         let pwm = PWM {
             channel: channel,
-            period_us: 20_000,  // 20ms
-            pulsewidth_us: 0,   // off by default
+            period_us: 20_000,  // 20ms is pretty common
+            pulsewidth_us: 0,
         };
-        pwm.update_output();
 
-        // TODO: Pin Muxing?
-        //   - On the LPC1768, a few pads could be used for, e.g. PWM1.3
-        //   - Can work as-is if function setup correct on the Pin, but this requires
-        //     reading the user manual in detail
-        //   - Alt for PWM on various pins is not always the same (1 or 2)
+        pwm.update_period();
+        pwm.update_pulsewidth();
         pwm
     }
 
     /// Update the PWM Signal based on the current state
-    fn update_output(&self) {
-        // calculate the number of ticks for our period and pulsewidth
-        let freq_hz: u32 = PWM1Clock.frequency();
-        let freq_mhz: u32 = freq_hz / 1_000_000;
-        let period_ticks: u32 = freq_mhz * self.period_us;
-        let pulsewidth_ticks: u32 = freq_mhz * self.pulsewidth_us;
+    fn update_period(&self) {
+		// Put the counter into reset and disable the counter
+		reg::PWM1.tcr
+			.set_ctr_en(reg::PWM1_tcr_ctr_en::DISABLED)
+			.set_ctr_reset(reg::PWM1_tcr_ctr_reset::RESET)
+			.set_pwm_enable(reg::PWM1_tcr_pwm_enable::DISABLED);
 
-        // Set the match registers for period (CH0) and pulsewidth (CHN)
-        CHANNEL0.set_mr(period_ticks);
-        self.channel.set_mr(pulsewidth_ticks);
+		// setup match register to ticks per period on CH0
+        CHANNEL0.set_mr(pwm_us_to_ticks(self.period_us));
+
+        // TODO: recalculate other registers based on the new period?
 
         // set the channel latch to update CH0 and CHN
-        reg::PWM1.ler.set_value(1 << CHANNEL0 as u32 |
-                                1 << self.channel as u32);
+        reg::PWM1.ler.set_value(1 << CHANNEL0 as u32);
 
-        // enable counter and pwm, clear reset
+        // enable counter and pwm; clear reset
         reg::PWM1.tcr
             .set_ctr_en(reg::PWM1_tcr_ctr_en::ENABLED)
+            .set_ctr_reset(reg::PWM1_tcr_ctr_reset::CLEAR_RESET)
             .set_pwm_enable(reg::PWM1_tcr_pwm_enable::ENABLED);
     }
+
+	fn update_pulsewidth(&self) {
+	    let mut pulsewidth_ticks: u32 = pwm_us_to_ticks(self.pulsewidth_us);
+	    if pulsewidth_ticks == reg::PWM1.mr[0].get().raw() {
+	        // avoid making it equal or there is a 1 cycle dropout
+	        pulsewidth_ticks = pulsewidth_ticks + 1;
+	    }
+        self.channel.set_mr(pulsewidth_ticks);
+        reg::PWM1.ler.set_value(1 << self.channel as u32);
+	}
 
 }
 
@@ -126,7 +146,7 @@ impl PWM {
 impl ::hal::pwm::PWMOutput for PWM {
     fn set_period_us(&mut self, period_us: u32) {
         self.period_us = period_us;
-        self.update_output();
+        self.update_period();
     }
 
     fn get_period_us(&self) -> u32 {
@@ -135,7 +155,7 @@ impl ::hal::pwm::PWMOutput for PWM {
 
     fn set_pulsewidth_us(&mut self, pulsewidth_us: u32) {
         self.pulsewidth_us = pulsewidth_us;
-        self.update_output();
+        self.update_pulsewidth();
     }
 
     fn get_pulsewidth_us(&self) -> u32 {
@@ -175,7 +195,7 @@ mod reg {
             },
             1 => ctr_reset {
                 0 => CLEAR_RESET,
-                1 => SYNCHRONOUS_RESET
+                1 => RESET
             },
             // 2 => Reserved
             3 => pwm_enable {
