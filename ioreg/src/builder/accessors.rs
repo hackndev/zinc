@@ -15,7 +15,6 @@
 
 use syntax::ast;
 use syntax::ptr::P;
-use syntax::codemap::DUMMY_SP;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
@@ -33,7 +32,7 @@ pub struct BuildAccessors<'a> {
 
 impl<'a> node::RegVisitor for BuildAccessors<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
-                    _width: &node::RegWidth, fields: &Vec<node::Field>) {
+                    fields: &Vec<node::Field>) {
     if fields.iter().any(|f| f.access != node::Access::WriteOnly) {
       let item = build_get_fn(self.cx, path, reg);
       self.builder.push_item(item);
@@ -60,7 +59,7 @@ fn build_field_accessors(cx: &ExtCtxt, path: &Vec<String>,
                          -> Option<P<ast::Item>>
 {
   let reg_ty: P<ast::Ty> =
-    cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+    cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
 
   let items = match field.access {
     node::Access::ReadWrite => vec!(build_field_set_fn(cx, path, reg, field),
@@ -103,7 +102,7 @@ fn build_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
                 -> P<ast::Item>
 {
   let reg_ty: P<ast::Ty> =
-    cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+    cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let getter_ty = utils::getter_name(cx, path);
 
   let docstring = format!("Fetch the value of the `{}` register",
@@ -126,7 +125,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
                       reg: &node::Reg, field: &node::Field)
                       -> P<ast::ImplItem>
 {
-  let reg_ty = cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+  let reg_ty = cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let fn_name =
     cx.ident_of((String::from_str("set_")+field.name.node.as_str()).as_str());
   let field_ty: P<ast::Ty> =
@@ -161,7 +160,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>,
                       reg: &node::Reg, field: &node::Field)
                       -> P<ast::ImplItem>
 {
-  let reg_ty = cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+  let reg_ty = cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   utils::unwrap_impl_item({
       let fn_name = cx.ident_of(field.name.node.as_str());
       let field_ty: P<ast::Ty> =
@@ -190,10 +189,10 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>,
 }
 
 fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
-                        _reg: &node::Reg, field: &node::Field)
+                        reg: &node::Reg, field: &node::Field)
                         -> P<ast::ImplItem>
 {
-  let reg_ty = cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+  let reg_ty = cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let fn_name =
     cx.ident_of((String::from_str("clear_")+field.name.node.as_str()).as_str());
   let setter_ty = utils::setter_name(cx, path);

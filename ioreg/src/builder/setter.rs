@@ -19,7 +19,6 @@ use std::ops::Deref;
 use syntax::ast;
 use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
-use syntax::codemap::DUMMY_SP;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
 use syntax::parse::token;
@@ -43,7 +42,7 @@ impl<'a> BuildSetters<'a> {
 
 impl<'a> node::RegVisitor for BuildSetters<'a> {
   fn visit_prim_reg<'b>(&'b mut self, path: &Vec<String>,
-      reg: &'b node::Reg, _width: &node::RegWidth, fields: &Vec<node::Field>)
+      reg: &'b node::Reg, fields: &Vec<node::Field>)
   {
     if fields.iter().any(|f| f.access != node::Access::ReadOnly) {
       let it = build_type(self.cx, path, reg, fields);
@@ -64,7 +63,7 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
   let packed_ty = utils::reg_primitive_type(cx, reg)
     .expect("Unexpected non-primitive register");
   let name = utils::setter_name(cx, path);
-  let reg_ty = cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+  let reg_ty = cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
 
   let reg_doc = match reg.docstring {
     Some(d) => token::get_ident(d.node).to_string(),
@@ -89,10 +88,10 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
   P(item)
 }
 
-fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
+fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
                  -> P<ast::ImplItem> {
   let reg_ty: P<ast::Ty> =
-    cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+    cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let setter_ident = utils::setter_name(cx, path);
   utils::unwrap_impl_item(quote_item!(cx,
     impl<'a> $setter_ident<'a> {
@@ -164,7 +163,7 @@ fn build_done(ctx: &ExtCtxt, path: &Vec<String>) -> P<ast::ImplItem> {
 fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
               fields: &Vec<node::Field>) -> P<ast::Item>
 {
-  let new = build_new(cx, path);
+  let new = build_new(cx, path, reg);
   let setter_ident = utils::setter_name(cx, path);
   let methods: Vec<P<ast::ImplItem>> =
     FromIterator::from_iter(

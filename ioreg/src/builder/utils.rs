@@ -18,16 +18,16 @@ use std::iter::FromIterator;
 use syntax::ext::base::ExtCtxt;
 use syntax::ast;
 use syntax::ptr::P;
-use syntax::codemap::DUMMY_SP;
+use syntax::codemap::{respan, Span, Spanned};
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token;
 
 use super::super::node;
 
 /// Generate an unsuffixed integer literal expression with a dummy span
-pub fn expr_int(cx: &ExtCtxt, n: i64) -> P<ast::Expr> {
-  let sign = if n < 0 {ast::Minus} else {ast::Plus};
-  cx.expr_lit(DUMMY_SP, ast::LitInt(n as u64, ast::UnsuffixedIntLit(sign)))
+pub fn expr_int(cx: &ExtCtxt, n: Spanned<i64>) -> P<ast::Expr> {
+  let sign = if n.node < 0 {ast::Minus} else {ast::Plus};
+  cx.expr_lit(n.span, ast::LitInt(n.node as u64, ast::UnsuffixedIntLit(sign)))
 }
 
 /// The name of the structure representing a register
@@ -39,32 +39,45 @@ pub fn path_ident(cx: &ExtCtxt, path: &Vec<String>)
 
 /// Generate a `#[name(...)]` attribute of the given type
 pub fn list_attribute(cx: &ExtCtxt, name: &'static str,
-    list: Vec<&'static str>) -> ast::Attribute {
+                      list: Vec<&'static str>,
+                      span: Span) -> ast::Attribute {
+  let spanned_name = respan(span, name);
+  let spanned_list: Vec<Spanned<&'static str>> = list.into_iter()
+    .map(|word| respan(span, word))
+    .collect();
+  list_attribute_spanned(cx, spanned_name, spanned_list)
+}
+
+fn list_attribute_spanned(cx: &ExtCtxt, name: Spanned<&'static str>,
+    list: Vec<Spanned<&'static str>>) -> ast::Attribute {
   let words =
    list.into_iter()
-   .map(|word| cx.meta_word(DUMMY_SP, token::InternedString::new(word)));
-  let allow = cx.meta_list(DUMMY_SP, token::InternedString::new(name),
+   .map(|word| cx.meta_word(word.span, token::InternedString::new(word.node)));
+  let allow = cx.meta_list(name.span, token::InternedString::new(name.node),
                                 FromIterator::from_iter(words));
-  cx.attribute(DUMMY_SP, allow)
+  cx.attribute(name.span, allow)
 }
 
 /// Generate a `#[doc="..."]` attribute of the given type
+#[allow(dummy_span)]
 pub fn doc_attribute(cx: &ExtCtxt, docstring: token::InternedString)
                      -> ast::Attribute {
+  use syntax::codemap::DUMMY_SP;
+
   let s: ast::Lit_ = ast::LitStr(docstring, ast::CookedStr);
   let attr =
     cx.meta_name_value(DUMMY_SP, token::InternedString::new("doc"), s);
   cx.attribute(DUMMY_SP, attr)
 }
 
-pub fn primitive_type_path(cx: &ExtCtxt, width: &node::RegWidth)
+pub fn primitive_type_path(cx: &ExtCtxt, width: &Spanned<node::RegWidth>)
                            -> ast::Path {
-  let name = match width {
-    &node::RegWidth::Reg8  => "u8",
-    &node::RegWidth::Reg16 => "u16",
-    &node::RegWidth::Reg32 => "u32",
+  let name = match width.node {
+    node::RegWidth::Reg8  => "u8",
+    node::RegWidth::Reg16 => "u16",
+    node::RegWidth::Reg32 => "u32",
   };
-  cx.path_ident(DUMMY_SP, cx.ident_of(name))
+  cx.path_ident(width.span, cx.ident_of(name))
 }
 
 /// The `Path` to the type corresponding to the primitive type of
@@ -89,7 +102,8 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
   match field.ty.node {
     node::FieldType::UIntField => {
       match reg.ty {
-        node::RegType::RegPrim(ref width, _) => primitive_type_path(cx, width),
+        node::RegType::RegPrim(ref width, _) => primitive_type_path(cx,
+                                                                    width),
         _  => panic!("The impossible happened: a union register with fields"),
       }
     },
@@ -119,17 +133,19 @@ pub fn unwrap_impl_item(item: P<ast::Item>) -> P<ast::ImplItem> {
 
 /// Build an expression for the mask of a field
 pub fn mask(cx: &ExtCtxt, field: &node::Field) -> P<ast::Expr> {
-  expr_int(cx, ((1 << field.width as u64) - 1))
+  expr_int(cx, respan(field.bit_range_span,
+                      ((1 << field.width as u64) - 1)))
 }
 
 /// Build an expression for the shift of a field (including the array
 /// index if necessary)
 pub fn shift(cx: &ExtCtxt, idx: Option<P<ast::Expr>>,
                  field: &node::Field) -> P<ast::Expr> {
-  let low = expr_int(cx, field.low_bit as i64);
+  let low = expr_int(cx, respan(field.bit_range_span, field.low_bit as i64));
   match idx {
     Some(idx) => {
-      let width = expr_int(cx, field.width as i64);
+      let width = expr_int(cx, respan(field.bit_range_span,
+                                      field.width as i64));
       quote_expr!(cx, $low + $idx * $width)
     },
     None => low,

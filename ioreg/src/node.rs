@@ -95,7 +95,7 @@ impl RegWidth {
 #[derive(Clone)]
 pub enum RegType {
   /// A primitive bitfield
-  RegPrim(RegWidth, Vec<Field>),
+  RegPrim(Spanned<RegWidth>, Vec<Field>),
   /// A group
   RegUnion(Rc<Vec<Reg>>),
 }
@@ -104,7 +104,7 @@ impl RegType {
   /// Size of register type in bytes
   pub fn size(&self) -> u64 {
     match self {
-      &RegType::RegPrim(ref width, _)  => width.size() as u64,
+      &RegType::RegPrim(ref width, _)  => width.node.size() as u64,
       &RegType::RegUnion(ref regs) => regs_size(regs.deref()),
     }
   }
@@ -142,7 +142,7 @@ pub fn regs_size(regs: &Vec<Reg>) -> u64 {
 pub trait RegVisitor {
   /// Path includes name of `Reg` being visited
   fn visit_prim_reg<'a>(&'a mut self, _path: &Vec<String>, _reg: &'a Reg,
-                        _width: &RegWidth, _fields: &Vec<Field>) {}
+                        _fields: &Vec<Field>) {}
   fn visit_union_reg<'a>(&'a mut self, _path: &Vec<String>, _reg: &'a Reg,
                          _subregs: Rc<Vec<Reg>>) {}
 }
@@ -161,7 +161,7 @@ fn visit_reg_<T: RegVisitor>(reg: &Reg, visitor: &mut T, path: Vec<String>) {
         visit_reg_(r, visitor, new_path);
       }
     },
-    RegType::RegPrim(ref width, ref fields) =>
-      visitor.visit_prim_reg(&path, reg, width, fields)
+    RegType::RegPrim(_, ref fields) =>
+      visitor.visit_prim_reg(&path, reg, fields)
   }
 }

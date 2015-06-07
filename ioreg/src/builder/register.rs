@@ -37,14 +37,18 @@ pub struct BuildRegStructs<'a> {
 
 impl<'a> node::RegVisitor for BuildRegStructs<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
-                    width: &node::RegWidth, fields: &Vec<node::Field>) {
+                    fields: &Vec<node::Field>) {
+    let width = match reg.ty {
+      node::RegType::RegPrim(ref width, _) => width.node,
+      _ => panic!("visit_prim_reg called with non-primitive register"),
+    };
     for field in fields.iter() {
       for item in build_field_type(self.cx, path, reg, field).into_iter() {
         self.builder.push_item(item);
       }
     }
 
-    for item in build_reg_struct(self.cx, path, reg, width).into_iter() {
+    for item in build_reg_struct(self.cx, path, reg, &width).into_iter() {
       self.builder.push_item(item);
     }
   }
@@ -76,7 +80,8 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
         utils::list_attribute(cx, "allow",
                               vec!("dead_code",
                                    "non_camel_case_types",
-                                   "missing_docs")));
+                                   "missing_docs"),
+                              field.name.span));
       let ty_item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
@@ -144,7 +149,8 @@ fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
       attrs: vec!(doc_attr),
       kind: ast::TupleVariantKind(Vec::new()),
       id: ast::DUMMY_NODE_ID,
-      disr_expr: Some(utils::expr_int(cx, variant.value.node as i64)),
+      disr_expr: Some(utils::expr_int(cx, respan(variant.value.span,
+                                                 variant.value.node as i64))),
       vis: ast::Inherited,
     }
   )

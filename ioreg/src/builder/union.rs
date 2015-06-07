@@ -18,7 +18,7 @@ use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ptr::P;
 use syntax::ast_util::empty_generics;
-use syntax::codemap::{DUMMY_SP, dummy_spanned};
+use syntax::codemap::{DUMMY_SP, dummy_spanned, respan, Spanned};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token;
@@ -86,21 +86,21 @@ impl<'a> BuildUnionTypes<'a> {
   }
 }
 
-fn expr_u64(cx: &ExtCtxt, n: u64) -> P<ast::Expr> {
-  cx.expr_lit(DUMMY_SP, ast::LitInt(n as u64, ast::UnsignedIntLit(ast::TyUs)))
+fn expr_u64(cx: &ExtCtxt, n: Spanned<u64>) -> P<ast::Expr> {
+  cx.expr_lit(n.span, ast::LitInt(n.node as u64, ast::UnsignedIntLit(ast::TyUs)))
 }
 
 /// Returns the type of the field representing the given register
 /// within a `RegGroup` struct
 fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
                    -> P<ast::Ty> {
-  let base_ty_path = cx.path_ident(DUMMY_SP, utils::path_ident(cx, path));
+  let base_ty_path = cx.path_ident(reg.name.span, utils::path_ident(cx, path));
   let base_ty: P<ast::Ty> = cx.ty_path(base_ty_path);
   match reg.count.node {
     1 => base_ty,
     n =>
-      cx.ty(DUMMY_SP,
-            ast::TyFixedLengthVec(base_ty, expr_u64(cx, n as u64))),
+      cx.ty(reg.count.span,
+            ast::TyFixedLengthVec(base_ty, expr_u64(cx, respan(reg.count.span, n as u64)))),
   }
 }
 
@@ -138,6 +138,8 @@ impl<'a> BuildUnionTypes<'a> {
   }
 
   /// Build field for padding or a register
+  // Dummy spans allowed here because u8 doesn't come from anywhere
+  #[allow(dummy_span)]
   fn build_pad_or_reg(&self, path: &Vec<String>, reg_or_pad: RegOrPadding,
                       index: usize) -> ast::StructField {
     match reg_or_pad {
@@ -150,7 +152,7 @@ impl<'a> BuildUnionTypes<'a> {
         let ty: P<ast::Ty> =
           self.cx.ty(
             DUMMY_SP,
-            ast::TyFixedLengthVec(u8_ty, expr_u64(self.cx, length)));
+            ast::TyFixedLengthVec(u8_ty, expr_u64(self.cx, respan(DUMMY_SP, length))));
         dummy_spanned(
           ast::StructField_ {
             kind: ast::NamedField(
@@ -183,7 +185,8 @@ impl<'a> BuildUnionTypes<'a> {
       utils::list_attribute(self.cx, "allow",
                             vec!("non_camel_case_types",
                                  "dead_code",
-                                 "missing_docs")),
+                                 "missing_docs"),
+                            reg.name.span),
     );
     match reg.docstring {
       Some(docstring) =>

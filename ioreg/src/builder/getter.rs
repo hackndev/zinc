@@ -19,7 +19,7 @@ use std::ops::Deref;
 use syntax::ast;
 use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
-use syntax::codemap::DUMMY_SP;
+use syntax::codemap::{respan, Span};
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
 use syntax::parse::token;
@@ -43,7 +43,7 @@ impl<'a> BuildGetters<'a> {
 
 impl<'a> node::RegVisitor for BuildGetters<'a> {
   fn visit_prim_reg(&mut self, path: &Vec<String>,
-                    reg: &node::Reg, _width: &node::RegWidth,
+                    reg: &node::Reg,
                     fields: &Vec<node::Field>) {
     if fields.iter().any(|f| f.access != node::Access::WriteOnly) {
       let it = build_type(self.cx, path, reg);
@@ -58,6 +58,13 @@ impl<'a> node::RegVisitor for BuildGetters<'a> {
                            impl ::core::marker::Copy for $ty_name {});
       self.builder.push_item(it.unwrap());
     }
+  }
+}
+
+fn reg_ty_span(reg: &node::Reg) -> Span {
+  match reg.ty {
+    node::RegType::RegPrim(ref width, _) => width.span,
+    _ => reg.name.span,
   }
 }
 
@@ -87,11 +94,12 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
   P(item)
 }
 
-fn build_new(cx: &ExtCtxt, path: &Vec<String>) -> P<ast::ImplItem> {
+fn build_new(cx: &ExtCtxt, path: &Vec<String>,
+             reg: &node::Reg) -> P<ast::ImplItem> {
   let reg_ty: P<ast::Ty> =
-    cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+    cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let getter_ident = utils::getter_name(cx, path);
-  let getter_ty: P<ast::Ty> = cx.ty_ident(DUMMY_SP,
+  let getter_ty: P<ast::Ty> = cx.ty_ident(reg_ty_span(reg),
                                           getter_ident);
   let item = quote_item!(cx,
     impl $getter_ty {
@@ -111,11 +119,13 @@ fn build_new(cx: &ExtCtxt, path: &Vec<String>) -> P<ast::ImplItem> {
 fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
                   field: &node::Field, prim: P<ast::Expr>)
                   -> P<ast::Expr> {
+  // Use bit_range_field for the span because it is to blame for the 
+  // type of the register
   match field.ty.node {
     node::FieldType::UIntField => prim,
     node::FieldType::BoolField =>
-      cx.expr_binary(DUMMY_SP, ast::BiNe,
-                     prim, utils::expr_int(cx, 0)),
+      cx.expr_binary(field.bit_range_span, ast::BiNe,
+                     prim, utils::expr_int(cx, respan(field.bit_range_span, 0))),
     node::FieldType::EnumField {opt_name: _, variants: ref vars} => {
       let mut arms: Vec<ast::Arm> = Vec::new();
       for v in vars.iter() {
@@ -124,38 +134,38 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
         let enum_ident = cx.ident_of(name.connect("_").as_str());
         let val_ident = cx.ident_of(v.name.node.as_str());
         let body = cx.expr_path(
-          cx.path(DUMMY_SP, vec!(enum_ident, val_ident)));
+          cx.path(v.name.span, vec!(enum_ident, val_ident)));
         let val: u64 = v.value.node;
         let lit = cx.expr_lit(
-          DUMMY_SP,
+          v.value.span,
           ast::LitInt(val, ast::UnsuffixedIntLit(ast::Plus)));
         let arm = ast::Arm {
           attrs: vec!(),
           pats: vec!(
             P(ast::Pat {
               id: ast::DUMMY_NODE_ID,
-              span: DUMMY_SP,
+              span: lit.span,
               node: ast::PatLit(lit),
             })
             ),
             guard: None,
-            body: cx.expr_some(DUMMY_SP, body),
+            body: cx.expr_some(body.span, body),
         };
         arms.push(arm);
       }
       let wild_arm = ast::Arm {
         attrs: vec!(),
-        pats: vec!(cx.pat_wild(DUMMY_SP)),
+        pats: vec!(cx.pat_wild(field.name.span)),
         guard: None,
-        body: cx.expr_none(DUMMY_SP),
+        body: cx.expr_none(field.name.span),
       };
       arms.push(wild_arm);
       let opt_expr = cx.expr_match(
-        DUMMY_SP,
+        field.name.span,
         prim,
         arms);
       cx.expr_method_call(
-        DUMMY_SP,
+        field.name.span,
         opt_expr,
         cx.ident_of("unwrap"),
         Vec::new())
@@ -166,7 +176,7 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
 fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
               fields: &Vec<node::Field>) -> P<ast::Item> {
   let getter_ty = utils::getter_name(cx, path);
-  let new = build_new(cx, path);
+  let new = build_new(cx, path, reg);
   let getters: Vec<P<ast::ImplItem>> =
     FromIterator::from_iter(
       fields.iter()

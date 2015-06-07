@@ -174,9 +174,15 @@ impl<'a> Parser<'a> {
     }
 
     let ty = match self.expect_ident() {
-      Some(ref i) if i.eq(&"reg32") => RegType::RegPrim(node::RegWidth::Reg32, Vec::new()),
-      Some(ref i) if i.eq(&"reg16") => RegType::RegPrim(node::RegWidth::Reg16, Vec::new()),
-      Some(ref i) if i.eq(&"reg8")  => RegType::RegPrim(node::RegWidth::Reg8, Vec::new()),
+      Some(ref i) if i.eq(&"reg32") => RegType::RegPrim(respan(self.last_span,
+                                                               node::RegWidth::Reg32),
+                                                        Vec::new()),
+      Some(ref i) if i.eq(&"reg16") => RegType::RegPrim(respan(self.last_span,
+                                                               node::RegWidth::Reg16),
+                                                        Vec::new()),
+      Some(ref i) if i.eq(&"reg8")  => RegType::RegPrim(respan(self.last_span,
+                                                               node::RegWidth::Reg8),
+                                                        Vec::new()),
       Some(ref i) if i.eq(&"group") => {
         // registers will get filled in later
         RegType::RegUnion(Rc::new(Vec::new()))
@@ -208,7 +214,7 @@ impl<'a> Parser<'a> {
 
     let ty = match ty {
       RegType::RegPrim(width, _) => {
-        match self.parse_fields(width) {
+        match self.parse_fields(width.node) {
           None => return None,
           Some(mut fields) => {
             // Check for overlapping fields
@@ -226,11 +232,11 @@ impl<'a> Parser<'a> {
 
             // Verify fields fit in register
             match fields.last().map(|f| f.high_bit()) {
-              Some(last_bit) if last_bit >= 8*width.size() as u8 => {
+              Some(last_bit) if last_bit >= 8*width.node.size() as u8 => {
                 self.sess.span_diagnostic.span_err(
                   name.span,
                   format!("Width of fields ({} bits) exceeds access size of register ({} bits)",
-                           last_bit+1, 8*width.size()).as_str());
+                           last_bit+1, 8*width.node.size()).as_str());
                 return None;
               },
               _ => {}
