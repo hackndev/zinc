@@ -1,0 +1,24 @@
+use volatile_cell::VolatileCell;
+use core::ops::Drop;
+
+<% @svd.peripherals.each do |peripheral| %>
+ioregs! (<%= peripheral.name %> @ <%= peripheral.base_address %> = {  //! <%= peripheral.description %>
+  <% peripheral.registers.each do |reg| %>
+  <%= reg.offset.to_hex %> => reg<%= reg.size %> <%= reg.name %> {  //! <%= reg.description %>
+    <% reg.fields.each do |f| %>
+    <% unless f.enums.empty? %>
+    <%= f.bits_string %> => <%= f.name %><%= @map_access.call(f.access) %> {  //! <%= f.description %>
+      <% f.enums.each do |e| %>
+      <% if !e.name['RESERVED'] %>
+      <%= e.value %> => <%= e.name %>,  //= <%= e.description %>
+      <% end %>
+      <% end %>
+    }
+    <% else %>
+    <%= f.bits_string %> => <%= f.name %><%= @map_access.call(f.access) %>,  //= <%= f.description %>
+    <% end %>
+    <% end %>
+  },
+  <% end %>
+});
+<% end %>
