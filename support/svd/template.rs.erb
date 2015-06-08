@@ -2,7 +2,7 @@ use volatile_cell::VolatileCell;
 use core::ops::Drop;
 
 <% @svd.peripherals.each do |peripheral| %>
-ioregs! (<%= peripheral.name %> @ <%= peripheral.base_address %> = {  //! <%= peripheral.description %>
+ioregs! (<%= peripheral.name %> @ <%= peripheral.base_address.to_hex %> = {  //! <%= peripheral.description %>
   <% peripheral.registers.each do |reg| %>
   <%= reg.offset.to_hex %> => reg<%= reg.size %> <%= reg.name %> {  //! <%= reg.description %>
     <% reg.fields.each do |f| %>

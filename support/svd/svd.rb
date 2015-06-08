@@ -104,16 +104,24 @@ class Register
   def self.make_dim(elem, peripheral)
     dim = elem.xpath_text('dim').to_i
     dim_increment = elem.xpath_text('dimIncrement').to_some_i
+
+    # From the SVD XML Schema:
+    # <xs:pattern value="[0-9]+\-[0-9]+|[A-Z]-[A-Z]|[_0-9a-zA-Z]+(,\s*[_0-9a-zA-Z]+)+"/>
     dim_index = elem.xpath_text('dimIndex')
-    index = /(\d+)-(\d+)/.match(dim_index)
-    raise RuntimeError.new("unsupported dimIndex #{dim_index} for #{reg.name}") unless index
-    index_from, index_to = index[1].to_i, index[2].to_i
-    raise RuntimeError.new("unsupported dimIndex #{dim_index} with dim #{dim} for #{reg.name}") unless dim == index_to-index_from+1
+    matches = /([0-9]+\-[0-9]+)|([A-Z]-[A-Z])|([_0-9a-zA-Z]+(,\s*[_0-9a-zA-Z]+)+)/.match(dim_index)
+    if matches[1] # number range
+      index_from, index_to = matches[1].split('-').map { |a| a.to_i }
+      raise RuntimeError.new("unsupported dimIndex #{dim_index} with dim #{dim} for #{reg.name}") unless dim == index_to-index_from+1
+      indices = *(index_from..index_to)
+    elsif matches[3] # comma separated
+      indices = dim_index.split('c').map { |a| a.to_i }
+    else
+      raise RuntimeError("unsupported dimIndex #{dim_index} with dim #{dim} for #{reg.name}")
+    end
 
     regs = []
-    ofs = elem.xpath_text('addressOffset').to_some_i
-    idx = index_from
-    dim.times do |i|
+    ofs = elem.xpath_text("addressOffset").to_some_i
+    indices.each do |idx|
       r = Register.new(elem, peripheral)
 
       r.name = r.name.gsub('%s', idx.to_s)
@@ -145,15 +153,21 @@ class Field
     @access = elem.xpath_text('access') if elem.xpath_text('access')
     @access = register.access unless @access
 
-    raise RuntimeError.new("unsupported field schema bitOffset/bitWidth") if elem.at_xpath('bitOffset')
     raise RuntimeError.new("unsupported field schema lsb/msb") if elem.at_xpath('lsb')
 
     bit_range = elem.xpath_text('bitRange')
-    range = /\[(\d+):(\d+)\]/.match(bit_range)
-    @bits_string = if range[1] == range[2]
-      range[1]
+    if bit_range
+      range = /\[(\d+):(\d+)\]/.match(bit_range)
+      @bits_string = if range[1] == range[2]
+                       range[1]
+                     else
+                       "#{range[2]}..#{range[1]}"
+                     end
     else
-      "#{range[2]}..#{range[1]}"
+      bit_offset = elem.at_xpath('bitOffset').content.to_i
+      bit_width = elem.at_xpath('bitWidth').content.to_i
+      bit_end_range = bit_offset + bit_width
+      @bits_string = "#{bit_end_range}..#{bit_offset}"
     end
 
     raise RuntimeError.new("can't derive with enums overriden") if @enums && elem.at_xpath('enumeratedValues')
@@ -175,8 +189,16 @@ class Enum
   def initialize(elem, field)
     @name = elem.xpath_text('name')
     @description = elem.xpath_text('description') if elem.xpath_text('description')
-    @value = elem.xpath_text('value').to_some_i
-
+    # regex used because freescale prepends a '#' before the actual value
+    raw_value = elem.xpath_text('value')
+    if raw_value[0] == '#'
+      raw_value = raw_value[1..-1]
+      value = 0
+      raw_value.each_char.with_index { |bit, index| value |= (bit == '1' ? 1 : 0) << index }
+      @value = value
+    else
+      @value = raw_value.to_some_i
+    end
     @name = "E_#{@name}" if @name[0] =~ /\d/
   end
 end
@@ -204,7 +226,7 @@ end
 
 class Fixnum
   def to_hex
-    '0x' + self.to_s(16)
+    '0x' + self.to_s(16).rjust(2, '0')
   end
 end
 
