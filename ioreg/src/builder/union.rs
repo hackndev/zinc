@@ -86,7 +86,7 @@ impl<'a> BuildUnionTypes<'a> {
   }
 }
 
-fn expr_u64(cx: &ExtCtxt, n: Spanned<u64>) -> P<ast::Expr> {
+fn expr_usize(cx: &ExtCtxt, n: Spanned<u64>) -> P<ast::Expr> {
   cx.expr_lit(n.span, ast::LitInt(n.node as u64, ast::UnsignedIntLit(ast::TyUs)))
 }
 
@@ -100,7 +100,7 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
     1 => base_ty,
     n =>
       cx.ty(reg.count.span,
-            ast::TyFixedLengthVec(base_ty, expr_u64(cx, respan(reg.count.span, n as u64)))),
+            ast::TyFixedLengthVec(base_ty, expr_usize(cx, respan(reg.count.span, n as u64)))),
   }
 }
 
@@ -152,7 +152,7 @@ impl<'a> BuildUnionTypes<'a> {
         let ty: P<ast::Ty> =
           self.cx.ty(
             DUMMY_SP,
-            ast::TyFixedLengthVec(u8_ty, expr_u64(self.cx, respan(DUMMY_SP, length))));
+            ast::TyFixedLengthVec(u8_ty, expr_usize(self.cx, respan(DUMMY_SP, length))));
         dummy_spanned(
           ast::StructField_ {
             kind: ast::NamedField(
