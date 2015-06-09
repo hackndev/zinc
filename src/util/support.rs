@@ -22,7 +22,7 @@
 pub extern fn breakpoint() { unimplemented!() }
 
 /// Call the debugger.
-#[cfg(not(test))]
+#[cfg(all(not(test), target_arch = "arm"))]
 #[no_stack_check]
 #[no_mangle]
 pub extern fn breakpoint() {
@@ -49,7 +49,7 @@ pub extern fn __aeabi_memset(dest: *mut u8, size: usize, value: u32) {
   }
 }
 
-#[cfg(not(test))]
+#[cfg(all(not(test), target_arch = "arm"))]
 #[inline(always)]
 /// NOP instruction
 pub fn nop() {
@@ -61,7 +61,7 @@ pub fn nop() {
 pub fn nop() {
 }
 
-#[cfg(not(test))]
+#[cfg(all(not(test), target_arch = "arm"))]
 #[inline(always)]
 /// WFI instruction
 pub fn wfi() {

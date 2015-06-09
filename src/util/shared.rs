@@ -19,7 +19,25 @@ use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
 use core::marker::{Sync, Send};
 
+#[cfg(feature = "cpu_cortex-m3")]
 use hal::cortex_m3::irq::NoInterrupts;
+#[cfg(feature = "cpu_cortex-m4")]
+use hal::cortex_m4::irq::NoInterrupts;
+// If cpu doesn't have nointerrupts provide dummy implementation
+#[cfg(not(any(feature = "cpu_cortex-m3",
+              feature = "cpu_cortex-m4")))]
+use self::dummy_irq::NoInterrupts;
+
+#[allow(missing_docs)]
+mod dummy_irq {
+  pub struct NoInterrupts;
+
+  impl NoInterrupts {
+    pub fn new() -> NoInterrupts {
+      NoInterrupts;
+    }
+  }
+}
 
 /// This allows safe sharing of state, ensuring access occurs only
 /// when in a critical section.
