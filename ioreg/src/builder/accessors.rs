@@ -129,7 +129,7 @@ fn build_ignoring_state_setter_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::
                 -> P<ast::Item>
 {
   let reg_ty: P<ast::Ty> =
-    cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+    cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let setter_ty = utils::setter_name(cx, path);
 
   let docstring = format!("Create new updater that ignores current value of the `{}` register",

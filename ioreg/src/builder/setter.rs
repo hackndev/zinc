@@ -109,10 +109,10 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
   ).unwrap())
 }
 
-fn build_new_ignoring_state<'a>(cx: &'a ExtCtxt, path: &Vec<String>)
-                 -> P<ast::ImplItem> {
+fn build_new_ignoring_state<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
+    reg: &node::Reg) -> P<ast::ImplItem> {
   let reg_ty: P<ast::Ty> =
-    cx.ty_ident(DUMMY_SP, utils::path_ident(cx, path));
+    cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let setter_ident = utils::setter_name(cx, path);
   utils::unwrap_impl_item(quote_item!(cx,
     impl<'a> $setter_ident<'a> {
