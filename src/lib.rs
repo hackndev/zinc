@@ -48,7 +48,8 @@ STM32F403/407).
 #![feature(no_std)]
 
 #[macro_use] extern crate core;
-#[cfg(not(test))] extern crate rlibc;
+#[cfg(target_os = "none")]
+extern crate rlibc;
 
 #[macro_use] #[no_link] extern crate ioreg;
 extern crate volatile_cell;
@@ -66,7 +67,7 @@ pub mod os;
 /// for some items in the `std` namespace.
 ///
 /// TODO(farcaller): clean up when fixed.
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub mod std {
   pub use core::cmp;  // used for #[derive(Eq)] until fixed in rust.
   pub use core::option;

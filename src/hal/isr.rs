@@ -21,7 +21,6 @@
 #[cfg(feature = "cpu_cortex-m3")]
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
 
-// TODO(mcoffin): create cortex-m4 isr module
 #[cfg(feature = "cpu_cortex-m4")]
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m4;
 

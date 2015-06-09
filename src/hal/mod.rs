@@ -48,5 +48,5 @@ pub mod stack;
 pub mod timer;
 pub mod uart;
 
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 pub mod isr;

@@ -34,7 +34,7 @@ mod dummy_irq {
 
   impl NoInterrupts {
     pub fn new() -> NoInterrupts {
-      NoInterrupts;
+      NoInterrupts
     }
   }
 }

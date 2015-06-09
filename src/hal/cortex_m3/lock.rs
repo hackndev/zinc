@@ -29,7 +29,7 @@ pub struct Guard<'a>(&'a Lock);
 
 pub static STATIC_LOCK: Lock = Lock { locked: Unsafe { value: 0, marker1: InvariantType } };
 
-#[cfg(not(test))]
+#[cfg(target_arch = "arm")]
 #[inline(always)]
 unsafe fn exclusive_load(addr: *const u32) -> u32 {
   let mut value: u32;
@@ -42,10 +42,10 @@ unsafe fn exclusive_load(addr: *const u32) -> u32 {
   value
 }
 
-#[cfg(test)]
+#[cfg(not(target_arch = "arm"))]
 unsafe fn exclusive_load(addr: *const u32) -> u32 { unimplemented!() }
 
-#[cfg(not(test))]
+#[cfg(target_arch = "arm")]
 #[inline(always)]
 unsafe fn exclusive_store(addr: *mut u32, value: u32) -> bool {
   let mut success: u32;
@@ -58,7 +58,7 @@ unsafe fn exclusive_store(addr: *mut u32, value: u32) -> bool {
   success == 0
 }
 
-#[cfg(test)]
+#[cfg(not(target_arch = "arm"))]
 unsafe fn exclusive_store(addr: *mut u32, value: u32) -> bool {
   unimplemented!()
 }

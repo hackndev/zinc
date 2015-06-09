@@ -15,25 +15,15 @@
 
 //! Support functions currently required by the linker for bare-metal targets.
 
-#[doc(hidden)]
-#[cfg(test)]
-#[no_stack_check]
-#[no_mangle]
-pub extern fn breakpoint() { unimplemented!() }
-
-/// Call the debugger.
-#[cfg(all(not(test), target_arch = "arm"))]
-#[no_stack_check]
-#[no_mangle]
-pub extern fn breakpoint() {
-  unsafe { asm!("bkpt") }
-}
+pub use core::intrinsics::breakpoint;
 
 /// Call the debugger and halts execution.
 #[no_stack_check]
 #[no_mangle]
 pub extern fn abort() -> ! {
-  breakpoint();
+  unsafe {
+    breakpoint();
+  }
   loop {}
 }
 
@@ -49,26 +39,26 @@ pub extern fn __aeabi_memset(dest: *mut u8, size: usize, value: u32) {
   }
 }
 
-#[cfg(all(not(test), target_arch = "arm"))]
+#[cfg(target_arch = "arm")]
 #[inline(always)]
 /// NOP instruction
 pub fn nop() {
   unsafe { asm!("nop" :::: "volatile"); }
 }
 
-#[cfg(test)]
+#[cfg(not(target_arch = "arm"))]
 /// NOP instruction (mock)
 pub fn nop() {
 }
 
-#[cfg(all(not(test), target_arch = "arm"))]
+#[cfg(target_arch = "arm")]
 #[inline(always)]
 /// WFI instruction
 pub fn wfi() {
     unsafe { asm!("wfi" :::: "volatile"); }
 }
 
-#[cfg(test)]
+#[cfg(not(target_arch = "arm"))]
 /// WFI instruction (mock)
 pub fn wfi() {
 }
