@@ -18,7 +18,11 @@
 
 #![allow(missing_docs)]
 
+#[cfg(feature = "cpu_cortex-m3")]
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
+
+#[cfg(feature = "cpu_cortex-m4")]
+#[path="cortex_m3/isr.rs"] pub mod isr_cortex_m4;
 
 #[cfg(feature = "mcu_lpc17xx")]
 #[path="lpc17xx/isr.rs"] pub mod isr_lpc17xx;

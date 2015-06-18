@@ -9,12 +9,15 @@ name = "zinc"
 crate-type = ["lib"]
 
 [features]
-mcu_lpc17xx = []
-mcu_stm32f4 = []
-mcu_stm32l1 = []
-mcu_k20 = []
-mcu_tiva_c = []
-multitasking = []
+cpu_cortex-m3 = []
+cpu_cortex-m4 = []
+
+mcu_lpc17xx = ["cpu_cortex-m3"]
+mcu_stm32f4 = ["cpu_cortex-m4"]
+mcu_stm32l1 = ["cpu_cortex-m3"]
+mcu_k20 = ["cpu_cortex-m4"]
+mcu_tiva_c = ["cpu_cortex-m4"]
+multitasking = ["cpu_cortex-m4"]
 
 [target.thumbv7m-none-eabi.dependencies.core]
 git = "https://github.com/hackndev/rust-libcore"

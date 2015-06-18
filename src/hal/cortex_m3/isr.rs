@@ -34,7 +34,6 @@ extern {
   fn isr_reserved_1();
 }
 
-#[cfg(not(test))]
 #[no_mangle]
 pub unsafe extern fn isr_handler_wrapper() {
   asm!(".weak isr_nmi, isr_hardfault, isr_mmfault, isr_busfault

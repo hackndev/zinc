@@ -28,17 +28,17 @@ pub fn switch_context() {
 }
 
 /// Sets task stack pointer (PSP).
-#[cfg(not(test))]
+#[cfg(target_arch = "arm")]
 #[inline(always)]
 pub fn set_task_stack_pointer(val: u32) {
   unsafe { asm!("msr psp, $0" :: "r"(val) :: "volatile") };
 }
 
-#[cfg(test)]
+#[cfg(not(target_arch = "arm"))]
 pub fn set_task_stack_pointer(val: u32) { unimplemented!() }
 
 /// Returns task stack pointer (PSP).
-#[cfg(not(test))]
+#[cfg(target_arch = "arm")]
 #[inline(always)]
 pub fn get_task_stack_pointer() -> u32 {
   let mut val: u32;
@@ -46,11 +46,11 @@ pub fn get_task_stack_pointer() -> u32 {
   val
 }
 
-#[cfg(test)]
+#[cfg(not(target_arch = "arm"))]
 pub fn get_task_stack_pointer() -> u32 { unimplemented!() }
 
 /// Returns current stack pointer (SP, which may be PSP or MSP).
-#[cfg(not(test))]
+#[cfg(target_arch = "arm")]
 #[inline(always)]
 pub fn get_current_stack_pointer() -> u32 {
   let mut val: u32;
@@ -58,7 +58,7 @@ pub fn get_current_stack_pointer() -> u32 {
   val
 }
 
-#[cfg(test)]
+#[cfg(not(target_arch = "arm"))]
 pub fn get_current_stack_pointer() -> u32 { unimplemented!() }
 
 /// State, that's saved by hardware upon entering an ISR.
@@ -92,11 +92,11 @@ impl SavedState {
 // TODO(farcaller): this should actually kill the task.
 // TODO(bgamari): It should also unlock anything the task holds
 /// Default handler for task that tries to return.
-#[cfg(not(test))]
+#[cfg(target_os = "none")]
 unsafe fn task_finished() {
-  asm!("bkpt" :::: "volatile");
+  core::intrinsics::breakpoint();
 }
 
-#[cfg(test)]
+#[cfg(not(target_os = "none"))]
 unsafe fn task_finished() { unimplemented!() }
 
