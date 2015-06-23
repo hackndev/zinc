@@ -14,8 +14,12 @@ if [ "$PLATFORM" == "native" ]; then
 
   echo " * generating coverage data"
   kcov cov/ target/debug/zinc-*
+  support/fixcov.py src/ cov/zinc-????????????????/cobertura.xml
   kcov cov/ ioreg/target/debug/test-*
+  support/fixcov.py ioreg/src/ cov/test-????????????????/cobertura.xml
   kcov cov/ platformtree/target/debug/platformtree-*
+  support/fixcov.py platformtree/src/ cov/platformtree-????????????????/cobertura.xml
+
 else
   # build cross-compiled lib and examples
   case "$PLATFORM" in
