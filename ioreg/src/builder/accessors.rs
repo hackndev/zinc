@@ -127,7 +127,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
 {
   let reg_ty = cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let fn_name =
-    cx.ident_of((String::from_str("set_")+field.name.node.as_str()).as_str());
+    cx.ident_of((String::from("set_")+field.name.node.as_str()).as_str());
   let field_ty: P<ast::Ty> =
     cx.ty_path(utils::field_type_path(cx, path, reg, field));
   let setter_ty = utils::setter_name(cx, path);
@@ -194,7 +194,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
 {
   let reg_ty = cx.ty_ident(reg.name.span, utils::path_ident(cx, path));
   let fn_name =
-    cx.ident_of((String::from_str("clear_")+field.name.node.as_str()).as_str());
+    cx.ident_of((String::from("clear_")+field.name.node.as_str()).as_str());
   let setter_ty = utils::setter_name(cx, path);
   utils::unwrap_impl_item(if field.count.node == 1 {
     quote_item!(cx,
