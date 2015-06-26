@@ -9,9 +9,11 @@ name = "zinc"
 crate-type = ["lib"]
 
 [features]
+cpu_cortex-m0 = []
 cpu_cortex-m3 = []
 cpu_cortex-m4 = []
 
+mcu_lpc11xx = ["cpu_cortex-m0"]
 mcu_lpc17xx = ["cpu_cortex-m3"]
 mcu_stm32f4 = ["cpu_cortex-m4"]
 mcu_stm32l1 = ["cpu_cortex-m3"]
@@ -33,6 +35,13 @@ path = "./ioreg"
 
 [dependencies.volatile_cell]
 path = "./volatile_cell"
+
+[dev-dependencies.volatile_cell]
+path = "./volatile_cell"
+features = ["replayer"]
+
+[dev-dependencies]
+expectest = "*"
 
 [dependencies.rlibc]
 git = "https://github.com/mcoffin/rlibc"
