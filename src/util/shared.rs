@@ -33,6 +33,7 @@ mod dummy_irq {
   pub struct NoInterrupts;
 
   impl NoInterrupts {
+    #[allow(dead_code)]
     pub fn new() -> NoInterrupts {
       NoInterrupts
     }
