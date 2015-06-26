@@ -13,6 +13,9 @@ AC_SUBST(CC, $GCC)
 AC_ARG_VAR(PLATFORM, [Platform for which to build])
 
 case $PLATFORM in
+lpc11xx)
+  platform_target=thumbv6-none-eabi
+  ;;
 lpc17xx | stm32l1)
 	platform_target=thumbv7m-none-eabi
 	;;
