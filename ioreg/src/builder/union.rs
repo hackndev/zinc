@@ -229,11 +229,18 @@ impl<'a> BuildUnionTypes<'a> {
       }
     ).unwrap();
 
-    let copy_impl = quote_item!(self.cx, impl ::core::marker::Copy for $name {}).unwrap();
+    let copy_impl = quote_item!(
+        self.cx, impl ::core::marker::Copy for $name {}).unwrap();
 
     let item_address = reg.address;
+    let docstring = format!("Placement getter for register {} at address 0x{:x}",
+                            reg.name.node,
+                            item_address);
+    let doc_attr = utils::doc_attribute(self.cx, utils::intern_string(
+        self.cx, docstring));
     let item_getter = quote_item!(self.cx,
       #[allow(non_snake_case, dead_code)]
+      $doc_attr
       pub fn $name() -> &'static $name {
           unsafe { ::core::intrinsics::transmute($item_address as usize) }
       }
