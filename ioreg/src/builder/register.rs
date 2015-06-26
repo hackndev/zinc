@@ -77,6 +77,9 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
           variants.iter().map(|v| P(build_enum_variant(cx, v)))),
       };
       let attrs: Vec<ast::Attribute> = vec!(
+        utils::list_attribute(cx, "derive",
+                              vec!("PartialEq"),
+                              field.name.span),
         utils::list_attribute(cx, "allow",
                               vec!("dead_code",
                                    "non_camel_case_types",
