@@ -18,13 +18,17 @@
 #![feature(core, no_std, core_intrinsics)]
 #![no_std]
 
-#[cfg(feature="replayer")] extern crate hamcrest;
+extern crate core;
+
+#[cfg(feature="replayer")] #[macro_use(expect)] extern crate expectest;
 #[cfg(feature="replayer")] #[macro_use] extern crate std;
 
 #[cfg(feature="replayer")] use std::vec::Vec;
-#[cfg(feature="replayer")] use hamcrest::{assert_that, is, equal_to};
-
-extern crate core;
+#[cfg(feature="replayer")] use expectest::prelude::*;
+#[cfg(feature="replayer")] use std::string::String;
+#[cfg(feature="replayer")] use std::fmt;
+#[cfg(feature="replayer")] use core::cmp::PartialEq;
+#[cfg(feature="replayer")] use core::clone::Clone;
 
 #[cfg(not(feature="replayer"))] use core::intrinsics::{volatile_load, volatile_store};
 #[cfg(feature="replayer")] use core::intrinsics::transmute;
@@ -119,6 +123,18 @@ struct ReplayRecord {
   did_read: bool,
   actual_address: usize,
   actual_value: u32,
+
+  loc: expectest::core::SourceLocation,
+}
+
+#[cfg(feature="replayer")]
+impl core::fmt::Display for ReplayRecord {
+  fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+    match self.is_read {
+      true  => write!(f, "read 0x{:x} from 0x{:x}", self.value, self.address),
+      false => write!(f, "write 0x{:x} to 0x{:x}", self.value, self.address),
+    }
+  }
 }
 
 #[cfg(feature="replayer")]
@@ -136,7 +152,8 @@ impl VolatileCellReplayer {
     }
   }
 
-  pub fn expect_read(&mut self, address: usize, value: u32) {
+  pub fn expect_read(&mut self, address: usize, value: u32,
+      loc: expectest::core::SourceLocation) {
     self.replays.push(ReplayRecord {
       is_read: true,
       address: address,
@@ -145,10 +162,12 @@ impl VolatileCellReplayer {
       did_read: false,
       actual_address: 0,
       actual_value: 0,
+      loc: loc,
     });
   }
 
-  pub fn expect_write(&mut self, address: usize, value: u32) {
+  pub fn expect_write(&mut self, address: usize, value: u32,
+      loc: expectest::core::SourceLocation) {
     self.replays.push(ReplayRecord {
       is_read: false,
       address: address,
@@ -157,32 +176,36 @@ impl VolatileCellReplayer {
       did_read: false,
       actual_address: 0,
       actual_value: 0,
+      loc: loc,
     });
   }
 
-  pub fn verify(&self) {
-    assert_that(self.current_replay, is(equal_to(self.replays.len())));
+  pub fn verify(&self, loc: expectest::core::SourceLocation) {
+    expect(self.current_replay).location(loc).to(
+      be_equal_to_with_context(
+          self.replays.len(),
+          format!("expected {} replays, performed {}",
+              self.replays.len(), self.current_replay)));
 
-    let mut i = 1usize;
     for ref replay in &*self.replays {
-      println!("replay {}", i);
-      println!("replayed?");
-      assert_that(replay.replayed, is(equal_to(true)));
-      println!("is read?");
-      assert_that(replay.is_read, is(equal_to(replay.did_read)));
-      println!("address correct?");
-      assert_that(replay.address, is(equal_to(replay.actual_address)));
+      expect(replay.replayed).location(replay.loc).to(be_equal_to_with_context(true,
+        format!("expected replay {} to be performed, was not", replay)));
+      expect(replay.is_read).location(replay.loc).to(be_equal_to_with_context(replay.did_read,
+        format!("expected replay to be {} replay, was {} replay",
+          if replay.is_read {"read"} else {"write"},
+          if replay.is_read {"write"} else {"read"})));
+      expect(replay.address).location(replay.loc).to(be_equal_to_with_context(replay.actual_address,
+        format!("expected replay address 0x{:x}, was 0x{:x}", replay.address, replay.actual_address)));
       if !replay.is_read {
-        println!("value written is correct?");
-        assert_that(replay.value, is(equal_to(replay.actual_value)));
+        expect(replay.value).location(replay.loc).to(be_equal_to_with_context(replay.actual_value,
+          format!("expected replay to write 0x{:x}, written 0x{:x}", replay.value, replay.actual_value)));
       }
-      i += 1;
     }
   }
 
   pub fn get_cell(&mut self, address: usize) -> u32 {
     if self.current_replay >= self.replays.len() {
-      panic!("get_cell({}) faled, current replay: {}, total replays: {}",
+      panic!("get_cell(0x{:x}) faled, current replay: {}, total replays: {}",
         address, self.current_replay+1, self.replays.len());
     }
     let replay: &mut ReplayRecord = &mut self.replays[self.current_replay];
@@ -197,7 +220,7 @@ impl VolatileCellReplayer {
 
   pub fn set_cell(&mut self, address: usize, value: u32) {
     if self.current_replay >= self.replays.len() {
-      panic!("set_cell({}, {}) faled, current replay: {}, total replays: {}",
+      panic!("set_cell(0x{:x}, 0x{:x}) faled, current replay: {}, total replays: {}",
         address, value, self.current_replay+1, self.replays.len());
     }
     let replay: &mut ReplayRecord = &mut self.replays[self.current_replay];
@@ -218,4 +241,53 @@ pub fn set_replayer(replayer: &mut VolatileCellReplayer) {
   unsafe {
     GlobalReplayer = replayer;
   }
+}
+
+struct BeEqualToWithContext<E> {
+    expected: E,
+    context: String,
+}
+
+fn be_equal_to_with_context<E>(expected: E, context: String) -> BeEqualToWithContext<E> {
+    BeEqualToWithContext {
+        expected: expected,
+        context: context,
+    }
+}
+
+impl<A, E> Matcher<A, E> for BeEqualToWithContext<E>
+    where
+        A: PartialEq<E> + fmt::Debug,
+        E: fmt::Debug {
+
+    fn failure_message(&self, _: expectest::core::Join, _: &A) -> String {
+        self.context.clone()
+    }
+
+    fn matches(&self, actual: &A) -> bool {
+        *actual == self.expected
+    }
+}
+
+#[macro_export]
+macro_rules! expect_volatile_read {
+    ($replayer: ident, $addr: expr, $val: expr) => (
+        $replayer.expect_read($addr, $val,
+          expectest::core::SourceLocation::new(file!(), line!()))
+    );
+}
+
+#[macro_export]
+macro_rules! expect_volatile_write {
+    ($replayer: ident, $addr: expr, $val: expr) => (
+        $replayer.expect_write($addr, $val,
+          expectest::core::SourceLocation::new(file!(), line!()))
+    );
+}
+
+#[macro_export]
+macro_rules! expect_replayer_valid {
+    ($replayer: ident) => (
+      $replayer.verify(expectest::core::SourceLocation::new(file!(), line!()))
+    );
 }

@@ -13,7 +13,7 @@ doc = true
 crate-type = ["rlib"]
 
 [features]
-replayer = ["hamcrest"]
+replayer = ["expectest"]
 
 [target.thumbv6-none-eabi.dependencies.core]
 git = "https://github.com/hackndev/rust-libcore"
@@ -24,6 +24,5 @@ git = "https://github.com/hackndev/rust-libcore"
 [target.thumbv7em-none-eabi.dependencies.core]
 git = "https://github.com/hackndev/rust-libcore"
 
-[dependencies.hamcrest]
-git = "https://github.com/carllerche/hamcrest-rust"
+[dependencies.expectest]
 optional = true
