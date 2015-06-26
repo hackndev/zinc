@@ -245,6 +245,7 @@ ACCESS_MAP = {
 }
 
 puts tpl.evaluate(
+  filename: fn,
   svd: svd,
   map_access: Proc.new do |i|
     name = ACCESS_MAP[i]
