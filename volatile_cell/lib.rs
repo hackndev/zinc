@@ -29,6 +29,7 @@ extern crate core;
 #[cfg(feature="replayer")] use std::fmt;
 #[cfg(feature="replayer")] use core::cmp::PartialEq;
 #[cfg(feature="replayer")] use core::clone::Clone;
+#[cfg(feature="replayer")] use core::cell::RefCell;
 
 #[cfg(not(feature="replayer"))] use core::intrinsics::{volatile_load, volatile_store};
 #[cfg(feature="replayer")] use core::intrinsics::transmute;
@@ -72,13 +73,13 @@ impl<T> VolatileCell<T> {
 impl VolatileCell<u32> {
   pub fn get(&self) -> u32 {
     unsafe {
-      (*GlobalReplayer).get_cell(transmute(&self.value))
+      GLOBAL_REPLAYER.with(|gr| { gr.borrow_mut().get_cell(transmute(&self.value)) })
     }
   }
 
   pub fn set(&self, value: u32) {
     unsafe {
-      (*GlobalReplayer).set_cell(transmute(&self.value), value)
+      GLOBAL_REPLAYER.with(|gr| { gr.borrow_mut().set_cell(transmute(&self.value), value) })
     }
   }
 }
@@ -87,13 +88,13 @@ impl VolatileCell<u32> {
 impl VolatileCell<u16> {
   pub fn get(&self) -> u16 {
     unsafe {
-      (*GlobalReplayer).get_cell(transmute(&self.value)) as u16
+      GLOBAL_REPLAYER.with(|gr| { gr.borrow_mut().get_cell(transmute(&self.value)) }) as u16
     }
   }
 
   pub fn set(&self, value: u16) {
     unsafe {
-      (*GlobalReplayer).set_cell(transmute(&self.value), value as u32)
+      GLOBAL_REPLAYER.with(|gr| { gr.borrow_mut().set_cell(transmute(&self.value), value as u32) })
     }
   }
 }
@@ -102,13 +103,13 @@ impl VolatileCell<u16> {
 impl VolatileCell<u8> {
   pub fn get(&self) -> u8 {
     unsafe {
-      (*GlobalReplayer).get_cell(transmute(&self.value)) as u8
+      GLOBAL_REPLAYER.with(|gr| { gr.borrow_mut().get_cell(transmute(&self.value)) }) as u8
     }
   }
 
   pub fn set(&self, value: u8) {
     unsafe {
-      (*GlobalReplayer).set_cell(transmute(&self.value), value as u32)
+      GLOBAL_REPLAYER.with(|gr| { gr.borrow_mut().set_cell(transmute(&self.value), value as u32) })
     }
   }
 }
@@ -234,13 +235,22 @@ impl VolatileCellReplayer {
 }
 
 #[cfg(feature="replayer")]
-static mut GlobalReplayer: *mut VolatileCellReplayer = 0 as *mut VolatileCellReplayer;
+thread_local!(static GLOBAL_REPLAYER: RefCell<VolatileCellReplayer> = RefCell::new(VolatileCellReplayer::new()));
 
 #[cfg(feature="replayer")]
-pub fn set_replayer(replayer: &mut VolatileCellReplayer) {
-  unsafe {
-    GlobalReplayer = replayer;
-  }
+pub fn set_replayer(replayer: VolatileCellReplayer) {
+  GLOBAL_REPLAYER.with(|gr| {
+    let mut bm = gr.borrow_mut();
+    *bm = replayer;
+  });
+}
+
+#[cfg(feature="replayer")]
+pub fn with_mut_replayer<F>(f: F) where F: core::ops::FnOnce(&mut VolatileCellReplayer) {
+  GLOBAL_REPLAYER.with(|gr| {
+    let mut bm = gr.borrow_mut();
+    f(&mut *bm);
+  });
 }
 
 struct BeEqualToWithContext<E> {
@@ -271,23 +281,34 @@ impl<A, E> Matcher<A, E> for BeEqualToWithContext<E>
 
 #[macro_export]
 macro_rules! expect_volatile_read {
-    ($replayer: ident, $addr: expr, $val: expr) => (
-        $replayer.expect_read($addr, $val,
-          expectest::core::SourceLocation::new(file!(), line!()))
-    );
+  ($addr: expr, $val: expr) => (
+    $crate::with_mut_replayer(|r| {
+      r.expect_read($addr, $val, expectest::core::SourceLocation::new(file!(), line!()));
+    })
+  );
 }
 
 #[macro_export]
 macro_rules! expect_volatile_write {
-    ($replayer: ident, $addr: expr, $val: expr) => (
-        $replayer.expect_write($addr, $val,
-          expectest::core::SourceLocation::new(file!(), line!()))
-    );
+  ($addr: expr, $val: expr) => (
+    $crate::with_mut_replayer(|r| {
+      r.expect_write($addr, $val, expectest::core::SourceLocation::new(file!(), line!()));
+    })
+  );
 }
 
 #[macro_export]
 macro_rules! expect_replayer_valid {
-    ($replayer: ident) => (
-      $replayer.verify(expectest::core::SourceLocation::new(file!(), line!()))
-    );
+  () => (
+    $crate::with_mut_replayer(|r| {
+      r.verify(expectest::core::SourceLocation::new(file!(), line!()));
+    })
+  );
+}
+
+#[macro_export]
+macro_rules! init_replayer {
+  () => (
+    set_replayer(VolatileCellReplayer::new());
+  );
 }

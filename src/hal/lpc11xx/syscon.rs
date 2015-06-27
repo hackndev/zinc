@@ -78,22 +78,25 @@ mod test {
 
   #[test]
   fn returns_isr_location() {
-    let mut replayer = VolatileCellReplayer::new();
-    set_replayer(&mut replayer);
+    init_replayer!();
 
-    expect_volatile_read!(replayer, 0x4004_8000, 0b10);
+    expect_volatile_read!(0x4004_8000, 0b10);
 
     expect!(get_isr_location()).to(be_equal_to(ISRLocation::Flash));
 
-    expect_replayer_valid!(replayer);
+    expect_replayer_valid!();
   }
 
   #[test]
   fn sets_isr_location() {
-    let mut replayer = VolatileCellReplayer::new();
-    set_replayer(&mut replayer);
+    init_replayer!();
 
-    expect_volatile_write!(replayer, 0x4004_8000, 0b00);
+    expect_volatile_write!(0x4004_8000, 2);
+
+    set_isr_location(ISRLocation::Flash);
+
+    expect_replayer_valid!();
+  }
 
     set_isr_location(ISRLocation::Bootloader);
 
@@ -102,33 +105,32 @@ mod test {
 
   #[test]
   fn initialize_system_clock() {
-    let mut replayer = VolatileCellReplayer::new();
-    set_replayer(&mut replayer);
+    init_replayer!();
 
     // read PDRUNCFG, returns reset value
-    expect_volatile_read!(replayer,  0x4004_8238, 0x0000_EDF0);
+    expect_volatile_read!( 0x4004_8238, 0x0000_EDF0);
     // write PDRUNCFG, set SYSOSC_PD to POWERED
-    expect_volatile_write!(replayer, 0x4004_8238, 0x0000_EDD0);
+    expect_volatile_write!(0x4004_8238, 0x0000_EDD0);
 
     // write SYSOSCCTRL, set BYPASS to off, FREQRANGE 1-20MHz
-    expect_volatile_write!(replayer, 0x4004_8020, 0x0000_0000);
+    expect_volatile_write!(0x4004_8020, 0x0000_0000);
 
     // write SYSPLLCLKSEL, set SEL to system oscillator
-    expect_volatile_write!(replayer, 0x4004_8040, 0x0000_0001);
+    expect_volatile_write!(0x4004_8040, 0x0000_0001);
 
     // write SYSPLLCLKUEN, set update/no change/update
-    expect_volatile_write!(replayer, 0x4004_8044, 0x0000_0001);
-    expect_volatile_write!(replayer, 0x4004_8044, 0x0000_0000);
-    expect_volatile_write!(replayer, 0x4004_8044, 0x0000_0001);
+    expect_volatile_write!(0x4004_8044, 0x0000_0001);
+    expect_volatile_write!(0x4004_8044, 0x0000_0000);
+    expect_volatile_write!(0x4004_8044, 0x0000_0001);
 
     // poll-read SYSPLLCLKUEN until returns update
-    expect_volatile_read!(replayer,  0x4004_8044, 0x0000_0000);
-    expect_volatile_read!(replayer,  0x4004_8044, 0x0000_0000);
-    expect_volatile_read!(replayer,  0x4004_8044, 0x0000_0000);
-    expect_volatile_read!(replayer,  0x4004_8044, 0x0000_0001);
+    expect_volatile_read!( 0x4004_8044, 0x0000_0000);
+    expect_volatile_read!( 0x4004_8044, 0x0000_0000);
+    expect_volatile_read!( 0x4004_8044, 0x0000_0000);
+    expect_volatile_read!( 0x4004_8044, 0x0000_0001);
 
     init_system_clock();
 
-    expect_replayer_valid!(replayer);
+    expect_replayer_valid!();
   }
 }
