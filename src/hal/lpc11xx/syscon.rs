@@ -40,8 +40,8 @@ pub fn get_isr_location() -> ISRLocation {
 /// Re-maps interrupt vectors to either RAM or Flash.
 pub fn set_isr_location(loc: ISRLocation) {
   regs::SYSCON().sysmemremap.ignoring_state().set_map(match loc {
-    ISRLocation::Bootloader => regs::SYSCON_sysmemremap_map::BOOT_LOADER_MODE_IN,
     ISRLocation::RAM        => regs::SYSCON_sysmemremap_map::USER_RAM_MODE_INTER,
+    ISRLocation::Flash      => regs::SYSCON_sysmemremap_map::USER_FLASH_MODE_INT,
     _ => panic!(),
   });
 }
@@ -75,6 +75,9 @@ mod test {
   use volatile_cell::{VolatileCellReplayer, set_replayer};
   use expectest::prelude::*;
   use expectest;
+  use std::thread;
+  use std::string::String;
+  use std::convert::From;
 
   #[test]
   fn returns_isr_location() {
@@ -98,9 +101,18 @@ mod test {
     expect_replayer_valid!();
   }
 
-    set_isr_location(ISRLocation::Bootloader);
+  #[test]
+  fn fails_to_set_isr_location_to_bootloader() {
+    let j = thread::Builder::new()
+        .name(String::from("fails_to_set_isr_location_to_bootloader"))
+        .spawn(|| {
+      init_replayer!();
+      expect_volatile_write!(0x4004_8000, 0);
+      set_isr_location(ISRLocation::Bootloader);
+    }).unwrap();
+    let res = j.join();
 
-    expect_replayer_valid!(replayer);
+    expect!(res.is_err()).to(be_equal_to(true));
   }
 
   #[test]
