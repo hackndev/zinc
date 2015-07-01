@@ -134,8 +134,8 @@ impl Reg {
 
 /// Size of registers of register group in bytes
 pub fn regs_size(regs: &Vec<Reg>) -> u64 {
-  match regs.iter().max_by(|r| r.offset) {
-    Some(last) => last.offset + last.ty.size(),
+  match regs.iter().map(|r| r.offset + r.ty.size()).max() {
+    Some(last) => last,
     None => 0,
   }
 }

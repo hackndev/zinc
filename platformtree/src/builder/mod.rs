@@ -159,7 +159,9 @@ impl Builder {
     ));
 
     let mut stmts = vec!(init_stack_stmt, init_data_stmt);
-    stmts.push_all(self.main_stmts.as_slice());
+    for s in self.main_stmts.clone().into_iter() {
+      stmts.push(s);
+    }
 
     let body = cx.block(DUMMY_SP, stmts, None);
 
@@ -219,7 +221,9 @@ impl Builder {
     let attr_no_mangle = cx.attribute(span, cx.meta_word(
         span, InternedString::new("no_mangle")));
     let mut attrs = vec!(attr_no_mangle);
-    attrs.push_all(local_attrs);
+    for a in local_attrs {
+      attrs.push(a.clone());
+    }
 
     P(ast::Item {
       ident: cx.ident_of(name),

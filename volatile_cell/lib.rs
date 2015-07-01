@@ -15,7 +15,7 @@
 
 //! A cell that with volatile setter and getter.
 
-#![feature(core, no_std)]
+#![feature(core, no_std, core_intrinsics)]
 #![no_std]
 
 #[cfg(feature="replayer")] extern crate hamcrest;

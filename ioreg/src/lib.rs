@@ -328,8 +328,8 @@ N => NAME
 */
 
 #![feature(quote, plugin_registrar, rustc_private, collections, core, convert)]
-
 #![feature(plugin)]
+
 #![plugin(syntaxext_lint)]
 
 extern crate rustc;
