@@ -2,6 +2,8 @@ __aeabi_unwind_cpp_pr0 = abort;
 __aeabi_unwind_cpp_pr1 = abort;
 __aeabi_unwind_cpp_pr2 = abort;
 
+__aeabi_memclr4 = __aeabi_memclr;
+
 SECTIONS
 {
     .vector : ALIGN(4)
