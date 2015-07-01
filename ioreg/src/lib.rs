@@ -327,7 +327,7 @@ N => NAME
 
 */
 
-#![feature(quote, plugin_registrar, rustc_private, collections, core, convert)]
+#![feature(quote, plugin_registrar, rustc_private, convert)]
 #![feature(plugin)]
 
 #![plugin(syntaxext_lint)]
