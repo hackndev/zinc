@@ -39,6 +39,16 @@ pub extern fn __aeabi_memset(dest: *mut u8, size: usize, value: u32) {
   }
 }
 
+#[doc(hidden)]
+#[no_stack_check]
+#[no_mangle]
+pub extern fn __aeabi_memclr(dest: *mut u8, size: usize) {
+  unsafe {
+    use core::intrinsics::volatile_set_memory;
+    volatile_set_memory(dest, 0, size);
+  }
+}
+
 #[cfg(target_arch = "arm")]
 #[inline(always)]
 /// NOP instruction
