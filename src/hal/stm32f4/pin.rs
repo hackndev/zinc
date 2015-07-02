@@ -85,30 +85,28 @@ impl Pin {
   #[inline(always)]
   pub fn setup(&self) {
     use self::Function::*;
+    use self::reg::GPIO_moder_mode as RegMode;
 
     self.port.clock().enable();  // TODO(farcaller): should be done once per port
 
-    let offset: u32 = self.pin as u32 * 2;
+    let offset = self.pin as usize;
     let gpreg = self.get_reg();
 
-    let bits: u32 = match self.function {
-      GPIOOut => 0b01 << offset as usize,
-      GPIOIn  => 0b00 << offset as usize,
+    let val = match self.function {
+      GPIOOut => RegMode::Output,
+      GPIOIn  => RegMode::Input,
       _       => unsafe { abort() },  // FIXME(farcaller): not implemented
     };
-    let mask: u32 = !(0b11 << offset as usize);
-    let val: u32 = gpreg.MODER();
 
-    gpreg.set_MODER(val & mask | bits);
+    gpreg.moder.set_mode(offset, val);
   }
 
   /// Toggles the GPIO value
   pub fn toggle(&self) {
-    let bit: u32 = 1 << self.pin as usize;
     let reg = self.get_reg();
-    let val: u32 = reg.ODR();
+    let offset = self.pin as usize;
 
-    reg.set_ODR(val ^ bit);
+    reg.odr.set_od(offset, !reg.odr.od(offset));
   }
 
   fn get_reg(&self) -> &reg::GPIO {
@@ -129,23 +127,23 @@ impl Pin {
 impl Gpio for Pin {
   /// Sets output GPIO value to high.
   fn set_high(&self) {
-    let bit: u32 = 1 << self.pin as usize;
-    self.get_reg().set_BSRR(bit);
+    let offset = self.pin as usize;
+    self.get_reg().bsrr.set_bs(offset, true);
   }
 
   /// Sets output GPIO value to low.
   fn set_low(&self) {
-    let bit: u32 = 1 << (self.pin as usize + 16);
-    self.get_reg().set_BSRR(bit);
+    let offset = self.pin as usize;
+    self.get_reg().bsrr.set_br(offset, true);
   }
 
   /// Returns input GPIO level.
   fn level(&self) -> GpioLevel {
-    let bit: u32 = 1 << (self.pin as usize);
+    let offset = self.pin as usize;
     let reg = self.get_reg();
 
-    match reg.IDR() & bit {
-      0 => GpioLevel::Low,
+    match reg.idr.id(offset) {
+      false => GpioLevel::Low,
       _ => GpioLevel::High,
     }
   }
@@ -154,35 +152,75 @@ impl Gpio for Pin {
   fn set_direction(&self, new_mode: GpioDirection) {
     // TODO(darayus): Verify that this works
     // TODO(darayus): Change the Pin.function field to the new mode
-    let offset: u32 = self.pin as u32 * 2;
-    let gpreg = self.get_reg();
+    use self::reg::GPIO_moder_mode as RegMode;
+    let offset = self.pin as usize;
+    let reg = self.get_reg();
 
-    let bits: u32 = match new_mode {
-      GpioDirection::Out => 0b01 << offset as usize,
-      GpioDirection::In  => 0b00 << offset as usize,
+    let val = match new_mode {
+      GpioDirection::Out => RegMode::Output,
+      GpioDirection::In  => RegMode::Input,
     };
-    let mask: u32 = !(0b11 << offset as usize);
-    let val: u32 = gpreg.MODER();
 
-    gpreg.set_MODER(val & mask | bits);
+    reg.moder.set_mode(offset, val);
   }
 }
 
 #[allow(dead_code)]
 mod reg {
+  use core::ops::Drop;
   use volatile_cell::VolatileCell;
 
-  ioreg_old!(GPIO: u32, MODER, OTYPER, OSPEEDER, PUPDR, IDR, ODR, BSRR, LCKR, AFRL, AFRH);
-  reg_rw!(GPIO, u32, MODER,    set_MODER,    MODER);
-  reg_rw!(GPIO, u32, OTYPER,   set_OTYPER,   OTYPER);
-  reg_rw!(GPIO, u32, OSPEEDER, set_OSPEEDER, OSPEEDER);
-  reg_rw!(GPIO, u32, PUPDR,    set_PUPDR,    PUPDR);
-  reg_rw!(GPIO, u32, IDR,      set_IDR,      IDR);
-  reg_rw!(GPIO, u32, ODR,      set_ODR,      ODR);
-  reg_rw!(GPIO, u32, BSRR,     set_BSRR,     BSRR);
-  reg_rw!(GPIO, u32, LCKR,     set_LCKR,     LCKR);
-  reg_rw!(GPIO, u32, AFRL,     set_AFRL,     AFRL);
-  reg_rw!(GPIO, u32, AFRH,     set_AFRH,     AFRH);
+  ioregs!(GPIO = {
+    0x0 => reg32 moder {
+      0..31 => mode[16] {
+        0 => Input,
+        1 => Output,
+        3 => Alternate,
+        4 => Analog
+      }
+    }
+    0x04 => reg32 otyper {
+      0..15 => ot[16] {
+        0 => PushPull,
+        1 => OpenDrain
+      }
+    }
+    0x08 => reg32 ospeedr {
+      0..31 => ospeed[16] {
+        0 => Low,
+        1 => Medium,
+        2 => Fast,
+        3 => High
+      }
+    }
+    0x0c => reg32 pupdr {
+      0..31 => pupd[16] {
+        0 => None,
+        1 => PullUp,
+        2 => PullDown
+      }
+    }
+    0x10 => reg32 idr {
+      0..15 => id[16]: ro
+    }
+    0x14 => reg32 odr {
+      0..15 => od[16]
+    }
+    0x18 => reg32 bsrr {
+      0..15 => bs[16]: wo,
+      16..31 => br[16]: wo
+    }
+    0x1c => reg32 lckr {
+      0..15 => lck[16],
+      16 => lckk
+    }
+    0x20 => reg32 afrl {
+      0..31 => afrl[8]
+    }
+    0x24 => reg32 afrh {
+      0..31 => afrh[8]
+    }
+  });
 
   extern {
     #[link_name="stm32f4_iomem_GPIOA"] pub static GPIO_A: GPIO;
