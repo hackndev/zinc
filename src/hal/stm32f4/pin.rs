@@ -116,6 +116,15 @@ impl PinConf {
     self.get_reg().set_BSRR(bit);
   }
 
+  /// Toggles the GPIO value
+  pub fn toggle(&self) {
+    let bit: u32 = 1 << self.pin as usize;
+    let reg = self.get_reg();
+    let val: u32 = reg.ODR();
+
+    reg.set_ODR(val ^ bit);
+  }
+
   /// Returns input GPIO level.
   pub fn level(&self) -> ::hal::pin::GpioLevel {
     let bit: u32 = 1 << (self.pin as usize);
