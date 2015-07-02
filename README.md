@@ -49,4 +49,6 @@ run `configure`:
 EXAMPLE_NAME=<example> make build
 ```
 
-Ouput will go to `target/<target-triple>/release/examples`.
+`EXAMPLE_NAME` is the name of the example *without* the `app_` prefix. For example, to build examples/app_blink.rs `EXAMPLE_NAME` should be `blink`.
+
+Output will go to `target/<target-triple>/release/examples`.
