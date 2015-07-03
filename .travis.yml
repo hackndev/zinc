@@ -15,7 +15,6 @@ after_script:
     - (cd ./ioreg; cargo build --verbose; cargo test --verbose)
     - (kcov-master/tmp/usr/local/bin/kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,ioreg/tests target/kcov ioreg/target/debug/test-*)
     - (cd ./platformtree; cargo build --verbose; cargo test --verbose)
-    - (kcov-master/tmp/usr/local/bin/kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo target/kcov platformtree/target/debug/platformtree-*)
     - (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
     - (cd ./macro_zinc; cargo test --verbose)
     - (kcov-master/tmp/usr/local/bin/kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo target/kcov target/debug/zinc-*)
