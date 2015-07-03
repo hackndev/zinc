@@ -3,8 +3,9 @@ rust: nightly
 before_install:
     - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
     - sudo apt-get update -o Dir::Etc::sourcelist="sources.list.d/terry_guo-gcc-arm-embedded-precise.list" -o Dir::Etc::sourceparts="-" -o APT::Get::List-Cleanup="0"
-install:
-    - sudo apt-get install gcc-arm-none-eabi
+    - sudo apt-get install gcc-arm-none-eabi libcurl4-openssl-dev libelf-dev libdw-dev
+    - wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz && tar xzf master.tar.gz
+    - (mkdir kcov-master/build && cd kcov-master/build && cmake .. && make && make install DESTDIR=../tmp)
 script:
     - ./configure --host=arm-none-eabi
     - cargo build --target=$TARGET --verbose --features mcu_$PLATFORM
@@ -12,9 +13,12 @@ script:
 after_script:
     - cargo test --lib --verbose
     - (cd ./ioreg; cargo build --verbose; cargo test --verbose)
+    - (kcov-master/tmp/usr/local/bin/kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo,ioreg/tests target/kcov ioreg/target/debug/test-*)
     - (cd ./platformtree; cargo build --verbose; cargo test --verbose)
     - (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
     - (cd ./macro_zinc; cargo test --verbose)
+    - (kcov-master/tmp/usr/local/bin/kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo target/kcov target/debug/zinc-*)
+
 env:
   matrix:
     - PLATFORM=lpc17xx
