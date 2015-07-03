@@ -16,7 +16,6 @@
 //! HAL for STM32F4.
 
 pub mod init;
-pub mod gpio;
 pub mod peripheral_clock;
 pub mod pin;
 pub mod timer;

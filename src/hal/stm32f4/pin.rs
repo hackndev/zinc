@@ -18,6 +18,7 @@
 //! Some pins that could be configured here may be missing from actual MCU
 //! depending on the package.
 
+use hal::pin::{Gpio, GpioDirection, GpioLevel};
 use super::peripheral_clock;
 use core::intrinsics::abort;
 
@@ -68,12 +69,9 @@ impl Port {
   }
 }
 
-/// Pin configuration.
-///
-/// This structure shouldn't be used directly, pinmap.rs, available via pin::map
-/// has all possible pin configurations.
+/// Pin configuration
 #[derive(Clone, Copy)]
-pub struct PinConf {
+pub struct Pin {
   /// Pin port, mcu-specific.
   pub port: Port,
   /// Pin number.
@@ -82,7 +80,7 @@ pub struct PinConf {
   pub function: Function,
 }
 
-impl PinConf {
+impl Pin {
   /// Setup the pin.
   #[inline(always)]
   pub fn setup(&self) {
@@ -104,18 +102,6 @@ impl PinConf {
     gpreg.set_MODER(val & mask | bits);
   }
 
-  /// Sets output GPIO value to high.
-  pub fn set_high(&self) {
-    let bit: u32 = 1 << self.pin as usize;
-    self.get_reg().set_BSRR(bit);
-  }
-
-  /// Sets output GPIO value to low.
-  pub fn set_low(&self) {
-    let bit: u32 = 1 << (self.pin as usize + 16);
-    self.get_reg().set_BSRR(bit);
-  }
-
   /// Toggles the GPIO value
   pub fn toggle(&self) {
     let bit: u32 = 1 << self.pin as usize;
@@ -123,17 +109,6 @@ impl PinConf {
     let val: u32 = reg.ODR();
 
     reg.set_ODR(val ^ bit);
-  }
-
-  /// Returns input GPIO level.
-  pub fn level(&self) -> ::hal::pin::GpioLevel {
-    let bit: u32 = 1 << (self.pin as usize);
-    let reg = self.get_reg();
-
-    match reg.IDR() & bit {
-      0 => ::hal::pin::Low,
-      _ => ::hal::pin::High,
-    }
   }
 
   fn get_reg(&self) -> &reg::GPIO {
@@ -148,6 +123,48 @@ impl PinConf {
       PortH => &reg::GPIO_H,
       PortI => &reg::GPIO_I,
     }
+  }
+}
+
+impl Gpio for Pin {
+  /// Sets output GPIO value to high.
+  fn set_high(&self) {
+    let bit: u32 = 1 << self.pin as usize;
+    self.get_reg().set_BSRR(bit);
+  }
+
+  /// Sets output GPIO value to low.
+  fn set_low(&self) {
+    let bit: u32 = 1 << (self.pin as usize + 16);
+    self.get_reg().set_BSRR(bit);
+  }
+
+  /// Returns input GPIO level.
+  fn level(&self) -> GpioLevel {
+    let bit: u32 = 1 << (self.pin as usize);
+    let reg = self.get_reg();
+
+    match reg.IDR() & bit {
+      0 => GpioLevel::Low,
+      _ => GpioLevel::High,
+    }
+  }
+
+  /// Sets output GPIO direction.
+  fn set_direction(&self, new_mode: GpioDirection) {
+    // TODO(darayus): Verify that this works
+    // TODO(darayus): Change the Pin.function field to the new mode
+    let offset: u32 = self.pin as u32 * 2;
+    let gpreg = self.get_reg();
+
+    let bits: u32 = match new_mode {
+      GpioDirection::Out => 0b01 << offset as usize,
+      GpioDirection::In  => 0b00 << offset as usize,
+    };
+    let mask: u32 = !(0b11 << offset as usize);
+    let val: u32 = gpreg.MODER();
+
+    gpreg.set_MODER(val & mask | bits);
   }
 }
 
