@@ -46,6 +46,44 @@ pub fn set_isr_location(loc: ISRLocation) {
   });
 }
 
+/// Peripherals that are soft-resettable via reset_peripheral.
+pub enum ResetPeripheral {
+    SPI0,
+    SPI1,
+    I2C,
+    CAN,
+}
+
+/// Soft-resets the given peripheral.
+pub unsafe fn reset_peripheral(peripheral: ResetPeripheral) {
+  match peripheral {
+    ResetPeripheral::SPI0 => {
+      regs::SYSCON().presetctrl.set_ssp0_rst_n(
+        regs::SYSCON_presetctrl_ssp0_rst_n::SPIO0RESET);
+      regs::SYSCON().presetctrl.set_ssp0_rst_n(
+        regs::SYSCON_presetctrl_ssp0_rst_n::SPIO0NORESET);
+    },
+    ResetPeripheral::SPI1 => {
+      regs::SYSCON().presetctrl.set_ssp1_rst_n(
+        regs::SYSCON_presetctrl_ssp1_rst_n::SPI1RESET);
+      regs::SYSCON().presetctrl.set_ssp1_rst_n(
+        regs::SYSCON_presetctrl_ssp1_rst_n::SPI2NORESET);
+    },
+    ResetPeripheral::I2C => {
+      regs::SYSCON().presetctrl.set_i2c_rst_n(
+        regs::SYSCON_presetctrl_i2c_rst_n::I2CRESET);
+      regs::SYSCON().presetctrl.set_i2c_rst_n(
+        regs::SYSCON_presetctrl_i2c_rst_n::I2CNORESET);
+    },
+    ResetPeripheral::CAN => {
+      regs::SYSCON().presetctrl.set_can_rst_n(
+        regs::SYSCON_presetctrl_can_rst_n::CANRESET);
+      regs::SYSCON().presetctrl.set_can_rst_n(
+        regs::SYSCON_presetctrl_can_rst_n::CANNORESET);
+    }
+  }
+}
+
 pub fn init_system_clock() {
   regs::SYSCON().pdruncfg
       .set_sysosc_pd(regs::SYSCON_pdruncfg_sysosc_pd::POWERED);
@@ -113,6 +151,19 @@ mod test {
     let res = j.join();
 
     expect!(res.is_err()).to(be_equal_to(true));
+  }
+
+  #[test]
+  fn performs_soft_reset_on_peripherals() {
+    init_replayer!();
+
+    expect_volatile_read!(0x4004_8004, 0);
+    expect_volatile_write!(0x4004_8004, 0);
+    expect_volatile_read!(0x4004_8004, 0);
+    expect_volatile_write!(0x4004_8004, 1);
+    unsafe { reset_peripheral(ResetPeripheral::SPI0) }
+
+    expect_replayer_valid!();
   }
 
   #[test]
