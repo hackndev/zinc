@@ -36,16 +36,16 @@ path = "./ioreg"
 [dependencies.volatile_cell]
 path = "./volatile_cell"
 
+[dependencies.rlibc]
+git = "https://github.com/hackndev/rlibc"
+branch = "zinc"
+
 [dev-dependencies.volatile_cell]
 path = "./volatile_cell"
 features = ["replayer"]
 
-[dev-dependencies]
-expectest = "*"
-
-[dependencies.rlibc]
-git = "https://github.com/mcoffin/rlibc"
-branch = "zinc"
+[dev-dependencies.expectest]
+version = "*"
 
 [dev-dependencies.platformtree]
 path = "./platformtree"
