@@ -253,11 +253,13 @@ pub fn with_mut_replayer<F>(f: F) where F: core::ops::FnOnce(&mut VolatileCellRe
   });
 }
 
+#[cfg(feature="replayer")]
 struct BeEqualToWithContext<E> {
     expected: E,
     context: String,
 }
 
+#[cfg(feature="replayer")]
 fn be_equal_to_with_context<E>(expected: E, context: String) -> BeEqualToWithContext<E> {
     BeEqualToWithContext {
         expected: expected,
@@ -265,6 +267,7 @@ fn be_equal_to_with_context<E>(expected: E, context: String) -> BeEqualToWithCon
     }
 }
 
+#[cfg(feature="replayer")]
 impl<A, E> Matcher<A, E> for BeEqualToWithContext<E>
     where
         A: PartialEq<E> + fmt::Debug,
