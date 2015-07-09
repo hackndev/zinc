@@ -13,16 +13,26 @@ if [ "$PLATFORM" == "native" ]; then
   (cd ./macro_zinc; cargo test --verbose)
 
   echo " * generating coverage data"
-  kcov cov/ target/debug/zinc-*
-  support/fixcov.py src/ cov/zinc-????????????????/cobertura.xml
-  kcov cov/ ioreg/target/debug/test-*
-  support/fixcov.py ioreg/src/ cov/test-????????????????/cobertura.xml
-  kcov cov/ platformtree/target/debug/platformtree-*
-  support/fixcov.py platformtree/src/ cov/platformtree-????????????????/cobertura.xml
+  if [ "$TRAVIS_JOB_ID" != "" ]; then
+    kcov-master/tmp/usr/local/bin/kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo target/kcov target/debug/zinc-*
+    kcov-master/tmp/usr/local/bin/kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo target/kcov ioreg/target/debug/test-*
+    kcov-master/tmp/usr/local/bin/kcov --coveralls-id=$TRAVIS_JOB_ID --exclude-pattern=/.cargo target/kcov platformtree/target/debug/platformtree-*
+  else
+    kcov cov/ target/debug/zinc-*
+    support/fixcov.py src/ cov/zinc-????????????????/cobertura.xml
+    kcov cov/ ioreg/target/debug/test-*
+    support/fixcov.py ioreg/src/ cov/test-????????????????/cobertura.xml
+    kcov cov/ platformtree/target/debug/platformtree-*
+    support/fixcov.py platformtree/src/ cov/platformtree-????????????????/cobertura.xml
+  fi
 
 else
   # build cross-compiled lib and examples
   case "$PLATFORM" in
+    lpc11xx )
+      TARGET=thumbv6-none-eabi
+      EXAMPLES="empty"
+      ;;
     lpc17xx )
       TARGET=thumbv7m-none-eabi
       EXAMPLES="blink blink_pt uart dht22 empty"
