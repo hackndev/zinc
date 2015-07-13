@@ -152,6 +152,7 @@ mod internal {
     taken: UnsafeCell<bool>,
   }
 
+  /// Static initializer
   pub const MUTEX_INIT: Mutex = Mutex { taken: UnsafeCell { value: false  } };
 
   /// A mutex lock

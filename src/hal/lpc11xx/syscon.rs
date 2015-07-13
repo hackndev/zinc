@@ -23,8 +23,11 @@ use super::regs;
 /// Interrupt vectors source.
 #[derive(PartialEq, Debug)]
 pub enum ISRLocation {
+    /// ISR mapped to bootloader.
     Bootloader = 0,
+    /// ISR mapped to RAM.
     RAM = 1,
+    /// ISR mapped to Flash ROM.
     Flash = 2
 }
 
@@ -48,9 +51,13 @@ pub fn set_isr_location(loc: ISRLocation) {
 
 /// Peripherals that are soft-resettable via reset_peripheral.
 pub enum ResetPeripheral {
+    /// Reset SPI0.
     SPI0,
+    /// Reset SPI1.
     SPI1,
+    /// Reset I2C.
     I2C,
+    /// Reset CAN.
     CAN,
 }
 
@@ -84,6 +91,7 @@ pub unsafe fn reset_peripheral(peripheral: ResetPeripheral) {
   }
 }
 
+/// Initialises system clock to specified boot configuration.
 pub fn init_system_clock() {
   regs::SYSCON().pdruncfg
       .set_sysosc_pd(regs::SYSCON_pdruncfg_sysosc_pd::POWERED);
