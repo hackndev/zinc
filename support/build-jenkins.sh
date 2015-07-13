@@ -6,7 +6,7 @@ echo " * rustc version: `rustc --version`"
 
 if [ "$PLATFORM" == "native" ]; then
   # build unit tests
-  cargo test --lib --verbose
+  cargo test --features test --lib --verbose
   (cd ./ioreg; cargo build --verbose; cargo test --verbose)
   (cd ./platformtree; cargo build --verbose; cargo test --verbose)
   (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)

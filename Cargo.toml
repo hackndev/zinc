@@ -9,6 +9,8 @@ name = "zinc"
 crate-type = ["lib"]
 
 [features]
+test = ["volatile_cell/replayer"]
+
 cpu_cortex-m0 = []
 cpu_cortex-m3 = []
 cpu_cortex-m4 = []
@@ -40,12 +42,8 @@ path = "./volatile_cell"
 git = "https://github.com/hackndev/rlibc"
 branch = "zinc"
 
-[dev-dependencies.volatile_cell]
-path = "./volatile_cell"
-features = ["replayer"]
-
-[dev-dependencies.expectest]
-version = "*"
+[dev-dependencies]
+expectest = "*"
 
 [dev-dependencies.platformtree]
 path = "./platformtree"
