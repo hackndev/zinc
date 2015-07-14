@@ -1,0 +1,16 @@
+[package]
+name = "empty"
+version = "0.0.1"
+
+[features]
+mcu_lpc11xx = ["zinc/mcu_lpc11xx"]
+mcu_lpc17xx = ["zinc/mcu_lpc17xx"]
+mcu_stm32f4 = ["zinc/mcu_stm32f4"]
+mcu_stm32l1 = ["zinc/mcu_stm32l1"]
+mcu_k20 = ["zinc/mcu_k20"]
+mcu_tiva_c = ["zinc/mcu_tiva_c"]
+
+[dependencies]
+zinc = { path =  "../.." }
+macro_zinc = { path = "../../macro_zinc" }
+core = { git = "https://github.com/hackndev/rust-libcore" }

@@ -5,11 +5,12 @@
 extern crate core;
 extern crate zinc;
 
-use zinc::hal::timer::Timer;
-use zinc::hal::lpc17xx::{pin, timer};
-use zinc::hal::pin::GpioDirection;
-use zinc::hal::pin::Gpio;
 use core::option::Option::Some;
+
+use zinc::hal::lpc17xx::{pin, timer};
+use zinc::hal::pin::Gpio;
+use zinc::hal::pin::GpioDirection;
+use zinc::hal::timer::Timer;
 
 #[zinc_main]
 pub fn main() {

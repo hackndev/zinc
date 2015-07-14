@@ -1,0 +1,11 @@
+[package]
+name = "blink_k20_isr"
+version = "0.0.1"
+
+[features]
+default = ["mcu_k20"]
+mcu_k20 = ["zinc/mcu_k20"]
+
+[dependencies]
+zinc = { path =  "../.." }
+core = { git = "https://github.com/hackndev/rust-libcore" }

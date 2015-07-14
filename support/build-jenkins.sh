@@ -6,10 +6,15 @@ echo " * rustc version: `rustc --version`"
 
 if [ "$PLATFORM" == "native" ]; then
   # build unit tests
+  echo " * building zinc"
   cargo test --features test --lib --verbose
+  echo " * building ioreg"
   (cd ./ioreg; cargo build --verbose; cargo test --verbose)
+  echo " * building platformtree"
   (cd ./platformtree; cargo build --verbose; cargo test --verbose)
+  echo " * building platformtree macro"
   (cd ./macro_platformtree; cargo build --verbose; cargo test --verbose)
+  echo " * building zinc macro"
   (cd ./macro_zinc; cargo test --verbose)
 
   echo " * generating coverage data"
@@ -35,19 +40,19 @@ else
       ;;
     lpc17xx )
       TARGET=thumbv7m-none-eabi
-      EXAMPLES="blink blink_pt uart dht22 empty"
+      EXAMPLES="empty blink_lpc17xx blink_pt uart dht22"
       ;;
     k20 )
       TARGET=thumbv7em-none-eabi
-      EXAMPLES="blink_k20 blink_k20_isr empty"
+      EXAMPLES="empty blink_k20 blink_k20_isr"
       ;;
     stm32f4 )
       TARGET=thumbv7em-none-eabi
-      EXAMPLES="blink_stm32f4 empty"
+      EXAMPLES="empty blink_stm32f4"
       ;;
     stm32l1 )
       TARGET=thumbv7m-none-eabi
-      EXAMPLES="blink_stm32l1 bluenrg_stm32l1 usart_stm32l1 empty"
+      EXAMPLES="empty blink_stm32l1 bluenrg_stm32l1 usart_stm32l1"
       ;;
   esac
 
@@ -55,6 +60,9 @@ else
   cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --lib
 
   for e in $EXAMPLES; do
-    EXAMPLE_NAME=$e make build
+    pushd "examples/$e"
+    ln -sf "../../$TARGET.json"
+    cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM"
+    popd
   done
 fi
