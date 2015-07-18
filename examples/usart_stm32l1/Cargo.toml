@@ -1,0 +1,12 @@
+[package]
+name = "usart_stm32l1"
+version = "0.0.1"
+
+[features]
+default = ["mcu_stm32l1"]
+mcu_stm32l1 = ["zinc/mcu_stm32l1"]
+
+[dependencies]
+zinc = { path =  "../.." }
+macro_zinc = { path = "../../macro_zinc" }
+core = { git = "https://github.com/hackndev/rust-libcore" }

@@ -87,6 +87,7 @@ SECTIONS
         *(.rel.*)  /* dynamic relocations */
         *(.ARM.exidx*) /* index entries for section unwinding */
         *(.ARM.extab*) /* exception unwinding information */
+        *(.debug_gdb_scripts)
     }
 }
 

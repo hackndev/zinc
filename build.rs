@@ -15,12 +15,17 @@ fn get_platform() -> Option<String> {
 }
 
 fn copy_linker_scripts<P: AsRef<Path>, Q: AsRef<Path>>(target: P, out_path: Q) -> io::Result<()> {
+  let path_prefix = if env::var("CARGO_MANIFEST_DIR").unwrap().find("/examples/").is_none() {
+    Path::new(".")
+  } else {
+    Path::new("./../..")
+  };
   // Try copying the linker scripts
   let target_dir = Path::new("src/hal").join(target);
   let out_dir: &Path = out_path.as_ref();
-  try!(fs::copy("src/hal/layout_common.ld", out_dir.join("layout_common.ld")));
-  try!(fs::copy(target_dir.join("iomem.ld"), out_dir.join("iomem.ld")));
-  try!(fs::copy(target_dir.join("layout.ld"), out_dir.join("layout.ld")));
+  try!(fs::copy(path_prefix.join("src/hal/layout_common.ld"), out_dir.join("layout_common.ld")));
+  try!(fs::copy(path_prefix.join(target_dir.join("iomem.ld")), out_dir.join("iomem.ld")));
+  try!(fs::copy(path_prefix.join(target_dir.join("layout.ld")), out_dir.join("layout.ld")));
 
   Ok(())
 }

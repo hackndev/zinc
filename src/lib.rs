@@ -53,9 +53,11 @@ STM32F403/407).
 extern crate rlibc;
 
 #[macro_use] #[no_link] extern crate ioreg;
-extern crate volatile_cell;
+#[macro_use] extern crate volatile_cell;
 
 #[cfg(test)] extern crate std;
+
+#[cfg(test)] #[macro_use(expect)] extern crate expectest;
 
 pub mod drivers;
 pub mod hal;
