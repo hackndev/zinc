@@ -75,7 +75,7 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
     .expect("Unexpected non-primitive register");
   let name = utils::getter_name(cx, path);
   let reg_doc = match reg.docstring {
-    Some(d) => token::get_ident(d.node).to_string(),
+    Some(d) => d.node.name.as_str(),
     None => "no documentation".to_string(),
   };
   let docstring = format!("`{}`: {}", reg.name.node, reg_doc);
@@ -220,7 +220,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   };
   let docstring = format!("Get value of `{}` field: {}",
                           field.name.node,
-                          token::get_ident(field_doc));
+                          field_doc.name.as_str());
   let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
   if field.count.node == 1 {
