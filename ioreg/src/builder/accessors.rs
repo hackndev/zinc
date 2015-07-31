@@ -18,7 +18,6 @@ use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
-use syntax::parse::token;
 
 use super::Builder;
 use super::utils;
@@ -83,7 +82,7 @@ fn build_field_accessors(cx: &ExtCtxt, path: &Vec<String>,
 
   let field_doc = match field.docstring {
     Some(ref d) => {
-      let s = token::get_ident(d.node);
+      let s = d.node.name.as_str();
       s.to_string()
     },
     None => "no documentation".to_string()

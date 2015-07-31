@@ -22,7 +22,6 @@ use syntax::ext::base::ExtCtxt;
 use syntax::codemap::{respan, Span};
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
-use syntax::parse::token;
 
 use super::Builder;
 use super::super::node;
@@ -75,8 +74,8 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
     .expect("Unexpected non-primitive register");
   let name = utils::getter_name(cx, path);
   let reg_doc = match reg.docstring {
-    Some(d) => token::get_ident(d.node).to_string(),
-    None => "no documentation".to_string(),
+    Some(d) => String::from(d.node.name.as_str().deref()),
+    None => String::from("no documentation"),
   };
   let docstring = format!("`{}`: {}", reg.name.node, reg_doc);
   let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
@@ -220,7 +219,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   };
   let docstring = format!("Get value of `{}` field: {}",
                           field.name.node,
-                          token::get_ident(field_doc));
+                          field_doc.name.as_str());
   let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
 
   if field.count.node == 1 {

@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::ops::Deref;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use syntax::ast::{TokenTree, LitInt, UnsuffixedIntLit};
@@ -183,7 +184,7 @@ impl<'a> Parser<'a> {
       Token::Literal(token::Lit::Integer(intname), _) => {
         self.bump();
 
-        let lit = integer_lit(intname.as_str(), None, &self.sess.span_diagnostic, self.span);
+        let lit = integer_lit(intname.as_str().deref(), None, &self.sess.span_diagnostic, self.span);
         match lit {
           LitInt(i, _) => {
             format!("{}", i)
@@ -342,7 +343,7 @@ impl<'a> Parser<'a> {
       },
       Token::Literal(Lit::Integer(intname), suffix) => {
         if suffix.is_none() {
-          let lit = integer_lit(intname.as_str(), None, &self.sess.span_diagnostic, self.span);
+          let lit = integer_lit(intname.as_str().deref(), None, &self.sess.span_diagnostic, self.span);
           match lit {
             LitInt(i, UnsuffixedIntLit(_)) => {
               self.bump();
@@ -370,7 +371,7 @@ impl<'a> Parser<'a> {
       },
       token::Ident(ident, _) => {
         self.bump();
-        match &*token::get_ident(ident) {
+        match &*ident.name.as_str() {
           "true"  => Some(node::BoolValue(true)),
           "false" => Some(node::BoolValue(false)),
           other   => {

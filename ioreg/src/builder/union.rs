@@ -21,7 +21,6 @@ use syntax::ast_util::empty_generics;
 use syntax::codemap::{DUMMY_SP, dummy_spanned, respan, Spanned};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
-use syntax::parse::token;
 
 use node;
 use super::Builder;
@@ -120,7 +119,7 @@ impl<'a> BuildUnionTypes<'a> {
   fn build_reg_union_field(&self, path: &Vec<String>, reg: &node::Reg)
                            -> ast::StructField {
     let attrs = match reg.docstring {
-      Some(doc) => vec!(utils::doc_attribute(self.cx, token::get_ident(doc.node))),
+      Some(doc) => vec!(utils::doc_attribute(self.cx, doc.node.name.as_str())),
       None => Vec::new(),
     };
     let mut field_path = path.clone();
@@ -191,7 +190,7 @@ impl<'a> BuildUnionTypes<'a> {
     match reg.docstring {
       Some(docstring) =>
         attrs.push(
-          utils::doc_attribute(self.cx, token::get_ident(docstring.node))),
+          utils::doc_attribute(self.cx, docstring.node.name.as_str())),
       None => (),
     }
     let struct_item = P(ast::Item {
