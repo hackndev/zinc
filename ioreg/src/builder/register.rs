@@ -138,7 +138,7 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
 fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
                       -> ast::Variant {
   let doc = match variant.docstring {
-    Some(d) => d.node.nameto_string(),
+    Some(d) => d.node.name.to_string(),
     None => "no documentation".to_string(),
   };
   let docstring = format!("`0x{:x}`. {}",
