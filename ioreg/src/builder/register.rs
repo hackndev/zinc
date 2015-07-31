@@ -111,7 +111,7 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
     .expect("Unexpected non-primitive reg");
 
   let reg_doc = match reg.docstring {
-    Some(d) => token::get_ident(d.node).to_string(),
+    Some(d) => d.node.name.to_string(),
     None => "no documentation".to_string(),
   };
   let docstring = format!("Register `{}`: {}",
@@ -138,7 +138,7 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
 fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
                       -> ast::Variant {
   let doc = match variant.docstring {
-    Some(d) => token::get_ident(d.node).to_string(),
+    Some(d) => d.node.nameto_string(),
     None => "no documentation".to_string(),
   };
   let docstring = format!("`0x{:x}`. {}",
