@@ -14,6 +14,7 @@
 // limitations under the License.
 
 use std::rc::{Rc};
+use std::ops::Deref;
 use syntax::ast::{Ident, TokenTree};
 use syntax::ast;
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
@@ -514,7 +515,7 @@ impl<'a> Parser<'a> {
     loop {
       match self.token {
         token::DocComment(docstring) => {
-          let s = token::get_ident(docstring.ident());
+          let s = docstring.ident().name.as_str();
           if !s.starts_with(prefix) {
             break
           }
@@ -540,7 +541,7 @@ impl<'a> Parser<'a> {
     match self.token {
       token::Literal(token::Integer(n), suf) => {
         self.bump();
-        let lit = parse::integer_lit(n.as_str(),
+        let lit = parse::integer_lit(n.as_str().deref(),
                                      suf.as_ref().map(|n| n.as_str()),
                                      &self.sess.span_diagnostic,
                                      self.span);
