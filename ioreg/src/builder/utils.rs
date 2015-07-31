@@ -167,5 +167,5 @@ pub fn getter_name(cx: &ExtCtxt, path: &Vec<String>) -> ast::Ident {
 }
 
 pub fn intern_string(cx: &ExtCtxt, s: String) -> token::InternedString {
-  token::get_ident(cx.ident_of(s.as_str()))
+  cx.ident_of(s.as_str()).name.as_str()
 }
