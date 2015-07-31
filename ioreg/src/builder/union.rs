@@ -21,7 +21,6 @@ use syntax::ast_util::empty_generics;
 use syntax::codemap::{DUMMY_SP, dummy_spanned, respan, Spanned};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
-use syntax::parse::token;
 
 use node;
 use super::Builder;
