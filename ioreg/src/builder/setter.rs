@@ -21,7 +21,6 @@ use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
-use syntax::parse::token;
 
 use super::Builder;
 use super::super::node;

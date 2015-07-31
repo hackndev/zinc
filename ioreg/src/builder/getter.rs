@@ -22,7 +22,6 @@ use syntax::ext::base::ExtCtxt;
 use syntax::codemap::{respan, Span};
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
-use syntax::parse::token;
 
 use super::Builder;
 use super::super::node;
@@ -75,8 +74,8 @@ fn build_type(cx: &ExtCtxt, path: &Vec<String>,
     .expect("Unexpected non-primitive register");
   let name = utils::getter_name(cx, path);
   let reg_doc = match reg.docstring {
-    Some(d) => d.node.name.as_str(),
-    None => "no documentation".to_string(),
+    Some(d) => String::from(d.node.name.as_str().deref()),
+    None => String::from("no documentation"),
   };
   let docstring = format!("`{}`: {}", reg.name.node, reg_doc);
   let doc_attr = utils::doc_attribute(cx, utils::intern_string(cx, docstring));
