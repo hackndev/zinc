@@ -186,6 +186,9 @@ impl<'a> BuildUnionTypes<'a> {
                                  "dead_code",
                                  "missing_docs"),
                             reg.name.span),
+      utils::list_attribute(self.cx, "repr",
+                            vec!("C"),
+                            reg.name.span),
     );
     match reg.docstring {
       Some(docstring) =>

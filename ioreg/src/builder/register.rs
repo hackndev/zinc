@@ -123,6 +123,7 @@ fn build_reg_struct(cx: &ExtCtxt, path: &Vec<String>,
     $doc_attr
     #[derive(Clone)]
     #[allow(non_camel_case_types)]
+    #[repr(C)]
     pub struct $ty_name {
       value: VolatileCell<$packed_ty>,
     }
