@@ -2,7 +2,6 @@
 #![no_std]
 #![plugin(macro_zinc)]
 
-extern crate core;
 extern crate zinc;
 
 #[zinc_main]

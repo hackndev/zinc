@@ -15,10 +15,9 @@
 
 //! A cell that with volatile setter and getter.
 
-#![feature(core, no_std, core_intrinsics)]
+#![feature(no_std, core_intrinsics)]
 #![no_std]
 
-extern crate core;
 
 #[cfg(feature="replayer")] #[macro_use(expect)] extern crate expectest;
 #[cfg(feature="replayer")] #[macro_use] extern crate std;

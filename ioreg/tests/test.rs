@@ -18,7 +18,6 @@
 #![feature(core, plugin)]
 #![plugin(ioreg)]
 
-extern crate core;
 extern crate volatile_cell;
 
 #[cfg(test)]

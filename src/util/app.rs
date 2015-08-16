@@ -20,7 +20,6 @@
 #![crate_type="staticlib"]
 #![no_std]
 
-extern crate core;
 extern crate zinc;
 extern crate app;
 

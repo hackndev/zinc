@@ -48,7 +48,6 @@ STM32F403/407).
 #![plugin(ioreg)]
 #![feature(no_std)]
 
-#[macro_use] extern crate core;
 #[cfg(target_os = "none")]
 extern crate rlibc;
 

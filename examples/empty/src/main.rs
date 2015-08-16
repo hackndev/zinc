@@ -2,7 +2,6 @@
 #![no_std]
 #![plugin(macro_zinc)]
 
-extern crate core;
 extern crate zinc;
 
 use zinc::hal::mem_init::{init_data, init_stack};
