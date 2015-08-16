@@ -21,7 +21,6 @@ pub use os::cond_var::internal::{CondVar, COND_VAR_INIT};
 mod internal {
   use core::option::{None, Some};
   use core::ty::Unsafe;
-  use core::marker;
   use core::marker::Sync;
 
   use hal::cortex_m3::sched::NoInterrupts;
@@ -92,7 +91,6 @@ mod internal {
 
 #[cfg(not(multitasking))]
 mod internal {
-  use core::marker;
   use core::marker::Sync;
   use core::cell::UnsafeCell;
 
@@ -101,13 +99,11 @@ mod internal {
   /// A condition variable
   pub struct CondVar {
     waiting: UnsafeCell<bool>,
-    nocopy: marker::NoCopy
   }
 
   /// Static initializer
   pub const COND_VAR_INIT: CondVar = CondVar {
-    waiting: UnsafeCell { value: false },
-    nocopy: marker::NoCopy,
+    waiting: UnsafeCell::new(false),
   };
 
   impl CondVar {
@@ -115,7 +111,6 @@ mod internal {
     pub fn new() -> CondVar {
       CondVar {
         waiting: UnsafeCell::new(false),
-        nocopy: marker::NoCopy,
       }
     }
 
