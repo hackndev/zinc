@@ -37,10 +37,10 @@ mod internal {
 
   /// Static initializer
   pub const MUTEX_INIT: Mutex = Mutex {
-    owner: UnsafeCell {value: None},
+    owner: UnsafeCell::new(None),
     waiting: Queue {
-      head: UnsafeCell {value: 0 as *mut Node<*mut TaskDescriptor>,},
-      tail: UnsafeCell {value: 0 as *mut Node<*mut TaskDescriptor>,},
+      head: UnsafeCell::new(0 as *mut Node<*mut TaskDescriptor>),
+      tail: UnsafeCell::new(0 as *mut Node<*mut TaskDescriptor>),
     }
   };
 
@@ -153,7 +153,7 @@ mod internal {
   }
 
   /// Static initializer
-  pub const MUTEX_INIT: Mutex = Mutex { taken: UnsafeCell { value: false  } };
+  pub const MUTEX_INIT: Mutex = Mutex { taken: UnsafeCell::new(false) };
 
   /// A mutex lock
   #[must_use]
