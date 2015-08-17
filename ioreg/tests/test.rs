@@ -19,6 +19,7 @@
 #![plugin(ioreg)]
 
 extern crate volatile_cell;
+extern crate core;
 
 #[cfg(test)]
 mod test {
