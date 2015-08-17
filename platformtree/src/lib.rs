@@ -15,7 +15,7 @@
 
 //! Platform tree operations crate
 
-#![feature(quote, rustc_private, hash_default, convert, rc_weak)]
+#![feature(quote, rustc_private, convert, rc_weak)]
 
 // extern crate regex;
 extern crate syntax;
