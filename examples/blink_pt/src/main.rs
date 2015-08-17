@@ -2,7 +2,6 @@
 #![no_std]
 #![plugin(macro_platformtree)]
 
-extern crate core;
 extern crate zinc;
 
 platformtree!(

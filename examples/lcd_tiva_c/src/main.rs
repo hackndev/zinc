@@ -3,7 +3,6 @@
 #![no_std]
 #![plugin(macro_platformtree)]
 
-extern crate core;
 extern crate zinc;
 #[macro_use] #[no_link] extern crate macro_platformtree;
 

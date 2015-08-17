@@ -4,7 +4,6 @@
 //! Sample application for BlueNRG communication over SPI in X-NUCLEO-IDB04A1
 //! extension board for NUCLEO-L152RE
 
-#[macro_use] extern crate core;
 extern crate zinc;
 
 use core::intrinsics::abort;

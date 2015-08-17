@@ -1,7 +1,6 @@
 #![feature(no_std, core, start, core_intrinsics)]
 #![no_std]
 
-extern crate core;
 extern crate zinc;
 
 use core::intrinsics::volatile_load;
