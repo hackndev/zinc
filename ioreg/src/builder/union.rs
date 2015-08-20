@@ -243,6 +243,7 @@ impl<'a> BuildUnionTypes<'a> {
     let item_getter = quote_item!(self.cx,
       #[allow(non_snake_case, dead_code)]
       $doc_attr
+      #[inline(always)]
       pub fn $name() -> &'static $name {
           unsafe { ::core::intrinsics::transmute($item_address as usize) }
       }

@@ -96,6 +96,7 @@ fn build_new<'a>(cx: &'a ExtCtxt, path: &Vec<String>, reg: &node::Reg)
   utils::unwrap_impl_item(quote_item!(cx,
     impl<'a> $setter_ident<'a> {
       #[doc="Create a new updater"]
+      #[inline(always)]
       pub fn new(reg: &'a $reg_ty) -> $setter_ident<'a> {
         $setter_ident {
           value: 0,
@@ -116,6 +117,7 @@ fn build_new_ignoring_state<'a>(cx: &'a ExtCtxt, path: &Vec<String>,
   utils::unwrap_impl_item(quote_item!(cx,
     impl<'a> $setter_ident<'a> {
       #[doc="Create a new updater that ignores current state"]
+      #[inline(always)]
       pub fn new_ignoring_state(reg: &'a $reg_ty) -> $setter_ident<'a> {
         $setter_ident {
           value: 0,
@@ -159,6 +161,7 @@ fn build_drop(cx: &ExtCtxt, path: &Vec<String>,
   let item = quote_item!(cx,
     #[doc = "This performs the register update"]
     impl<'a> Drop for $setter_ident<'a> {
+      #[inline(always)]
       fn drop(&mut self) {
         let clear_mask: $unpacked_ty = $clear as $unpacked_ty;
         if self.mask != 0 {
@@ -176,6 +179,7 @@ fn build_done(ctx: &ExtCtxt, path: &Vec<String>) -> P<ast::ImplItem> {
   utils::unwrap_impl_item(quote_item!(ctx,
     impl<'a> $setter_ident<'a> {
       #[doc = "Commit changes to register. Allows for chaining of set"]
+      #[inline(always)]
       pub fn done(self) {}
     }
   ).unwrap())
@@ -194,6 +198,7 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   let done = build_done(cx, path);
   quote_item!(cx,
     #[allow(dead_code)]
+    #[inline(always)]
     impl<'a> $setter_ident<'a> {
       $new
       $new_is
@@ -240,6 +245,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
+        #[inline(always)]
         pub fn $fn_name<'b>(&'b mut self,
                             new_value: $field_ty) -> &'b mut $setter_ty<'a> {
           self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
@@ -253,6 +259,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
+        #[inline(always)]
         pub fn $fn_name<'b>(&'b mut self,
                             idx: usize,
                             new_value: $field_ty) -> &'b mut $setter_ty<'a> {
@@ -287,6 +294,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
     utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
+        #[inline(always)]
         pub fn $fn_name<'b>(&'b mut self) -> &'b mut $setter_ty<'a> {
           self.value |= $mask << $shift;
           self.mask |= $mask << $shift;
@@ -299,6 +307,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
     utils::unwrap_impl_item(quote_item!(cx,
       impl<'a> $setter_ty<'a> {
         $doc_attr
+        #[inline(always)]
         pub fn $fn_name<'b>(&'b mut self, idx: usize) -> &'b mut $setter_ty<'a> {
           self.value |= $mask << $shift;
           self.mask |= $mask << $shift;

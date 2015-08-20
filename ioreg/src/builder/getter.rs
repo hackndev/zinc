@@ -103,6 +103,7 @@ fn build_new(cx: &ExtCtxt, path: &Vec<String>,
   let item = quote_item!(cx,
     impl $getter_ty {
       #[doc = "Create a getter reflecting the current value of the given register."]
+      #[inline(always)]
       pub fn new(reg: & $reg_ty) -> $getter_ty {
         $getter_ident {
           value: reg.value.get(),
@@ -186,6 +187,7 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   let get_raw: P<ast::ImplItem> = utils::unwrap_impl_item(quote_item!(cx,
     impl $getter_ty {
       #[doc = "Get the raw value of the register."]
+      #[inline(always)]
       pub fn raw(&self) -> $packed_ty {
         self.value
       }
@@ -194,6 +196,7 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
 
   let it = quote_item!(cx,
     #[allow(dead_code)]
+    #[inline(always)]
     impl $getter_ty {
       $new
       $getters
@@ -230,6 +233,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
     utils::unwrap_impl_item(quote_item!(cx,
       impl X {
         $doc_attr
+        #[inline(always)]
         pub fn $fn_name(&self) -> $field_ty {
           $value
         }

@@ -116,6 +116,7 @@ fn build_get_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
     impl $reg_ty {
       $doc_attr
       #[allow(dead_code)]
+      #[inline(always)]
       pub fn get(&self) -> $getter_ty {
         $getter_ty::new(self)
       }
@@ -139,6 +140,7 @@ fn build_ignoring_state_setter_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::
     impl $reg_ty {
       $doc_attr
       #[allow(dead_code)]
+      #[inline(always)]
       pub fn ignoring_state(&self) -> $setter_ty {
         $setter_ty::new_ignoring_state(self)
       }
@@ -161,6 +163,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
     utils::unwrap_impl_item(quote_item!(cx,
       impl $reg_ty {
         #[allow(dead_code, missing_docs)]
+        #[inline(always)]
         pub fn $fn_name<'a>(&'a self, new_value: $field_ty) -> $setter_ty<'a> {
           let mut setter: $setter_ty = $setter_ty::new(self);
           setter.$fn_name(new_value);
@@ -172,6 +175,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>,
     utils::unwrap_impl_item(quote_item!(cx,
       impl $reg_ty {
         #[allow(dead_code, missing_docs)]
+        #[inline(always)]
         pub fn $fn_name<'a>(&'a self, idx: usize, new_value: $field_ty) -> $setter_ty<'a> {
           let mut setter: $setter_ty = $setter_ty::new(self);
           setter.$fn_name(idx, new_value);
@@ -196,6 +200,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>,
         quote_item!(cx,
           impl $reg_ty {
             #[allow(dead_code, missing_docs)]
+            #[inline(always)]
             pub fn $fn_name(&self) -> $field_ty {
               $getter_ty::new(self).$fn_name()
             }
@@ -205,6 +210,7 @@ fn build_field_get_fn(cx: &ExtCtxt, path: &Vec<String>,
         quote_item!(cx,
           impl $reg_ty {
             #[allow(dead_code, missing_docs)]
+            #[inline(always)]
             pub fn $fn_name(&self, idx: usize) -> $field_ty {
               $getter_ty::new(self).$fn_name(idx)
             }
@@ -226,6 +232,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
     quote_item!(cx,
       impl $reg_ty {
         #[allow(dead_code, missing_docs)]
+        #[inline(always)]
         pub fn $fn_name<'a>(&'a self) -> $setter_ty<'a> {
           let mut setter: $setter_ty = $setter_ty::new(self);
           setter.$fn_name();
@@ -237,6 +244,7 @@ fn build_field_clear_fn(cx: &ExtCtxt, path: &Vec<String>,
     quote_item!(cx,
       impl $reg_ty {
         #[allow(dead_code, missing_docs)]
+        #[inline(always)]
         pub fn $fn_name<'a>(&'a self, idx: usize) -> $setter_ty<'a> {
           let mut setter: $setter_ty = $setter_ty::new(self);
           setter.$fn_name(idx);
