@@ -79,7 +79,8 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
     recursion_limit: 10,
     trace_mac: true,
   };
-  let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg);
+  let mut gated_cfgs = vec!();
+  let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg, &mut gated_cfgs);
   cx.bt_push(ExpnInfo {
     call_site: mk_sp(BytePos(0), BytePos(0)),
     callee: NameAndSpan {
