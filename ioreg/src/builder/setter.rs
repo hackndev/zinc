@@ -248,7 +248,7 @@ fn build_field_set_fn(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
         #[inline(always)]
         pub fn $fn_name<'b>(&'b mut self,
                             new_value: $field_ty) -> &'b mut $setter_ty<'a> {
-          self.value |= (self.value & ! $mask) | ((new_value as $unpacked_ty) & $mask) << $shift;
+          self.value = (self.value & !($mask << $shift)) | ((new_value as $unpacked_ty) & $mask) << $shift;
           self.mask |= $mask << $shift;
           self
         }
