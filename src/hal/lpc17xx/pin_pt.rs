@@ -107,7 +107,7 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
               cx.parse_sess().span_diagnostic.span_err(
                   node.get_attr("function").value_span,
                   format!("unknown pin function `{}`, allowed functions: {}",
-                      fun, avaliable.connect(", ")).as_str());
+                      fun, avaliable.join(", ")).as_str());
               return;
             },
             Some(func_idx) => {

@@ -33,7 +33,7 @@ pub fn expr_int(cx: &ExtCtxt, n: Spanned<i64>) -> P<ast::Expr> {
 /// The name of the structure representing a register
 pub fn path_ident(cx: &ExtCtxt, path: &Vec<String>)
                       -> ast::Ident {
-  cx.ident_of(path.clone().connect("_").as_str())
+  cx.ident_of(path.clone().join("_").as_str())
 }
 
 
@@ -115,7 +115,7 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
         &None => {
           let mut name = path.clone();
           name.push(field.name.node.clone());
-          cx.path_ident(span, cx.ident_of(name.connect("_").as_str()))
+          cx.path_ident(span, cx.ident_of(name.join("_").as_str()))
         }
       }
     },

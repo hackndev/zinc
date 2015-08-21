@@ -130,7 +130,7 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
       for v in vars.iter() {
         let mut name = path.clone();
         name.push(field.name.node.clone());
-        let enum_ident = cx.ident_of(name.connect("_").as_str());
+        let enum_ident = cx.ident_of(name.join("_").as_str());
         let val_ident = cx.ident_of(v.name.node.as_str());
         let body = cx.expr_path(
           cx.path(v.name.span, vec!(enum_ident, val_ident)));
