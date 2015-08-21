@@ -15,8 +15,6 @@
 
 //! Driver for the Hitachi HD44780U LCD driver
 
-use core::prelude::*;
-
 use drivers::chario::CharIO;
 use hal::pin::Gpio;
 use hal::timer::Timer;

@@ -1,4 +1,4 @@
-#![feature(core, plugin, asm, no_std, start, core_intrinsics)]
+#![feature(plugin, no_std, asm)]
 #![no_std]
 #![plugin(macro_zinc)]
 

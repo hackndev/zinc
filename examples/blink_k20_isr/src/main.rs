@@ -1,4 +1,4 @@
-#![feature(no_std, core, start, core_intrinsics)]
+#![feature(no_std, start, core_intrinsics)]
 #![no_std]
 
 extern crate zinc;

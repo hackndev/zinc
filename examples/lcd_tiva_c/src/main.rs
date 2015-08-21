@@ -1,10 +1,8 @@
-#![feature(plugin, no_std, core, start, core_intrinsics)]
-#![crate_type="staticlib"]
+#![feature(plugin, no_std, start, core_intrinsics)]
 #![no_std]
 #![plugin(macro_platformtree)]
 
 extern crate zinc;
-#[macro_use] #[no_link] extern crate macro_platformtree;
 
 use zinc::drivers::chario::CharIO;
 use zinc::drivers::lcd::hd44780u::{Hd44780u, Font};

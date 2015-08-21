@@ -1,10 +1,8 @@
-#![feature(start, plugin, no_std, core, core_intrinsics)]
-#![crate_type="staticlib"]
+#![feature(start, plugin, no_std, core_intrinsics)]
 #![no_std]
 #![plugin(macro_platformtree)]
 
 extern crate zinc;
-#[macro_use] #[no_link] extern crate macro_platformtree;
 
 use core::option::Option::{Some, None};
 

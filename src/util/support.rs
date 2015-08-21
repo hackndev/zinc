@@ -18,7 +18,6 @@
 pub use core::intrinsics::breakpoint;
 
 /// Call the debugger and halts execution.
-#[no_stack_check]
 #[no_mangle]
 pub extern fn abort() -> ! {
   unsafe {
@@ -30,7 +29,6 @@ pub extern fn abort() -> ! {
 // TODO(bgamari): This is only necessary for exception handling and
 // can be removed when we have this issue resolved.
 #[doc(hidden)]
-#[no_stack_check]
 #[no_mangle]
 pub extern fn __aeabi_memset(dest: *mut u8, size: usize, value: u32) {
   unsafe {
@@ -40,7 +38,6 @@ pub extern fn __aeabi_memset(dest: *mut u8, size: usize, value: u32) {
 }
 
 #[doc(hidden)]
-#[no_stack_check]
 #[no_mangle]
 pub extern fn __aeabi_memclr(dest: *mut u8, size: usize) {
   unsafe {
