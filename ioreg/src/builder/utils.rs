@@ -70,13 +70,17 @@ pub fn doc_attribute(cx: &ExtCtxt, docstring: token::InternedString)
   cx.attribute(DUMMY_SP, attr)
 }
 
-pub fn primitive_type_path(cx: &ExtCtxt, width: &Spanned<node::RegWidth>)
-                           -> ast::Path {
-  let name = match width.node {
+pub fn primitive_type_name(width: node::RegWidth) -> &'static str {
+  match width {
     node::RegWidth::Reg8  => "u8",
     node::RegWidth::Reg16 => "u16",
     node::RegWidth::Reg32 => "u32",
-  };
+  }
+}
+
+pub fn primitive_type_path(cx: &ExtCtxt, width: &Spanned<node::RegWidth>)
+                           -> ast::Path {
+  let name = primitive_type_name(width.node);
   cx.path_ident(width.span, cx.ident_of(name))
 }
 
@@ -86,6 +90,13 @@ pub fn reg_primitive_type_path(cx: &ExtCtxt, reg: &node::Reg)
                                -> Option<ast::Path> {
   match reg.ty {
     node::RegType::RegPrim(ref width, _) => Some(primitive_type_path(cx, width)),
+    _ => None,
+  }
+}
+
+pub fn reg_primitive_type_name(reg: &node::Reg) -> Option<&'static str> {
+  match reg.ty {
+    node::RegType::RegPrim(ref width, _) => Some(primitive_type_name(width.node)),
     _ => None,
   }
 }
