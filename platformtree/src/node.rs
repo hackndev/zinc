@@ -106,7 +106,7 @@ impl Subnodes {
   ///
   /// The node must not be present in the subnodes.
   pub fn push(&mut self, node: Rc<Node>) {
-    let weak = node.downgrade();
+    let weak = Rc::downgrade(&node);
     self.by_path.insert(node.path.clone(), weak);
     self.by_index.push(node);
   }

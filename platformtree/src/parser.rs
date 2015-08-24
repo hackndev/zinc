@@ -126,7 +126,7 @@ impl<'a> Parser<'a> {
                 "previously defined here");
             return false;
           } else {
-            map.insert(name.clone(), n.downgrade());
+            map.insert(name.clone(), Rc::downgrade(n));
           }
         },
         None => (),
@@ -205,7 +205,7 @@ impl<'a> Parser<'a> {
 
     let node = Rc::new(node::Node::new(
         node_name, node_span, node_path, node_path_span, parent));
-    let weak_node = node.downgrade();
+    let weak_node = Rc::downgrade(&node);
 
     //    we're here
     //             |
