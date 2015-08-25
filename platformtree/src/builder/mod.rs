@@ -253,10 +253,10 @@ impl ToTokens for TokenString {
 
 pub fn add_node_dependency(node: &Rc<node::Node>, dep: &Rc<node::Node>) {
   let mut depends_on = node.depends_on.borrow_mut();
-  depends_on.deref_mut().push(dep.downgrade());
+  depends_on.deref_mut().push(Rc::downgrade(dep));
 
   let mut rev_depends_on = dep.rev_depends_on.borrow_mut();
-  rev_depends_on.push(node.downgrade());
+  rev_depends_on.push(Rc::downgrade(node));
 }
 
 #[cfg(test)]

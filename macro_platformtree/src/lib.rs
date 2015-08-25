@@ -27,7 +27,7 @@ use rustc::plugin::Registry;
 use syntax::ast;
 use syntax::codemap::DUMMY_SP;
 use syntax::codemap::Span;
-use syntax::ext::base::{ExtCtxt, MacResult, Modifier};
+use syntax::ext::base::{ExtCtxt, MacResult, MultiModifier, Annotatable};
 use syntax::ext::build::AstBuilder;
 use syntax::owned_slice::OwnedSlice;
 use syntax::print::pprust;
@@ -43,7 +43,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("platformtree", macro_platformtree);
   reg.register_macro("platformtree_verbose", macro_platformtree_verbose);
   reg.register_syntax_extension(syntax::parse::token::intern("zinc_task"),
-      Modifier(Box::new(macro_zinc_task)));
+      MultiModifier(Box::new(macro_zinc_task)));
 }
 
 pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
@@ -67,7 +67,14 @@ pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
 }
 
 fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
-    it: P<ast::Item>) -> P<ast::Item> {
+    ann: Annotatable) -> Annotatable {
+  match ann {
+    Annotatable::Item(it) => {Annotatable::Item(macro_zinc_task_item(cx, it))}
+    other     => {other}
+  }
+}
+
+fn macro_zinc_task_item(cx: &mut ExtCtxt, it: P<ast::Item>) -> P<ast::Item> {
   match it.node {
     ast::ItemFn(ref decl, style, constness, abi, _, ref block) => {
       let istr = it.ident.name.as_str();

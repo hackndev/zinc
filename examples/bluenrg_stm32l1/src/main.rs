@@ -1,4 +1,4 @@
-#![feature(no_std, core, start, core_intrinsics)]
+#![feature(no_std, start, core_intrinsics)]
 #![no_std]
 
 //! Sample application for BlueNRG communication over SPI in X-NUCLEO-IDB04A1
@@ -7,11 +7,6 @@
 extern crate zinc;
 
 use core::intrinsics::abort;
-// "curious module hack" - a workaround for `fmt` module being looked in `std`
-// by the `write!` macro
-mod std {
-  pub use core::fmt;
-}
 
 #[start]
 fn start(_: isize, _: *const *const u8) -> isize {

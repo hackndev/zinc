@@ -528,7 +528,7 @@ impl<'a> Parser<'a> {
         _ => break,
       }
     }
-    let string = docs.connect("\n");
+    let string = docs.join("\n");
     let string = string.as_str().trim();
     if !string.is_empty() {
       Some(respan(self.last_span, self.cx.ident_of(string)))
