@@ -92,6 +92,24 @@ mod test {
     assert_eq!(get_value(&test, 2), 0xdead<<16);
   }
 
+  #[test]
+  fn set_field_twice() {
+    let test: BASIC_TEST = zeroed_safe();
+    
+    test.reg1.set_field3(0xAA).set_field3(0x55);
+    assert_eq!(test.reg1.field3(), 0x55);
+  }
+
+  #[test]
+  fn set_independent_fields() {
+    let test: BASIC_TEST = zeroed_safe();
+    
+    test.reg1.set_field2(0b010).set_field3(0xf0);
+    
+    assert_eq!(test.reg1.field2(), 0b010);
+    assert_eq!(test.reg1.field3(), 0xf0);
+  }
+
   /*
      describe!(
      before_each {

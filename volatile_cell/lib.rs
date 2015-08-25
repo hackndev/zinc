@@ -37,6 +37,7 @@
 /// This structure is used to represent a hardware register.
 /// It is mostly used by the ioreg family of macros.
 #[derive(Copy, Clone)]
+#[repr(C)]
 pub struct VolatileCell<T> {
   value: T,
 }
