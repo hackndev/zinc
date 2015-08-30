@@ -47,13 +47,13 @@ impl PWMChannel {
     // across two registers.  They aren't even located next to each other
     // in memory
     match *self {
-      CHANNEL0 => { reg::PWM1.mr[0].set_value(value); },
-      CHANNEL1 => { reg::PWM1.mr[1].set_value(value); },
-      CHANNEL2 => { reg::PWM1.mr[2].set_value(value); },
-      CHANNEL3 => { reg::PWM1.mr[3].set_value(value); },
-      CHANNEL4 => { reg::PWM1.mr2[0].set_value(value); },
-      CHANNEL5 => { reg::PWM1.mr2[1].set_value(value); },
-      CHANNEL6 => { reg::PWM1.mr2[2].set_value(value); },
+      CHANNEL0 => { reg::PWM1().mr[0].set_value(value); },
+      CHANNEL1 => { reg::PWM1().mr[1].set_value(value); },
+      CHANNEL2 => { reg::PWM1().mr[2].set_value(value); },
+      CHANNEL3 => { reg::PWM1().mr[3].set_value(value); },
+      CHANNEL4 => { reg::PWM1().mr2[0].set_value(value); },
+      CHANNEL5 => { reg::PWM1().mr2[1].set_value(value); },
+      CHANNEL6 => { reg::PWM1().mr2[2].set_value(value); },
     };
   }
 }
@@ -80,20 +80,20 @@ impl PWM {
   pub fn new(channel: PWMChannel) -> PWM {
     PWM1Clock.enable();
     PWM1Clock.set_divisor(PWM_CLOCK_DIVISOR);
-    reg::PWM1.pr.set_value(0);  // no prescaler
+    reg::PWM1().pr.set_value(0);  // no prescaler
 
     // single PWM mode (reset TC on match 0 for Ch0)
-    reg::PWM1.mcr.set_pwmmr0r(true);
+    reg::PWM1().mcr.set_pwmmr0r(true);
 
     // enable PWM output on this channel
     match channel {
       CHANNEL0 => { unsafe { abort() } },  // CHANNEL0 reserved for internal use
-      CHANNEL1 => { reg::PWM1.pcr.set_pwmena1(true); },
-      CHANNEL2 => { reg::PWM1.pcr.set_pwmena2(true); },
-      CHANNEL3 => { reg::PWM1.pcr.set_pwmena3(true); },
-      CHANNEL4 => { reg::PWM1.pcr.set_pwmena4(true); },
-      CHANNEL5 => { reg::PWM1.pcr.set_pwmena5(true); },
-      CHANNEL6 => { reg::PWM1.pcr.set_pwmena6(true); },
+      CHANNEL1 => { reg::PWM1().pcr.set_pwmena1(true); },
+      CHANNEL2 => { reg::PWM1().pcr.set_pwmena2(true); },
+      CHANNEL3 => { reg::PWM1().pcr.set_pwmena3(true); },
+      CHANNEL4 => { reg::PWM1().pcr.set_pwmena4(true); },
+      CHANNEL5 => { reg::PWM1().pcr.set_pwmena5(true); },
+      CHANNEL6 => { reg::PWM1().pcr.set_pwmena6(true); },
     };
 
     let pwm = PWM {
@@ -110,7 +110,7 @@ impl PWM {
   /// Update the PWM Signal based on the current state
   fn update_period(&self) {
     // Put the counter into reset and disable the counter
-    reg::PWM1.tcr
+    reg::PWM1().tcr
       .set_ctr_en(reg::PWM1_tcr_ctr_en::DISABLED)
       .set_ctr_reset(reg::PWM1_tcr_ctr_reset::RESET)
       .set_pwm_enable(reg::PWM1_tcr_pwm_enable::DISABLED);
@@ -121,10 +121,10 @@ impl PWM {
     // TODO(posborne): recalculate other registers based on the new period?
 
     // set the channel latch to update CH0 and CHN
-    reg::PWM1.ler.set_value(1 << CHANNEL0 as u32);
+    reg::PWM1().ler.set_value(1 << CHANNEL0 as u32);
 
     // enable counter and pwm; clear reset
-    reg::PWM1.tcr
+    reg::PWM1().tcr
       .set_ctr_en(reg::PWM1_tcr_ctr_en::ENABLED)
       .set_ctr_reset(reg::PWM1_tcr_ctr_reset::CLEAR_RESET)
       .set_pwm_enable(reg::PWM1_tcr_pwm_enable::ENABLED);
@@ -132,12 +132,12 @@ impl PWM {
 
   fn update_pulsewidth(&self) {
     let mut pulsewidth_ticks: u32 = pwm_us_to_ticks(self.pulsewidth_us);
-    if pulsewidth_ticks == reg::PWM1.mr[0].get().raw() {
+    if pulsewidth_ticks == reg::PWM1().mr[0].get().raw() {
       // avoid making it equal or there is a 1 cycle dropout
       pulsewidth_ticks = pulsewidth_ticks + 1;
     }
     self.channel.set_mr(pulsewidth_ticks);
-    reg::PWM1.ler.set_value(1 << self.channel as u32);
+    reg::PWM1().ler.set_value(1 << self.channel as u32);
   }
 
 }
@@ -169,7 +169,7 @@ mod reg {
   use volatile_cell::VolatileCell;
   use core::ops::Drop;
 
-  ioregs!(PWM1 = {
+  ioregs!(PWM1@0x40018000 = {
     /// Interrupt Register. The IR can be written to clear
     /// interrupts. The IR can be read to identify which of eight
     /// possible interrupt sources are pending.
@@ -289,9 +289,5 @@ mod reg {
       }
     }
   });
-
-  extern {
-    #[link_name="lpc17xx_iomem_PWM1"] pub static PWM1: PWM1;
-  }
 
 }
