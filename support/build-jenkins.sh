@@ -40,7 +40,7 @@ else
       ;;
     lpc17xx )
       TARGET=thumbv7m-none-eabi
-      EXAMPLES="empty blink_lpc17xx blink_pt uart dht22"
+      EXAMPLES="empty blink_lpc17xx blink_pt uart dht22 rgb_pwm_lpc17xx"
       ;;
     k20 )
       TARGET=thumbv7em-none-eabi

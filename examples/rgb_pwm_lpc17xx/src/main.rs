@@ -5,12 +5,11 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option.  This file may not be copied, modified, or distributed
 // except according to those terms.
-#![feature(plugin, no_std, core, start)]
+#![feature(plugin, no_std, start, core_intrinsics)]
 #![crate_type="staticlib"]
 #![no_std]
 #![plugin(macro_platformtree)]
 
-extern crate core;
 extern crate zinc;
 #[macro_use] #[no_link] extern crate macro_platformtree;
 
