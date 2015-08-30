@@ -30,7 +30,7 @@ const PWM_CLOCK_DIVISOR: u8 = 4;
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
 pub enum PWMChannel {
-  CHANNEL0 = 0,  // reserved for period
+  CHANNEL0_PERIOD_RESERVED = 0,  // reserved for period
   CHANNEL1,
   CHANNEL2,
   CHANNEL3,
@@ -47,7 +47,7 @@ impl PWMChannel {
     // across two registers.  They aren't even located next to each other
     // in memory
     match *self {
-      CHANNEL0 => { reg::PWM1().mr[0].set_value(value); },
+      CHANNEL0_PERIOD_RESERVED => { reg::PWM1().mr[0].set_value(value); },
       CHANNEL1 => { reg::PWM1().mr[1].set_value(value); },
       CHANNEL2 => { reg::PWM1().mr[2].set_value(value); },
       CHANNEL3 => { reg::PWM1().mr[3].set_value(value); },
@@ -87,7 +87,7 @@ impl PWM {
 
     // enable PWM output on this channel
     match channel {
-      CHANNEL0 => { unsafe { abort() } },  // CHANNEL0 reserved for internal use
+      CHANNEL0_PERIOD_RESERVED => { unsafe { abort() } },  // CHANNEL0 reserved for internal use
       CHANNEL1 => { reg::PWM1().pcr.set_pwmena1(true); },
       CHANNEL2 => { reg::PWM1().pcr.set_pwmena2(true); },
       CHANNEL3 => { reg::PWM1().pcr.set_pwmena3(true); },
@@ -116,12 +116,12 @@ impl PWM {
       .set_pwm_enable(reg::PWM1_tcr_pwm_enable::DISABLED);
 
     // setup match register to ticks per period on CH0
-    CHANNEL0.set_mr(pwm_us_to_ticks(self.period_us));
+    CHANNEL0_PERIOD_RESERVED.set_mr(pwm_us_to_ticks(self.period_us));
 
     // TODO(posborne): recalculate other registers based on the new period?
 
     // set the channel latch to update CH0 and CHN
-    reg::PWM1().ler.set_value(1 << CHANNEL0 as u32);
+    reg::PWM1().ler.set_value(1 << CHANNEL0_PERIOD_RESERVED as u32);
 
     // enable counter and pwm; clear reset
     reg::PWM1().tcr
