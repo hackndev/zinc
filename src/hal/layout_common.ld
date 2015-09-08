@@ -2,6 +2,8 @@
 __aeabi_unwind_cpp_pr0 = abort;
 __aeabi_unwind_cpp_pr1 = abort;
 __aeabi_unwind_cpp_pr2 = abort;
+__exidx_start          = abort;
+__exidx_end            = abort;
 
 __aeabi_memclr4 = __aeabi_memclr;
 
@@ -60,6 +62,6 @@ SECTIONS
         *(.rel.*)  /* dynamic relocations */
         *(.ARM.exidx*) /* index entries for section unwinding */
         *(.ARM.extab*) /* exception unwinding information */
-        *(.debug_gdb_scripts)
+        /**(.debug_gdb_scripts)*/
     }
 }
