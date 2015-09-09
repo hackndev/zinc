@@ -1,142 +1,284 @@
+// Zinc, the bare metal stack for rust.
+// Copyright 2014 Dzmitry "kvark" Malyshau <kvarkus@gmail.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+//! Serial Peripheral Interface for STM32L1.
+
+use core::result::Result;
+use core::result::Result::{Ok, Err};
+use core::marker::Copy;
+
 #[path="../../util/wait_for.rs"]
 #[macro_use] mod wait_for;
 
-/// Available UART peripherals.
+/// Available SPI peripherals.
 #[allow(missing_docs)]
+#[repr(u8)]
 #[derive(Clone, Copy)]
-pub enum SPIPeripheral {
-  SPI1,
-  SPI2,
-  SPI3,
-  SPI4,
-  SPI5,
-  SPI6
+pub enum Peripheral {
+  Spi1,
+  Spi2,
+  Spi3,
+  Spi4,
+  Spi5,
+  Spi6
 }
 
-/// Structure describing a UART instance.
+/// SPI direction modes.
+#[repr(u8)]
+#[derive(PartialEq, Clone, Copy)]
+pub enum Direction {
+  /// 2 lines, default mode
+  FullDuplex,
+  /// 2 lines, but read-only
+  RxOnly,
+  /// 1 line, read
+  Rx,
+  /// 1 line, transmit
+  Tx,
+}
+
+#[allow(missing_docs)]
+#[repr(u8)]
+#[derive(Clone)]
+pub enum Role {
+  Slave = 0,
+  Master = 1,
+}
+
+impl Copy for Role {}
+
+#[allow(missing_docs)]
+#[repr(u8)]
 #[derive(Clone, Copy)]
-pub struct SPI {
+pub enum DataSize {
+  U8 = 0,
+  U16 = 1,
+}
+
+/// SPI data format.
+#[repr(u8)]
+#[derive(Clone, Copy)]
+pub enum DataFormat {
+  /// Most Significant Bit
+  MsbFirst = 0,
+  /// Least Significant Bit
+  LsbFirst = 1,
+}
+
+#[allow(missing_docs)]
+#[repr(u8)]
+#[derive(Clone, Copy)]
+pub enum ClockPhase {
+  Edge1 = 0,
+  Edge2 = 1,
+}
+
+#[allow(missing_docs)]
+#[repr(u8)]
+#[derive(Clone, Copy)]
+pub enum ClockPolarity {
+  Low = 0,
+  High = 1,
+}
+
+/// SPI initialization errors.
+#[repr(u8)]
+#[derive(Clone, Copy)]
+pub enum Error {
+  /// Invalid baud rate shift.
+  BaudRate,
+  /// Invalid resulting mode.
+  Mode,
+}
+
+/// Structure describing a SPI instance.
+#[derive(Clone, Copy)]
+pub struct Spi {
   reg: &'static reg::SPI,
 }
 
-impl SPIPeripheral {
-  fn reg(self) -> &'static reg::SPI {
-    match self {
-      SPIPeripheral::SPI1 => &reg::SPI1,
-      SPIPeripheral::SPI2 => &reg::SPI2,
-      SPIPeripheral::SPI3 => &reg::SPI3,
-      SPIPeripheral::SPI4 => &reg::SPI4,
-      SPIPeripheral::SPI5 => &reg::SPI5,
-      SPIPeripheral::SPI6 => &reg::SPI6,
+impl Spi {
+  /// Create a new SPI port.
+  pub fn new(peripheral: Peripheral, direction: Direction,
+             role: Role, data_size: DataSize, format: DataFormat,
+             prescaler_shift: u8) -> Result<Spi, Error> {
+    use hal::stm32f4::peripheral_clock::PeripheralClock;
+
+    let (reg, clock) = match peripheral {
+      Peripheral::Spi1 => (&reg::SPI1, PeripheralClock::SPI1Clock),
+      Peripheral::Spi2 => (&reg::SPI2, PeripheralClock::SPI2Clock),
+      Peripheral::Spi3 => (&reg::SPI3, PeripheralClock::SPI3Clock),
+      Peripheral::Spi4 => (&reg::SPI4, PeripheralClock::SPI1Clock),
+      Peripheral::Spi5 => (&reg::SPI5, PeripheralClock::SPI2Clock),
+      Peripheral::Spi6 => (&reg::SPI6, PeripheralClock::SPI3Clock),
+    };
+
+    clock.enable();
+
+    // set direction
+    reg.cr1.set_receive_only(direction == Direction::RxOnly);
+    reg.cr1.set_bidirectional_data_mode(direction == Direction::Rx
+        || direction == Direction::Tx);
+    reg.cr1.set_bidirectional_output_enable(direction == Direction::Tx);
+
+    // set role
+    reg.cr1.set_master(role as usize != 0);
+    reg.cr1.set_internal_slave_select(role as usize != 0);
+    reg.cr1.set_software_slave_management(true);
+    reg.cr2.set_ss_output_enable(false);
+
+    // set data size and format (MSB or LSB)
+    reg.cr1.set_data_frame_format(data_size as usize != 0);
+    reg.cr1.set_frame_format(format as usize != 0);
+
+    // set baud rate
+    if prescaler_shift<1 || prescaler_shift>8 {
+      return Err(Error::BaudRate)
     }
+    reg.cr1.set_baud_rate(prescaler_shift as u16 - 1);
+
+    // set clock mode
+    reg.cr1.set_clock_phase(ClockPhase::Edge1 as usize != 0);
+    reg.cr1.set_clock_polarity(ClockPolarity::Low as usize != 0);
+
+    reg.i2s_cfgr.set_enable(false);
+    reg.cr1.set_hardware_crc_enable(false);
+    reg.crc.set_polynomial(0); //TODO
+
+    if reg.sr.mode_fault() {
+      Err(Error::Mode)
+    }else {
+      reg.cr1.set_spi_enable(true);
+      Ok(Spi {
+        reg: reg,
+      })
+    }
+  }
+
+  /// Returns the status byte.
+  pub fn get_status(&self) -> u8 {
+    //self.reg.sr.raw() //TODO(kvark): #245 doesn't work
+    let mut r = 0u8;
+    if self.reg.sr.receive_buffer_not_empty() {
+      r |= 1u8<<0;
+    }
+    if self.reg.sr.transmit_buffer_empty() {
+      r |= 1u8<<1;
+    }
+    if self.reg.sr.channel_side() {
+      r |= 1u8<<2;
+    }
+    if self.reg.sr.underrun_flag() {
+      r |= 1u8<<3;
+    }
+    if self.reg.sr.crc_error() {
+      r |= 1u8<<4;
+    }
+    if self.reg.sr.mode_fault() {
+      r |= 1u8<<5;
+    }
+    if self.reg.sr.overrun_flag() {
+      r |= 1u8<<6;
+    }
+    if self.reg.sr.busy_flag() {
+      r |= 1u8<<7;
+    }
+    r
   }
 }
 
-//impl UART {
-  /// Returns platform-specific UART object that implements CharIO trait.
-  /*pub fn new(peripheral: UARTPeripheral, baudrate:  u32, word_len: u8,
-      parity: uart::Parity, stop_bits: u8) -> UART {
-    let uart = UART {
-      reg: peripheral.reg()
-    };
-    uart.set_baud_rate(baudrate);
-    uart.set_mode(reg::UART_c1_m::from_u8(word_len), parity, StopBit::from_u8(stop_bits));
-    uart.set_fifo_enabled(true);
-
-    uart
+impl ::hal::spi::Spi for Spi {
+  fn write(&self, value: u8) {
+    wait_for!(self.reg.sr.transmit_buffer_empty());
+    self.reg.dr.set_data(value as u16);
   }
 
-  fn uart_clock(&self) -> u32 {
-    48000000 // FIXME(bgamari): Use peripheral clocks
+  fn read(&self) -> u8 {
+    wait_for!(self.reg.sr.receive_buffer_not_empty());
+    self.reg.dr.data() as u8
   }
+}
 
-  fn set_baud_rate(&self, baud_rate: u32) {
-    let sbr: u32 = self.uart_clock() / 16 / baud_rate;
-    let brfa: u32 = (2 * self.uart_clock() / baud_rate) % 32;
-    (*self.reg).bdh.set_sbr((sbr >> 8) as u8);
-    (*self.reg).bdl.set_sbr((sbr & 0xff) as u8);
-    (*self.reg).c4.set_brfa(brfa as u8);
-  }
-
-  fn set_mode(&self, word_len: reg::UART_c1_m, parity: uart::Parity,
-              _stop_bits: StopBit) {
-    use hal::uart::Parity::*;
-    let mut c1 = (*self.reg).c1.set_m(word_len);
-    match parity {
-      Disabled => {c1.set_pe(false);}
-      Odd      => {c1.set_pe(true).set_pt(reg::UART_c1_pt::Odd);}
-      Even     => {c1.set_pe(true).set_pt(reg::UART_c1_pt::Even);}
-      Forced1  => unsafe { abort() },
-      Forced0  => unsafe { abort() },
-    };
-    (*self.reg).c2.set_te(true).set_re(true);
-  }
-
-  fn set_fifo_enabled(&self, enabled: bool) {
-    (*(self.reg)).pfifo.set_rxfe(enabled).set_txfe(enabled);
-  }*/
-//}
-
-/// Register definitions
-pub mod reg {
+mod reg {
   use volatile_cell::VolatileCell;
+  use core::ops::Drop;
 
   ioregs!(SPI = {
-    0x0 => reg32 cr1 {  //! spi config regiser 1
-        0 => cpha,       //= Clock_Phase (0: fst clock transition is data capture edge, 1: second)
-        1 => cpol,   //= Clock polarity (0:CK to 0 when idle, 1: 1)
-        2 => mstr,    //= Master selection (1: master, 0: slave)
-        3..5 => br {
-            0x0 => SPICLockDivider32,
-            0x1 => SPICLockDivider64,
-            0x2 => SPICLockDivider128,
-            0x3 => SPICLockDivider256
-        },
-        6 => spe, //=  SPI enable
-        7 => lsbfirst, //= Frame format (0: MSB, 1: LSB)
-        8 => ssi, //= Internal slavec select
-        9 => ssm, //= Slave software management
-        10 => rxonly, //= Receive only neable
-        11 => dff, //= Data frame format(0: 8bits, 1: 16bits)
-        12 => crcnext, //= CRC transfert next
-        13 => crcen, //= Hardware CRC enable
-        14 => bidiode, //= Output enable in bidirectional mode
-        15 => bidimode //= Bidirectional datamode enable
+    0x00 => reg16 cr1 { // control 1
+      0 => clock_phase : rw,
+      1 => clock_polarity : rw,
+      2 => master : rw,
+      5..3 => baud_rate : rw,
+      6 => spi_enable : rw,
+      7 => frame_format : rw,
+      8 => internal_slave_select : rw,
+      9 => software_slave_management : rw,
+      10 => receive_only : rw,
+      11 => data_frame_format : rw,
+      12 => transmit_crc_next : rw,
+      13 => hardware_crc_enable : rw,
+      14 => bidirectional_output_enable : rw,
+      15 => bidirectional_data_mode : rw,
     },
-    0x04 => reg32 cr2 { //! spi config regiser 2
-        0 => rxdmaen, //= RX buffer DMA enable
-        1 => txdmaen, //= Tx buffer DMA enable
-        2 => ssoe, //= SS output enable
-        //= 3 is reserved
-        4 => frf, //= Frame format (0: SPI Motorola mode, 1: SPI TI mode)
-        5 => errie, //= Error interrupt enable
-        6 => rxneie, //=Rx buffer not empty interrupt enable
-        7 => txneie //= Tx buffer empty intterup enable
+    0x04 => reg8 cr2 { // control 2
+      0 => rx_dma_enable : rw,
+      1 => tx_dma_enable : rw,
+      2 => ss_output_enable : rw,
+      3 => frame_format : rw,
+      // 4 is reserved
+      5 => error_interrupt_enable : rw,
+      6 => rx_buffer_not_empty_interrupt_enable : rw,
+      7 => tx_buffer_empty_interrupt_enable : rw,
     },
-    0x08 => reg32 sr { //! spi status register
-        0 => rxne, //= Receive buffer not empty
-        1 => txe, //= Transmit buffer empty
-        2 => chside, //= Channel side
-        3 => udr, //= underrun flag
-        4 => crcerr, //= CRC error flag
-        5 => modf, //= Mode fault
-        6 => ovr, //= Overrun flag
-        7 => bsy, //Busy flag
-        8 => fre //= Frame format error (0: No frame format error)
+    0x08 => reg8 sr { // status
+      0 => receive_buffer_not_empty : ro,
+      1 => transmit_buffer_empty : ro,
+      2 => channel_side : ro,
+      3 => underrun_flag : ro,
+      4 => crc_error : ro,
+      5 => mode_fault : ro,
+      6 => overrun_flag : ro,
+      7 => busy_flag : ro,
     },
-    0x0c => reg32 dr { //! spi data register
-        0..15 => dr //= data
+    0x0C => reg16 dr { // data
+      15..0 => data : rw,
     },
-    0x10 => reg32 crcpr { //! spi
-        0..15 => crcpoly //= data
+    0x10 => reg16 crc { // CRC
+      15..0 => polynomial : rw,
     },
-    0x14 => reg32 rxcrcr { //! spi
-        0..15 => rxcrc //= data
+    0x14 => reg16 rx_crc { // Rx CRC
+      15..0 => crc : rw,
     },
-    0x18 => reg32 txcrcr { //! spi
-        0..15 => txcrc //= data
-    }
-    //TODO: i2s ?
+    0x18 => reg16 tx_crc { // Tx CRC
+      15..0 => crc : rw,
+    },
+    0x1C => reg16 i2s_cfgr { // I2S config
+      0 => channel_length : rw,
+      2..1 => data_length : rw,
+      3 => clock_polarity : rw,
+      5..4 => standard_selection : rw,
+      7 => pcm_frame_sync : rw,
+      9..8 => configuration_mode : rw,
+      10 => enable : rw,
+      11 => mode_selection : rw,
+    },
+    0x20 => reg16 i2s_pr { // I2S prescaler
+      7..0 => linear_prescaler : rw,
+      8 => odd_factor : rw,
+      9 => master_clock_output_enable : rw,
+    },
   });
 
   extern {
