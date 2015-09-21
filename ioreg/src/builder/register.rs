@@ -167,7 +167,6 @@ fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
       id: ast::DUMMY_NODE_ID,
       disr_expr: Some(utils::expr_int(cx, respan(variant.value.span,
                                                  variant.value.node as i64))),
-      vis: ast::Inherited,
     }
   )
 }
