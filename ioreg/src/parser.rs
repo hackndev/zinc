@@ -515,7 +515,7 @@ impl<'a> Parser<'a> {
     loop {
       match self.token {
         token::DocComment(docstring) => {
-          let s = docstring.ident().name.as_str();
+          let s = docstring.as_str();
           if !s.starts_with(prefix) {
             break
           }
