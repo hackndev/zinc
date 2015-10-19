@@ -342,6 +342,7 @@ use syntax::ptr::P;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult};
 use syntax::util::small_vector::SmallVector;
+use syntax::print::pprust::item_to_string;
 
 pub mod node;
 pub mod parser;
@@ -350,6 +351,7 @@ pub mod builder;
 #[plugin_registrar]
 pub fn plugin_registrar(reg: &mut Registry) {
   reg.register_macro("ioregs", macro_ioregs);
+  reg.register_macro("ioregs_debug", macro_ioregs_debug);
 }
 
 pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
@@ -358,6 +360,23 @@ pub fn macro_ioregs(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
     Some(group) => {
       let mut builder = builder::Builder::new();
       let items = builder.emit_items(cx, group);
+      MacItems::new(items)
+    },
+    None => {
+      panic!("Parsing failed");
+    }
+  }
+}
+
+pub fn macro_ioregs_debug(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
+                    -> Box<MacResult+'static> {
+  match parser::Parser::new(cx, tts).parse_ioregs() {
+    Some(group) => {
+      let mut builder = builder::Builder::new();
+      let items = builder.emit_items(cx, group);
+      for ref i in &items {
+        println!("{}", item_to_string(i));
+      }
       MacItems::new(items)
     },
     None => {
