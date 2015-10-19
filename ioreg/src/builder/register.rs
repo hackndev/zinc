@@ -84,19 +84,19 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
                                    "non_camel_case_types",
                                    "missing_docs"),
                               field.name.span));
-      
+
       // setting the enum's repr to the width of the register
-      // (unless there's only 1 variant; in which case we omit 
+      // (unless there's only 1 variant; in which case we omit
       // the repr attribute due to E0083
       if variants.len() > 1 {
         let enum_repr = utils::reg_primitive_type_name(reg)
           .expect("Unexpected non-primitive reg");
-        
+
         attrs.push(utils::list_attribute(cx, "repr",
                                          vec!(enum_repr),
                                          field.name.span));
       }
-      
+
       let ty_item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
@@ -163,8 +163,7 @@ fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
     ast::Variant_ {
       name: cx.ident_of(variant.name.node.as_str()),
       attrs: vec!(doc_attr),
-      kind: ast::TupleVariantKind(Vec::new()),
-      id: ast::DUMMY_NODE_ID,
+      data: P(ast::VariantData::Tuple(Vec::new(), ast::DUMMY_NODE_ID)),
       disr_expr: Some(utils::expr_int(cx, respan(variant.value.span,
                                                  variant.value.node as i64))),
     }
