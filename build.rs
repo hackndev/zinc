@@ -14,6 +14,14 @@ fn get_platform() -> Option<String> {
   }
 }
 
+fn file_exists(file: &Path) -> bool {
+    match fs::metadata(file) {
+        Ok(_) => true,
+        // Check for ENOENT (No such file or directory)
+        Err(e) => e.raw_os_error() != Some(2),
+    }
+}
+
 fn copy_linker_scripts<P: AsRef<Path>, Q: AsRef<Path>>(target: P, out_path: Q) -> io::Result<()> {
   let path_prefix = if env::var("CARGO_MANIFEST_DIR").unwrap().find("/examples/").is_none() {
     Path::new(".")
@@ -24,7 +32,10 @@ fn copy_linker_scripts<P: AsRef<Path>, Q: AsRef<Path>>(target: P, out_path: Q) -
   let target_dir = Path::new("src/hal").join(target);
   let out_dir: &Path = out_path.as_ref();
   try!(fs::copy(path_prefix.join("src/hal/layout_common.ld"), out_dir.join("layout_common.ld")));
-  try!(fs::copy(path_prefix.join(target_dir.join("iomem.ld")), out_dir.join("iomem.ld")));
+  let iomem_ld = path_prefix.join(target_dir.join("iomem.ld"));
+  if file_exists(iomem_ld.as_path()) {
+    try!(fs::copy(iomem_ld, out_dir.join("iomem.ld")));
+  }
   try!(fs::copy(path_prefix.join(target_dir.join("layout.ld")), out_dir.join("layout.ld")));
 
   Ok(())
