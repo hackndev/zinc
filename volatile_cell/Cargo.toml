@@ -15,7 +15,7 @@ crate-type = ["rlib"]
 [features]
 replayer = ["expectest"]
 
-[target.thumbv6-none-eabi.dependencies.core]
+[target.thumbv6m-none-eabi.dependencies.core]
 git = "https://github.com/hackndev/rust-libcore"
 
 [target.thumbv7m-none-eabi.dependencies.core]

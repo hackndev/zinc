@@ -1,4 +1,4 @@
-[target.thumbv6-none-eabi]
+[target.thumbv6m-none-eabi]
 linker = "arm-none-eabi-gcc"
 ar = "arm-none-eabi-ar"
 

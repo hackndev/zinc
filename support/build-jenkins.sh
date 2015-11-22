@@ -35,7 +35,7 @@ else
   # build cross-compiled lib and examples
   case "$PLATFORM" in
     lpc11xx )
-      TARGET=thumbv6-none-eabi
+      TARGET=thumbv6m-none-eabi
       EXAMPLES="empty"
       ;;
     lpc17xx )
