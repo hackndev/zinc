@@ -335,8 +335,9 @@ N => NAME
 extern crate rustc;
 extern crate syntax;
 extern crate serialize;
+extern crate rustc_plugin;
 
-use rustc::plugin::Registry;
+use rustc_plugin::Registry;
 use syntax::ast;
 use syntax::ptr::P;
 use syntax::codemap::Span;
