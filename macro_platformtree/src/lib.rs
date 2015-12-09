@@ -19,11 +19,12 @@ extern crate platformtree;
 extern crate rustc;
 extern crate serialize;
 extern crate syntax;
+extern crate rustc_plugin;
 
 use std::clone::Clone;
 use std::ops::Deref;
 
-use rustc::plugin::Registry;
+use rustc_plugin::Registry;
 use syntax::ast;
 use syntax::codemap::DUMMY_SP;
 use syntax::codemap::Span;

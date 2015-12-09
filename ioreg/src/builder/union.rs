@@ -176,10 +176,10 @@ impl<'a> BuildUnionTypes<'a> {
     let padded_regs = PaddedRegsIterator::new(&mut regs);
     let fields =
       padded_regs.enumerate().map(|(n,r)| self.build_pad_or_reg(path, r, n));
-    let struct_def = ast::StructDef {
-      fields: FromIterator::from_iter(fields),
-      ctor_id: None,
-    };
+    let struct_def = ast::VariantData::Struct(
+      FromIterator::from_iter(fields),
+      ast::DUMMY_NODE_ID,
+    );
     let mut attrs: Vec<ast::Attribute> = vec!(
       utils::list_attribute(self.cx, "allow",
                             vec!("non_camel_case_types",
@@ -200,7 +200,7 @@ impl<'a> BuildUnionTypes<'a> {
       ident: name,
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
-      node: ast::ItemStruct(P(struct_def), empty_generics()),
+      node: ast::ItemStruct(struct_def, empty_generics()),
       vis: ast::Public,
       span: reg.name.span,
     });

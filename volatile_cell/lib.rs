@@ -24,6 +24,7 @@
 
 #[cfg(feature="replayer")] use std::vec::Vec;
 #[cfg(feature="replayer")] use expectest::prelude::*;
+#[cfg(feature="replayer")] use expectest::core::Matcher;
 #[cfg(feature="replayer")] use std::string::String;
 #[cfg(feature="replayer")] use std::fmt;
 #[cfg(feature="replayer")] use core::cmp::PartialEq;
