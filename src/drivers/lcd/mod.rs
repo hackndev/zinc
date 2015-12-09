@@ -15,8 +15,6 @@
 
 //! Drivers for TFT LCDs.
 
-use core::iter::range_inclusive;
-
 use drivers::chario::CharIO;
 
 pub mod c12332;
@@ -138,8 +136,8 @@ pub trait LCD : CharIO {
         (y0_b, y1_b)
       };
 
-    for l in range_inclusive(x0, x1) {
-      for c in range_inclusive(y0, y1) {
+    for l in x0..(x1 + 1) {
+      for c in y0..(y1 + 1) {
         self.pixel(l as u32, c as u32, color);
       }
     }

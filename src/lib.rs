@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(asm, lang_items, plugin, range_inclusive)]
+#![feature(asm, lang_items, plugin)]
 #![feature(core_intrinsics, core_slice_ext)]
 #![allow(improper_ctypes)]
 #![feature(const_fn)]
