@@ -14,7 +14,7 @@
 // limitations under the License.
 
 #![feature(asm, lang_items, plugin)]
-#![feature(core_intrinsics, core_slice_ext)]
+#![feature(core_intrinsics, core_slice_ext, core_str_ext)]
 #![allow(improper_ctypes)]
 #![feature(const_fn)]
 #![deny(missing_docs)]
