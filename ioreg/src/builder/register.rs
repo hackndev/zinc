@@ -163,7 +163,7 @@ fn build_enum_variant(cx: &ExtCtxt, variant: &node::Variant)
     ast::Variant_ {
       name: cx.ident_of(variant.name.node.as_str()),
       attrs: vec!(doc_attr),
-      data: P(ast::VariantData::Tuple(Vec::new(), ast::DUMMY_NODE_ID)),
+      data: ast::VariantData::Unit(ast::DUMMY_NODE_ID),
       disr_expr: Some(utils::expr_int(cx, respan(variant.value.span,
                                                  variant.value.node as i64))),
     }
