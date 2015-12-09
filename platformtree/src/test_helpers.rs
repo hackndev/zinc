@@ -84,8 +84,7 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
   cx.bt_push(ExpnInfo {
     call_site: mk_sp(BytePos(0), BytePos(0)),
     callee: NameAndSpan {
-      name: "platformtree".to_string(),
-      format: MacroBang,
+      format: MacroBang(ast::Name(0u32)),
       allow_internal_unstable: true,
       span: None,
     },
