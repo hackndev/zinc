@@ -27,9 +27,15 @@ BIN_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME).bin
 LST_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME).lst
 EXAMPLE_FILE=$(EXAMPLE_DIR)/$(EXAMPLE_NAME)
 
-.PHONY: build clean listing $(EXAMPLE_FILE)
+.PHONY: build expand clean listing $(EXAMPLE_FILE)
 
 build: $(BIN_FILE)
+
+expand:
+	cd $(CARGO_ROOT)
+	cargo rustc --example $(EXAMPLE_NAME) $(PROFILE_OPTION) --target=$(TARGET) \
+	      --verbose --features mcu_$(PLATFORM) \
+	      -- -Z unstable-options --pretty=expanded
 
 clean:
 	cargo clean
