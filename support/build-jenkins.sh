@@ -56,7 +56,6 @@ else
       ;;
   esac
 
-  ./configure --host=arm-none-eabi
   cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --lib
 
   for e in $EXAMPLES; do
