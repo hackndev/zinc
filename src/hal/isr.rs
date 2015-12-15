@@ -19,7 +19,7 @@
 #![allow(missing_docs)]
 
 #[cfg(feature = "cpu_cortex-m0")]
-#[path="cortex_m3/isr.rs"] pub mod isr_cortex_m0;
+#[path="cortex_m0/isr.rs"] pub mod isr_cortex_m0;
 
 #[cfg(feature = "cpu_cortex-m3")]
 #[path="cortex_m3/isr.rs"] pub mod isr_cortex_m3;
