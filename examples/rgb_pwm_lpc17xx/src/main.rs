@@ -65,18 +65,15 @@ platformtree!(
       loop = "run";
       args {
         timer = &timer;
-        rgb_red = &rgb_red;
-        rgb_green = &rgb_green;
-        rgb_blue = &rgb_blue;
       }
     }
   }
 );
 
 fn run(args: &pt::run_args) {
-  let mut pwm_red = pwm::PWM::new(pwm::PWMChannel::CHANNEL4);
-  let mut pwm_green = pwm::PWM::new(pwm::PWMChannel::CHANNEL3);
-  let mut pwm_blue = pwm::PWM::new(pwm::PWMChannel::CHANNEL2);
+  let mut pwm_red = pwm::PWM::new(pwm::PWMChannel::Channel4, 20_000);
+  let mut pwm_green = pwm::PWM::new(pwm::PWMChannel::Channel3, 20_000);
+  let mut pwm_blue = pwm::PWM::new(pwm::PWMChannel::Channel2, 20_000);
 
   // turn all off
   pwm_red.write(0.0);

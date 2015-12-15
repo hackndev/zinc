@@ -30,30 +30,29 @@ const PWM_CLOCK_DIVISOR: u8 = 4;
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
 pub enum PWMChannel {
-  CHANNEL0_PERIOD_RESERVED = 0,  // reserved for period
-  CHANNEL1,
-  CHANNEL2,
-  CHANNEL3,
-  CHANNEL4,
-  CHANNEL5,
-  CHANNEL6,
+  Channel0PeriodReserved = 0,  // reserved for period
+  Channel1,
+  Channel2,
+  Channel3,
+  Channel4,
+  Channel5,
+  Channel6,
 }
 
 impl PWMChannel {
-
   /// Set the match register for this channel to the provided value
   fn set_mr(&self, value: u32) {
     // note that for whatever reason, the match registers are fragmented
     // across two registers.  They aren't even located next to each other
     // in memory
     match *self {
-      CHANNEL0_PERIOD_RESERVED => { reg::PWM1().mr[0].set_value(value); },
-      CHANNEL1 => { reg::PWM1().mr[1].set_value(value); },
-      CHANNEL2 => { reg::PWM1().mr[2].set_value(value); },
-      CHANNEL3 => { reg::PWM1().mr[3].set_value(value); },
-      CHANNEL4 => { reg::PWM1().mr2[0].set_value(value); },
-      CHANNEL5 => { reg::PWM1().mr2[1].set_value(value); },
-      CHANNEL6 => { reg::PWM1().mr2[2].set_value(value); },
+      Channel0PeriodReserved => { reg::PWM1().mr[0].set_value(value); },
+      Channel1 => { reg::PWM1().mr[1].set_value(value); },
+      Channel2 => { reg::PWM1().mr[2].set_value(value); },
+      Channel3 => { reg::PWM1().mr[3].set_value(value); },
+      Channel4 => { reg::PWM1().mr2[0].set_value(value); },
+      Channel5 => { reg::PWM1().mr2[1].set_value(value); },
+      Channel6 => { reg::PWM1().mr2[2].set_value(value); },
     };
   }
 }
@@ -75,9 +74,10 @@ pub struct PWM {
 }
 
 impl PWM {
-
   /// Create a new PWM Output on the provided channel
-  pub fn new(channel: PWMChannel) -> PWM {
+  ///
+  /// 20ms is a common period for PWM signal (20_000 us)
+  pub fn new(channel: PWMChannel, period_us: u32) -> PWM {
     PWM1Clock.enable();
     PWM1Clock.set_divisor(PWM_CLOCK_DIVISOR);
     reg::PWM1().pr.set_value(0);  // no prescaler
@@ -87,18 +87,18 @@ impl PWM {
 
     // enable PWM output on this channel
     match channel {
-      CHANNEL0_PERIOD_RESERVED => { unsafe { abort() } },  // CHANNEL0 reserved for internal use
-      CHANNEL1 => { reg::PWM1().pcr.set_pwmena1(true); },
-      CHANNEL2 => { reg::PWM1().pcr.set_pwmena2(true); },
-      CHANNEL3 => { reg::PWM1().pcr.set_pwmena3(true); },
-      CHANNEL4 => { reg::PWM1().pcr.set_pwmena4(true); },
-      CHANNEL5 => { reg::PWM1().pcr.set_pwmena5(true); },
-      CHANNEL6 => { reg::PWM1().pcr.set_pwmena6(true); },
+      Channel0PeriodReserved => { unsafe { abort() } },  // Channel0 reserved for internal use
+      Channel1 => { reg::PWM1().pcr.set_pwmena1(true); },
+      Channel2 => { reg::PWM1().pcr.set_pwmena2(true); },
+      Channel3 => { reg::PWM1().pcr.set_pwmena3(true); },
+      Channel4 => { reg::PWM1().pcr.set_pwmena4(true); },
+      Channel5 => { reg::PWM1().pcr.set_pwmena5(true); },
+      Channel6 => { reg::PWM1().pcr.set_pwmena6(true); },
     };
 
     let pwm = PWM {
       channel: channel,
-      period_us: 20_000,  // 20ms is pretty common
+      period_us: period_us,  // 20ms is pretty common
       pulsewidth_us: 0,
     };
 
@@ -116,12 +116,12 @@ impl PWM {
       .set_pwm_enable(reg::PWM1_tcr_pwm_enable::DISABLED);
 
     // setup match register to ticks per period on CH0
-    CHANNEL0_PERIOD_RESERVED.set_mr(pwm_us_to_ticks(self.period_us));
+    Channel0PeriodReserved.set_mr(pwm_us_to_ticks(self.period_us));
 
     // TODO(posborne): recalculate other registers based on the new period?
 
     // set the channel latch to update CH0 and CHN
-    reg::PWM1().ler.set_value(1 << CHANNEL0_PERIOD_RESERVED as u32);
+    reg::PWM1().ler.set_value(1 << Channel0PeriodReserved as u32);
 
     // enable counter and pwm; clear reset
     reg::PWM1().tcr
@@ -238,7 +238,7 @@ mod reg {
       13 => pwmmr4r,  //= if set, reset on pwmmr4
       14 => pwmmr4s,  //= if set, stop on pwmmr4
 
-      15=> pwmmr5i,  //= if set, interrupt on pwmmr5
+      15 => pwmmr5i,  //= if set, interrupt on pwmmr5
       16 => pwmmr5r,  //= if set, reset on pwmmr5
       17 => pwmmr5s,  //= if set, stop on pwmmr5
 
