@@ -47,7 +47,6 @@ The code is generic enough to support other MCUs in the same family (LPC17xx and
 STM32F403/407).
 */
 #![plugin(ioreg)]
-#![feature(no_std)]
 
 #[cfg(target_os = "none")]
 extern crate rlibc;

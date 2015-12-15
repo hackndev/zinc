@@ -1,4 +1,4 @@
-#![feature(plugin, no_std)]
+#![feature(plugin)]
 #![no_std]
 #![plugin(macro_zinc)]
 
