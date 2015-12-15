@@ -6,7 +6,6 @@
 // option.  This file may not be copied, modified, or distributed
 // except according to those terms.
 #![feature(plugin, start, core_intrinsics)]
-#![crate_type="staticlib"]
 #![no_std]
 #![plugin(macro_platformtree)]
 
