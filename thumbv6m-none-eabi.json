@@ -1,0 +1,21 @@
+{
+    "llvm-target": "thumbv6m-none-eabi",
+    "target-endian": "little",
+    "target-pointer-width": "32",
+    "os": "none",
+    "env": "eabi",
+    "vendor": "unknown",
+    "arch": "arm",
+
+    "data-layout": "e-m:e-p:32:32-i64:64-v128:64:128-a:0:32-n32-S64",
+    "pre-link-args": [
+        "-Tlayout.ld"
+    ],
+    "post-link-args": [
+        "-lm", "-lgcc", "-lnosys"
+    ],
+    "cpu": "cortex-m0",
+    "executables": true,
+    "relocation-model": "static",
+    "no-compiler-rt": true
+}

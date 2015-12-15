@@ -23,7 +23,7 @@ mcu_k20 = ["cpu_cortex-m4"]
 mcu_tiva_c = ["cpu_cortex-m4"]
 multitasking = ["cpu_cortex-m4"]
 
-[target.thumbv6-none-eabi.dependencies.core]
+[target.thumbv6m-none-eabi.dependencies.core]
 git = "https://github.com/hackndev/rust-libcore"
 
 [target.thumbv7m-none-eabi.dependencies.core]
