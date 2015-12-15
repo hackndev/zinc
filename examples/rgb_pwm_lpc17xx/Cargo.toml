@@ -1,0 +1,18 @@
+[package]
+name = "rgb_pwm_lpc17xx"
+version = "0.0.1"
+
+[features]
+default = ["mcu_lpc17xx"]
+mcu_lpc17xx = ["zinc/mcu_lpc17xx"]
+
+[dependencies]
+zinc = { path =  "../.." }
+macro_zinc = { path = "../../macro_zinc" }
+macro_platformtree = { path = "../../macro_platformtree" }
+core = { git = "https://github.com/hackndev/rust-libcore" }
+
+[[bin]]
+name = "rgb_pwm_lpc17xx"
+test = false
+doc = false

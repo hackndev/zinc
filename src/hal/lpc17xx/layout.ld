@@ -10,7 +10,7 @@ ENTRY(main)
 
 MEMORY
 {
-    rom(RX)   : ORIGIN = 0x00000000, LENGTH = 0x8000
+    rom(RX)   : ORIGIN = 0x00000000, LENGTH = 64K
     ram(WAIL) : ORIGIN = 0x10000000, LENGTH = 0x2000
 }
 
