@@ -1,4 +1,4 @@
-#![feature(plugin, no_std, start, core_intrinsics)]
+#![feature(plugin, start, core_intrinsics)]
 #![no_std]
 #![plugin(macro_platformtree)]
 

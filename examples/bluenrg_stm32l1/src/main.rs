@@ -1,4 +1,4 @@
-#![feature(no_std, start, core_intrinsics)]
+#![feature(start, core_intrinsics)]
 #![no_std]
 
 //! Sample application for BlueNRG communication over SPI in X-NUCLEO-IDB04A1

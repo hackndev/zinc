@@ -15,7 +15,7 @@
 
 //! A cell that with volatile setter and getter.
 
-#![feature(no_std, core_intrinsics)]
+#![feature(core_intrinsics)]
 #![no_std]
 
 
