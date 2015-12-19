@@ -8,4 +8,4 @@ mcu_stm32l1 = ["zinc/mcu_stm32l1"]
 
 [dependencies]
 zinc = { path =  "../.." }
-core = { git = "https://github.com/hackndev/rust-libcore" }
+rust-libcore = "*"
