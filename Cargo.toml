@@ -23,14 +23,14 @@ mcu_k20 = ["cpu_cortex-m4"]
 mcu_tiva_c = ["cpu_cortex-m4"]
 multitasking = ["cpu_cortex-m4"]
 
-[target.thumbv6m-none-eabi.dependencies.core]
-git = "https://github.com/hackndev/rust-libcore"
+[target.thumbv6m-none-eabi.dependencies]
+rust-libcore = "*"
 
-[target.thumbv7m-none-eabi.dependencies.core]
-git = "https://github.com/hackndev/rust-libcore"
+[target.thumbv7m-none-eabi.dependencies]
+rust-libcore = "*"
 
-[target.thumbv7em-none-eabi.dependencies.core]
-git = "https://github.com/hackndev/rust-libcore"
+[target.thumbv7em-none-eabi.dependencies]
+rust-libcore = "*"
 
 [dependencies.ioreg]
 path = "./ioreg"
