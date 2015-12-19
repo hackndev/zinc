@@ -8,7 +8,7 @@ extern crate zinc;
 fn main() {
   use core::option::Option;
   use zinc::hal::pin::Gpio;
-  use zinc::hal::stm32l1::{init, pin, timer};
+  use zinc::hal::stm32f1::{init, pin, timer};
   use zinc::hal::timer::Timer;
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
@@ -22,7 +22,7 @@ fn main() {
   };
   sys_clock.setup();
 
-  let led1 = pin::Pin::new(pin::Port::PortA, 5,
+  let led1 = pin::Pin::new(pin::Port::PortC, 13,
                            pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
                            pin::PullType::PullNone);
 
