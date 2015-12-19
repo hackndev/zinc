@@ -34,74 +34,32 @@ pub enum Port {
   PortE,
   PortF,
   PortG,
-  PortH,
 }
 
-/// Pin output type.
+/// Pin output mode.
 #[allow(missing_docs)]
 #[repr(u8)]
 #[derive(Clone, Copy)]
-pub enum OutputType {
-  OutPushPull  = 0,
-  OutOpenDrain = 1,
-}
-
-/// Pin pull resistors: up, down, or none.
-#[allow(missing_docs)]
-#[repr(u8)]
-#[derive(Clone, Copy)]
-pub enum PullType {
-  PullNone = 0,
-  PullUp   = 1,
-  PullDown = 2,
-}
-
-/// Pin speed.
-#[repr(u8)]
-#[derive(Clone, Copy)]
-pub enum Speed {
-  /// 400 KHz
-  VeryLow = 0,
-  /// 2 MHz
-  Low     = 1,
-  /// 10 MHz
-  Medium  = 2,
-  /// 40 MHz
-  High    = 3,
-}
-
-/// Extended pin modes.
-#[allow(missing_docs, non_camel_case_types)]
-#[repr(u8)]
-#[derive(Clone, Copy)]
-pub enum AltMode {
-  AfRtc50Mhz_Mco_RtcAfl_Wakeup_SwJtag_Trace = 0,
-  AfTim2 = 1,
-  AfTim3_Tim4_Tim5 = 2,
-  AfTim9_Tim10_Tim11 = 3,
-  AfI2C1_I2C2 = 4,
-  AfSpi1_Spi2 = 5,
-  AfSpi3 = 6,
-  AfUsart1_Usart2_Usart3 = 7,
-  AfUart4_Uart5 = 8,
-  AfUsb = 10,
-  AfLcd = 11,
-  AfFsmc_Sdio = 12,
-  AfRe = 14,
-  AfEventOut = 15,
-}
-
-/// Pin mode.
-#[derive(Clone, Copy)]
-pub enum Mode {
-  /// GPIO Input Mode
-  GpioIn,
-  /// GPIO Output Mode
-  GpioOut(OutputType, Speed),
-  /// GPIO Alternate function Mode
-  AltFunction(AltMode, OutputType, Speed),
-  /// GPIO Analog Mode
-  Analog,
+pub enum PinConf {
+  /* Input mode */
+  InAnalog,
+  InFloating,
+  InPullUpDown,
+  /* Output mode, max speed 10 MHz */
+  OutPushPull_10MHz,
+  OutOpenDrain_10MHz,
+  OutPushPullAlt_10MHz,
+  OutOpenDrainAlt_10MHz,
+  /* Output mode, max speed 2 MHz */
+  OutPushPull_2MHz,
+  OutOpenDrain_2MHz,
+  OutPushPullAlt_2MHz,
+  OutOpenDrainAlt_2MHz,
+  /* Output mode, max speed 50 MHz */
+  OutPushPull_50MHz,
+  OutOpenDrain_50MHz,
+  OutPushPullAlt_50MHz,
+  OutOpenDrainAlt_50MHz,
 }
 
 /// Pin configuration.
@@ -116,9 +74,9 @@ pub struct Pin {
 impl Pin {
   /// Setup the pin.
   #[inline(always)]
-  pub fn new(port: Port, pin_index: u8, mode: Mode, pull_type: PullType) -> Pin {
+  pub fn new(port: Port, pin_index: u8, mode: PinConf) -> Pin {
     use hal::stm32l1::peripheral_clock::BusAhb as clock;
-    use self::Mode::*;
+    use self::PinConf::*;
     let (reg, clock) = match port {
       PortA => (&reg::GPIOA, clock::GpioA),
       PortB => (&reg::GPIOB, clock::GpioB),
@@ -127,58 +85,42 @@ impl Pin {
       PortE => (&reg::GPIOE, clock::GpioE),
       PortF => (&reg::GPIOF, clock::GpioF),
       PortG => (&reg::GPIOG, clock::GpioG),
-      PortH => (&reg::GPIOH, clock::GpioH),
     };
     // TODO(farcaller): should be done once per port
-    peripheral_clock::PeripheralClock::Ahb(clock).enable();
+    peripheral_clock::PeripheralClock::Apb2(clock).enable();
 
-    let offset1 = pin_index as usize;
-    let mask1 = !(0b1u16 << offset1);
-    let offset2 = pin_index as usize * 2;
-    let mask2: u32 = !(0b11 << offset2);
-
-    let fun: u32 = match mode {
-      GpioIn  => 0b00,
-      GpioOut(otype, speed) => {
-        // set type and speed
-        let tv: u16 = reg.otyper.otype() & mask1;
-        reg.otyper.set_otype(tv | ((otype as u16) << offset1));
-        let sv: u32 = reg.ospeedr.speed() & mask2;
-        reg.ospeedr.set_speed(sv | ((speed as u32) << offset2));
-        // done
-        0b01
-      },
-      AltFunction(alt, otype, speed) => {
-        // set type and speed
-        let tv: u16 = reg.otyper.otype() & mask1;
-        reg.otyper.set_otype(tv | ((otype as u16) << offset1));
-        let sv: u32 = reg.ospeedr.speed() & mask2;
-        reg.ospeedr.set_speed(sv | ((speed as u32) << offset2));
-        // set alt mode
-        let mut off = (pin_index as usize) << 2;
-        if pin_index < 8 {
-          let v = reg.afrl.alt_fun() & !(0xF << off);
-          reg.afrl.set_alt_fun(v | ((alt as u32) << off));
-        }else {
-          off -= 32;
-          let v = reg.afrh.alt_fun() & !(0xF << off);
-          reg.afrh.set_alt_fun(v | ((alt as u32) << off));
-        }
-        // done
-        0b10
-      },
-      Analog => {
-        //unsafe { abort() } //TODO
-        0b11
-      },
+    let conf: u32 = match mode {
+      /* Input mode */
+      InAnalog              => 0b00_00,
+      InFloating            => 0b01_00,
+      InPullUpDown          => 0b10_00,
+      /* Output mode, max speed 10 MHz */
+      OutPushPull_10MHz     => 0b00_01,
+      OutOpenDrain_10MHz    => 0b01_01,
+      OutPushPullAlt_10MHz  => 0b10_01,
+      OutOpenDrainAlt_10MHz => 0b11_01,
+      /* Output mode, max speed 2 MHz */
+      OutPushPull_2MHz      => 0b00_10,
+      OutOpenDrain_2MHz     => 0b01_10,
+      OutPushPullAlt_2MHz   => 0b10_10,
+      OutOpenDrainAlt_2MHz  => 0b11_10,
+      /* Output mode, max speed 50 MHz */
+      OutPushPull_50MHz     => 0b00_11,
+      OutOpenDrain_50MHz    => 0b01_11,
+      OutPushPullAlt_50MHz  => 0b10_11,
+      OutOpenDrainAlt_50MHz => 0b11_11,
     };
 
-    let mode: u32 = reg.moder.mode() & mask2;
-    reg.moder.set_mode(mode | (fun << offset2));
+    let offset = (pin_index % 8) as usize * 4;
+    let mask = !(0xFu32 << offset);
 
-    let pull: u32 = reg.pupdr.mode() & mask2;
-    let pull_val = (pull_type as u32) << offset2;
-    reg.pupdr.set_mode(pull | pull_val);
+    if pin_index < 8 {
+        let mode: u32 = reg.crlr.mode() & mask;
+        reg.moder.set_crlr(conf << offset);
+    } else {
+        let mode: u32 = reg.crhr.mode() & mask;
+        reg.moder.set_crhr(conf << offset);
+    }
 
     Pin {
       index: pin_index,
@@ -206,11 +148,6 @@ impl ::hal::pin::Gpio for Pin {
       _ => ::hal::pin::High,
     }
   }
-
-  fn set_direction(&self, _new_mode: ::hal::pin::GpioDirection) {
-    //TODO(kvark)
-    unsafe { abort() }
-  }
 }
 
 mod reg {
@@ -218,38 +155,26 @@ mod reg {
   use core::ops::Drop;
 
   ioregs!(GPIO = {
-    0x00 => reg32 moder {   // port mode
-      31..0 => mode : rw,
+    0x00 => reg32 crlr {   // port mode
+      31..0 => crl : rw,
     },
-    0x04 => reg16 otyper {  // port output type
-      15..0 => otype : rw,
+    0x04 => reg32 crhr {  // port output type
+      31..0 => crh : rw,
     },
-    0x08 => reg32 ospeedr { // port output speed
-      31..0 => speed : rw,
-    },
-    0x0C => reg32 pupdr {   // port pull-up/pull-down
-      31..0 => mode : rw,
-    },
-    0x10 => reg16 idr {     // port input data
+    0x08 => reg16 idr {     // port input data
       15..0 => input : rw,
     },
-    0x14 => reg16 odr {     // port output data
+    0x0c => reg16 odr {     // port output data
       15..0 => output : rw,
     },
-    0x18 => reg32 bsrr {    // port bit set/reset
+    0x10 => reg32 bsrr {    // port bit set/reset
       31..0 => reset : rw,
     },
-    0x1C => reg32 lckr {    // port configuration lock
+    // 0x14 => reg16 brr {      // bit reset register
+    //   15..0 => reset : rw,
+    // },
+    0x18 => reg32 lckr {    // port configuration lock
       31..0 => config_lock : rw,
-    },
-    0x20 => reg32 afrl {    // alternate function low
-      31..0 => alt_fun : rw,
-    },
-    0x24 => reg32 afrh {     // alternate function high
-      31..0 => alt_fun : rw,
-    },
-    0x28 => reg16 brr {      // bit reset register
-      15..0 => reset : rw,
     },
   });
 
@@ -261,6 +186,5 @@ mod reg {
     #[link_name="stm32l1_iomem_GPIOE"] pub static GPIOE: GPIO;
     #[link_name="stm32l1_iomem_GPIOF"] pub static GPIOF: GPIO;
     #[link_name="stm32l1_iomem_GPIOG"] pub static GPIOG: GPIO;
-    #[link_name="stm32l1_iomem_GPIOH"] pub static GPIOH: GPIO;
   }
 }
