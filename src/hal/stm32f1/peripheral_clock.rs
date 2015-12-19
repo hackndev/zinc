@@ -30,21 +30,13 @@ pub use self::PeripheralClock::*;
 #[repr(u8)]
 #[derive(Clone)]
 pub enum BusAhb {
-  GpioA,
-  GpioB,
-  GpioC,
-  GpioD,
-  GpioE,
-  GpioF,
-  GpioG,
-  GpioH,
-  Crc,
-  Flitf,
-  Sram,
   Dma1,
   Dma2,
-  Aes,
+  Sram,
+  Flitf,
+  Crc,
   Fsmc,
+  Sdio,
 }
 
 impl Copy for BusAhb {}
@@ -53,21 +45,13 @@ impl BusAhb {
   fn to_reg_bit(self) -> u32 {
     use self::BusAhb::*;
     1 << match self {
-      GpioA      => 0,
-      GpioB      => 1,
-      GpioC      => 2,
-      GpioD      => 3,
-      GpioE      => 4,
-      GpioF      => 5,
-      GpioG      => 6,
-      GpioH      => 7,
-      Crc        => 12,
-      Flitf      => 15,
-      Sram       => 16,
-      Dma1       => 24,
-      Dma2       => 25,
-      Aes        => 27,
-      Fsmc       => 30,
+      Dma1       => 0,
+      Dma2       => 1,
+      Sram       => 2,
+      Flitf      => 4,
+      Crc        => 6,
+      Fsmc       => 8,
+      Sdio       => 10,
     }
   }
 
@@ -90,7 +74,9 @@ pub enum BusApb1 {
   Tim5,
   Tim6,
   Tim7,
-  Lcd,
+  Tim12,
+  Tim13,
+  Tim14,
   Wwdg,
   Spi2,
   Spi3,
@@ -101,9 +87,10 @@ pub enum BusApb1 {
   I2C1,
   I2C2,
   Usb,
+  Can,
+  Bkp,
   Pwr,
   Dac,
-  Comp,
 }
 
 impl BusApb1 {
@@ -116,7 +103,9 @@ impl BusApb1 {
       Tim5       => 3,
       Tim6       => 4,
       Tim7       => 5,
-      Lcd        => 9,
+      Tim12      => 6,
+      Tim13      => 7,
+      Tim14      => 8,
       Wwdg       => 11,
       Spi2       => 14,
       Spi3       => 15,
@@ -127,9 +116,10 @@ impl BusApb1 {
       I2C1       => 21,
       I2C2       => 22,
       Usb        => 23,
+      Can        => 25,
+      Bkp        => 27,
       Pwr        => 28,
       Dac        => 29,
-      Comp       => 31,
     }
   }
 
@@ -148,28 +138,48 @@ impl Copy for BusApb1 {}
 #[repr(u8)]
 #[derive(Clone)]
 pub enum BusApb2 {
-  SysCfg,
+  Afio,
+  GpioA,
+  GpioB,
+  GpioC,
+  GpioD,
+  GpioE,
+  GpioF,
+  GpioG,
+  Adc1,
+  Adc2,
+  Tim1,
+  Spi1,
+  Tim8,
+  Usart1,
+  Adc3,
   Tim9,
   Tim10,
   Tim11,
-  Adc1,
-  Sdio,
-  Spi1,
-  Usart1,
 }
 
 impl BusApb2 {
   fn to_reg_bit(self) -> u32 {
     use self::BusApb2::*;
     1 << match self {
-      SysCfg     => 0,
-      Tim9       => 2,
-      Tim10      => 3,
-      Tim11      => 4,
+      Afio       => 0,
+      GpioA      => 2,
+      GpioB      => 3,
+      GpioC      => 4,
+      GpioD      => 5,
+      GpioE      => 6,
+      GpioF      => 7,
+      GpioG      => 8,
       Adc1       => 9,
-      Sdio       => 11,
+      Adc2       => 10,
+      Tim1       => 11,
       Spi1       => 12,
+      Tim8       => 13,
       Usart1     => 14,
+      Adc3       => 15,
+      Tim9       => 19,
+      Tim10      => 20,
+      Tim11      => 21,
     }
   }
 
