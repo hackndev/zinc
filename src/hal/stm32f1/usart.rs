@@ -24,7 +24,7 @@ use core::intrinsics::abort;
 
 use drivers::chario::CharIO;
 use hal::uart;
-use hal::stm32l1::init;
+use hal::stm32f1::init;
 
 use self::UsartPeripheral::*;
 
@@ -77,8 +77,8 @@ impl Usart {
   pub fn new(peripheral: UsartPeripheral, baudrate: u32, word_len: WordLen,
              parity: uart::Parity, stop_bits: StopBit,
              config: &init::ClockConfig) -> Usart {
-    use hal::stm32l1::peripheral_clock::PeripheralClock;
-    use hal::stm32l1::peripheral_clock as clock;
+    use hal::stm32f1::peripheral_clock::PeripheralClock;
+    use hal::stm32f1::peripheral_clock as clock;
     use hal::uart::Parity::*;
 
     let (reg, clock) = match peripheral {
@@ -216,10 +216,10 @@ mod reg {
   });
 
   extern {
-    #[link_name="stm32l1_iomem_USART1"] pub static USART1: USART;
-    #[link_name="stm32l1_iomem_USART2"] pub static USART2: USART;
-    #[link_name="stm32l1_iomem_USART3"] pub static USART3: USART;
-    #[link_name="stm32l1_iomem_UART4"]  pub static UART4:  USART;
-    #[link_name="stm32l1_iomem_UART5"]  pub static UART5:  USART;
+    #[link_name="stm32f1_iomem_USART1"] pub static USART1: USART;
+    #[link_name="stm32f1_iomem_USART2"] pub static USART2: USART;
+    #[link_name="stm32f1_iomem_USART3"] pub static USART3: USART;
+    #[link_name="stm32f1_iomem_UART4"]  pub static UART4:  USART;
+    #[link_name="stm32f1_iomem_UART5"]  pub static UART5:  USART;
   }
 }

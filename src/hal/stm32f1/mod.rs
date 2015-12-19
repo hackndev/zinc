@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! HAL for STM32L1.
+//! HAL for STM32F1.
 
 pub mod init;
 pub mod peripheral_clock;

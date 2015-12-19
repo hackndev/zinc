@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Timer configuration for ST STM32L1.
+//! Timer configuration for ST STM32F1.
 //!
 //! This code supports only TIM2 at the moment.
 
@@ -133,6 +133,6 @@ mod reg {
   });
 
   extern {
-    #[link_name="stm32l1_iomem_TIM2"] pub static TIM2: TIMER;
+    #[link_name="stm32f1_iomem_TIM2"] pub static TIM2: TIMER;
   }
 }

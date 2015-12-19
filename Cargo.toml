@@ -17,6 +17,7 @@ cpu_cortex-m4 = []
 
 mcu_lpc11xx = ["cpu_cortex-m0"]
 mcu_lpc17xx = ["cpu_cortex-m3"]
+mcu_stm32f1 = ["cpu_cortex-m3"]
 mcu_stm32f4 = ["cpu_cortex-m4"]
 mcu_stm32l1 = ["cpu_cortex-m3"]
 mcu_k20 = ["cpu_cortex-m4"]

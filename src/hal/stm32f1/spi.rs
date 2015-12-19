@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Serial Peripheral Interface for STM32L1.
+//! Serial Peripheral Interface for STM32F1.
 
 use core::result::Result;
 use core::result::Result::{Ok, Err};
@@ -111,7 +111,7 @@ impl Spi {
   pub fn new(peripheral: Peripheral, direction: Direction,
              role: Role, data_size: DataSize, format: DataFormat,
              prescaler_shift: u8) -> Result<Spi, Error> {
-    use hal::stm32l1::peripheral_clock as clock;
+    use hal::stm32f1::peripheral_clock as clock;
 
     let (reg, clock) = match peripheral {
       Peripheral::Spi1 => (&reg::SPI1, clock::Apb2(clock::BusApb2::Spi1)),
@@ -276,8 +276,8 @@ mod reg {
   });
 
   extern {
-    #[link_name="stm32l1_iomem_SPI1"] pub static SPI1: SPI;
-    #[link_name="stm32l1_iomem_SPI2"] pub static SPI2: SPI;
-    #[link_name="stm32l1_iomem_SPI3"] pub static SPI3: SPI;
+    #[link_name="stm32f1_iomem_SPI1"] pub static SPI1: SPI;
+    #[link_name="stm32f1_iomem_SPI2"] pub static SPI2: SPI;
+    #[link_name="stm32f1_iomem_SPI3"] pub static SPI3: SPI;
   }
 }

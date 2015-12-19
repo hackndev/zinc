@@ -22,9 +22,7 @@ fn main() {
   };
   sys_clock.setup();
 
-  let led1 = pin::Pin::new(pin::Port::PortC, 13,
-                           pin::Mode::GpioOut(pin::OutputType::OutPushPull, pin::Speed::VeryLow),
-                           pin::PullType::PullNone);
+  let led1 = pin::Pin::new(pin::Port::PortC, 13, pin::PinConf::OutPushPull50MHz);
 
   // TODO(kvark): why doesn't "sys_clock.get_apb1_frequency()" work better?
   let timer_clock = sys_clock.source.frequency();

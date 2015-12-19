@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! Pin configuration for ST STM32L1.
+//! Pin configuration for ST STM32F1.
 //!
 //! Some pins that could be configured here may be missing from actual MCU
 //! depending on the package.
@@ -46,20 +46,20 @@ pub enum PinConf {
   InFloating,
   InPullUpDown,
   /* Output mode, max speed 10 MHz */
-  OutPushPull_10MHz,
-  OutOpenDrain_10MHz,
-  OutPushPullAlt_10MHz,
-  OutOpenDrainAlt_10MHz,
+  OutPushPull10MHz,
+  OutOpenDrain10MHz,
+  OutPushPullAlt10MHz,
+  OutOpenDrainAlt10MHz,
   /* Output mode, max speed 2 MHz */
-  OutPushPull_2MHz,
-  OutOpenDrain_2MHz,
-  OutPushPullAlt_2MHz,
-  OutOpenDrainAlt_2MHz,
+  OutPushPull2MHz,
+  OutOpenDrain2MHz,
+  OutPushPullAlt2MHz,
+  OutOpenDrainAlt2MHz,
   /* Output mode, max speed 50 MHz */
-  OutPushPull_50MHz,
-  OutOpenDrain_50MHz,
-  OutPushPullAlt_50MHz,
-  OutOpenDrainAlt_50MHz,
+  OutPushPull50MHz,
+  OutOpenDrain50MHz,
+  OutPushPullAlt50MHz,
+  OutOpenDrainAlt50MHz,
 }
 
 /// Pin configuration.
@@ -75,7 +75,7 @@ impl Pin {
   /// Setup the pin.
   #[inline(always)]
   pub fn new(port: Port, pin_index: u8, mode: PinConf) -> Pin {
-    use hal::stm32l1::peripheral_clock::BusAhb as clock;
+    use hal::stm32f1::peripheral_clock::BusApb2 as clock;
     use self::PinConf::*;
     let (reg, clock) = match port {
       PortA => (&reg::GPIOA, clock::GpioA),
@@ -95,31 +95,31 @@ impl Pin {
       InFloating            => 0b01_00,
       InPullUpDown          => 0b10_00,
       /* Output mode, max speed 10 MHz */
-      OutPushPull_10MHz     => 0b00_01,
-      OutOpenDrain_10MHz    => 0b01_01,
-      OutPushPullAlt_10MHz  => 0b10_01,
-      OutOpenDrainAlt_10MHz => 0b11_01,
+      OutPushPull10MHz     => 0b00_01,
+      OutOpenDrain10MHz    => 0b01_01,
+      OutPushPullAlt10MHz  => 0b10_01,
+      OutOpenDrainAlt10MHz => 0b11_01,
       /* Output mode, max speed 2 MHz */
-      OutPushPull_2MHz      => 0b00_10,
-      OutOpenDrain_2MHz     => 0b01_10,
-      OutPushPullAlt_2MHz   => 0b10_10,
-      OutOpenDrainAlt_2MHz  => 0b11_10,
+      OutPushPull2MHz      => 0b00_10,
+      OutOpenDrain2MHz     => 0b01_10,
+      OutPushPullAlt2MHz   => 0b10_10,
+      OutOpenDrainAlt2MHz  => 0b11_10,
       /* Output mode, max speed 50 MHz */
-      OutPushPull_50MHz     => 0b00_11,
-      OutOpenDrain_50MHz    => 0b01_11,
-      OutPushPullAlt_50MHz  => 0b10_11,
-      OutOpenDrainAlt_50MHz => 0b11_11,
+      OutPushPull50MHz     => 0b00_11,
+      OutOpenDrain50MHz    => 0b01_11,
+      OutPushPullAlt50MHz  => 0b10_11,
+      OutOpenDrainAlt50MHz => 0b11_11,
     };
 
     let offset = (pin_index % 8) as usize * 4;
     let mask = !(0xFu32 << offset);
 
     if pin_index < 8 {
-        let mode: u32 = reg.crlr.mode() & mask;
-        reg.moder.set_crlr(conf << offset);
+        let mode: u32 = reg.crlr.crl() & mask;
+        reg.crlr.set_crl(mode | (conf << offset));
     } else {
-        let mode: u32 = reg.crhr.mode() & mask;
-        reg.moder.set_crhr(conf << offset);
+        let mode: u32 = reg.crhr.crh() & mask;
+        reg.crhr.set_crh(mode | (conf << offset));
     }
 
     Pin {
@@ -147,6 +147,11 @@ impl ::hal::pin::Gpio for Pin {
       0 => ::hal::pin::Low,
       _ => ::hal::pin::High,
     }
+  }
+
+  fn set_direction(&self, _new_mode: ::hal::pin::GpioDirection) {
+    //TODO(kvark)
+    unsafe { abort() }
   }
 }
 
@@ -179,12 +184,12 @@ mod reg {
   });
 
   extern {
-    #[link_name="stm32l1_iomem_GPIOA"] pub static GPIOA: GPIO;
-    #[link_name="stm32l1_iomem_GPIOB"] pub static GPIOB: GPIO;
-    #[link_name="stm32l1_iomem_GPIOC"] pub static GPIOC: GPIO;
-    #[link_name="stm32l1_iomem_GPIOD"] pub static GPIOD: GPIO;
-    #[link_name="stm32l1_iomem_GPIOE"] pub static GPIOE: GPIO;
-    #[link_name="stm32l1_iomem_GPIOF"] pub static GPIOF: GPIO;
-    #[link_name="stm32l1_iomem_GPIOG"] pub static GPIOG: GPIO;
+    #[link_name="stm32f1_iomem_GPIOA"] pub static GPIOA: GPIO;
+    #[link_name="stm32f1_iomem_GPIOB"] pub static GPIOB: GPIO;
+    #[link_name="stm32f1_iomem_GPIOC"] pub static GPIOC: GPIO;
+    #[link_name="stm32f1_iomem_GPIOD"] pub static GPIOD: GPIO;
+    #[link_name="stm32f1_iomem_GPIOE"] pub static GPIOE: GPIO;
+    #[link_name="stm32f1_iomem_GPIOF"] pub static GPIOF: GPIO;
+    #[link_name="stm32f1_iomem_GPIOG"] pub static GPIOG: GPIO;
   }
 }
