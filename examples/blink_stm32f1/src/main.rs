@@ -13,14 +13,8 @@ fn main() {
   zinc::hal::mem_init::init_stack();
   zinc::hal::mem_init::init_data();
 
-  let sys_clock = init::ClockConfig {
-    source: init::SystemClockSource::SystemClockHSI,
-    ahb_shift: 0,
-    apb1_shift: 0,
-    apb2_shift: 0,
-    mco: Option::None,
-  };
-  sys_clock.setup();
+  let sys_clock = init::ClockConfig::new_default();
+  //sys_clock.setup();
 
   let led1 = pin::Pin::new(pin::Port::PortC, 13, pin::PinConf::OutPushPull50MHz);
 
