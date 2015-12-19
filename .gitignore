@@ -1,5 +1,6 @@
 /build/
 /thirdparty/
+/doc/
 .DS_Store
 Cargo.lock
 target
