@@ -91,9 +91,9 @@ impl Pin {
 
     let conf: u32 = match mode {
       /* Input mode */
-      InAnalog              => 0b00_00,
-      InFloating            => 0b01_00,
-      InPullUpDown          => 0b10_00,
+      InAnalog             => 0b00_00,
+      InFloating           => 0b01_00,
+      InPullUpDown         => 0b10_00,
       /* Output mode, max speed 10 MHz */
       OutPushPull10MHz     => 0b00_01,
       OutOpenDrain10MHz    => 0b01_01,
@@ -132,11 +132,11 @@ impl Pin {
 impl ::hal::pin::Gpio for Pin {
   fn set_high(&self) {
     let bit: u32 = 1 << self.index as usize;
-    self.reg.bsrr.set_reset(bit);
+    self.reg.bsrr.set_set(bit);
   }
 
   fn set_low(&self) {
-    let bit: u32 = 1 << (self.index as usize + 16);
+    let bit: u32 = 1 << self.index as usize;
     self.reg.bsrr.set_reset(bit);
   }
 
@@ -173,13 +173,15 @@ mod reg {
       15..0 => output : rw,
     },
     0x10 => reg32 bsrr {    // port bit set/reset
-      31..0 => reset : rw,
+      15..0  => set : rw,
+      31..16 => reset : rw,
     },
-    // 0x14 => reg16 brr {      // bit reset register
-    //   15..0 => reset : rw,
-    // },
+    0x14 => reg16 brr {      // bit reset register
+      15..0 => reset : rw,
+    },
     0x18 => reg32 lckr {    // port configuration lock
-      31..0 => config_lock : rw,
+      16..0 => lock_key : rw,
+      17    => lock : rw,
     },
   });
 
