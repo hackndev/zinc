@@ -20,11 +20,15 @@
 
 //use hal::mem_init::init_data;
 use core::default;
-use core::intrinsics::abort;
 
 use self::SystemClockSource::*;
+use self::PllClockSource::*;
+use self::PllHsePrediv::*;
+use self::PllUsbDiv::*;
+use self::PllMult::*;
 use self::ClockAhbPrescaler::*;
 use self::ClockApbPrescaler::*;
+use self::FlashLatency::*;
 use self::McoSource::*;
 
 #[path="../../util/wait_for.rs"]
@@ -45,21 +49,21 @@ pub enum PllClockSource {
 #[repr(u8)]
 #[derive(Clone, Copy)]
 pub enum PllMult {
-  PllMul2,
-  PllMul3,
-  PllMul4,
-  PllMul5,
-  PllMul6,
-  PllMul7,
-  PllMul8,
-  PllMul9,
-  PllMul10,
-  PllMul11,
-  PllMul12,
-  PllMul13,
-  PllMul14,
-  PllMul15,
-  PllMul16,
+  /*  0 = 0b0000 */ PllMul2,
+  /*  1 = 0b0001 */ PllMul3,
+  /*  2 = 0b0010 */ PllMul4,
+  /*  3 = 0b0011 */ PllMul5,
+  /*  4 = 0b0100 */ PllMul6,
+  /*  5 = 0b0101 */ PllMul7,
+  /*  6 = 0b0110 */ PllMul8,
+  /*  7 = 0b0111 */ PllMul9,
+  /*  8 = 0b1000 */ PllMul10,
+  /*  9 = 0b1001 */ PllMul11,
+  /* 10 = 0b1010 */ PllMul12,
+  /* 11 = 0b1011 */ PllMul13,
+  /* 12 = 0b1100 */ PllMul14,
+  /* 13 = 0b1101 */ PllMul15,
+  /* 14 = 0b1110 */ PllMul16,
 }
 
 #[allow(missing_docs)]
@@ -84,7 +88,7 @@ pub struct PllConf {
     pub source: PllClockSource,
     pub mult: PllMult,
     pub hse_prediv: PllHsePrediv,
-    pub usb_psc: PllUsbDiv,
+    pub usb_prescaler: PllUsbDiv,
 }
 
 /// System clock source.
@@ -110,8 +114,18 @@ impl SystemClockSource {
   pub fn frequency(&self) -> u32 {
     match *self {
         SystemClockHSI => 8_000_000,
-        SystemClockHSE(_) => unsafe { abort() }, //TODO(kvark)
-        SystemClockPLL(_) => unsafe { abort() }, //TODO(kvark)
+        SystemClockHSE(frequency) => frequency,
+        SystemClockPLL(pll_conf) => {
+            let pll_in = match pll_conf.source {
+                PllSourceHSIDiv2 => 4_000_000,
+                PllSourceHSE(frequency) => match pll_conf.hse_prediv {
+                    PllHsePrediv1 => frequency,
+                    PllHsePrediv2 => frequency >> 1,
+                },
+            };
+            let mul = pll_conf.mult as u32 + 2;
+            pll_in * mul
+        }
     }
   }
 }
@@ -153,6 +167,15 @@ pub enum ClockApbPrescaler {
     ApbDiv16,
 }
 
+#[allow(missing_docs)]
+#[repr(u8)]
+#[derive(Clone, Copy)]
+pub enum FlashLatency {
+    FlashLatency0,
+    FlashLatency1,
+    FlashLatency2,
+}
+
 /// System clock configuration.
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
@@ -161,6 +184,7 @@ pub struct ClockConfig {
   pub ahb_prescaler : ClockAhbPrescaler,
   pub apb1_prescaler : ClockApbPrescaler,
   pub apb2_prescaler : ClockApbPrescaler,
+  pub flash_latency : FlashLatency,
   pub mco : McoSource,
 }
 
@@ -171,6 +195,7 @@ impl default::Default for ClockConfig {
       ahb_prescaler : AhbDivNone,
       apb1_prescaler : ApbDivNone,
       apb2_prescaler : ApbDivNone,
+      flash_latency : FlashLatency0,
       mco: McoClockNone,
     }
   }
@@ -184,30 +209,86 @@ impl ClockConfig {
 
   /// Set this configuration on the hardware.
   pub fn setup(&self) {
-    let r = &reg::RCC;
+    let rcc = &reg::RCC;
+    let flash = &reg::FLASH;
 
     let source_type = match self.source {
       SystemClockHSI => {
-        r.cr.set_hsi_on(true);
-        wait_for!(r.cr.hsi_ready());
-        0b00
+        rcc.cr.set_hsi_on(true);
+        wait_for!(rcc.cr.hsi_ready());
+        0b00  // system_clock = HSI
       },
       SystemClockHSE(_) => {
-        r.cr.set_hse_on(true);
-        wait_for!(r.cr.hse_ready());
-        //TODO(kvark): HSE config
-        0b01
+        rcc.cr.set_hse_on(true);
+        wait_for!(rcc.cr.hse_ready());
+        0b01  // system_clock = HSE
       },
-      SystemClockPLL(_pll_conf) => {
-        r.cr.set_pll_on(true);
-        wait_for!(r.cr.pll_ready());
-        //TODO(blazewicz): PLL config
-        0b10
-      }
+      SystemClockPLL(pll_conf) => {
+        match rcc.cfgr.system_clock() {
+            // if PLL is current clock source, temporarly switch it to HSI
+            // because otherwise we cannot modify it
+            // TODO(blazewicz): check if HSI is on
+            0b10 => {
+                rcc.cfgr.set_system_clock(0b00);
+            },
+            _ => ()
+        };
+
+        // disable PLL
+        rcc.cr.set_pll_on(false);
+        wait_for!(!rcc.cr.pll_ready());
+
+        // set pll clock source
+        let pll_clock_source = match pll_conf.source {
+            PllSourceHSIDiv2 => {
+                rcc.cr.set_hsi_on(true);
+                wait_for!(rcc.cr.hsi_ready());
+                false // pll_clock_source = HSI divided by 2
+            },
+            PllSourceHSE(_)  => {
+                rcc.cr.set_hse_on(true);
+
+                // set HSE divider for PLL entry
+                let pll_hse_divider = match pll_conf.hse_prediv {
+                    PllHsePrediv1 => false,
+                    PllHsePrediv2 => true,
+                };
+                rcc.cfgr.set_pll_hse_divider(pll_hse_divider);
+
+                wait_for!(rcc.cr.hse_ready());
+                true // pll_clock_source = HSE
+            },
+        };
+        rcc.cfgr.set_pll_clock_source(pll_clock_source);
+
+        // set pll multiplication factor
+        rcc.cfgr.set_pll_mul_factor(pll_conf.mult as u32);
+
+        // set USB prescaler (max 48 MHz)
+        let usb_prescaler = match pll_conf.usb_prescaler {
+            PllUsbDiv1p5 => false,
+            PllUsbDiv1   => true,
+        };
+        rcc.cfgr.set_usb_prescaler(usb_prescaler);
+
+        // enable PLL
+        rcc.cr.set_pll_on(true);
+        wait_for!(rcc.cr.pll_ready());
+
+        0b10 // system_clock = PLL
+       }
     };
 
-    r.cfgr.set_system_clock(source_type);
-    wait_for!(r.cfgr.system_clock_status() == source_type);
+    /* TODO(blazewicz): configuring flash latency is straightforward
+     * and could be done automatically:
+     *       0 < SYSCLK <= 24 MHz => 0
+     *  24 MHz < SYSCLK <= 48 MHz => 1
+     *  48 MHz < SYSCLK <= 72 MHz => 2
+     */
+    flash.acr.set_latency(self.flash_latency as u32);
+
+    rcc.cfgr.set_system_clock(source_type);
+    wait_for!(rcc.cfgr.system_clock_status() == source_type);
 
     let ahb_select = match self.ahb_prescaler {
         AhbDivNone => 0b0000u32,
@@ -215,13 +296,15 @@ impl ClockConfig {
         AhbDiv4    => 0b1001u32,
         AhbDiv8    => 0b1010u32,
         AhbDiv16   => 0b1011u32,
+        //NOTE(blazewicz): there is no /32
         AhbDiv64   => 0b1100u32,
         AhbDiv128  => 0b1101u32,
         AhbDiv256  => 0b1110u32,
         AhbDiv512  => 0b1111u32,
     };
-    r.cfgr.set_ahb_prescaler(ahb_select);
+    rcc.cfgr.set_ahb_prescaler(ahb_select);
 
+    // (max 36 MHz)
     let apb1_select = match self.apb1_prescaler {
         ApbDivNone => 0b000u32,
         ApbDiv2    => 0b100u32,
@@ -229,7 +312,7 @@ impl ClockConfig {
         ApbDiv8    => 0b110u32,
         ApbDiv16   => 0b111u32,
     };
-    r.cfgr.set_apb1_prescaler(apb1_select);
+    rcc.cfgr.set_apb1_prescaler(apb1_select);
 
     let apb2_select = match self.apb2_prescaler {
         ApbDivNone => 0b000u32,
@@ -238,7 +321,7 @@ impl ClockConfig {
         ApbDiv8    => 0b110u32,
         ApbDiv16   => 0b111u32,
     };
-    r.cfgr.set_apb2_prescaler(apb2_select);
+    rcc.cfgr.set_apb2_prescaler(apb2_select);
 
     let mco_select = match self.mco {
         McoClockNone => 0b000u32,
@@ -247,7 +330,7 @@ impl ClockConfig {
         McoClockHSE  => 0b110u32,
         McoClockPLL  => 0b111u32,
     };
-    r.cfgr.set_mco(mco_select);
+    rcc.cfgr.set_mco(mco_select);
   }
 
   /// Returns AHB clock frequency
@@ -283,6 +366,7 @@ pub mod reg {
       16 => hse_on : rw,
       17 => hse_ready : ro,
       18 => hse_bypass : rw,
+      19 => css_on : rw,
       24 => pll_on : rw,
       25 => pll_ready : ro,
     },
@@ -307,7 +391,6 @@ pub mod reg {
     },
     0x10 => reg32 apb1rstr {    // APB1 peripheral reset
       31..0 => reset : rw,
-
     },
     0x14 => reg32 ahbenr {      // AHB peripheral clock enable
       31..0 => enable : rw,
