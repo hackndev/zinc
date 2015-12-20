@@ -95,13 +95,11 @@ impl Usart {
     reg.cr2.set_stop_bits(stop_bits as u16);
 
     // Standard USART baud rate:
-    // Tx/Rx baud = Fck / (8 * (2 - OVER8) * USARTDIV)
+    // Tx/Rx baud = Fck / (16 * USARTDIV)
 
     let bus_clock = clock.frequency(config);
-    let over8 = reg.cr1.oversample_8bit_enable() as usize;
-    let idiv = (bus_clock << 4) / (baudrate << (2 - over8));
-    reg.brr.set_fraction(((idiv & 0xF) >> over8) as u16);
-    reg.brr.set_mantissa((idiv >> 4) as u16);
+    let idiv = bus_clock / baudrate;
+    reg.brrr.set_brr(idiv as u16);
 
     let (pe_on, pe_select) = match parity {
         Disabled => (false, false),
@@ -162,27 +160,24 @@ mod reg {
     0x04 => reg16 dr {  // data
       8..0 => data : rw,
     },
-    0x08 => reg16 brr { // baud rate
-      3..0  => fraction : rw,
-      15..4 => mantissa : rw,
+    0x08 => reg16 brrr { // baud rate
+      15..0 => brr : rw,
     },
     0x0C => reg16 cr1 { // control 1
-      0 => send_back : rw,
-      1 => receiver_wakeup : rw,
-      2 => receiver_enable : rw,
+      0 => send_break : rw,
+      1 => receiver_enable : rw,
+      2 => receiver_wakeup : rw,
       3 => transmitter_enable : rw,
       4 => int_idle_enable : rw,
       5 => int_read_data_not_empty_enable : rw,
       6 => int_transmission_complete_enable : rw,
       7 => int_transmission_data_empty_enable : rw,
-      8 => int_pe_enable : rw, // = USART_CR1_PEIE, not sure about it
+      8 => int_pe_enable : rw, // parity error
       9 => parity_selection : rw,
       10 => parity_control_enable : rw,
       11 => wakeup_method : rw,
       12 => word_length : rw,
       13 => usart_enable : rw,
-      // 14 => reserved : ro,
-      15 => oversample_8bit_enable : rw,
     },
     0x10 => reg16 cr2 { // control 2
       3..0 => address : rw,
@@ -207,7 +202,6 @@ mod reg {
       8 => rts_enable : rw,
       9 => cts_enable : rw,
       10 => int_cts_enable : rw,
-      11 => one_sample_method_enable : rw,
     },
     0x18 => reg16 gtpr {    // guard time and prescaler
       7..0  => prescaler  : rw,
