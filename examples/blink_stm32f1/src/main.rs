@@ -26,7 +26,7 @@ fn main() {
       apb1_prescaler: init::ClockApbPrescaler::ApbDiv2,
       apb2_prescaler: init::ClockApbPrescaler::ApbDivNone,
       flash_latency:  init::FlashLatency::FlashLatency1,
-      mco:            init::McoSource::McoClockPLL,
+      mco:            init::McoSource::McoClockNone,
   };
   sys_clock.setup();
 
