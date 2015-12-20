@@ -6,7 +6,6 @@ extern crate zinc;
 
 #[zinc_main]
 fn main() {
-  use core::option::Option;
   use zinc::hal::pin::Gpio;
   use zinc::hal::stm32f1::{init, pin, timer};
   use zinc::hal::timer::Timer;
@@ -33,7 +32,10 @@ fn main() {
   let led1 = pin::Pin::new(pin::Port::PortC, 13, pin::PinConf::OutPushPull50MHz);
 
   // TODO(kvark): why doesn't "sys_clock.get_apb1_frequency()" work better?
-  let timer_clock = sys_clock.source.frequency();
+  // NOTE(blazewicz): Timers 2..7, 12..14 are not fed directly from APB1
+  // if APB1 prescaler is different than 1 then timers get 2*APB1 frequency
+  // in this example AHBCLK = 48 MHz, APB1 prescaler is set to 2, so Timer 2 gets 2*APB1=AHB=48 MHz
+  let timer_clock = sys_clock.get_ahb_frequency();
   let timer = timer::Timer::new(timer::TimerPeripheral::Timer2, timer_clock/1000, 0);
 
   loop {
