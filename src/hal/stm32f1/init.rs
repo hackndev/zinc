@@ -230,6 +230,7 @@ impl ClockConfig {
             // TODO(blazewicz): check if HSI is on
             0b10 => {
                 rcc.cfgr.set_system_clock(0b00);
+                wait_for!(rcc.cfgr.system_clock_status() == 0b00);
             },
             _ => ()
         };
@@ -335,17 +336,42 @@ impl ClockConfig {
 
   /// Returns AHB clock frequency
   pub fn get_ahb_frequency(&self) -> u32 {
-    0 //TODO(blazewicz)
+      let shift = match self.ahb_prescaler {
+          AhbDivNone => 0,
+          AhbDiv2    => 1,
+          AhbDiv4    => 2,
+          AhbDiv8    => 3,
+          AhbDiv16   => 4,
+          AhbDiv64   => 6,
+          AhbDiv128  => 7,
+          AhbDiv256  => 8,
+          AhbDiv512  => 9,
+      };
+      self.source.frequency() >> shift
   }
 
   /// Returns APB1 clock frequency
   pub fn get_apb1_frequency(&self) -> u32 {
-    0 //TODO(blazewicz)
+      let shift = match self.apb1_prescaler {
+          ApbDivNone => 0,
+          ApbDiv2    => 1,
+          ApbDiv4    => 2,
+          ApbDiv8    => 3,
+          ApbDiv16   => 4,
+      };
+      self.get_ahb_frequency() >> shift
   }
 
   /// Returns APB2 clock frequency
   pub fn get_apb2_frequency(&self) -> u32 {
-    0 //TODO(blazewicz)
+      let shift = match self.apb2_prescaler {
+          ApbDivNone => 0,
+          ApbDiv2    => 1,
+          ApbDiv4    => 2,
+          ApbDiv8    => 3,
+          ApbDiv16   => 4,
+      };
+      self.get_ahb_frequency() >> shift
   }
 }
 
