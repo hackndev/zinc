@@ -51,3 +51,9 @@ pub trait Gpio {
   /// for reading or writing respectively.
   fn set_direction(&self, new_mode: GpioDirection);
 }
+
+/// Analog Input
+pub trait Adc {
+  /// Read analog input value
+  fn read(&self) -> u32;
+}

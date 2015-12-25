@@ -27,6 +27,8 @@ use self::Port::*;
 
 #[path="../../util/ioreg.rs"]
 #[macro_use] mod ioreg;
+#[path="../../util/wait_for.rs"]
+#[macro_use] mod wait_for;
 
 /// Available port names.
 #[allow(missing_docs)]
@@ -47,6 +49,16 @@ pub enum Function {
   AltFunction1 = 1,
   AltFunction2 = 2,
   AltFunction3 = 3,
+}
+
+/// Pin modes
+#[derive(PartialEq, Clone, Copy)]
+#[allow(missing_docs)]
+pub enum Mode {
+  PullUp = 0,
+  Repeater = 1,
+  Floating = 2,
+  PullDown = 3,
 }
 
 /// Structure to describe the location of a pin
@@ -83,9 +95,20 @@ impl Pin {
     let new_val = (val & mask_bits) | fun_bits;
     reg.set_value(new_val);
 
-    if function == Function::Gpio {
-      (self as &::hal::pin::Gpio).set_direction(gpiodir.unwrap());
+    match function {
+      Function::Gpio => (self as &::hal::pin::Gpio).set_direction(gpiodir.unwrap()),
+      Function::AltFunction1 => match self.adc_channel() {
+          Some(_) => self.setup_adc(),
+          _ => {},
+        },
+      _ => {},
     }
+  }
+
+  fn set_mode(&self, mode: Mode) {
+    let (offset, reg) = self.get_pimode_reg_and_offset();
+    let value = reg.value() | (mode as u32) << offset;
+    reg.set_value(value)
   }
 
   fn gpioreg(&self) -> &reg::Gpio {
@@ -124,6 +147,90 @@ impl Pin {
       },
     }
   }
+
+  fn get_pimode_reg_and_offset(&self) -> (u8, &reg::PINMODE) {
+    match self.port {
+      Port0 => match self.pin {
+        0...11  => (self.pin*2, &reg::PINMODE0),
+        15      => (self.pin*2, &reg::PINMODE0),
+        16...26 => ((self.pin-16)*2, &reg::PINMODE1),
+        _       => unsafe { abort() },
+      },
+      Port1 => match self.pin {
+        0...1   => (self.pin*2, &reg::PINMODE2),
+        4       => (self.pin*2, &reg::PINMODE2),
+        8...10  => (self.pin*2, &reg::PINMODE2),
+        14...15 => (self.pin*2, &reg::PINMODE2),
+        16...31 => ((self.pin-16)*2, &reg::PINMODE3),
+        _      => unsafe { abort() },
+      },
+      Port2 => match self.pin {
+        0...13 => (self.pin*2, &reg::PINMODE4),
+        _      => unsafe { abort() },
+      },
+      Port3 => match self.pin {
+        25 => (18, &reg::PINMODE7),
+        26 => (20, &reg::PINMODE7),
+        _  => unsafe { abort() },
+      },
+      Port4 => match self.pin {
+        28 => (24, &reg::PINMODE9),
+        29 => (26, &reg::PINMODE9),
+        _  => unsafe { abort() },
+      },
+    }
+  }
+
+  /// Get adc channel number
+  fn adc_channel(&self) -> Option<u8> {
+    match self.port {
+      Port0 => match self.pin { 
+        2 => Some(7),
+        3 => Some(6),
+        23...26 => Some(self.pin - 23),
+        _ => None,
+      },
+      Port1 => match self.pin {
+        30...31 => Some(self.pin - 26),
+        _ => None,
+      },
+      Port2 => None,
+      Port3 => None,
+      Port4 => None,
+    }
+  }
+
+  fn setup_adc(&self) {
+    // ensure power is turned on
+    let pconp = &reg::PCONP;
+    let pconp_value = pconp.value();
+    pconp.set_value(pconp_value | (1 << 12));
+
+    // set PCLK of ADC to /1
+    let pclksel0 = &reg::PCLKSEL0;
+    let mut pclksel0_val: u32 = pclksel0.value();
+    pclksel0_val &= !(0x3 << 24);
+    pclksel0_val |= 0x1 << 24;
+    pclksel0.set_value(pclksel0_val);
+
+    fn div_round_up(x: u32, y: u32) -> u32 {
+      (x + (y - 1)) / y
+    }
+    let pclk = ::hal::lpc17xx::system_clock::system_clock();
+    let max_adc_clk = 13000000;
+    let clkdiv = div_round_up(pclk, max_adc_clk);
+
+    let cr = (0 << 0)      // SEL: 0 = no channels selected
+           | (clkdiv << 8) // CLKDIV: PCLK max ~= 25MHz, /25 to give safe 1MHz at fastest
+           | (0 << 16)     // BURST: 0 = software control
+           | (0 << 17)     // CLKS: not applicable
+           | (1 << 21)     // PDN: 1 = operational
+           | (0 << 24)     // START: 0 = no start
+           | (0 << 27);    // EDGE: not applicable
+    &reg::ADC.set_CR(cr);
+
+    self.set_mode(Mode::Floating);
+  }
 }
 
 impl ::hal::pin::Gpio for Pin {
@@ -161,6 +268,37 @@ impl ::hal::pin::Gpio for Pin {
 
     reg.set_FIODIR(new_val);
   }
+
+}
+
+impl ::hal::pin::Adc for Pin {
+  /// Read analog input value of pin
+  fn read(&self) -> u32 {
+    let adc = &reg::ADC;
+    let channel = self.adc_channel().unwrap();
+    let mut cr = adc.CR();
+    cr &= !(0xFF as u32);
+    cr |= 1 << channel;
+    cr |= (1 << 24) as u32;
+    adc.set_CR(cr);
+
+    wait_for!((adc.STAT() & (1 << channel)) != 0);
+
+    let data = match channel {
+      0 => adc.DR0(),
+      1 => adc.DR1(),
+      2 => adc.DR2(),
+      3 => adc.DR3(),
+      4 => adc.DR4(),
+      5 => adc.DR5(),
+      6 => adc.DR6(),
+      7 => adc.DR7(),
+      _ => unsafe { abort() },
+    };
+
+    adc.set_CR((adc.CR() as u32) & !(1 << 24));
+    (data >> 4) & 0xFFF // 12 bit range
+  }
 }
 
 /// Sets the state of trace port interface.
@@ -186,6 +324,18 @@ mod reg {
     #[link_name="lpc17xx_iomem_PINSEL10"] pub static PINSEL10: PINSEL;
   }
 
+  ioreg_old!(PINMODE: u32, value);
+  reg_rw!(PINMODE, u32, value, set_value, value);
+  extern {
+    #[link_name="lpc17xx_iomem_PINMODE0"] pub static PINMODE0: PINMODE;
+    #[link_name="lpc17xx_iomem_PINMODE1"] pub static PINMODE1: PINMODE;
+    #[link_name="lpc17xx_iomem_PINMODE2"] pub static PINMODE2: PINMODE;
+    #[link_name="lpc17xx_iomem_PINMODE3"] pub static PINMODE3: PINMODE;
+    #[link_name="lpc17xx_iomem_PINMODE4"] pub static PINMODE4: PINMODE;
+    #[link_name="lpc17xx_iomem_PINMODE7"] pub static PINMODE7: PINMODE;
+    #[link_name="lpc17xx_iomem_PINMODE9"] pub static PINMODE9: PINMODE;
+  }
+
   ioreg_old!(Gpio: u32, FIODIR, _r0, _r1, _r2, FIOMASK, FIOPIN, FIOSET, FIOCLR);
   reg_rw!(Gpio, u32, FIODIR,  set_FIODIR,  FIODIR);
   reg_rw!(Gpio, u32, FIOMASK, set_FIOMASK, FIOMASK);
@@ -199,5 +349,33 @@ mod reg {
     #[link_name="lpc17xx_iomem_GPIO2"] pub static GPIO_2: Gpio;
     #[link_name="lpc17xx_iomem_GPIO3"] pub static GPIO_3: Gpio;
     #[link_name="lpc17xx_iomem_GPIO4"] pub static GPIO_4: Gpio;
+  }
+
+
+  ioreg_old!(PCONP: u32, value);
+  ioreg_old!(PCLKSEL0: u32, value);
+  reg_rw!(PCONP, u32, value, set_value, value);
+  reg_rw!(PCLKSEL0, u32, value, set_value, value);
+  extern {
+    #[link_name="lpc17xx_iomem_PCONP"]  pub static PCONP:  PCONP;
+    #[link_name="lpc17xx_iomem_PCLKSEL0"]  pub static PCLKSEL0: PCLKSEL0;
+  }
+
+  ioreg_old!(ADC: u32, CR, GDR, pad_0, INTEN, DR0, DR1, DR2, DR3, DR4, DR5, DR6, DR7, STAT, TRM);
+  reg_rw!(ADC, u32, CR, set_CR, CR);
+  reg_r!(ADC, u32, GDR, GDR);
+  reg_rw!(ADC, u32, INTEN, set_INTEN, INTEN);
+  reg_rw!(ADC, u32, DR0, set_DR0, DR0);
+  reg_rw!(ADC, u32, DR1, set_DR0, DR1);
+  reg_rw!(ADC, u32, DR2, set_DR0, DR2);
+  reg_rw!(ADC, u32, DR3, set_DR0, DR3);
+  reg_rw!(ADC, u32, DR4, set_DR0, DR4);
+  reg_rw!(ADC, u32, DR5, set_DR0, DR5);
+  reg_rw!(ADC, u32, DR6, set_DR0, DR6);
+  reg_rw!(ADC, u32, DR7, set_DR0, DR7);
+  reg_rw!(ADC, u32, STAT, set_STAT, STAT);
+
+  extern {
+    #[link_name="lpc17xx_iomem_ADC"]  pub static ADC:  ADC;
   }
 }
