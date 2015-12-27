@@ -1,0 +1,12 @@
+[package]
+name = "adc"
+version = "0.0.1"
+
+[features]
+default = ["mcu_lpc17xx"]
+mcu_lpc17xx = ["zinc/mcu_lpc17xx"]
+
+[dependencies]
+zinc = { path =  "../.." }
+macro_platformtree = { path = "../../macro_platformtree" }
+rust-libcore = "*"
