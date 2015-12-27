@@ -18,7 +18,6 @@ use std::ops::Deref;
 
 use syntax::ast;
 use syntax::ptr::P;
-use syntax::ast_util::empty_generics;
 use syntax::codemap::{respan, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
@@ -100,7 +99,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
       let ty_item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
-        node: ast::ItemEnum(enum_def, empty_generics()),
+        node: ast::ItemEnum(enum_def, ast::Generics::default()),
         vis: ast::Public,
         attrs: attrs,
         span: field.ty.span,

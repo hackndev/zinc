@@ -19,8 +19,7 @@ use syntax::ast;
 use syntax::codemap::{respan, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
-use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
-use syntax::owned_slice::OwnedSlice;
+use syntax::ext::quote::rt::ToTokens;
 use syntax::parse::token::intern;
 use syntax::ptr::P;
 
@@ -157,7 +156,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     let typaram = cx.typaram(
         DUMMY_SP,
         cx.ident_of(ty.to_tyhash().as_str()),
-        OwnedSlice::from_vec(vec!(
+        P::from_vec(vec!(
           ast::RegionTyParamBound(cx.lifetime(DUMMY_SP, intern("'a")))
         )),
         None);
@@ -174,7 +173,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       ast::VariantData::Struct(fields, ast::DUMMY_NODE_ID),
       ast::Generics {
         lifetimes: vec!(cx.lifetime_def(DUMMY_SP, intern("'a"), vec!())),
-        ty_params: OwnedSlice::from_vec(collected_params),
+        ty_params: P::from_vec(collected_params),
         where_clause: ast::WhereClause {
           id: ast::DUMMY_NODE_ID,
           predicates: vec!(),

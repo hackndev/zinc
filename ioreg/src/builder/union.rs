@@ -17,7 +17,6 @@ use std::rc::Rc;
 use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ptr::P;
-use syntax::ast_util::empty_generics;
 use syntax::codemap::{DUMMY_SP, dummy_spanned, respan, Spanned};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
@@ -200,7 +199,7 @@ impl<'a> BuildUnionTypes<'a> {
       ident: name,
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
-      node: ast::ItemStruct(struct_def, empty_generics()),
+      node: ast::ItemStruct(struct_def, ast::Generics::default()),
       vis: ast::Public,
       span: reg.name.span,
     });

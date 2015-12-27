@@ -17,13 +17,13 @@ use std::rc::Rc;
 use std::string::ToString;
 use syntax::ast;
 use syntax::codemap::MacroBang;
-use syntax::codemap::{CodeMap, Span, mk_sp, BytePos, ExpnInfo, NameAndSpan};
+use syntax::codemap::{CodeMap, mk_sp, BytePos, ExpnInfo, NameAndSpan};
 use syntax::codemap;
-use syntax::diagnostic::Handler;
-use syntax::diagnostic::{Emitter, RenderSpan, Level, SpanHandler};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
+use syntax::errors::emitter::Emitter;
+use syntax::errors::{RenderSpan, Level, Handler};
 use syntax::parse::ParseSess;
 use syntax::print::pprust;
 
@@ -68,10 +68,10 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
     where F: Fn(&mut ExtCtxt, *mut bool, Option<Rc<node::PlatformTree>>) {
   let mut failed = false;
   let failptr = &mut failed as *mut bool;
+  let cm = Rc::new(CodeMap::new());
   let ce = Box::new(CustomEmmiter::new(failptr));
-  let h = Handler::with_emitter(false, ce);
-  let sh = SpanHandler::new(h, CodeMap::new());
-  let parse_sess = ParseSess::with_span_handler(sh);
+  let h = Handler::with_emitter(false, false, ce);
+  let parse_sess = ParseSess::with_span_handler(h, cm);
   let cfg = Vec::new();
   let ecfg = ExpansionConfig {
     crate_name: ("test").parse().unwrap(),
@@ -111,13 +111,12 @@ impl CustomEmmiter {
 unsafe impl Send for CustomEmmiter {}
 
 impl Emitter for CustomEmmiter {
-  fn emit(&mut self, _: Option<(&CodeMap, Span)>, m: &str, _: Option<&str>,
+  fn emit(&mut self, _: Option<codemap::Span>, m: &str, _: Option<&str>,
       l: Level) {
     unsafe { *self.failed = true };
     println!("{} {}", l, m);
   }
-  fn custom_emit(&mut self, _: &codemap::CodeMap, _: RenderSpan, _: &str,
-      _: Level) {
+  fn custom_emit(&mut self, _: RenderSpan, _: &str, _: Level) {
     panic!();
   }
 }
