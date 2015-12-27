@@ -15,7 +15,7 @@
 
 //! Tests for ioreg! syntax extension
 
-#![feature(core, plugin)]
+#![feature(plugin)]
 #![plugin(ioreg)]
 
 extern crate volatile_cell;

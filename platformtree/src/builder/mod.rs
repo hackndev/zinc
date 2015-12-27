@@ -18,7 +18,6 @@ use std::ops::DerefMut;
 use syntax::abi;
 use syntax::ast::TokenTree;
 use syntax::ast;
-use syntax::ast_util::empty_generics;
 use syntax::codemap::{Span, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
@@ -234,7 +233,7 @@ impl Builder {
           ast::Unsafety::Unsafe,
           ast::Constness::NotConst,
           abi::Rust, // TODO(farcaller): should this be abi::C?
-          empty_generics(),
+          ast::Generics::default(),
           body),
       vis: ast::Public,
       span: span,
