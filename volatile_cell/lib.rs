@@ -39,11 +39,11 @@
 /// It is mostly used by the ioreg family of macros.
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct VolatileCell<T> {
+pub struct VolatileCell<T> where T: Copy {
   value: T,
 }
 
-impl<T> VolatileCell<T> {
+impl<T: Copy> VolatileCell<T> {
   /// Create a cell with initial value.
   pub fn new(value: T) -> VolatileCell<T> {
     VolatileCell {
