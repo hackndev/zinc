@@ -26,8 +26,7 @@ use super::super::node;
 
 /// Generate an unsuffixed integer literal expression with a dummy span
 pub fn expr_int(cx: &ExtCtxt, n: Spanned<i64>) -> P<ast::Expr> {
-  let sign = if n.node < 0 {ast::Minus} else {ast::Plus};
-  cx.expr_lit(n.span, ast::LitInt(n.node as u64, ast::UnsuffixedIntLit(sign)))
+  cx.expr_lit(n.span, ast::LitKind::Int(n.node as u64, ast::LitIntType::Unsuffixed))
 }
 
 /// The name of the structure representing a register
@@ -64,7 +63,7 @@ pub fn doc_attribute(cx: &ExtCtxt, docstring: token::InternedString)
                      -> ast::Attribute {
   use syntax::codemap::DUMMY_SP;
 
-  let s: ast::Lit_ = ast::LitStr(docstring, ast::CookedStr);
+  let s = ast::LitKind::Str(docstring, ast::StrStyle::Cooked);
   let attr =
     cx.meta_name_value(DUMMY_SP, token::InternedString::new("doc"), s);
   cx.attribute(DUMMY_SP, attr)
@@ -135,7 +134,7 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
 
 pub fn unwrap_impl_item(item: P<ast::Item>) -> P<ast::ImplItem> {
   match item.node {
-    ast::ItemImpl(_, _, _, _, _, ref items) => {
+    ast::ItemKind::Impl(_, _, _, _, _, ref items) => {
       items.clone().pop().expect("ImplItem not found")
     },
     _ => panic!("Tried to unwrap ImplItem from Non-Impl")

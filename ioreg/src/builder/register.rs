@@ -99,8 +99,8 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
       let ty_item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
-        node: ast::ItemEnum(enum_def, ast::Generics::default()),
-        vis: ast::Public,
+        node: ast::Item::Enum(enum_def, ast::Generics::default()),
+        vis: ast::Visibility::Public,
         attrs: attrs,
         span: field.ty.span,
       });
