@@ -120,7 +120,7 @@ fn build_new(cx: &ExtCtxt, path: &Vec<String>,
 fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
                   field: &node::Field, prim: P<ast::Expr>)
                   -> P<ast::Expr> {
-  // Use bit_range_field for the span because it is to blame for the 
+  // Use bit_range_field for the span because it is to blame for the
   // type of the register
   match field.ty.node {
     node::FieldType::UIntField => prim,
