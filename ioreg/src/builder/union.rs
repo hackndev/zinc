@@ -199,7 +199,7 @@ impl<'a> BuildUnionTypes<'a> {
       ident: name,
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
-      node: ast::Item::Struct(struct_def, ast::Generics::default()),
+      node: ast::ItemKind::Struct(struct_def, ast::Generics::default()),
       vis: ast::Visibility::Public,
       span: reg.name.span,
     });

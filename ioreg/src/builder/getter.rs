@@ -139,7 +139,7 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
         let val: u64 = v.value.node;
         let lit = cx.expr_lit(
           v.value.span,
-          ast::LitKind::Int(val, ast::LitIntType::Unsigned(token::Plus)));
+          ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::Us)));
         let arm = ast::Arm {
           attrs: vec!(),
           pats: vec!(

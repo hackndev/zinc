@@ -72,7 +72,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
         .segments.last().unwrap().identifier;
       let enum_def: ast::EnumDef = ast::EnumDef {
         variants: FromIterator::from_iter(
-          variants.iter().map(|v| P(build_enum_variant(cx, v)))),
+          variants.iter().map(|v| build_enum_variant(cx, v))),
       };
       let mut attrs: Vec<ast::Attribute> = vec!(
         utils::list_attribute(cx, "derive",
@@ -99,7 +99,7 @@ fn build_field_type(cx: &ExtCtxt, path: &Vec<String>,
       let ty_item: P<ast::Item> = P(ast::Item {
         ident: name,
         id: ast::DUMMY_NODE_ID,
-        node: ast::Item::Enum(enum_def, ast::Generics::default()),
+        node: ast::ItemKind::Enum(enum_def, ast::Generics::default()),
         vis: ast::Visibility::Public,
         attrs: attrs,
         span: field.ty.span,
