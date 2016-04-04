@@ -366,13 +366,13 @@ mod reg {
   reg_r!(ADC, u32, GDR, GDR);
   reg_rw!(ADC, u32, INTEN, set_INTEN, INTEN);
   reg_rw!(ADC, u32, DR0, set_DR0, DR0);
-  reg_rw!(ADC, u32, DR1, set_DR0, DR1);
-  reg_rw!(ADC, u32, DR2, set_DR0, DR2);
-  reg_rw!(ADC, u32, DR3, set_DR0, DR3);
-  reg_rw!(ADC, u32, DR4, set_DR0, DR4);
-  reg_rw!(ADC, u32, DR5, set_DR0, DR5);
-  reg_rw!(ADC, u32, DR6, set_DR0, DR6);
-  reg_rw!(ADC, u32, DR7, set_DR0, DR7);
+  reg_rw!(ADC, u32, DR1, set_DR1, DR1);
+  reg_rw!(ADC, u32, DR2, set_DR2, DR2);
+  reg_rw!(ADC, u32, DR3, set_DR3, DR3);
+  reg_rw!(ADC, u32, DR4, set_DR4, DR4);
+  reg_rw!(ADC, u32, DR5, set_DR5, DR5);
+  reg_rw!(ADC, u32, DR6, set_DR6, DR6);
+  reg_rw!(ADC, u32, DR7, set_DR7, DR7);
   reg_rw!(ADC, u32, STAT, set_STAT, STAT);
 
   extern {
