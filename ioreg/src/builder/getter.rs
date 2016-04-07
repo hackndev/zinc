@@ -17,7 +17,6 @@ use std::iter::FromIterator;
 use std::ops::Deref;
 
 use syntax::ast;
-use syntax::parse::token;
 use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 use syntax::codemap::{respan, Span};

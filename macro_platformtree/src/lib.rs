@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![feature(rustc_private, plugin_registrar, quote, convert)]
+#![feature(rustc_private, plugin_registrar, quote)]
 
 extern crate platformtree;
 extern crate rustc;
