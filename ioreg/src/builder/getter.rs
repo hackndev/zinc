@@ -196,7 +196,6 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
 
   let it = quote_item!(cx,
     #[allow(dead_code)]
-    #[inline(always)]
     impl $getter_ty {
       $new
       $getters
