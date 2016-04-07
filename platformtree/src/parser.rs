@@ -16,7 +16,7 @@
 use std::ops::Deref;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
-use syntax::ast::{TokenTree, LitInt, UnsuffixedIntLit};
+use syntax::ast::{TokenTree, LitKind, LitIntType};
 use syntax::codemap::{Span, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer, integer_lit};
@@ -186,7 +186,7 @@ impl<'a> Parser<'a> {
 
         let lit = integer_lit(intname.as_str().deref(), None, &self.sess.span_diagnostic, self.span);
         match lit {
-          LitInt(i, _) => {
+          LitKind::Int(i, _) => {
             format!("{}", i)
           },
           _ => {
@@ -345,7 +345,7 @@ impl<'a> Parser<'a> {
         if suffix.is_none() {
           let lit = integer_lit(intname.as_str().deref(), None, &self.sess.span_diagnostic, self.span);
           match lit {
-            LitInt(i, UnsuffixedIntLit(_)) => {
+            LitKind::Int(i, LitIntType::Unsuffixed) => {
               self.bump();
               Some(node::IntValue(i as usize))
             },
