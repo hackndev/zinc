@@ -76,7 +76,7 @@ fn macro_zinc_task(cx: &mut ExtCtxt, _: Span, _: &ast::MetaItem,
 
 fn macro_zinc_task_item(cx: &mut ExtCtxt, it: P<ast::Item>) -> P<ast::Item> {
   match it.node {
-    ast::ItemFn(ref decl, style, constness, abi, _, ref block) => {
+    ast::ItemKind::Fn(ref decl, style, constness, abi, _, ref block) => {
       let istr = it.ident.name.as_str();
       let fn_name = &*istr;
       let ty_params = platformtree::builder::meta_args::get_ty_params_for_task(cx, fn_name);
@@ -103,7 +103,7 @@ fn macro_zinc_task_item(cx: &mut ExtCtxt, it: P<ast::Item>) -> P<ast::Item> {
                   }).collect(),
                   vec!())),
           None,
-          ast::MutImmutable));
+          ast::Mutability::Immutable));
       let new_decl = P(ast::FnDecl {
         inputs: vec!(new_arg),
         ..decl.deref().clone()
@@ -117,7 +117,7 @@ fn macro_zinc_task_item(cx: &mut ExtCtxt, it: P<ast::Item>) -> P<ast::Item> {
           predicates: vec!(),
         }
       };
-      let new_node = ast::ItemFn(new_decl, style, constness, abi, new_generics, block.clone());
+      let new_node = ast::ItemKind::Fn(new_decl, style, constness, abi, new_generics, block.clone());
 
       P(ast::Item {node: new_node, ..it.deref().clone() })
     },
