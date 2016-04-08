@@ -16,7 +16,7 @@
 use std::collections::HashSet;
 use std::rc::Rc;
 use syntax::ast;
-use syntax::codemap::{respan, DUMMY_SP};
+use syntax::codemap::DUMMY_SP;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
