@@ -11,4 +11,4 @@ plugin = true
 path = "../volatile_cell"
 
 [dependencies]
-syntaxext_lint = "*"
+syntaxext_lint = { git="https://github.com/Gyscos/syntaxext_lint", version="*" }
