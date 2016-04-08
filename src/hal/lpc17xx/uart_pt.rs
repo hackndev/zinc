@@ -122,7 +122,6 @@ pub fn build_uart_gpio(builder: &Builder, uart_idx: usize, name: &str,
 
 #[cfg(test)]
 mod test {
-  use std::ops::Deref;
   use builder::Builder;
   use test_helpers::{assert_equal_source, with_parsed};
 
@@ -153,7 +152,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0].deref(),
+      assert_equal_source(&builder.main_stmts()[0],
           "let uart = zinc::hal::lpc17xx::uart::UART::new(
                zinc::hal::lpc17xx::uart::UARTPeripheral::UART0,
                9600u32,

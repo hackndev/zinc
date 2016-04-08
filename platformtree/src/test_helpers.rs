@@ -111,12 +111,12 @@ impl CustomEmmiter {
 unsafe impl Send for CustomEmmiter {}
 
 impl Emitter for CustomEmmiter {
-  fn emit(&mut self, _: Option<codemap::Span>, m: &str, _: Option<&str>,
+  fn emit(&mut self, _: Option<&codemap::MultiSpan>, m: &str, _: Option<&str>,
       l: Level) {
     unsafe { *self.failed = true };
     println!("{} {}", l, m);
   }
-  fn custom_emit(&mut self, _: RenderSpan, _: &str, _: Level) {
+  fn custom_emit(&mut self, _: &RenderSpan, _: &str, _: Level) {
     panic!();
   }
 }

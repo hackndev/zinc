@@ -111,7 +111,6 @@ fn build_clock(builder: &mut Builder, cx: &mut ExtCtxt,
 
 #[cfg(test)]
 mod test {
-  use std::ops::Deref;
   use builder::Builder;
   use test_helpers::{assert_equal_source, with_parsed, fails_to_build};
 
@@ -132,7 +131,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0].deref(),
+      assert_equal_source(&builder.main_stmts()[0],
           "{
             use zinc::hal::lpc17xx::system_clock;
             system_clock::init_clock(
