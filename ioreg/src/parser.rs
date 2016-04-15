@@ -546,7 +546,7 @@ impl<'a> Parser<'a> {
                                      &self.sess.span_diagnostic,
                                      self.span);
         match lit {
-          ast::LitInt(n, _)  => Some(n),
+          ast::LitKind::Int(n, _)  => Some(n),
           _ => None,
         }
       },

@@ -85,7 +85,7 @@ impl<'a> BuildUnionTypes<'a> {
 }
 
 fn expr_usize(cx: &ExtCtxt, n: Spanned<u64>) -> P<ast::Expr> {
-  cx.expr_lit(n.span, ast::LitInt(n.node as u64, ast::UnsignedIntLit(ast::TyUs)))
+  cx.expr_lit(n.span, ast::LitKind::Int(n.node as u64, ast::LitIntType::Unsigned(ast::UintTy::Us)))
 }
 
 /// Returns the type of the field representing the given register
@@ -98,7 +98,7 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
     1 => base_ty,
     n =>
       cx.ty(reg.count.span,
-            ast::TyFixedLengthVec(base_ty, expr_usize(cx, respan(reg.count.span, n as u64)))),
+            ast::TyKind::FixedLengthVec(base_ty, expr_usize(cx, respan(reg.count.span, n as u64)))),
   }
 }
 
@@ -127,7 +127,7 @@ impl<'a> BuildUnionTypes<'a> {
       ast::StructField_ {
         kind: ast::NamedField(
           self.cx.ident_of(reg.name.node.as_str()),
-          ast::Public),
+          ast::Visibility::Public),
         id: ast::DUMMY_NODE_ID,
         ty: reg_struct_type(self.cx, &field_path, reg),
         attrs: attrs,
@@ -150,12 +150,12 @@ impl<'a> BuildUnionTypes<'a> {
         let ty: P<ast::Ty> =
           self.cx.ty(
             DUMMY_SP,
-            ast::TyFixedLengthVec(u8_ty, expr_usize(self.cx, respan(DUMMY_SP, length))));
+            ast::TyKind::FixedLengthVec(u8_ty, expr_usize(self.cx, respan(DUMMY_SP, length))));
         dummy_spanned(
           ast::StructField_ {
             kind: ast::NamedField(
               self.cx.ident_of(format!("_pad{}", index).as_str()),
-              ast::Inherited),
+              ast::Visibility::Inherited),
             id: ast::DUMMY_NODE_ID,
             ty: ty,
             attrs: Vec::new(),
@@ -199,8 +199,8 @@ impl<'a> BuildUnionTypes<'a> {
       ident: name,
       attrs: attrs,
       id: ast::DUMMY_NODE_ID,
-      node: ast::ItemStruct(struct_def, ast::Generics::default()),
-      vis: ast::Public,
+      node: ast::ItemKind::Struct(struct_def, ast::Generics::default()),
+      vis: ast::Visibility::Public,
       span: reg.name.span,
     });
     let mut full_size: u64 = 0;

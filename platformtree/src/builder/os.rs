@@ -117,7 +117,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           DUMMY_SP,
           cx.ty_ident(DUMMY_SP, cx.ident_of("str")),
           Some(static_lifetime),
-          ast::MutImmutable), quote_expr!(&*cx, $val_slice))
+          ast::Mutability::Immutable), quote_expr!(&*cx, $val_slice))
       },
       node::RefValue(ref rname)  => {
         let refnode = builder.pt.get_by_name(rname.as_str()).unwrap();
@@ -134,18 +134,20 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           DUMMY_SP,
           cx.ty_path(type_name_as_path(cx, reftype.as_str(), refparams)),
           Some(a_lifetime),
-          ast::MutImmutable), quote_expr!(&*cx, &$val_slice))
+          ast::Mutability::Immutable), quote_expr!(&*cx, &$val_slice))
       },
     };
     let name_ident = cx.ident_of(k.as_str());
-    let sf = ast::StructField_ {
-      kind: ast::NamedField(name_ident, ast::Public),
+    let sf = ast::StructField {
+      span: DUMMY_SP,
+      ident: Some(name_ident),
+      vis: ast::Visibility::Public,
       id: ast::DUMMY_NODE_ID,
       ty: ty,
       attrs: vec!(),
     };
 
-    fields.push(respan(DUMMY_SP, sf));
+    fields.push(sf);
     expr_fields.push(cx.field_imm(DUMMY_SP, name_ident, val));
   }
 
@@ -169,7 +171,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
     ident: name_ident,
     attrs: vec!(),
     id: ast::DUMMY_NODE_ID,
-    node: ast::ItemStruct(
+    node: ast::ItemKind::Struct(
       ast::VariantData::Struct(fields, ast::DUMMY_NODE_ID),
       ast::Generics {
         lifetimes: vec!(cx.lifetime_def(DUMMY_SP, intern("'a"), vec!())),
@@ -179,7 +181,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           predicates: vec!(),
         }
       }),
-      vis: ast::Public,
+      vis: ast::Visibility::Public,
       span: DUMMY_SP,
   });
   builder.add_type_item(struct_item);

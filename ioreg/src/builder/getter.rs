@@ -119,12 +119,12 @@ fn build_new(cx: &ExtCtxt, path: &Vec<String>,
 fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
                   field: &node::Field, prim: P<ast::Expr>)
                   -> P<ast::Expr> {
-  // Use bit_range_field for the span because it is to blame for the 
+  // Use bit_range_field for the span because it is to blame for the
   // type of the register
   match field.ty.node {
     node::FieldType::UIntField => prim,
     node::FieldType::BoolField =>
-      cx.expr_binary(field.bit_range_span, ast::BiNe,
+      cx.expr_binary(field.bit_range_span, ast::BinOpKind::Ne,
                      prim, utils::expr_int(cx, respan(field.bit_range_span, 0))),
     node::FieldType::EnumField {opt_name: _, variants: ref vars} => {
       let mut arms: Vec<ast::Arm> = Vec::new();
@@ -138,14 +138,14 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
         let val: u64 = v.value.node;
         let lit = cx.expr_lit(
           v.value.span,
-          ast::LitInt(val, ast::UnsuffixedIntLit(ast::Plus)));
+          ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::U32)));
         let arm = ast::Arm {
           attrs: vec!(),
           pats: vec!(
             P(ast::Pat {
               id: ast::DUMMY_NODE_ID,
               span: lit.span,
-              node: ast::PatLit(lit),
+              node: ast::PatKind::Lit(lit),
             })
             ),
             guard: None,
@@ -196,7 +196,6 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
 
   let it = quote_item!(cx,
     #[allow(dead_code)]
-    #[inline(always)]
     impl $getter_ty {
       $new
       $getters
