@@ -198,7 +198,6 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
   let done = build_done(cx, path);
   quote_item!(cx,
     #[allow(dead_code)]
-    #[inline(always)]
     impl<'a> $setter_ident<'a> {
       $new
       $new_is

@@ -17,7 +17,6 @@ use std::iter::FromIterator;
 use std::ops::Deref;
 
 use syntax::ast;
-use syntax::parse::token;
 use syntax::ptr::P;
 use syntax::ext::base::ExtCtxt;
 use syntax::codemap::{respan, Span};
@@ -139,7 +138,7 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
         let val: u64 = v.value.node;
         let lit = cx.expr_lit(
           v.value.span,
-          ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::Us)));
+          ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::U32)));
         let arm = ast::Arm {
           attrs: vec!(),
           pats: vec!(
@@ -197,7 +196,6 @@ fn build_impl(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
 
   let it = quote_item!(cx,
     #[allow(dead_code)]
-    #[inline(always)]
     impl $getter_ty {
       $new
       $getters

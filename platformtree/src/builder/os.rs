@@ -138,14 +138,16 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
       },
     };
     let name_ident = cx.ident_of(k.as_str());
-    let sf = ast::StructField_ {
-      kind: ast::NamedField(name_ident, ast::Visibility::Public),
+    let sf = ast::StructField {
+      span: DUMMY_SP,
+      ident: Some(name_ident),
+      vis: ast::Visibility::Public,
       id: ast::DUMMY_NODE_ID,
       ty: ty,
       attrs: vec!(),
     };
 
-    fields.push(respan(DUMMY_SP, sf));
+    fields.push(sf);
     expr_fields.push(cx.field_imm(DUMMY_SP, name_ident, val));
   }
 
