@@ -379,7 +379,7 @@ impl<'a> Parser<'a> {
       token::Colon => {
         self.bump();
         match self.token.clone() {
-          ref t@token::Ident(_,_) => {
+          ref t@token::Ident(_) => {
             match pprust::token_to_string(t) {
               ref s if s.eq(&"rw") => { self.bump(); node::Access::ReadWrite },
               ref s if s.eq(&"ro") => { self.bump(); node::Access::ReadOnly  },
@@ -631,7 +631,7 @@ impl<'a> Parser<'a> {
   fn expect_ident(&mut self) -> Option<String> {
     let tok_str = pprust::token_to_string(&self.token);
     match self.token {
-      token::Ident(_, _) => {
+      token::Ident(_) => {
         self.bump();
         Some(tok_str)
       },
