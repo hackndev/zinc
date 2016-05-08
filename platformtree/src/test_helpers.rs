@@ -23,7 +23,7 @@ use syntax::ext::base::ExtCtxt;
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
 use syntax::errors::emitter::Emitter;
-use syntax::errors::{RenderSpan, Level, Handler};
+use syntax::errors::{Level, Handler, DiagnosticBuilder};
 use syntax::parse::ParseSess;
 use syntax::print::pprust;
 
@@ -111,12 +111,12 @@ impl CustomEmmiter {
 unsafe impl Send for CustomEmmiter {}
 
 impl Emitter for CustomEmmiter {
-  fn emit(&mut self, _: Option<&codemap::MultiSpan>, m: &str, _: Option<&str>,
+  fn emit(&mut self, _: &codemap::MultiSpan, m: &str, _: Option<&str>,
       l: Level) {
     unsafe { *self.failed = true };
     println!("{} {}", l, m);
   }
-  fn custom_emit(&mut self, _: &RenderSpan, _: &str, _: Level) {
+  fn emit_struct(&mut self, _: &DiagnosticBuilder) {
     panic!();
   }
 }

@@ -41,7 +41,7 @@ impl<'a> Parser<'a> {
     let mut reader = Box::new(lexer::new_tt_reader(
         &sess.span_diagnostic, None, None, ttsvec)) as Box<lexer::Reader>;
 
-    let tok0 = reader.next_token();
+    let tok0 = reader.try_next_token().unwrap();
     let token = tok0.tok;
     let span = tok0.sp;
 
@@ -178,7 +178,7 @@ impl<'a> Parser<'a> {
     }
 
     let node_path = match self.token {
-      Token::Ident(_, _) => {
+      Token::Ident(_) => {
         pprust::token_to_string(&self.bump())
       },
       Token::Literal(token::Lit::Integer(intname), _) => {
@@ -369,7 +369,7 @@ impl<'a> Parser<'a> {
         };
         Some(node::RefValue(name))
       },
-      token::Ident(ident, _) => {
+      token::Ident(ident) => {
         self.bump();
         match &*ident.name.as_str() {
           "true"  => Some(node::BoolValue(true)),
@@ -404,7 +404,7 @@ impl<'a> Parser<'a> {
     self.last_span = self.span;
     self.last_token = Some(Box::new(tok.clone()));
 
-    let next = self.reader.next_token();
+    let next = self.reader.try_next_token().unwrap();
 
     self.span = next.sp;
     self.token = next.tok;
@@ -431,7 +431,7 @@ impl<'a> Parser<'a> {
   fn expect_ident(&mut self) -> Option<String> {
     let tok_str = pprust::token_to_string(&self.token);
     match self.token {
-      token::Ident(_, _) => {
+      token::Ident(_) => {
         self.bump();
         Some(tok_str)
       },
