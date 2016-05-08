@@ -20,6 +20,7 @@ use syntax::ast;
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer};
+use syntax::parse::lexer::Reader;
 use syntax::parse;
 use syntax::print::pprust;
 
@@ -54,7 +55,7 @@ impl<'a> Parser<'a> {
     let mut reader = Box::new(lexer::new_tt_reader(
         &sess.span_diagnostic, None, None, ttsvec)) as Box<lexer::Reader>;
 
-    let tok0 = reader.next_token();
+    let tok0 = reader.try_next_token().unwrap();
     let token = tok0.tok;
     let span = tok0.sp;
 
@@ -604,7 +605,7 @@ impl<'a> Parser<'a> {
     self.last_span = self.span;
     self.last_token = Some(Box::new(tok.clone()));
 
-    let next = self.reader.next_token();
+    let next = self.reader.try_next_token().unwrap();
 
     self.span = next.sp;
     self.token = next.tok;
