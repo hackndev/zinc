@@ -15,8 +15,6 @@
 
 //! Stack layout information.
 
-use core::intrinsics::transmute;
-
 extern {
   fn __STACK_BASE();
   static mut __STACK_LIMIT: u32;
