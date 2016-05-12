@@ -25,9 +25,8 @@ use syntax::parse::token;
 use super::super::node;
 
 /// Generate an unsuffixed integer literal expression with a dummy span
-pub fn expr_int(cx: &ExtCtxt, n: Spanned<i64>) -> P<ast::Expr> {
-  let sign = if n.node < 0 {ast::Minus} else {ast::Plus};
-  cx.expr_lit(n.span, ast::LitInt(n.node as u64, ast::UnsuffixedIntLit(sign)))
+pub fn expr_int(cx: &ExtCtxt, n: Spanned<u64>) -> P<ast::Expr> {
+  cx.expr_lit(n.span, ast::LitKind::Int(n.node, ast::LitIntType::Unsuffixed))
 }
 
 /// The name of the structure representing a register
@@ -59,12 +58,11 @@ fn list_attribute_spanned(cx: &ExtCtxt, name: Spanned<&'static str>,
 }
 
 /// Generate a `#[doc="..."]` attribute of the given type
-#[allow(dummy_span)]
 pub fn doc_attribute(cx: &ExtCtxt, docstring: token::InternedString)
                      -> ast::Attribute {
   use syntax::codemap::DUMMY_SP;
 
-  let s: ast::Lit_ = ast::LitStr(docstring, ast::CookedStr);
+  let s: ast::LitKind = ast::LitKind::Str(docstring, ast::StrStyle::Cooked);
   let attr =
     cx.meta_name_value(DUMMY_SP, token::InternedString::new("doc"), s);
   cx.attribute(DUMMY_SP, attr)
@@ -135,8 +133,8 @@ pub fn field_type_path(cx: &ExtCtxt, path: &Vec<String>,
 
 pub fn unwrap_impl_item(item: P<ast::Item>) -> P<ast::ImplItem> {
   match item.node {
-    ast::ItemImpl(_, _, _, _, _, ref items) => {
-      items.clone().pop().expect("ImplItem not found")
+    ast::ItemKind::Impl(_, _, _, _, _, ref items) => {
+      P(items.clone().pop().expect("ImplItem not found"))
     },
     _ => panic!("Tried to unwrap ImplItem from Non-Impl")
   }
@@ -152,11 +150,11 @@ pub fn mask(cx: &ExtCtxt, field: &node::Field) -> P<ast::Expr> {
 /// index if necessary)
 pub fn shift(cx: &ExtCtxt, idx: Option<P<ast::Expr>>,
                  field: &node::Field) -> P<ast::Expr> {
-  let low = expr_int(cx, respan(field.bit_range_span, field.low_bit as i64));
+  let low = expr_int(cx, respan(field.bit_range_span, field.low_bit as u64));
   match idx {
     Some(idx) => {
       let width = expr_int(cx, respan(field.bit_range_span,
-                                      field.width as i64));
+                                      field.width as u64));
       quote_expr!(cx, $low + $idx * $width)
     },
     None => low,
