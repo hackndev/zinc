@@ -72,7 +72,6 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
 #[cfg(test)]
 mod test {
-  use std::ops::Deref;
   use builder::Builder;
   use test_helpers::{assert_equal_source, with_parsed};
 
@@ -90,7 +89,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0].deref(),
+      assert_equal_source(&builder.main_stmts()[0],
           "let tim = zinc::hal::lpc17xx::timer::Timer::new(
               zinc::hal::lpc17xx::timer::TimerPeripheral::Timer1, 25u32, 4u8);");
     });

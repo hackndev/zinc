@@ -16,17 +16,18 @@
 use std::ops::Deref;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
-use syntax::ast::{TokenTree, LitInt, UnsuffixedIntLit};
+use syntax::ast::{TokenTree, LitKind, LitIntType};
 use syntax::codemap::{Span, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer, integer_lit};
+use syntax::parse::lexer::Reader;
 use syntax::print::pprust;
 
 use node;
 
 pub struct Parser<'a> {
   pub sess: &'a ParseSess,
-  reader: Box<lexer::Reader+'a>,
+  reader: lexer::TtReader<'a>,
   token: token::Token,
   span: Span,
 
@@ -38,8 +39,7 @@ impl<'a> Parser<'a> {
   pub fn new(cx: &'a ExtCtxt, tts: &[TokenTree]) -> Parser<'a> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
-    let mut reader = Box::new(lexer::new_tt_reader(
-        &sess.span_diagnostic, None, None, ttsvec)) as Box<lexer::Reader>;
+    let mut reader = lexer::new_tt_reader(&sess.span_diagnostic, None, None, ttsvec);
 
     let tok0 = reader.next_token();
     let token = tok0.tok;
@@ -178,7 +178,7 @@ impl<'a> Parser<'a> {
     }
 
     let node_path = match self.token {
-      Token::Ident(_, _) => {
+      Token::Ident(_) => {
         pprust::token_to_string(&self.bump())
       },
       Token::Literal(token::Lit::Integer(intname), _) => {
@@ -186,7 +186,7 @@ impl<'a> Parser<'a> {
 
         let lit = integer_lit(intname.as_str().deref(), None, &self.sess.span_diagnostic, self.span);
         match lit {
-          LitInt(i, _) => {
+          LitKind::Int(i, _) => {
             format!("{}", i)
           },
           _ => {
@@ -345,7 +345,7 @@ impl<'a> Parser<'a> {
         if suffix.is_none() {
           let lit = integer_lit(intname.as_str().deref(), None, &self.sess.span_diagnostic, self.span);
           match lit {
-            LitInt(i, UnsuffixedIntLit(_)) => {
+            LitKind::Int(i, LitIntType::Unsuffixed) => {
               self.bump();
               Some(node::IntValue(i as usize))
             },
@@ -369,7 +369,7 @@ impl<'a> Parser<'a> {
         };
         Some(node::RefValue(name))
       },
-      token::Ident(ident, _) => {
+      token::Ident(ident) => {
         self.bump();
         match &*ident.name.as_str() {
           "true"  => Some(node::BoolValue(true)),
@@ -431,7 +431,7 @@ impl<'a> Parser<'a> {
   fn expect_ident(&mut self) -> Option<String> {
     let tok_str = pprust::token_to_string(&self.token);
     match self.token {
-      token::Ident(_, _) => {
+      token::Ident(_) => {
         self.bump();
         Some(tok_str)
       },

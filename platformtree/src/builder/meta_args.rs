@@ -63,7 +63,7 @@ fn set_tasks(cx: &mut ExtCtxt, tasks: Vec<P<ast::MetaItem>>) {
   let mut vec_clone = cx.cfg();
   let maybe_pos = vec_clone.iter().position(|i| {
     match i.node {
-      ast::MetaList(ref k, _) if *k == TAG => true,
+      ast::MetaItemKind::List(ref k, _) if *k == TAG => true,
       _ => false,
     }
   });
@@ -80,7 +80,7 @@ fn set_tasks(cx: &mut ExtCtxt, tasks: Vec<P<ast::MetaItem>>) {
 fn get_tasks(cx: &ExtCtxt) -> Vec<P<ast::MetaItem>> {
   for i in cx.cfg.iter() {
     match i.node {
-      ast::MetaList(ref k, ref v) if *k == TAG => return v.clone(),
+      ast::MetaItemKind::List(ref k, ref v) if *k == TAG => return v.clone(),
       _ => (),
     }
   };
@@ -92,10 +92,10 @@ fn get_task(tasks: &Vec<P<ast::MetaItem>>, task: &str) -> Vec<String> {
   let mut ty_params = vec!();
   for mi in tasks.iter() {
     match mi.node {
-      ast::MetaList(ref k, ref v) if *k == task => {
+      ast::MetaItemKind::List(ref k, ref v) if *k == task => {
         for submi in v.iter() {
           match submi.node {
-            ast::MetaWord(ref w) => ty_params.push((&*w).to_string()),
+            ast::MetaItemKind::Word(ref w) => ty_params.push((&*w).to_string()),
             _ => panic!("unexpected node type"),
           }
         }

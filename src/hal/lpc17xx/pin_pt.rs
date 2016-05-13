@@ -137,7 +137,6 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
 #[cfg(test)]
 mod test {
-  use std::ops::Deref;
   use builder::Builder;
   use test_helpers::{assert_equal_source, with_parsed};
 
@@ -154,7 +153,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0].deref(),
+      assert_equal_source(&builder.main_stmts()[0],
           "let p1 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port::Port0,
                1u8,
@@ -176,7 +175,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0].deref(),
+      assert_equal_source(&builder.main_stmts()[0],
           "let p2 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port::Port0,
                2u8,
@@ -198,7 +197,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts().len() == 1);
 
-      assert_equal_source(builder.main_stmts()[0].deref(),
+      assert_equal_source(&builder.main_stmts()[0],
           "let p3 = zinc::hal::lpc17xx::pin::Pin::new(
                zinc::hal::lpc17xx::pin::Port::Port0,
                3u8,
