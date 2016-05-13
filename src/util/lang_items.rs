@@ -17,16 +17,8 @@
 use core::fmt::Arguments;
 
 #[cfg(all(not(test), not(feature = "test")))]
-#[lang="stack_exhausted"]
-extern fn stack_exhausted() {}
-
-#[cfg(all(not(test), not(feature = "test")))]
 #[lang="eh_personality"]
 extern fn eh_personality() {}
-
-#[cfg(all(not(test), not(feature = "test")))]
-#[lang="begin_unwind"]
-extern fn begin_unwind() {}
 
 #[cfg(all(not(test), not(feature = "test")))]
 #[lang="panic_fmt"]
