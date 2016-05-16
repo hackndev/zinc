@@ -16,10 +16,9 @@
 use std::collections::HashSet;
 use std::rc::Rc;
 use syntax::ast;
-use syntax::codemap::{respan, DUMMY_SP};
+use syntax::codemap::DUMMY_SP;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
-use syntax::ext::quote::rt::ToTokens;
 use syntax::parse::token::intern;
 use syntax::ptr::P;
 
@@ -117,7 +116,7 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           DUMMY_SP,
           cx.ty_ident(DUMMY_SP, cx.ident_of("str")),
           Some(static_lifetime),
-          ast::MutImmutable), quote_expr!(&*cx, $val_slice))
+          ast::Mutability::Immutable), quote_expr!(&*cx, $val_slice))
       },
       node::RefValue(ref rname)  => {
         let refnode = builder.pt.get_by_name(rname.as_str()).unwrap();
@@ -134,18 +133,20 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           DUMMY_SP,
           cx.ty_path(type_name_as_path(cx, reftype.as_str(), refparams)),
           Some(a_lifetime),
-          ast::MutImmutable), quote_expr!(&*cx, &$val_slice))
+          ast::Mutability::Immutable), quote_expr!(&*cx, &$val_slice))
       },
     };
     let name_ident = cx.ident_of(k.as_str());
-    let sf = ast::StructField_ {
-      kind: ast::NamedField(name_ident, ast::Public),
+    let sf = ast::StructField {
+      span: DUMMY_SP,
+      ident: Some(name_ident),
+      vis: ast::Visibility::Public,
       id: ast::DUMMY_NODE_ID,
       ty: ty,
       attrs: vec!(),
     };
 
-    fields.push(respan(DUMMY_SP, sf));
+    fields.push(sf);
     expr_fields.push(cx.field_imm(DUMMY_SP, name_ident, val));
   }
 
@@ -165,11 +166,11 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
   }
 
   set_ty_params_for_task(cx, struct_name.as_str(), ty_params_vec);
-  let struct_item = P(ast::Item {
+  let struct_item = ast::Item {
     ident: name_ident,
     attrs: vec!(),
     id: ast::DUMMY_NODE_ID,
-    node: ast::ItemStruct(
+    node: ast::ItemKind::Struct(
       ast::VariantData::Struct(fields, ast::DUMMY_NODE_ID),
       ast::Generics {
         lifetimes: vec!(cx.lifetime_def(DUMMY_SP, intern("'a"), vec!())),
@@ -179,9 +180,9 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
           predicates: vec!(),
         }
       }),
-      vis: ast::Public,
+      vis: ast::Visibility::Public,
       span: DUMMY_SP,
-  });
+  };
   builder.add_type_item(struct_item);
 
   cx.expr_addr_of(DUMMY_SP,
@@ -213,7 +214,6 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
 
 #[cfg(test)]
 mod test {
-  use std::ops::Deref;
   use syntax::codemap::DUMMY_SP;
   use syntax::ext::build::AstBuilder;
 
@@ -232,7 +232,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
 
-      assert_equal_source(builder.main_stmts[0].deref(),
+      assert_equal_source(&builder.main_stmts[0],
           "loop {
             run();
           }");
@@ -262,14 +262,14 @@ mod test {
       assert!(builder.type_items.len() == 2);
 
       // XXX: builder.type_items[0] is `use zinc;` now
-      assert_equal_source(cx.stmt_item(DUMMY_SP, builder.type_items[1].clone()).deref(),
+      assert_equal_source(&cx.stmt_item(DUMMY_SP, builder.type_items[1].clone()),
           "pub struct run_args<'a> {
             pub a: u32,
             pub b: &'static str,
             pub c: &'a hello::world::Struct,
           }");
 
-      assert_equal_source(builder.main_stmts[0].deref(),
+      assert_equal_source(&builder.main_stmts[0],
           "loop {
             run(&pt::run_args {
               a: 1usize,

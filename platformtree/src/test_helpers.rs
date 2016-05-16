@@ -18,11 +18,10 @@ use std::string::ToString;
 use syntax::ast;
 use syntax::codemap::MacroBang;
 use syntax::codemap::{CodeMap, mk_sp, BytePos, ExpnInfo, NameAndSpan};
-use syntax::codemap;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
-use syntax::errors::emitter::Emitter;
+use syntax::errors::emitter::CoreEmitter;
 use syntax::errors::{RenderSpan, Level, Handler};
 use syntax::parse::ParseSess;
 use syntax::print::pprust;
@@ -110,14 +109,11 @@ impl CustomEmmiter {
 
 unsafe impl Send for CustomEmmiter {}
 
-impl Emitter for CustomEmmiter {
-  fn emit(&mut self, _: Option<codemap::Span>, m: &str, _: Option<&str>,
-      l: Level) {
+impl CoreEmitter for CustomEmmiter {
+  fn emit_message(&mut self, _: &RenderSpan, msg: &str, _: Option<&str>,
+      lvl: Level, _: bool, _: bool) {
     unsafe { *self.failed = true };
-    println!("{} {}", l, m);
-  }
-  fn custom_emit(&mut self, _: RenderSpan, _: &str, _: Level) {
-    panic!();
+    println!("{} {}", lvl, msg);
   }
 }
 
