@@ -60,7 +60,6 @@ else
 
   for e in $EXAMPLES; do
     pushd "examples/$e"
-    ln -sf "../../$TARGET.json"
     cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --release
     popd
   done
