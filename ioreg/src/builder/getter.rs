@@ -116,7 +116,7 @@ fn build_new(cx: &ExtCtxt, path: &Vec<String>,
 
 /// Given an `Expr` of the given register's primitive type, return
 /// an `Expr` of the field type
-fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
+fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg,
                   field: &node::Field, prim: P<ast::Expr>)
                   -> P<ast::Expr> {
   // Use bit_range_field for the span because it is to blame for the
@@ -137,8 +137,14 @@ fn from_primitive(cx: &ExtCtxt, path: &Vec<String>, _: &node::Reg,
           cx.path(v.name.span, vec!(enum_ident, val_ident)));
         let val: u64 = v.value.node;
         let lit = cx.expr_lit(
-          v.value.span,
-          ast::LitKind::Int(val, ast::LitIntType::Unsigned(ast::UintTy::U32)));
+            v.value.span,
+            ast::LitKind::Int(val, ast::LitIntType::Unsigned(match reg.ty.size() {
+                1 => ast::UintTy::U8,
+                2 => ast::UintTy::U16,
+                4 => ast::UintTy::U32,
+                8 => ast::UintTy::U64, // Is this even possible?
+                _ => panic!("Unknown reg size: {}", reg.ty.size()),
+            })));
         let arm = ast::Arm {
           attrs: vec!(),
           pats: vec!(

@@ -16,7 +16,7 @@
 use std::collections::HashSet;
 use std::rc::Rc;
 use syntax::ast;
-use syntax::codemap::{respan, DUMMY_SP};
+use syntax::codemap::DUMMY_SP;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::ToTokens;
@@ -215,7 +215,6 @@ fn type_name_as_path(cx: &ExtCtxt, ty: &str, params: Vec<String>) -> ast::Path {
 
 #[cfg(test)]
 mod test {
-  use std::ops::Deref;
   use syntax::codemap::DUMMY_SP;
   use syntax::ext::build::AstBuilder;
 
@@ -234,7 +233,7 @@ mod test {
       assert!(unsafe{*failed} == false);
       assert!(builder.main_stmts.len() == 1);
 
-      assert_equal_source(builder.main_stmts[0].deref(),
+      assert_equal_source(&builder.main_stmts[0],
           "loop {
             run();
           }");
@@ -264,14 +263,14 @@ mod test {
       assert!(builder.type_items.len() == 2);
 
       // XXX: builder.type_items[0] is `use zinc;` now
-      assert_equal_source(cx.stmt_item(DUMMY_SP, builder.type_items[1].clone()).deref(),
+      assert_equal_source(&cx.stmt_item(DUMMY_SP, builder.type_items[1].clone()),
           "pub struct run_args<'a> {
             pub a: u32,
             pub b: &'static str,
             pub c: &'a hello::world::Struct,
           }");
 
-      assert_equal_source(builder.main_stmts[0].deref(),
+      assert_equal_source(&builder.main_stmts[0],
           "loop {
             run(&pt::run_args {
               a: 1usize,

@@ -20,6 +20,7 @@ use syntax::ast;
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer};
+use syntax::parse::lexer::Reader;
 use syntax::parse;
 use syntax::print::pprust;
 
@@ -54,7 +55,7 @@ impl<'a> Parser<'a> {
     let mut reader = Box::new(lexer::new_tt_reader(
         &sess.span_diagnostic, None, None, ttsvec)) as Box<lexer::Reader>;
 
-    let tok0 = reader.next_token();
+    let tok0 = reader.try_next_token().unwrap();
     let token = tok0.tok;
     let span = tok0.sp;
 
@@ -379,7 +380,7 @@ impl<'a> Parser<'a> {
       token::Colon => {
         self.bump();
         match self.token.clone() {
-          ref t@token::Ident(_,_) => {
+          ref t@token::Ident(_) => {
             match pprust::token_to_string(t) {
               ref s if s.eq(&"rw") => { self.bump(); node::Access::ReadWrite },
               ref s if s.eq(&"ro") => { self.bump(); node::Access::ReadOnly  },
@@ -604,7 +605,7 @@ impl<'a> Parser<'a> {
     self.last_span = self.span;
     self.last_token = Some(Box::new(tok.clone()));
 
-    let next = self.reader.next_token();
+    let next = self.reader.try_next_token().unwrap();
 
     self.span = next.sp;
     self.token = next.tok;
@@ -631,7 +632,7 @@ impl<'a> Parser<'a> {
   fn expect_ident(&mut self) -> Option<String> {
     let tok_str = pprust::token_to_string(&self.token);
     match self.token {
-      token::Ident(_, _) => {
+      token::Ident(_) => {
         self.bump();
         Some(tok_str)
       },

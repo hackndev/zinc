@@ -17,7 +17,7 @@ use std::rc::Rc;
 use std::iter::FromIterator;
 use syntax::ast;
 use syntax::ptr::P;
-use syntax::codemap::{DUMMY_SP, dummy_spanned, respan, Spanned};
+use syntax::codemap::{DUMMY_SP, respan, Spanned};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 
@@ -123,16 +123,14 @@ impl<'a> BuildUnionTypes<'a> {
     };
     let mut field_path = path.clone();
     field_path.push(reg.name.node.clone());
-    dummy_spanned(
-      ast::StructField_ {
-        kind: ast::NamedField(
-          self.cx.ident_of(reg.name.node.as_str()),
-          ast::Visibility::Public),
-        id: ast::DUMMY_NODE_ID,
-        ty: reg_struct_type(self.cx, &field_path, reg),
-        attrs: attrs,
-      }
-    )
+    ast::StructField {
+      span: DUMMY_SP,
+      ident: Some(self.cx.ident_of(reg.name.node.as_str())),
+      vis: ast::Visibility::Public,
+      id: ast::DUMMY_NODE_ID,
+      ty: reg_struct_type(self.cx, &field_path, reg),
+      attrs: attrs,
+    }
   }
 
   /// Build field for padding or a register
@@ -151,16 +149,14 @@ impl<'a> BuildUnionTypes<'a> {
           self.cx.ty(
             DUMMY_SP,
             ast::TyKind::FixedLengthVec(u8_ty, expr_usize(self.cx, respan(DUMMY_SP, length))));
-        dummy_spanned(
-          ast::StructField_ {
-            kind: ast::NamedField(
-              self.cx.ident_of(format!("_pad{}", index).as_str()),
-              ast::Visibility::Inherited),
-            id: ast::DUMMY_NODE_ID,
-            ty: ty,
-            attrs: Vec::new(),
-          },
-        )
+        ast::StructField {
+          span: DUMMY_SP,
+          ident: Some(self.cx.ident_of(format!("_pad{}", index).as_str())),
+          vis: ast::Visibility::Inherited,
+          id: ast::DUMMY_NODE_ID,
+          ty: ty,
+          attrs: Vec::new(),
+        }
       },
     }
   }
