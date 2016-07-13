@@ -16,7 +16,7 @@
 use std::rc::Rc;
 use std::ops::DerefMut;
 use syntax::abi;
-use syntax::ast::TokenTree;
+use syntax::tokenstream::TokenTree;
 use syntax::ast;
 use syntax::codemap::{Span, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
@@ -162,7 +162,7 @@ impl Builder {
       stmts.push(s);
     }
 
-    let body = cx.block(DUMMY_SP, stmts, None);
+    let body = cx.block(DUMMY_SP, stmts);
 
     let unused_variables = cx.meta_word(DUMMY_SP,
         InternedString::new("unused_variables"));
@@ -193,7 +193,7 @@ impl Builder {
         // zinc::os::task::morestack();
     ));
     let empty_span = DUMMY_SP;
-    let body = cx.block(empty_span, vec!(stmt), None);
+    let body = cx.block(empty_span, vec!(stmt));
     self.item_fn(cx, empty_span, "__morestack", &[], body)
   }
 
