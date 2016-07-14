@@ -95,7 +95,7 @@ Namely, cargo must know about and have access to:
 
 Suppose we are targetting the `k20` platform.  In that case, I could
 build the `blink_k20` example program by doing the following.  Refer
-to (build-jenkins.sh)[support/build-jenkins.sh] for a mapping of
+to [build-jenkins.sh](support/build-jenkins.sh) for a mapping of
 platforms to targets.
 
 ```
