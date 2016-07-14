@@ -70,7 +70,7 @@ language.  As such, we recommend using the latest nightly version of
 Rust for development.  As features of the language stabilize over
 time, it is the goal of Zinc to eventually be able to target stable
 versions of the compiler.
-[Multirust](https://github.com/brson/multirust) may be used to manage
+[rustup.rs](https://www.rustup.rs/) may be used to manage
 installations of multiple versions of rust on single machine.
 
 In addition to rust itself, a GCC cross-toolchain for ARM must be
@@ -95,7 +95,7 @@ Namely, cargo must know about and have access to:
 
 Suppose we are targetting the `k20` platform.  In that case, I could
 build the `blink_k20` example program by doing the following.  Refer
-to (build-jenkins.sh)[support/build-jenkins.sh] for a mapping of
+to [build-jenkins.sh](support/build-jenkins.sh) for a mapping of
 platforms to targets.
 
 ```
