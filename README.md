@@ -70,7 +70,7 @@ language.  As such, we recommend using the latest nightly version of
 Rust for development.  As features of the language stabilize over
 time, it is the goal of Zinc to eventually be able to target stable
 versions of the compiler.
-[Multirust](https://github.com/brson/multirust) may be used to manage
+[rustup.rs](https://www.rustup.rs/) may be used to manage
 installations of multiple versions of rust on single machine.
 
 In addition to rust itself, a GCC cross-toolchain for ARM must be
