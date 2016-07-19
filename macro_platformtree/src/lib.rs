@@ -26,6 +26,7 @@ use std::ops::Deref;
 
 use rustc_plugin::Registry;
 use syntax::ast;
+use syntax::tokenstream;
 use syntax::codemap::DUMMY_SP;
 use syntax::codemap::Span;
 use syntax::ext::base::{ExtCtxt, MacResult, MultiModifier, Annotatable};
@@ -46,7 +47,7 @@ pub fn plugin_registrar(reg: &mut Registry) {
       MultiModifier(Box::new(macro_zinc_task)));
 }
 
-pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
+pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[tokenstream::TokenTree])
     -> Box<MacResult+'static> {
   let pt = Parser::new(cx, tts).parse_platformtree();
   let items = Builder::build(cx, pt.unwrap())
@@ -56,7 +57,7 @@ pub fn macro_platformtree(cx: &mut ExtCtxt, _: Span, tts: &[ast::TokenTree])
 }
 
 pub fn macro_platformtree_verbose(cx: &mut ExtCtxt, sp: Span,
-    tts: &[ast::TokenTree]) -> Box<MacResult+'static> {
+    tts: &[tokenstream::TokenTree]) -> Box<MacResult+'static> {
   let result = macro_platformtree(cx, sp, tts);
   println!("Platform Tree dump:");
   for i in result.make_items().unwrap().as_slice().iter() {
