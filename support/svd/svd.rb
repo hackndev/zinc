@@ -83,7 +83,7 @@ class Register
     @description = elem.xpath_text('description') if elem.xpath_text('description')
     @access = elem.xpath_text('access') if elem.xpath_text('access')
     @access = peripheral.access unless @access
-    @size = elem.xpath_text('size').to_i if elem.xpath_text('size')
+    @size = elem.xpath_text('size').to_some_i if elem.xpath_text('size')
     @size = peripheral.size unless @size
     @offset = elem.xpath_text('addressOffset').to_some_i
 
@@ -166,8 +166,12 @@ class Field
     else
       bit_offset = elem.at_xpath('bitOffset').content.to_i
       bit_width = elem.at_xpath('bitWidth').content.to_i
-      bit_end_range = bit_offset + bit_width
-      @bits_string = "#{bit_end_range}..#{bit_offset}"
+      bit_end_range = bit_offset + bit_width - 1
+      if bit_width == 1
+        @bits_string = bit_offset
+      else
+        @bits_string = "#{bit_end_range}..#{bit_offset}"
+      end
     end
 
     raise RuntimeError.new("can't derive with enums overriden") if @enums && elem.at_xpath('enumeratedValues')

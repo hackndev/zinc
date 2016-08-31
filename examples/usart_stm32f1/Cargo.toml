@@ -1,0 +1,12 @@
+[package]
+name = "blink_stm32f1"
+version = "0.0.1"
+
+[features]
+default = ["mcu_stm32f1"]
+mcu_stm32f1 = ["zinc/mcu_stm32f1"]
+
+[dependencies]
+zinc = { path =  "../.." }
+macro_zinc = { path = "../../macro_zinc" }
+rust-libcore = "*"
