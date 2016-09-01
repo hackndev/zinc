@@ -26,7 +26,7 @@ pub fn main() {
   led1.setup();
   led2.setup();
 
-  let timer = timer::Timer::new(timer::TimerPeripheral::Timer2, 25u32);
+  let timer = timer::Timer::new(timer::TimerPeripheral::Timer2, 16u32);
 
   loop {
     led1.set_high();
