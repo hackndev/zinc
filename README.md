@@ -54,7 +54,7 @@ processors at this time.
 * ST STM32l1
 
 In the future, a better story will be available that will allow for
-additional processor families, procesors, and boards using those
+additional processor families, processors, and boards using those
 processors to be defined more easily.
 
 ## License
