@@ -25,18 +25,22 @@ pub mod lpc11xx;
 #[cfg(feature = "mcu_lpc17xx")] pub mod lpc17xx;
 #[cfg(feature = "mcu_stm32f1")] pub mod stm32f1;
 #[cfg(feature = "mcu_stm32f4")] pub mod stm32f4;
+#[cfg(feature = "mcu_stm32f7")] pub mod stm32f7;
 #[cfg(feature = "mcu_stm32l1")] pub mod stm32l1;
 #[cfg(feature = "mcu_k20")] pub mod k20;
 #[cfg(feature = "mcu_tiva_c")] pub mod tiva_c;
 
 #[cfg(any(feature = "cpu_cortex-m0",
           feature = "cpu_cortex-m3",
-          feature = "cpu_cortex-m4"))]
+          feature = "cpu_cortex-m4",
+          feature = "cpu_cortex-m7"))]
 mod cortex_common;
 #[cfg(feature = "cpu_cortex-m3")]
 pub mod cortex_m3;
 #[cfg(feature = "cpu_cortex-m4")]
 pub mod cortex_m4;
+#[cfg(feature = "cpu_cortex-m7")]
+pub mod cortex_m7;
 
 pub mod mem_init;
 pub mod pin;

@@ -1,0 +1,3 @@
+[build]
+target = "thumbv7em-none-eabi"
+rustflags = ["-Clink-args=-Wl,-Map=blink_stm32f7.map"]
