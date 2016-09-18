@@ -72,14 +72,14 @@ impl<'a> Iterator for PaddedRegsIterator<'a> {
 }
 
 /// Build types for `RegUnions`
-pub struct BuildUnionTypes<'a> {
+pub struct BuildUnionTypes<'a, 'b> where 'b : 'a{
   builder: &'a mut Builder,
-  cx: &'a ExtCtxt<'a>
+  cx: &'a ExtCtxt<'b>
 }
 
-impl<'a> BuildUnionTypes<'a> {
-  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
-      -> BuildUnionTypes<'a> {
+impl<'a, 'b> BuildUnionTypes<'a, 'b> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
+      -> BuildUnionTypes<'a, 'b> {
     BuildUnionTypes { builder: builder, cx: cx }
   }
 }
@@ -103,7 +103,7 @@ fn reg_struct_type(cx: &ExtCtxt, path: &Vec<String>, reg: &node::Reg)
 }
 
 
-impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
+impl<'a, 'c> node::RegVisitor for BuildUnionTypes<'a, 'c> {
   fn visit_union_reg<'b>(&'b mut self, path: &Vec<String>, reg: &'b node::Reg,
                          subregs: Rc<Vec<node::Reg>>) {
     let items = self.build_union_type(path, reg, &*subregs);
@@ -113,7 +113,7 @@ impl<'a> node::RegVisitor for BuildUnionTypes<'a> {
   }
 }
 
-impl<'a> BuildUnionTypes<'a> {
+impl<'a, 'b> BuildUnionTypes<'a, 'b> {
   /// Produce a field for the given register in a `RegUnion` struct
   fn build_reg_union_field(&self, path: &Vec<String>, reg: &node::Reg)
                            -> ast::StructField {

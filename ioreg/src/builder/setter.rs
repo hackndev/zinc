@@ -26,19 +26,19 @@ use super::super::node;
 use super::utils;
 
 /// A visitor to build the field setters for primitive registers
-pub struct BuildSetters<'a> {
+pub struct BuildSetters<'a, 'b> where 'b : 'a {
   builder: &'a mut Builder,
-  cx: &'a ExtCtxt<'a>,
+  cx: &'a ExtCtxt<'b>,
 }
 
-impl<'a> BuildSetters<'a> {
-  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
-      -> BuildSetters<'a> {
+impl<'a, 'b> BuildSetters<'a, 'b> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
+      -> BuildSetters<'a, 'b> {
     BuildSetters { builder: builder, cx: cx }
   }
 }
 
-impl<'a> node::RegVisitor for BuildSetters<'a> {
+impl<'a, 'c> node::RegVisitor for BuildSetters<'a, 'c> {
   fn visit_prim_reg<'b>(&'b mut self, path: &Vec<String>,
       reg: &'b node::Reg, fields: &Vec<node::Field>)
   {

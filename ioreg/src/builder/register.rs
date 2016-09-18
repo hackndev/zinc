@@ -26,12 +26,12 @@ use super::utils;
 use super::super::node;
 
 /// A visitor to build the struct for each register
-pub struct BuildRegStructs<'a> {
+pub struct BuildRegStructs<'a, 'b> where 'b : 'a {
   builder: &'a mut Builder,
-  cx: &'a ExtCtxt<'a>,
+  cx: &'a ExtCtxt<'b>,
 }
 
-impl<'a> node::RegVisitor for BuildRegStructs<'a> {
+impl<'a, 'b> node::RegVisitor for BuildRegStructs<'a, 'b> {
   fn visit_prim_reg(&mut self, path: &Vec<String>, reg: &node::Reg,
                     fields: &Vec<node::Field>) {
     let width = match reg.ty {
@@ -50,9 +50,9 @@ impl<'a> node::RegVisitor for BuildRegStructs<'a> {
   }
 }
 
-impl<'a> BuildRegStructs<'a> {
-  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'a>)
-             -> BuildRegStructs<'a> {
+impl<'a, 'b> BuildRegStructs<'a, 'b> {
+  pub fn new(builder: &'a mut Builder, cx: &'a ExtCtxt<'b>)
+             -> BuildRegStructs<'a, 'b> {
     BuildRegStructs {builder: builder, cx: cx}
   }
 }
