@@ -73,6 +73,14 @@ versions of the compiler.
 [rustup.rs](https://www.rustup.rs/) may be used to manage
 installations of multiple versions of rust on single machine.
 
+The currently supported Rust version is nightly-2016-05-24.  To install
+it with rustup use the following:
+
+```Shell
+rustup install nightly-2016-05-24
+rustup override set nightly-2016-05-24
+```
+
 In addition to rust itself, a GCC cross-toolchain for ARM must be
 installed.  Although LLVM is used for a majority of compilation, the
 GCC Linker is still used at this time.  The
