@@ -15,7 +15,8 @@
 
 use std::rc::{Rc};
 use std::ops::Deref;
-use syntax::ast::{Ident, TokenTree};
+use syntax::ast::Ident;
+use syntax::tokenstream::TokenTree;
 use syntax::ast;
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
 use syntax::ext::base::ExtCtxt;
