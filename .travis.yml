@@ -1,5 +1,5 @@
 language: rust
-rust: nightly-2016-05-24
+rust: nightly-2016-09-17
 before_install:
     - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
     - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 6D1D8367A3421AFB
