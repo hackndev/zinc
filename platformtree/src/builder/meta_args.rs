@@ -18,7 +18,6 @@ use syntax::codemap::DUMMY_SP;
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::parse::token::{InternedString, intern_and_get_ident};
-use syntax::ptr::P;
 use std::hash::{Hash, Hasher, SipHasher};
 
 static TAG: &'static str = "__zinc_task_ty_params";
@@ -36,6 +35,9 @@ impl ToTyHash for String {
   }
 }
 
+use syntax::ast::NestedMetaItemKind;
+use syntax::codemap::Spanned;
+
 /// Sets ty_params for named task.
 ///
 /// Arguments:
@@ -43,9 +45,12 @@ impl ToTyHash for String {
 ///   args: a vector of type parameters
 pub fn set_ty_params_for_task(cx: &mut ExtCtxt, task: &str, args: Vec<String>) {
   let ty_params = args.iter().map(|arg| {
-    cx.meta_word(DUMMY_SP, intern_and_get_ident(arg.as_str()))
+    cx.meta_list_item_word(DUMMY_SP, intern_and_get_ident(arg.as_str()))
   }).collect();
-  let newmi = cx.meta_list(DUMMY_SP, intern_and_get_ident(task), ty_params);
+  let newmi = Spanned {
+    node: NestedMetaItemKind::MetaItem(cx.meta_list(DUMMY_SP, intern_and_get_ident(task), ty_params)),
+    span : DUMMY_SP,
+  };
 
   let mut tasks = get_tasks(cx);
   tasks.push(newmi);
@@ -59,7 +64,7 @@ pub fn get_ty_params_for_task(cx: &ExtCtxt, task: &str) -> Vec<String> {
 }
 
 /// Inserts or replaces tasks vector
-fn set_tasks(cx: &mut ExtCtxt, tasks: Vec<P<ast::MetaItem>>) {
+fn set_tasks(cx: &mut ExtCtxt, tasks: Vec<ast::NestedMetaItem>) {
   let mut vec_clone = cx.cfg();
   let maybe_pos = vec_clone.iter().position(|i| {
     match i.node {
@@ -77,7 +82,7 @@ fn set_tasks(cx: &mut ExtCtxt, tasks: Vec<P<ast::MetaItem>>) {
 }
 
 /// Returns a vector of MetaLists where each MetaList corresponds to one task.
-fn get_tasks(cx: &ExtCtxt) -> Vec<P<ast::MetaItem>> {
+fn get_tasks(cx: &ExtCtxt) -> Vec<ast::NestedMetaItem> {
   for i in cx.cfg.iter() {
     match i.node {
       ast::MetaItemKind::List(ref k, ref v) if *k == TAG => return v.clone(),
@@ -88,20 +93,30 @@ fn get_tasks(cx: &ExtCtxt) -> Vec<P<ast::MetaItem>> {
 }
 
 /// Returns a vector of type parameters for named task.
-fn get_task(tasks: &Vec<P<ast::MetaItem>>, task: &str) -> Vec<String> {
+fn get_task(tasks: &Vec<ast::NestedMetaItem>, task: &str) -> Vec<String> {
   let mut ty_params = vec!();
   for mi in tasks.iter() {
     match mi.node {
-      ast::MetaItemKind::List(ref k, ref v) if *k == task => {
-        for submi in v.iter() {
-          match submi.node {
-            ast::MetaItemKind::Word(ref w) => ty_params.push((&*w).to_string()),
-            _ => panic!("unexpected node type"),
-          }
+      ast::NestedMetaItemKind::MetaItem( ref mi_nested ) => {
+        match mi_nested.node {
+          ast::MetaItemKind::List(ref k, ref v) if *k == task => {
+            for subnmi in v.iter() {
+              match subnmi.node {
+                ast::NestedMetaItemKind::MetaItem( ref subnmi_nested ) => {
+                  match subnmi_nested.node {
+                    ast::MetaItemKind::Word(ref w) => ty_params.push((&*w).to_string()),
+                    _ => panic!("unexpected node type"),
+                  }
+                },
+                _ => panic!("unexpected node type"), // Literal Nested Node
+              }
+            }
+            break;
+          },
+          _ => (), // Word or NameValue Node
         }
-        break;
       },
-      _ => (),
+      _ => (), // Literal Nested Node
     }
   }
   ty_params

@@ -18,7 +18,7 @@ use std::ops::DerefMut;
 use syntax::abi;
 use syntax::tokenstream::TokenTree;
 use syntax::ast;
-use syntax::codemap::{Span, DUMMY_SP};
+use syntax::codemap::{Span, Spanned, DUMMY_SP};
 use syntax::ext::base::ExtCtxt;
 use syntax::ext::build::AstBuilder;
 use syntax::ext::quote::rt::{ToTokens, ExtParseUtils};
@@ -164,7 +164,7 @@ impl Builder {
 
     let body = cx.block(DUMMY_SP, stmts);
 
-    let unused_variables = cx.meta_word(DUMMY_SP,
+    let unused_variables = cx.meta_list_item_word(DUMMY_SP,
         InternedString::new("unused_variables"));
     let allow = cx.meta_list(
         DUMMY_SP,
@@ -198,7 +198,7 @@ impl Builder {
   }
 
   pub fn emit_items(&self, cx: &ExtCtxt) -> Vec<P<ast::Item>> {
-    let non_camel_case_types = cx.meta_word(DUMMY_SP,
+    let non_camel_case_types = cx.meta_list_item_word(DUMMY_SP,
         InternedString::new("non_camel_case_types"));
     let allow = cx.meta_list(
         DUMMY_SP,
@@ -231,7 +231,7 @@ impl Builder {
       node: ast::ItemKind::Fn(
           cx.fn_decl(Vec::new(), cx.ty(DUMMY_SP, ast::TyKind::Tup(Vec::new()))),
           ast::Unsafety::Unsafe,
-          ast::Constness::NotConst,
+          Spanned{ node: ast::Constness::NotConst, span: DUMMY_SP},
           abi::Abi::Rust, // TODO(farcaller): should this be abi::C?
           ast::Generics::default(),
           body),

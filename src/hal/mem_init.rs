@@ -30,7 +30,7 @@ extern {
 /// Helper function to initialise the stack limit.
 #[inline(always)]
 pub fn init_stack() {
-  set_stack_limit((&_eglobals as *const u32) as u32);
+  set_stack_limit( unsafe { (&_eglobals as *const u32) } as u32);
 }
 
 /// Helper function to initialize memory.

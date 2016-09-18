@@ -116,7 +116,8 @@ fn macro_zinc_task_item(cx: &mut ExtCtxt, it: P<ast::Item>) -> P<ast::Item> {
         where_clause: ast::WhereClause {
           id: ast::DUMMY_NODE_ID,
           predicates: vec!(),
-        }
+        },
+        span : DUMMY_SP,
       };
       let new_node = ast::ItemKind::Fn(new_decl, style, constness, abi, new_generics, block.clone());
 
