@@ -15,7 +15,8 @@
 
 use std::rc::{Rc};
 use std::ops::Deref;
-use syntax::ast::{Ident, TokenTree};
+use syntax::ast::Ident;
+use syntax::tokenstream::TokenTree;
 use syntax::ast;
 use syntax::codemap::{Span, Spanned, respan, dummy_spanned, mk_sp};
 use syntax::ext::base::ExtCtxt;
@@ -37,8 +38,8 @@ enum Scope {
   Outer,
 }
 
-pub struct Parser<'a> {
-  cx: &'a ExtCtxt<'a>,
+pub struct Parser<'a, 'b> where 'b : 'a {
+  cx: &'a ExtCtxt<'b>,
   sess: &'a ParseSess,
   reader: lexer::TtReader<'a>,
   token: token::Token,
@@ -48,8 +49,8 @@ pub struct Parser<'a> {
   last_span: Span,
 }
 
-impl<'a> Parser<'a> {
-  pub fn new(cx: &'a ExtCtxt<'a>, tts: &[TokenTree]) -> Parser<'a> {
+impl<'a, 'b> Parser<'a, 'b> {
+  pub fn new(cx: &'a ExtCtxt<'b>, tts: &[TokenTree]) -> Parser<'a, 'b> {
     let sess = cx.parse_sess();
     let ttsvec = tts.iter().map(|x| (*x).clone()).collect();
     let mut reader = lexer::new_tt_reader(&sess.span_diagnostic, None, None, ttsvec);

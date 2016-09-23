@@ -16,7 +16,8 @@
 use std::ops::Deref;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
-use syntax::ast::{TokenTree, LitKind, LitIntType};
+use syntax::ast::{LitKind, LitIntType};
+use syntax::tokenstream::TokenTree;
 use syntax::codemap::{Span, mk_sp};
 use syntax::ext::base::ExtCtxt;
 use syntax::parse::{token, ParseSess, lexer, integer_lit};

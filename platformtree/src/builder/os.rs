@@ -178,7 +178,8 @@ fn build_args(builder: &mut Builder, cx: &mut ExtCtxt,
         where_clause: ast::WhereClause {
           id: ast::DUMMY_NODE_ID,
           predicates: vec!(),
-        }
+        },
+        span: DUMMY_SP,
       }),
       vis: ast::Visibility::Public,
       span: DUMMY_SP,

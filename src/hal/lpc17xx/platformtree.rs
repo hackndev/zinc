@@ -138,7 +138,7 @@ mod test {
                     divisor: 4u8,
                   }),
                 });
-            };
+            }
             let timer = zinc::hal::lpc17xx::timer::Timer::new(
                 zinc::hal::lpc17xx::timer::TimerPeripheral::Timer1, 25u32, 4u8);
             let uart_tx = zinc::hal::lpc17xx::pin::Pin::new(

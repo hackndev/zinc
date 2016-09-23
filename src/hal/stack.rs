@@ -25,7 +25,7 @@ extern {
 /// Returns the address of main stack base (end of ram).
 pub fn stack_base() -> usize {
     unsafe {
-        transmute(__STACK_BASE)
+        transmute(__STACK_BASE as unsafe extern "C" fn())
     }
 }
 

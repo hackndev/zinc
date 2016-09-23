@@ -51,7 +51,7 @@ fn list_attribute_spanned(cx: &ExtCtxt, name: Spanned<&'static str>,
     list: Vec<Spanned<&'static str>>) -> ast::Attribute {
   let words =
    list.into_iter()
-   .map(|word| cx.meta_word(word.span, token::InternedString::new(word.node)));
+   .map(|word| cx.meta_list_item_word(word.span, token::InternedString::new(word.node)));
   let allow = cx.meta_list(name.span, token::InternedString::new(name.node),
                                 FromIterator::from_iter(words));
   cx.attribute(name.span, allow)

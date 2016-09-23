@@ -18,11 +18,11 @@ use std::string::ToString;
 use syntax::ast;
 use syntax::codemap::MacroBang;
 use syntax::codemap::{CodeMap, mk_sp, BytePos, ExpnInfo, NameAndSpan};
-use syntax::ext::base::ExtCtxt;
+use syntax::ext::base::{ExtCtxt, DummyResolver};
 use syntax::ext::expand::ExpansionConfig;
 use syntax::ext::quote::rt::ExtParseUtils;
-use syntax::errors::emitter::CoreEmitter;
-use syntax::errors::{RenderSpan, Level, Handler};
+use syntax::errors::emitter::Emitter;
+use syntax::errors::{RenderSpan, Level, Handler, DiagnosticBuilder};
 use syntax::parse::ParseSess;
 use syntax::print::pprust;
 
@@ -77,9 +77,12 @@ pub fn with_parsed_tts<F>(src: &str, block: F)
     features: None,
     recursion_limit: 10,
     trace_mac: true,
+    should_test: true,
+    single_step: false,
+    keep_macs: false,
   };
-  let mut gated_cfgs = vec!();
-  let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg, &mut gated_cfgs);
+  let mut d : DummyResolver = DummyResolver;
+  let mut cx = ExtCtxt::new(&parse_sess, cfg, ecfg, &mut d);
   cx.bt_push(ExpnInfo {
     call_site: mk_sp(BytePos(0), BytePos(0)),
     callee: NameAndSpan {
@@ -109,11 +112,10 @@ impl CustomEmmiter {
 
 unsafe impl Send for CustomEmmiter {}
 
-impl CoreEmitter for CustomEmmiter {
-  fn emit_message(&mut self, _: &RenderSpan, msg: &str, _: Option<&str>,
-      lvl: Level, _: bool, _: bool) {
+impl Emitter for CustomEmmiter {
+  fn emit(&mut self, db: &DiagnosticBuilder) {
     unsafe { *self.failed = true };
-    println!("{} {}", lvl, msg);
+    println!("{} {}", db.level, db.message);
   }
 }
 
