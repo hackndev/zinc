@@ -9,4 +9,3 @@ mcu_lpc17xx = ["zinc/mcu_lpc17xx"]
 [dependencies]
 zinc = { path =  "../.." }
 macro_zinc = { path = "../../macro_zinc" }
-rust-libcore = "*"

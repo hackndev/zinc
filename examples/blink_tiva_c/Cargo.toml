@@ -9,4 +9,3 @@ mcu_tiva_c = ["zinc/mcu_tiva_c"]
 [dependencies]
 zinc = { path =  "../.." }
 macro_platformtree = { path = "../../macro_platformtree" }
-rust-libcore = "*"

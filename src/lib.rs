@@ -48,9 +48,6 @@ STM32F403/407).
 */
 #![plugin(ioreg)]
 
-#[cfg(target_os = "none")]
-extern crate rlibc;
-
 #[macro_use] #[no_link] extern crate ioreg;
 #[macro_use] extern crate volatile_cell;
 

@@ -60,11 +60,14 @@ else
       ;;
   esac
 
-  cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --lib
+  cargo install xargo
+  export PATH="~/.cargo/bin/:$PATH"
+  rustup component add rust-src
+  xargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --lib
 
   for e in $EXAMPLES; do
     pushd "examples/$e"
-    cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --release
+    xargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --release
     popd
   done
 fi

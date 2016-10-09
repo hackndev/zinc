@@ -10,7 +10,6 @@ mcu_lpc17xx = ["zinc/mcu_lpc17xx"]
 zinc = { path =  "../.." }
 macro_zinc = { path = "../../macro_zinc" }
 macro_platformtree = { path = "../../macro_platformtree" }
-rust-libcore = "*"
 
 [[bin]]
 name = "rgb_pwm_lpc17xx"
