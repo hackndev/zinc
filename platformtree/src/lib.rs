@@ -19,6 +19,7 @@
 
 // extern crate regex;
 extern crate syntax;
+extern crate regex;
 #[cfg(test)] extern crate hamcrest;
 
 pub mod builder;
@@ -26,7 +27,7 @@ pub mod node;
 pub mod parser;
 
 #[path="../../src/hal/lpc17xx/platformtree.rs"] mod lpc17xx_pt;
-// #[path="../zinc/hal/tiva_c/platformtree.rs"] mod tiva_c_pt;
+#[path="../../src/hal/tiva_c/platformtree.rs"] mod tiva_c_pt;
 #[path="../../src/drivers/drivers_pt.rs"] mod drivers_pt;
 
 #[cfg(test)] mod test_helpers;

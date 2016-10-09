@@ -38,7 +38,7 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
 fn get_port_id(s: &str) -> Option<char> {
     match s.len() {
-        1 => match s.chars().nth(0).unwrap().to_uppercase() {
+        1 => match s.chars().nth(0).unwrap().to_uppercase().nth(0).unwrap() {
             p @ 'A'...'F' => Some(p),
             _             => None,
         },
@@ -50,16 +50,16 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   let port_node = node.parent.clone().unwrap().upgrade().unwrap();
   let ref port_path = port_node.path;
 
-  let error = |&: err: &str | {
+  let error = |err: &str | {
     cx.parse_sess().span_diagnostic.span_err(port_node.path_span, err);
   };
 
-  let port_str = format!("Port{}", match get_port_id(port_path.as_slice()) {
+  let port_str = format!("Port{}", match get_port_id(port_path.as_str()) {
     Some(port) => port,
     None => {
       cx.parse_sess().span_diagnostic.span_err(port_node.path_span,
           format!("unknown port `{}`, allowed values: a...f",
-                  port_path).as_slice());
+                  port_path).as_str());
       return;
     }
   });
@@ -72,12 +72,12 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   }
 
   let direction_str =
-    match node.get_string_attr("direction").unwrap().as_slice() {
+    match node.get_string_attr("direction").unwrap().as_str() {
       "out" => "zinc::hal::pin::Out",
       "in"  => "zinc::hal::pin::In",
       bad   => {
         error(format!("unknown direction `{}`, allowed values: `in`, `out`",
-                      bad).as_slice());
+                      bad).as_str());
         return;
       }
     };
@@ -89,11 +89,11 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
     Some(f)    => f as u8,
   };
 
-  let pin_str = match node.path.as_slice().parse::<usize>().unwrap() {
+  let pin_str = match node.path.as_str().parse::<usize>().unwrap() {
     0 ...7  => &node.path,
     other  => {
       error(format!("unknown pin `{}`, allowed values: 0...7",
-                    other).as_slice());
+                    other).as_str());
       return;
     }
   };
@@ -111,5 +111,5 @@ fn build_pin(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
           $direction,
           $function);
   );
-  builder.add_main_statement(st);
+  builder.add_main_statement(st.unwrap());
 }
