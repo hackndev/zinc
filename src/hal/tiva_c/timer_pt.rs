@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-extern crate regex;
+// extern crate regex;
 
 use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
-use regex::Regex;
+// use regex::Regex;
 
 use builder::{Builder, TokenString, add_node_dependency};
 use node;
@@ -63,18 +63,18 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   // - The letter says which counter to use within that timer (each timer has
   //   two counters, A and B which can be configured independantly.
 
-  let (wide_timer, id) =
-    match Regex::new(r"(w?)([0-5])").unwrap().captures(node.path.as_str()) {
-      Some(c) => {
-        (c.at(1) != Some(""), c.at(2))
-      }
-      None => {
-        error(
-          format!("invalid timer index `{}`, it should match `w?[0-5]`",
-                  node.path).as_str());
-        return;
-      }
-  };
+  // let (wide_timer, id) =
+  //   match Regex::new(r"(w?)([0-5])").unwrap().captures(node.path.as_str()) {
+  //     Some(c) => {
+  //       (c.at(1) != Some(""), c.at(2))
+  //     }
+  //     None => {
+  //       error(
+  //         format!("invalid timer index `{}`, it should match `w?[0-5]`",
+  //                 node.path).as_str());
+  //       return;
+  //     }
+  // };
 
   let mode = TokenString(
     format!("zinc::hal::tiva_c::timer::Mode::{}",
@@ -92,13 +92,19 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
                 return;
               }}));
 
+  // let timer_name = TokenString(
+  //   format!("zinc::hal::tiva_c::timer::TimerId::{}{}",
+  //           if wide_timer {
+  //             "TimerW"
+  //           } else {
+  //             "Timer"
+  //           }, id.unwrap()));
+
+  // let timer_name = TokenString(
+  //   format!("zinc::hal::tiva_c::timer::TimerId::{}{}", "TimerW", id.unwrap()));
+
   let timer_name = TokenString(
-    format!("zinc::hal::tiva_c::timer::TimerId::{}{}",
-            if wide_timer {
-              "TimerW"
-            } else {
-              "Timer"
-            }, id.unwrap()));
+    format!("zinc::hal::tiva_c::timer::TimerId::{}{}", "TimerW", 0));
 
   node.set_type_name("zinc::hal::tiva_c::timer::Timer".to_string());
 

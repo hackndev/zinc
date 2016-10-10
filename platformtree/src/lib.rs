@@ -19,7 +19,6 @@
 
 // extern crate regex;
 extern crate syntax;
-extern crate regex;
 #[cfg(test)] extern crate hamcrest;
 
 pub mod builder;
