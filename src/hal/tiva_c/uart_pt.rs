@@ -17,7 +17,7 @@
 
 use std::rc::Rc;
 use syntax::ext::base::ExtCtxt;
-// use regex::Regex;
+use regex::Regex;
 
 use builder::{Builder, TokenString, add_node_dependency};
 use node;
@@ -65,42 +65,42 @@ pub fn build_uart(builder: &mut Builder,
     return
   }
 
-  // let mode = sub.get_string_attr("mode").unwrap();
+  let mode = sub.get_string_attr("mode").unwrap();
 
-  // let mode_re =
-  //   Regex::new(r"([[:digit:]]+),?([[:digit:]]*)([nNoOEe]?)([[:digit:]])?").unwrap();
+  let mode_re =
+    Regex::new(r"([[:digit:]]+),?([[:digit:]]*)([nNoOEe]?)([[:digit:]])?").unwrap();
 
-  // let mode_captures = match mode_re.captures(mode.as_str()) {
-  //   Some(c) => c,
-  //   None    => {
-  //     error(format!("invalid format {}", mode).as_str());
-  //     return;
-  //   }
-  // };
+  let mode_captures = match mode_re.captures(mode.as_str()) {
+    Some(c) => c,
+    None    => {
+      error(format!("invalid format {}", mode).as_str());
+      return;
+    }
+  };
 
-  // let baud_rate = mode_captures.at(1).unwrap().parse::<usize>().unwrap();
+  let baud_rate = mode_captures.at(1).unwrap().parse::<usize>().unwrap();
 
-  // let word_len = match mode_captures.at(2).unwrap() {
-  //   "" => 8,
-  //   l  => l.parse::<u8>().unwrap(),
-  // };
+  let word_len = match mode_captures.at(2).unwrap() {
+    "" => 8,
+    l  => l.parse::<u8>().unwrap(),
+  };
 
-  // let parity = TokenString(match mode_captures.at(3).unwrap() {
-  //   ""|"N"|"n" => "Disabled",
-  //   "O"|"o"    => "Odd",
-  //   "E"|"e"    => "Even",
-  //   "1"        => "Forced1",
-  //   "0"        => "Forced0",
-  //   p          => {
-  //     error(format!("invalid parity setting {}", p).as_str());
-  //     return;
-  //   }
-  // }.to_string());
+  let parity = TokenString(match mode_captures.at(3).unwrap() {
+    ""|"N"|"n" => "Disabled",
+    "O"|"o"    => "Odd",
+    "E"|"e"    => "Even",
+    "1"        => "Forced1",
+    "0"        => "Forced0",
+    p          => {
+      error(format!("invalid parity setting {}", p).as_str());
+      return;
+    }
+  }.to_string());
 
-  // let stop_bits = match mode_captures.at(4).unwrap() {
-  //   "" => 1,
-  //   s  => s.parse::<u8>().unwrap(),
-  // };
+  let stop_bits = match mode_captures.at(4).unwrap() {
+    "" => 1,
+    s  => s.parse::<u8>().unwrap(),
+  };
 
   sub.set_type_name("zinc::hal::tiva_c::uart::Uart".to_string());
   let uart_name = TokenString(sub.name.clone().unwrap());
@@ -108,14 +108,10 @@ pub fn build_uart(builder: &mut Builder,
   let st = quote_stmt!(&*cx,
       let $uart_name = zinc::hal::tiva_c::uart::Uart::new(
           zinc::hal::tiva_c::uart::UartId::$uart_peripheral,
-          // $baud_rate,
-          9600,
-          // $word_len,
-          8,
-          // zinc::hal::uart::Parity::$parity,
-          zinc::hal::uart::Parity::Disabled,
-          // $stop_bits
-          1
+          $baud_rate,
+          $word_len,
+          zinc::hal::uart::Parity::$parity,
+          $stop_bits
       )
   );
 
