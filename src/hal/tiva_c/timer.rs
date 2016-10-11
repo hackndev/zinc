@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![allow(missing_docs)]
+
 //! Timer configuration
 //! This code should support both standand and wide timers
 

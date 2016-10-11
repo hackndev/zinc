@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#![allow(missing_docs)]
+
 //! Pin configuration
 //! Allows GPIO configuration
 //! Pin muxing not implemented yet.

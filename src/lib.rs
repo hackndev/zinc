@@ -17,7 +17,7 @@
 #![feature(core_intrinsics, core_slice_ext, core_str_ext)]
 #![allow(improper_ctypes)]
 #![feature(const_fn)]
-// #![deny(missing_docs)]
+#![deny(missing_docs)]
 #![no_std]
 
 /*!
