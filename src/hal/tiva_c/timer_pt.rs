@@ -35,7 +35,7 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
 fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 
-  let error = |&: err: &str | {
+  let error = |err: &str | {
     cx.parse_sess().span_diagnostic.span_err(node.path_span, err);
   };
 
@@ -62,21 +62,21 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   //   two counters, A and B which can be configured independantly.
 
   let (wide_timer, id) =
-    match Regex::new(r"(w?)([0-5])").unwrap().captures(node.path.as_slice()) {
+    match Regex::new(r"(w?)([0-5])").unwrap().captures(node.path.as_str()) {
       Some(c) => {
         (c.at(1) != Some(""), c.at(2))
       }
       None => {
         error(
           format!("invalid timer index `{}`, it should match `w?[0-5]`",
-                  node.path).as_slice());
+                  node.path).as_str());
         return;
       }
   };
 
   let mode = TokenString(
     format!("zinc::hal::tiva_c::timer::Mode::{}",
-            match mode.as_slice() {
+            match mode.as_str() {
               "periodic"   => "Periodic",
               "one-shot"   => "OneShot",
               "RTC"        => "RTC",
@@ -86,7 +86,7 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
               _            => {
                 error(format!("unknown mode {}, expected one of \
                                periodic, one-shot, RTC, edge-count, edge-time \
-                               or PWM", mode).as_slice());
+                               or PWM", mode).as_str());
                 return;
               }}));
 
@@ -104,5 +104,5 @@ fn build_timer(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
       let $name = zinc::hal::tiva_c::timer::Timer::new(
           $timer_name, $mode, $prescale);
   );
-  builder.add_main_statement(st);
+  builder.add_main_statement(st.unwrap());
 }

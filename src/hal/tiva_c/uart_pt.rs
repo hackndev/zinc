@@ -38,16 +38,16 @@ pub fn verify(_: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
 pub fn build_uart(builder: &mut Builder,
                   cx: &mut ExtCtxt,
                   sub: Rc<node::Node>) {
-  let error = |&: err: &str | {
+  let error = |err: &str | {
     cx.parse_sess().span_diagnostic.span_err(sub.path_span, err);
   };
 
   let uart_peripheral_str = format!("Uart{}",
-      match sub.path.as_slice().parse::<usize>().unwrap() {
+      match sub.path.as_str().parse::<usize>().unwrap() {
         0 ... 7 => sub.path.clone(),
         p       => {
           error(format!("unknown UART `{}`, allowed values: 0, 2, 3",
-                        p).as_slice());
+                        p).as_str());
           return;
         }
       });
@@ -68,15 +68,15 @@ pub fn build_uart(builder: &mut Builder,
   let mode_re =
     Regex::new(r"([[:digit:]]+),?([[:digit:]]*)([nNoOEe]?)([[:digit:]])?").unwrap();
 
-  let mode_captures = match mode_re.captures(mode.as_slice()) {
+  let mode_captures = match mode_re.captures(mode.as_str()) {
     Some(c) => c,
     None    => {
-      error(format!("invalid format {}", mode).as_slice());
+      error(format!("invalid format {}", mode).as_str());
       return;
     }
   };
 
-  let baud_rate = mode_captures.at(1).unwrap().parse::<usize>();
+  let baud_rate = mode_captures.at(1).unwrap().parse::<usize>().unwrap();
 
   let word_len = match mode_captures.at(2).unwrap() {
     "" => 8,
@@ -90,7 +90,7 @@ pub fn build_uart(builder: &mut Builder,
     "1"        => "Forced1",
     "0"        => "Forced0",
     p          => {
-      error(format!("invalid parity setting {}", p).as_slice());
+      error(format!("invalid parity setting {}", p).as_str());
       return;
     }
   }.to_string());
@@ -109,8 +109,9 @@ pub fn build_uart(builder: &mut Builder,
           $baud_rate,
           $word_len,
           zinc::hal::uart::Parity::$parity,
-          $stop_bits)
+          $stop_bits
+      )
   );
 
-  builder.add_main_statement(st);
+  builder.add_main_statement(st.unwrap());
 }

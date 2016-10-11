@@ -29,7 +29,7 @@ pub fn attach(builder: &mut Builder, cx: &mut ExtCtxt, node: Rc<node::Node>) {
   for sub in node.subnodes().iter() {
     add_node_dependency(&node, sub);
 
-    match sub.path.as_slice() {
+    match sub.path.as_str() {
       "clock" => clock_pt::attach(builder, cx, sub.clone()),
       "gpio"  => pin_pt  ::attach(builder, cx, sub.clone()),
       "timer" => timer_pt::attach(builder, cx, sub.clone()),
