@@ -415,6 +415,20 @@ pub mod periph {
     pub const UART_7: super::PeripheralClock =
       super::PeripheralClock { class: CLASS, id: 7 };
   }
+
+  pub mod ssi {
+    //! SSI peripherals instances
+    const CLASS: u8 = 0x1c / 4;
+
+    pub const SSI_0: super::PeripheralClock =
+      super::PeripheralClock { class: CLASS, id: 0 };
+    pub const SSI_1: super::PeripheralClock =
+      super::PeripheralClock { class: CLASS, id: 1 };
+    pub const SSI_2: super::PeripheralClock =
+      super::PeripheralClock { class: CLASS, id: 2 };
+    pub const SSI_3: super::PeripheralClock =
+      super::PeripheralClock { class: CLASS, id: 3 };
+  }
 }
 
 pub mod reg {

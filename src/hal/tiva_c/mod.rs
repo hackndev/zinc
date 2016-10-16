@@ -20,5 +20,6 @@ pub mod sysctl;
 pub mod pin;
 pub mod timer;
 pub mod uart;
+pub mod spi;
 
 #[path="../../util/ioreg.rs"] mod util;
