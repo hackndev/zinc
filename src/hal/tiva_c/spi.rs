@@ -165,7 +165,7 @@ impl Spi {
     spi
   }
 
-  /// Configure the SSI into SPI mode. Currently hard coded at 3.2MHz for 16MHz PIOSC
+  /// Configure the SSI into SPI mode
   fn configure(&self, config: SpiConf) {
     // Disable peripheral so we can configure it
     self.regs.ssicr1.set_sse(false);
