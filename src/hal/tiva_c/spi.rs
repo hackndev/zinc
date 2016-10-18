@@ -15,7 +15,8 @@
 
 //! SPI configuration
 
-/// Enables SPI interface on any of the 4 SSI (Synchronous Serial Interface) modules in TM4C microcontrollers
+/// Enables SPI interface on any of the 4 SSI (Synchronous Serial Interface)
+/// modules in TM4C microcontrollers
 
 use core::intrinsics::abort;
 use hal::tiva_c::sysctl;
@@ -49,8 +50,9 @@ SPI configuration object
 
 Configuration object used when instantiating an SPI instance
 
-Note: The SPI GPIO pins must be set up correctly before using SPI. For example, for a master-only TX and CK config on SSI0,
-the platformtree section might look like the following (taken from a Tiva C configuration):
+Note: The SPI GPIO pins must be set up correctly before using SPI. For example,
+for a master-only TX and CK config on SSI0, the platformtree section might look
+like the following (taken from a Tiva C configuration):
 
 ```
 gpio {
@@ -190,8 +192,10 @@ impl Spi {
 
   /// Set SPI frequency
   ///
-  /// This function computes the divisor and exponent (for lack of a better name). These are stored in `ssicpsr.cpsdvsr` and `ssicr0.scr` respectively.
-  /// The clock rate formula (taken from the datasheet is) `ClockRate = SysClk / (CPSDVSR * (1 + SCR))` where SysClk is the system clock in Hz.
+  /// This function computes the divisor and exponent (for lack of a better name).
+  /// These are stored in `ssicpsr.cpsdvsr` and `ssicr0.scr` respectively.
+  /// The clock rate formula (taken from the datasheet is)
+  /// `ClockRate = SysClk / (CPSDVSR * (1 + SCR))` where SysClk is the system clock in Hz.
   fn set_frequency(&self, freq: u32) {
     let sysclk = sysctl::clock::sysclk_get() as u32;
 
@@ -201,7 +205,8 @@ impl Spi {
       let prescale_hz = sysclk / divisor;
 
       // Calculate exponent
-      // TODO(jamwaffles) The below line crashes my Tiva, presumably because floating point is broken?
+      // TODO(jamwaffles) The below line crashes my Tiva,
+      // presumably because floating point is broken?
       // let scr = ((prescale_hz as f32 / freq as f32) + 0.5f32) as u32;
 
       let scr = prescale_hz / freq;
@@ -218,12 +223,14 @@ impl Spi {
       divisor += 2;
     }
 
-    // TODO(jamwaffles): Return a Result from here as well as the calling configure method
+    // TODO(jamwaffles): Return a Result from here as well as the calling
+    // configure method
     unsafe { abort() };
   }
 
   /// Wait for SSI TX FIFO to be ready
-  /// This checks the busy flag (0 = not busy) and the "transmit FIFO not full" flag (1 = not full)
+  /// This checks the busy flag (0 = not busy) and the "transmit FIFO not full"
+  /// flag (1 = not full)
   fn writeable(&self) -> bool {
     !self.regs.ssisr.bsy() && self.regs.ssisr.tnf()
   }
@@ -257,24 +264,38 @@ pub mod reg {
   ioregs!(Ssi = {
     /// SSI control register 0
     0x000 => reg16 ssicr0 {
-      0..3 => dss: rw,    //= Data size select, 0x7 = 8 bits, see datasheet page 970 for other values
+      0..3 => dss: rw,    //= Data size select, 0x7 = 8 bits, see datasheet page
+                          //= 970 for other values
       4..5 => frf: rw,    //= Frame format, 0 = SPI 1 = TI SSF 2 Microwire
-      6    => spo: rw,    //= SSI polarity, 0 = steady staate low on SSInCLK 1 = steady state high
+      6    => spo: rw,    //= SSI polarity, 0 = steady staate low on
+                          //= SSInCLK 1 = steady state high
       7    => sph: rw,    //= SSI clock phase, 1 = first edge 0 = second edge
-      15..8 => scr: rw,   //= SSI clock rate, calculated from formula `SysClk / (CPSDVSR * (1 + SCR))`
+      15..8 => scr: rw,   //= SSI clock rate, calculated from formula
+                          //= `SysClk / (CPSDVSR * (1 + SCR))`
     },
 
     /// SSI control register 1
     0x004 => reg16 ssicr1 {
       0 => lbm: rw,       //= Loopback enable, 1 = enabled 0 = normal operation
-      1 => sse: rw,       //= Serial port enable 1 = enabled 0 = disabled. Must be cleared before SSI can be configured
+      1 => sse: rw,       //= Serial port enable 1 = enabled 0 = disabled.
+                          //= Must be cleared before SSI can be configured
       2 => ms: rw,        //= Master/slave select 0 = master 1 = slave
       4 => eot: rw,       //= End of transmission. Not sure what this is
     },
 
     /// SSI send/receive register
-    /// When the SSIDR register is read, the entry in the receive FIFO that is pointed to by the current FIFO read pointer is accessed. When a data value is removed by the SSI receive logic from the incoming data frame, it is placed into the entry in the receive FIFO pointed to by the current FIFO write pointer.
-    /// When the SSIDR register is written to, the entry in the transmit FIFO that is pointed to by the write pointer is written to. Data values are removed from the transmit FIFO one value at a time by the transmit logic. Each data value is loaded into the transmit serial shifter, then serially shifted out onto the SSInTx pin at the programmed bit rate.
+    ///
+    /// When the SSIDR register is read, the entry in the receive FIFO that is
+    /// pointed to by the current FIFO read pointer is accessed. When a data
+    /// value is removed by the SSI receive logic from the incoming data frame,
+    /// it is placed into the entry in the receive FIFO pointed to by the
+    /// current FIFO write pointer.
+    ///
+    /// When the SSIDR register is written to, the entry in the transmit FIFO
+    /// that is pointed to by the write pointer is written to. Data values are
+    /// removed from the transmit FIFO one value at a time by the transmit
+    /// logic. Each data value is loaded into the transmit serial shifter, then
+    /// serially shifted out onto the SSInTx pin at the programmed bit rate.
     /// See page 973 in datasheet for more details
     0x008 => reg16 ssidr {
       0..15 => data: rw   //= Receive/transmit data
@@ -286,7 +307,8 @@ pub mod reg {
       1 => tnf: ro,       //= TX FIFO full 1 = not full 0 = full
       2 => rne: ro,       //= RX FIFO 1 = not empty 0 = empty
       3 => rff: ro,       //= RX FIFO full 0 = not full 1 = full
-      4 => bsy: ro,       //= SSI busy 0 = idle, can send data 1 = transmitting, can't send data yet
+      4 => bsy: ro,       //= SSI busy 0 = idle, can send data 1 = transmitting,
+                          //= can't send data yet
     },
 
     /// SSI clock prescale register
@@ -296,7 +318,8 @@ pub mod reg {
 
     /// SSI clock source configuration
     0xfc8 => reg16 ssicc {
-      0..3 => cs: rw,     //= SSI baud clock source, 0x0 = system clock, 0x5 = PIOSC
+      0..3 => cs: rw,     //= SSI baud clock source, 0x0 = system clock,
+                          //= 0x5 = PIOSC
     },
   });
 
