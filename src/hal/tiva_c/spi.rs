@@ -24,16 +24,6 @@ use util::support::get_reg_ref;
 #[path="../../util/wait_for.rs"]
 #[macro_use] mod wait_for;
 
-/// Clock source for SSI module
-/// TODO(jamwaffles) Implement the ability to choose a clock source
-// pub enum ClockSource {
-//   /// System configured clock source
-//   System = 0x0,
-
-//   /// The Precision Internal Oscillator @16MHz
-//   PIOSC  = 0x5,
-// }
-
 /// There are 4 SSI instances an SPI interface can use
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
@@ -44,6 +34,38 @@ pub enum SpiId {
   Spi3,
 }
 
+/**
+SPI configuration object
+
+Configuration object used when instantiating an SPI instance
+
+Note: The SPI GPIO pins must be set up correctly before using SPI. For example, for a master-only TX and CK config on SSI0,
+the platformtree section might look like the following (taken from a Tiva C configuration):
+
+```
+gpio {
+  a {
+    spi_ck@2 {
+      direction = "out";
+      function  = 2;
+    }
+
+    spi_tx@5 {
+      direction = "out";
+      function  = 2;
+    }
+  }
+}
+```
+*/
+pub struct SpiConf {
+  /// Which SPI peripheral to use. The Tiva C has 4 SSI interfaces that can be used for SPI
+  pub peripheral: SpiId,
+
+  /// Bus frequency in Hz. Peripheral clock scaling is calculated from this value to a possibly non-exact match
+  pub frequency: u32,
+}
+
 /// Structure describing a single SPI interface
 #[derive(Clone, Copy)]
 pub struct Spi {
@@ -52,10 +74,10 @@ pub struct Spi {
 }
 
 impl Spi {
-  /// Create and setup a UART.
-  pub fn new(id: SpiId) -> Spi {
+  /// Create and setup an SPI interface.
+  pub fn new(config: SpiConf) -> Spi {
 
-    let (periph, regs) = match id {
+    let (periph, regs) = match config.peripheral {
       SpiId::Spi0 => (sysctl::periph::ssi::SSI_0, reg::SSI_0),
       SpiId::Spi1 => (sysctl::periph::ssi::SSI_1, reg::SSI_1),
       SpiId::Spi2 => (sysctl::periph::ssi::SSI_2, reg::SSI_2),
@@ -64,36 +86,66 @@ impl Spi {
 
     let spi = Spi { regs: get_reg_ref(regs) };
 
+    // Make sure peripheral clock gating is enabled
     periph.ensure_enabled();
 
-    spi.configure();
+    spi.configure(config);
 
     spi
   }
 
   /// Configure the SSI into SPI mode. Currently hard coded at 3.2MHz for 16MHz PIOSC
-  fn configure(&self) {
-    let sysclk = sysctl::clock::sysclk_get();
+  fn configure(&self, config: SpiConf) {
+    // Disable peripheral so we can configure it
+    self.regs.ssicr1.set_sse(false);
 
     self.regs.ssicr1
       .set_sse(false)
       .set_ms(false)
       .set_lbm(false);
 
-    // 3.2MHz fixed bitrate for 16MHz crystal and 80MHz PLL
-    self.regs.ssicpsr
-      .set_cpsdvsr(25);
+    // Set clock rate
+    self.set_frequency(config.frequency);
 
     self.regs.ssicr0
-      .set_scr(0)
       .set_sph(false)
       .set_spo(false)
-      .set_frf(0)     // SPI mode
+      .set_frf(0)     // Put SSI into SPI mode
       .set_dss(0x7);  // 8 bit frames
 
-    // Turn on SSI now that we've configured it
-    self.regs.ssicr1
-      .set_sse(true);
+    // Turn on peripheral now that we've configured it
+    self.regs.ssicr1.set_sse(true);
+  }
+
+  /// Set SPI frequency
+  ///
+  /// This function computes the divisor and exponent (for lack of a better name). These are stored in `ssicpsr.cpsdvsr` and `ssicr0.scr` respectively.
+  /// The clock rate formula (taken from the datasheet is) `ClockRate = SysClk / (CPSDVSR * (1 + SCR))` where SysClk is the system clock in Hz.
+  fn set_frequency(&self, freq: u32) {
+    let sysclk = sysctl::clock::sysclk_get() as u16;
+
+    let mut divisor: u16 = 2;
+
+    while divisor <= 254 {
+      let prescale_hz: u16 = sysclk / divisor;
+
+      // Calculate exponent
+      let scr: u16 = ((prescale_hz as f32 / freq as f32) + 0.5f32) as u16;
+
+      // Check we can support the divider
+      if scr < 256 {
+        self.regs.ssicpsr.set_cpsdvsr(divisor);
+
+        self.regs.ssicr0.set_scr(scr - 1);
+
+        return
+      }
+
+      divisor += 2;
+    }
+
+    // TODO(jamwaffles): Return a Result from here as well as the calling configure method
+    unsafe { abort() };
   }
 
   /// Wait for SSI TX FIFO to be ready
