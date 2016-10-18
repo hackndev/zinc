@@ -201,7 +201,10 @@ impl Spi {
       let prescale_hz = sysclk / divisor;
 
       // Calculate exponent
-      let scr = ((prescale_hz as f32 / freq as f32) + 0.5f32) as u32;
+      // TODO(jamwaffles) The below line crashes my Tiva, presumably because floating point is broken?
+      // let scr = ((prescale_hz as f32 / freq as f32) + 0.5f32) as u32;
+
+      let scr = prescale_hz / freq;
 
       // Check we can support the divider
       if scr < 256 {
