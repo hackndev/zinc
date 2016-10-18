@@ -13,9 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! SPI module
-//! Enables SPI interface on any of the 4 SSI (Synchronous Serial Interface) modules in TM4C microcontrollers
+//! SPI configuration
 
+/// Enables SPI interface on any of the 4 SSI (Synchronous Serial Interface) modules in TM4C microcontrollers
+
+use core::intrinsics::abort;
 use hal::tiva_c::sysctl;
 use util::support::get_reg_ref;
 
@@ -25,12 +27,20 @@ use util::support::get_reg_ref;
 #[macro_use] mod wait_for;
 
 /// There are 4 SSI instances an SPI interface can use
+/// See the TM4C123GH6PM datasheet page 954 for detailed signal to pin mappings
 #[allow(missing_docs)]
 #[derive(Clone, Copy)]
 pub enum SpiId {
+  /// SPI over SSI0, uses pins PA2:5
   Spi0,
+
+  /// SPI over SSI1, uses pins PF0:3 or PD0:3
   Spi1,
+
+  /// SPI over SSI2, uses pins PB4:7
   Spi2,
+
+  /// SPI over SSI3, uses pins PD0:3
   Spi3,
 }
 
@@ -66,7 +76,68 @@ pub struct SpiConf {
   pub frequency: u32,
 }
 
-/// Structure describing a single SPI interface
+/**
+Structure describing a single SPI interface
+
+# Examples
+
+Create an SPI interface on SSI0 with a run frequency of 4MHz
+
+```
+#![crate_type = "staticlib"]
+#![feature(plugin, start, core_intrinsics)]
+#![no_std]
+#![plugin(macro_platformtree)]
+
+extern crate zinc;
+
+use zinc::hal::spi::Spi;
+use zinc::hal::tiva_c::spi;
+
+platformtree!(
+  tiva_c@mcu {
+    // Tiva C ends up with an 80MHz clock from 16MHz external xtal and x5 PLL
+    clock {
+      source = "MOSC";
+      xtal   = "X16_0MHz";
+      pll    = true;
+      div    = 5;
+    }
+
+    gpio {
+      a {
+        spi_ck@2 {
+          direction = "out";
+          function  = 2;
+        }
+
+        spi_tx@5 {
+          direction = "out";
+          function  = 2;
+        }
+      }
+    }
+  }
+
+  os {
+    single_task {
+      loop = "run";
+    }
+  }
+);
+
+fn run() {
+  let spi = spi::Spi::new(spi::SpiConf {
+    peripheral: spi::SpiId::Spi0,
+    frequency: 4_000_000
+  });
+
+  loop {
+    spi.write('a' as u8);
+  }
+}
+```
+*/
 #[derive(Clone, Copy)]
 pub struct Spi {
   /// SSI registers
