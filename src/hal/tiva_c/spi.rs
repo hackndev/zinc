@@ -193,21 +193,21 @@ impl Spi {
   /// This function computes the divisor and exponent (for lack of a better name). These are stored in `ssicpsr.cpsdvsr` and `ssicr0.scr` respectively.
   /// The clock rate formula (taken from the datasheet is) `ClockRate = SysClk / (CPSDVSR * (1 + SCR))` where SysClk is the system clock in Hz.
   fn set_frequency(&self, freq: u32) {
-    let sysclk = sysctl::clock::sysclk_get() as u16;
+    let sysclk = sysctl::clock::sysclk_get() as u32;
 
-    let mut divisor: u16 = 2;
+    let mut divisor: u32 = 2;
 
     while divisor <= 254 {
-      let prescale_hz: u16 = sysclk / divisor;
+      let prescale_hz = sysclk / divisor;
 
       // Calculate exponent
-      let scr: u16 = ((prescale_hz as f32 / freq as f32) + 0.5f32) as u16;
+      let scr = ((prescale_hz as f32 / freq as f32) + 0.5f32) as u32;
 
       // Check we can support the divider
       if scr < 256 {
-        self.regs.ssicpsr.set_cpsdvsr(divisor);
+        self.regs.ssicpsr.set_cpsdvsr(divisor as u16);
 
-        self.regs.ssicr0.set_scr(scr - 1);
+        self.regs.ssicr0.set_scr((scr - 1) as u16);
 
         return
       }
