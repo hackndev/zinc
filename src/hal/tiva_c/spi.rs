@@ -322,6 +322,7 @@ pub mod reg {
     },
   });
 
+  // TODO(jamwaffles): Change to placement ioregs
   pub const SSI_0: *const Ssi = 0x40008000 as *const Ssi;
   pub const SSI_1: *const Ssi = 0x40009000 as *const Ssi;
   pub const SSI_2: *const Ssi = 0x4000A000 as *const Ssi;
