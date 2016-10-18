@@ -214,7 +214,6 @@ impl Spi {
       // Check we can support the divider
       if scr < 256 {
         self.regs.ssicpsr.set_cpsdvsr(divisor as u16);
-
         self.regs.ssicr0.set_scr((scr - 1) as u16);
 
         return
