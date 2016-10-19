@@ -14,11 +14,12 @@
 // limitations under the License.
 
 //! HAL for TI TM4C123GH6PM
-//! This MCU is used on the TI stellaris and Tiva C launchpad development boards.
+/// This MCU is used on the TI stellaris and Tiva C launchpad development boards.
 
 pub mod sysctl;
 pub mod pin;
 pub mod timer;
 pub mod uart;
+pub mod spi;
 
 #[path="../../util/ioreg.rs"] mod util;
