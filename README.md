@@ -128,7 +128,7 @@ ar = "arm-none-eabi-ar"
 
 ### Using Zinc for your Project
 
-Sinc Zinc uses cargo for its build system, using Zinc from your own
+Since Zinc uses cargo for its build system, using Zinc from your own
 project just requires setting up your Cargo.toml correctly.
 
 You can find an example of how to do that here:
