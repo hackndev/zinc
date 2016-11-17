@@ -2,7 +2,16 @@
 
 set -e
 
-echo " * rustc version: `rustc --version`"
+rustup show
+
+print_info() {
+  echo " * $1 at: $(which $1)"
+  echo " * $1 version: `$1 --version`"
+}
+
+print_info rustc
+print_info cargo
+print_info xargo
 
 if [ "$PLATFORM" == "native" ]; then
   # build unit tests
@@ -60,9 +69,6 @@ else
       ;;
   esac
 
-  cargo install xargo
-  export PATH="~/.cargo/bin/:$PATH"
-  rustup component add rust-src
   xargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --lib
 
   for e in $EXAMPLES; do
