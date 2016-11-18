@@ -32,6 +32,9 @@ path = "./ioreg"
 [dependencies.volatile_cell]
 path = "./volatile_cell"
 
+[dependencies]
+rlibc = "*"
+
 [dev-dependencies]
 expectest = "*"
 
