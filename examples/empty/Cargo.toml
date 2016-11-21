@@ -13,4 +13,3 @@ mcu_tiva_c = ["zinc/mcu_tiva_c"]
 [dependencies]
 zinc = { path =  "../.." }
 macro_zinc = { path = "../../macro_zinc" }
-rust-libcore = "*"

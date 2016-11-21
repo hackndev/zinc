@@ -89,12 +89,12 @@ works well for most people.
 
 ### Building Examples Within Zinc
 
-There are several examples available within the Zinc source itself.
-Zinc makes use of Cargo for its build system, but it is still necesary
-to provide the build system with a few pieces of information for it to
-properly compile for your target.
+There are several examples available within the Zinc source itself.  Zinc makes
+use of Xargo (a bare metal variant of Cargo) for its build system, but it is
+still necesary to provide the build system with a few pieces of information for
+it to properly compile for your target.
 
-Namely, cargo must know about and have access to:
+Namely, xargo must know about and have access to:
 
 1. The target specification for the machine being specified (consumed
    by the compiler)
@@ -109,15 +109,15 @@ platforms to targets.
 ```
 $ cd examples/blink_k20
 $ ln -s ../../thumbv7em-none-eabi.json
-$ cargo build --target=thumbv7em-none-eabi --features mcu_k20 --release
+$ xargo build --target=thumbv7em-none-eabi --features mcu_k20 --release
 
 $ file target/thumbv7em-none-eabi/release/blink
 target/thumbv7em-none-eabi/release/blink: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), statically linked, not stripped
 ```
 
-If you receive link errors, you probably need to tell Cargo to use
+If you receive link errors, you probably need to tell Xargo to use
 your cross-compilers linker.  You can do this by adding a
-`.cargo/config` to either your home directory or the root of the Zinc
+`.xargo/config` to either your home directory or the root of the Zinc
 project:
 
 ```toml
@@ -128,7 +128,7 @@ ar = "arm-none-eabi-ar"
 
 ### Using Zinc for your Project
 
-Since Zinc uses cargo for its build system, using Zinc from your own
+Since Zinc uses xargo for its build system, using Zinc from your own
 project just requires setting up your Cargo.toml correctly.
 
 You can find an example of how to do that here:

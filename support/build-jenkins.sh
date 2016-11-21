@@ -2,7 +2,16 @@
 
 set -e
 
-echo " * rustc version: `rustc --version`"
+rustup show
+
+print_info() {
+  echo " * $1 at: $(which $1)"
+  echo " * $1 version: `$1 --version`"
+}
+
+print_info rustc
+print_info cargo
+print_info xargo
 
 if [ "$PLATFORM" == "native" ]; then
   # build unit tests
@@ -60,11 +69,11 @@ else
       ;;
   esac
 
-  cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --lib
+  xargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --lib
 
   for e in $EXAMPLES; do
     pushd "examples/$e"
-    cargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --release
+    xargo build --target=$TARGET --verbose --features "mcu_$PLATFORM" --release
     popd
   done
 fi

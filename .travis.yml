@@ -1,5 +1,7 @@
-language: rust
-rust: nightly-2016-09-17
+os:
+  - linux
+dist: trusty
+language: generic
 before_install:
     - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
     - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key 6D1D8367A3421AFB
@@ -7,9 +9,14 @@ before_install:
     - sudo apt-get install gcc-arm-none-eabi libcurl4-openssl-dev libelf-dev libdw-dev
     - wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz && tar xzf master.tar.gz
     - (mkdir kcov-master/build && cd kcov-master/build && cmake .. && make && make install DESTDIR=../tmp)
+    - export PATH=$PATH:~/.cargo/bin
+    - ./support/install-rustup.sh $RUST_TOOLCHAIN
 script:
+    - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(dirname `rustup which rustc`)/../lib
     - ./support/build-jenkins.sh
 env:
+  global:
+    - RUST_TOOLCHAIN=nightly-2016-09-17
   matrix:
     - PLATFORM=native
     - PLATFORM=lpc11xx

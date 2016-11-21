@@ -15,14 +15,5 @@ crate-type = ["rlib"]
 [features]
 replayer = ["expectest"]
 
-[target.thumbv6m-none-eabi.dependencies]
-rust-libcore = "*"
-
-[target.thumbv7m-none-eabi.dependencies]
-rust-libcore = "*"
-
-[target.thumbv7em-none-eabi.dependencies]
-rust-libcore = "*"
-
 [dependencies.expectest]
 optional = true
