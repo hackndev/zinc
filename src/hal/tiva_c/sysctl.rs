@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(missing_docs)]
-
 //! Low level system control (PLL, clock gating, ...)
 use core::marker::Copy;
 
