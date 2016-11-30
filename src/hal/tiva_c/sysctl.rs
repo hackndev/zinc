@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(missing_docs)]
-
 //! Low level system control (PLL, clock gating, ...)
 use core::marker::Copy;
 
@@ -341,6 +339,7 @@ pub mod periph {
     }
   }
 
+  #[allow(missing_docs)]
   pub mod gpio {
     //! GPIO system control peripherals. Split into ports of 8 GPIO each.
 
@@ -360,6 +359,7 @@ pub mod periph {
       super::PeripheralClock { class: CLASS, id: 5 };
   }
 
+  #[allow(missing_docs)]
   pub mod timer {
     //! Timer system control peripherals. Each timer has two independent
     //! counters (A and B).
@@ -394,6 +394,7 @@ pub mod periph {
       super::PeripheralClock { class: TIMER_W_CLASS, id: 5 };
   }
 
+  #[allow(missing_docs)]
   pub mod uart {
     //! UART peripherals instances
     const CLASS: u8 = 0x18 / 4;
@@ -416,6 +417,7 @@ pub mod periph {
       super::PeripheralClock { class: CLASS, id: 7 };
   }
 
+  #[allow(missing_docs)]
   pub mod ssi {
     //! SSI peripherals instances
     const CLASS: u8 = 0x1c / 4;
@@ -493,5 +495,6 @@ pub mod reg {
     }
   });
 
+  #[allow(missing_docs)]
   pub const SYSCTL: *const SysCtl = 0x400FE000 as *const SysCtl;
 }

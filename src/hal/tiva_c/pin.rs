@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(missing_docs)]
-
 //! Pin configuration
 //! Allows GPIO configuration
 //! Pin muxing not implemented yet.
@@ -218,10 +216,17 @@ pub mod reg {
     }
   });
 
-  pub const PORT_A: *const Port = 0x40004000 as *const Port;
-  pub const PORT_B: *const Port = 0x40005000 as *const Port;
-  pub const PORT_C: *const Port = 0x40006000 as *const Port;
-  pub const PORT_D: *const Port = 0x40007000 as *const Port;
-  pub const PORT_E: *const Port = 0x40024000 as *const Port;
-  pub const PORT_F: *const Port = 0x40025000 as *const Port;
+  #[allow(missing_docs)]
+  mod instances {
+    use super::*;
+
+    pub const PORT_A: *const Port = 0x40004000 as *const Port;
+    pub const PORT_B: *const Port = 0x40005000 as *const Port;
+    pub const PORT_C: *const Port = 0x40006000 as *const Port;
+    pub const PORT_D: *const Port = 0x40007000 as *const Port;
+    pub const PORT_E: *const Port = 0x40024000 as *const Port;
+    pub const PORT_F: *const Port = 0x40025000 as *const Port;
+  }
+
+  pub use self::instances::*;
 }

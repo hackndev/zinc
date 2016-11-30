@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(missing_docs)]
-
 //! Timer configuration
 //! This code should support both standand and wide timers
 
@@ -223,17 +221,23 @@ pub mod reg {
     }
   });
 
-  pub const TIMER_0:   *const Timer = 0x40030000 as *const Timer;
-  pub const TIMER_1:   *const Timer = 0x40031000 as *const Timer;
-  pub const TIMER_2:   *const Timer = 0x40032000 as *const Timer;
-  pub const TIMER_3:   *const Timer = 0x40033000 as *const Timer;
-  pub const TIMER_4:   *const Timer = 0x40034000 as *const Timer;
-  pub const TIMER_5:   *const Timer = 0x40035000 as *const Timer;
+  #[allow(missing_docs)]
+  mod instances {
+    use super::*;
 
-  pub const TIMER_W_0: *const Timer = 0x40036000 as *const Timer;
-  pub const TIMER_W_1: *const Timer = 0x40037000 as *const Timer;
-  pub const TIMER_W_2: *const Timer = 0x4003C000 as *const Timer;
-  pub const TIMER_W_3: *const Timer = 0x4003D000 as *const Timer;
-  pub const TIMER_W_4: *const Timer = 0x4003E000 as *const Timer;
-  pub const TIMER_W_5: *const Timer = 0x4003F000 as *const Timer;
+    pub const TIMER_0:   *const Timer = 0x40030000 as *const Timer;
+    pub const TIMER_1:   *const Timer = 0x40031000 as *const Timer;
+    pub const TIMER_2:   *const Timer = 0x40032000 as *const Timer;
+    pub const TIMER_3:   *const Timer = 0x40033000 as *const Timer;
+    pub const TIMER_4:   *const Timer = 0x40034000 as *const Timer;
+    pub const TIMER_5:   *const Timer = 0x40035000 as *const Timer;
+
+    pub const TIMER_W_0: *const Timer = 0x40036000 as *const Timer;
+    pub const TIMER_W_1: *const Timer = 0x40037000 as *const Timer;
+    pub const TIMER_W_2: *const Timer = 0x4003C000 as *const Timer;
+    pub const TIMER_W_3: *const Timer = 0x4003D000 as *const Timer;
+    pub const TIMER_W_4: *const Timer = 0x4003E000 as *const Timer;
+    pub const TIMER_W_5: *const Timer = 0x4003F000 as *const Timer;
+  }
+  pub use self::instances::*;
 }

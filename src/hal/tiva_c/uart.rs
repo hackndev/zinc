@@ -13,8 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![allow(missing_docs)]
-
 //! UART configuration
 
 use hal::tiva_c::sysctl;
@@ -191,12 +189,17 @@ pub mod reg {
     }
   });
 
-  pub const UART_0: *const Uart = 0x4000C000 as *const Uart;
-  pub const UART_1: *const Uart = 0x4000D000 as *const Uart;
-  pub const UART_2: *const Uart = 0x4000E000 as *const Uart;
-  pub const UART_3: *const Uart = 0x4000F000 as *const Uart;
-  pub const UART_4: *const Uart = 0x40010000 as *const Uart;
-  pub const UART_5: *const Uart = 0x40011000 as *const Uart;
-  pub const UART_6: *const Uart = 0x40012000 as *const Uart;
-  pub const UART_7: *const Uart = 0x40013000 as *const Uart;
+  #[allow(missing_docs)]
+  mod instances {
+    use super::*;
+    pub const UART_0: *const Uart = 0x4000C000 as *const Uart;
+    pub const UART_1: *const Uart = 0x4000D000 as *const Uart;
+    pub const UART_2: *const Uart = 0x4000E000 as *const Uart;
+    pub const UART_3: *const Uart = 0x4000F000 as *const Uart;
+    pub const UART_4: *const Uart = 0x40010000 as *const Uart;
+    pub const UART_5: *const Uart = 0x40011000 as *const Uart;
+    pub const UART_6: *const Uart = 0x40012000 as *const Uart;
+    pub const UART_7: *const Uart = 0x40013000 as *const Uart;
+  }
+  pub use self::instances::*;
 }
