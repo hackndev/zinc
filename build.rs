@@ -15,11 +15,11 @@ fn get_platform() -> Option<String> {
 }
 
 fn file_exists(file: &Path) -> bool {
-    match fs::metadata(file) {
-        Ok(_) => true,
-        // Check for ENOENT (No such file or directory)
-        Err(e) => e.raw_os_error() != Some(2),
-    }
+  match fs::metadata(file) {
+    Ok(_) => true,
+    // Check for ENOENT (No such file or directory)
+    Err(e) => e.raw_os_error() != Some(2),
+  }
 }
 
 fn copy_linker_scripts<P: AsRef<Path>, Q: AsRef<Path>>(target: P, out_path: Q) -> io::Result<()> {
