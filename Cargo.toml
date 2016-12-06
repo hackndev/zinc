@@ -46,3 +46,9 @@ path = "./macro_platformtree"
 
 [dev-dependencies.macro_zinc]
 path = "./macro_zinc"
+
+[build-dependencies]
+rustache = "0.1"
+serde = "= 0.8.8"
+serde_derive = "= 0.8.8"
+serde_yaml = "0.4.1"
