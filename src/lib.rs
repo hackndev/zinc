@@ -63,7 +63,7 @@ pub mod hal;
 pub mod util;
 pub mod os;
 
-/// Export a subset of `core` as `std.
+/// Export a subset of `core` as `std`.
 ///
 /// This is exported as a temporary convenience as `rustc` still looks
 /// for some items in the `std` namespace.
