@@ -4,6 +4,10 @@
 Zinc, the bare metal stack for rust
 ===================================
 
+# Maintenance update
+
+[Zinc isn't being actively developed or maintained](https://users.rust-lang.org/t/zinc-mini-post-mortem/7079) and should be considered more of an academic experiment at this point. There's a whole rust embedded WG now and many projects used ideas featured in zinc to make embedded development with rust as easy as possible. I'd suggest looking at [tock](https://www.tockos.org/) to start with.
+
 ## About zinc.rs
 
 Zinc is an experimental attempt to write an ARM stack that would be
