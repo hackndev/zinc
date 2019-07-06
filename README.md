@@ -95,7 +95,7 @@ works well for most people.
 
 There are several examples available within the Zinc source itself.  Zinc makes
 use of Xargo (a bare metal variant of Cargo) for its build system, but it is
-still necesary to provide the build system with a few pieces of information for
+still necessary to provide the build system with a few pieces of information for
 it to properly compile for your target.
 
 Namely, xargo must know about and have access to:
