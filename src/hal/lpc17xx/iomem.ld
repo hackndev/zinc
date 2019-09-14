@@ -89,3 +89,5 @@ lpc17xx_iomem_PCLKSEL0  = 0x400FC1A8;
 lpc17xx_iomem_PCLKSEL1  = 0x400FC1AC;
 
 lpc17xx_iomem_SCS       = 0x400FC1A0;
+
+isr_reserved_1 = 0 - (__STACK_BASE + main + 1 + isr_nmi + 1 + isr_hardfault + 1);

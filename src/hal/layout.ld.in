@@ -1,0 +1,18 @@
+INCLUDE iomem.ld
+
+_data_load = LOADADDR(.data);
+
+ENTRY(main)
+
+MEMORY
+{
+  {{#memories}}
+    {{name}}({{mode}}) : ORIGIN = {{origin}}, LENGTH = {{length}}
+  {{/memories}}
+}
+
+__STACK_BASE = ORIGIN(ram) + LENGTH(ram);
+
+REGION_ALIAS("vectors", {{vectors}});
+
+INCLUDE layout_common.ld

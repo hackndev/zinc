@@ -1,0 +1,11 @@
+---
+vectors: rom
+memories:
+  - name: rom
+    mode: RX
+    origin: 0x08000000
+    length: 0x10000
+  - name: ram
+    mode: WAIL
+    origin: 0x20000000
+    length: 0x4FFF
