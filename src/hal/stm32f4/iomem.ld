@@ -14,3 +14,10 @@ stm32f4_iomem_GPIOF = 0x40021400;
 stm32f4_iomem_GPIOG = 0x40021800;
 stm32f4_iomem_GPIOH = 0x40021c00;
 stm32f4_iomem_GPIOI = 0x40022000;
+
+stm32f4_iomem_SPI1 = 0x40013000;
+stm32f4_iomem_SPI2 = 0x40003800;
+stm32f4_iomem_SPI3 = 0x40003C00;
+stm32f4_iomem_SPI4 = 0x40013400;
+stm32f4_iomem_SPI5 = 0x40015000;
+stm32f4_iomem_SPI6 = 0x40015400;

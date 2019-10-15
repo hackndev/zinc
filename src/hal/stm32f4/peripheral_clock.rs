@@ -219,7 +219,7 @@ impl PeripheralClock {
       SDIOClock|SPI1Clock|SYSCFGClock|TIM9Clock|TIM10Clock|
       TIM11Clock => {
         let val = reg::RCC.APB2ENR();
-        reg::RCC.set_AHB1ENR((val & mask) | bit);
+        reg::RCC.set_APB2ENR((val & mask) | bit);
       },
     }
 

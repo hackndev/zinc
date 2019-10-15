@@ -19,3 +19,5 @@ pub mod init;
 pub mod peripheral_clock;
 pub mod pin;
 pub mod timer;
+#[allow(missing_docs)]
+pub mod spi;
